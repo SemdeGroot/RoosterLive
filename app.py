@@ -258,4 +258,5 @@ def hash_endpoint():
         return Response("", mimetype="text/plain")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT, debug=True)
+    port = int(os.getenv("PORT", "5000"))  # fallback naar 5000 lokaal
+    app.run(host="0.0.0.0", port=port, debug=True)
