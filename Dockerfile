@@ -11,7 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy code & .env & data
 COPY app.py ./
-COPY .env ./.env
 COPY data ./data
 
 EXPOSE 5000
