@@ -37,17 +37,33 @@
       {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
       <div class="title">Rooster</div>
       <nav class="nav">
-        <a href="/">Home</a>
+        {# Home niet tonen als je al op home zit #}
+        {% if request.resolver_match.url_name != 'index' %}
+            <a href="{% url 'index' %}">Home</a>
+        {% endif %}
+
         {% if request.user|has_group:"Admin" or request.user|has_group:"Manager" %}
-          <a href="/upload/">Upload</a>
+            {% if request.resolver_match.url_name != 'upload_roster' %}
+            <a href="{% url 'upload_roster' %}">Upload</a>
+            {% endif %}
         {% endif %}
-        {% if request.user|has_group:"Admin" %}<a href="/users/">Users</a>{% endif %}
+
+        {% if request.user|has_group:"Admin" %}
+            {% if request.resolver_match.url_name != 'manage_users' %}
+            <a href="{% url 'manage_users' %}">Users</a>
+            {% endif %}
+        {% endif %}
+
         {% if request.user.is_authenticated %}
-          <a href="/logout/">Logout</a>
+            {# Logout als POST (betrouwbaarder dan GET) #}
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn">Logout</button>
+            </form>
         {% else %}
-          <a href="/login/">Login</a>
+            <a href="{% url 'login' %}">Login</a>
         {% endif %}
-      </nav>
+    </nav>
     </header>
     <main class="content">
       {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
