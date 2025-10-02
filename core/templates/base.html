@@ -1,0 +1,61 @@
+{% load role_tags %}
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Rooster{% endblock %}</title>
+  <style>
+    :root { --bg:#0b0f14; --panel:#10161d; --panel-2:#0f141a; --text:#e6edf3; --muted:#9fb2c8; --border:#233041; --shadow:rgba(0,0,0,.55); }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif;}
+    .app{display:grid; grid-template-rows:auto 1fr auto; min-height:100dvh}
+    .header{position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg, var(--panel), rgba(16,22,29,.85)); backdrop-filter:blur(6px); border-bottom:1px solid var(--border); padding:16px 24px; box-shadow:0 4px 14px var(--shadow)}
+    .logo-wrap{background:#fff; padding:10px 16px; border-radius:16px; display:flex; align-items:center; justify-content:center}
+    .logo{max-height:45px; width:auto; object-fit:contain; display:block}
+    .title{font-size:1.8rem; font-weight:700; letter-spacing:.5px}
+    .nav{margin-left:auto; display:flex; gap:10px}
+    .nav a, .nav button{color:var(--text); background:#17212b; border:1px solid var(--border); padding:8px 12px; border-radius:10px; text-decoration:none; cursor:pointer}
+    .content{padding:18px; display:grid; gap:18px}
+    .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow); overflow:hidden}
+    .pages{display:grid; gap:12px; padding:16px}
+    .page{width:100%; border:1px solid var(--border); border-radius:12px; background:#0a0f14; box-shadow:0 4px 12px var(--shadow); overflow:hidden}
+    .page img{display:block; width:100%; height:auto}
+    .footer{position:sticky; bottom:0; z-index:1000; display:flex; justify-content:space-between; align-items:center; gap:6px; padding:8px 10px; background:linear-gradient(0deg, var(--panel), rgba(16,22,29,.85)); border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow); color:var(--muted); font-size:12px}
+    .flash{padding:10px 14px; border-left:3px solid #3aa675; background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0}
+    .form{padding:16px}
+    .form input, .form select{width:100%; background:#0f141a; color:var(--text); border:1px solid var(--border); padding:8px 10px; border-radius:10px; margin:6px 0 12px}
+    .btn{background:#1d2936; border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:10px; cursor:pointer}
+    table{width:100%; border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
+      <div class="title">Rooster</div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        {% if request.user|has_group:"Admin" or request.user|has_group:"Manager" %}
+          <a href="/upload/">Upload</a>
+        {% endif %}
+        {% if request.user|has_group:"Admin" %}<a href="/users/">Users</a>{% endif %}
+        {% if request.user.is_authenticated %}
+          <a href="/logout/">Logout</a>
+        {% else %}
+          <a href="/login/">Login</a>
+        {% endif %}
+      </nav>
+    </header>
+    <main class="content">
+      {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+      <div>© {{ request.user.username|default:"Guest" }}</div><div></div>
+    </footer>
+  </div>
+</body>
+</html>

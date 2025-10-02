@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Upload Rooster{% endblock %}
+{% block content %}
+<div class="card">
+  <form class="form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h3>Nieuw rooster uploaden (PDF)</h3>
+    {{ form.as_p }}
+    <button class="btn" type="submit">Uploaden</button>
+  </form>
+</div>
+{% endblock %}
