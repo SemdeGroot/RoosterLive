@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% load role_tags %}
+{% block title %}Beheer{% endblock %}
+
+{% block head %}
+<style>
+  /* Layout: meer ruimte en nette uitlijning */
+  .admin-wrap{margin-top:18px}
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
+
+  /* Kaarten */
+  .card-inner{padding:16px}
+
+  /* Tabel algemeen */
+  table.manage-table{width:100%;border-collapse:collapse}
+  table.manage-table th,table.manage-table td{
+    border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:middle
+  }
+
+  /* Users tabel: smallere Voornaam/Groep; Acties flexibel */
+  table.user-table th:nth-child(1),table.user-table td:nth-child(1){
+    width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* Voornaam */
+  }
+  table.user-table th:nth-child(2),table.user-table td:nth-child(2){
+    width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* E-mail */
+  }
+  table.user-table th:nth-child(3),table.user-table td:nth-child(3){
+    width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* Groep */
+  }
+  table.user-table th:nth-child(4),table.user-table td:nth-child(4){
+    width:auto;white-space:normal /* Acties mag wrappen */
+  }
+
+  /* Edit-row (newline onder gebruiker) */
+  tr.edit-row td{background:#0f141a}
+  .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
+  .admin-input,.admin-select{
+    width:100%;max-width:100%;background:#0f141a;color:var(--text);
+    border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.95em
+  }
+  .admin-select.narrow{max-width:160px;width:160px}
+
+  /* Buttons */
+  .btn.small{padding:4px 8px;font-size:.85em}
+  .actions-wrap{display:flex;flex-wrap:wrap;gap:8px}
+  .danger{background:#3a1d1d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrap">
+  <div class="admin-grid">
+
+    <!-- Groepen -->
+    <div class="card">
+      <div class="card-inner">
+        <h3 style="margin-top:0;">Groepen</h3>
+
+        <form method="post" style="margin-bottom:12px;">
+          {% csrf_token %}
+          <input type="hidden" name="form_kind" value="group">
+          {{ group_form.non_field_errors }}
+
+          <!-- Uitgelijnd formulier: labelkolom + veldkolom -->
+          <div class="form" style="padding:0;display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;">
+            <div>{{ group_form.name.label_tag }}</div>
+            <div>{{ group_form.name }}</div>
+
+            <div>Permissies</div>
+            <div style="display:grid;gap:6px;">
+            <strong>Beheer</strong>
+            <label>{{ group_form.can_access_admin }} Mag beheer openen</label>
+            <label>{{ group_form.can_manage_users }} Mag gebruikers beheren</label>
+
+            <strong style="margin-top:8px;">Rooster</strong>
+            <label>{{ group_form.can_view_roster }} Mag rooster bekijken</label>
+            <label>{{ group_form.can_upload_roster }} Mag roosters uploaden</label>
+
+            <strong style="margin-top:8px;">Beschikbaarheid</strong>
+            <label>{{ group_form.can_access_availability }} Mag Beschikbaarheid openen</label>
+            <label>{{ group_form.can_view_av_medications }} Mag subtab Geneesmiddelen zien</label>
+            <label>{{ group_form.can_view_av_nazendingen }} Mag subtab Nazendingen zien</label>
+            </div>
+          </div>
+
+          <button class="btn" type="submit" style="margin-top:12px;">Opslaan</button>
+        </form>
+
+        <hr style="border-color:var(--border); margin:16px 0;">
+
+        <table class="manage-table">
+          <tr>
+            <th style="width:30%;">Groep</th>
+            <th>Permissies</th>
+            <th style="width:1%;">Acties</th>
+          </tr>
+          {% for row in group_rows %}
+            <tr>
+              <td>{{ row.group.name }}</td>
+              <td>
+                {% if row.perm_labels %}
+                  {% for label in row.perm_labels %}
+                    <div>{{ label }}</div>  {# zelfde tekst als in de checkboxen #}
+                  {% endfor %}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td style="white-space:nowrap;">
+                <a class="btn small" href="?group_id={{ row.group.id }}">Bewerk</a>
+                <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
+                      onsubmit="return confirm('Weet je zeker dat je de groep &quot;{{ row.group.name }}&quot; wilt verwijderen?\\n\\n⚠️ Deze actie kan niet ongedaan worden gemaakt!');">
+                  {% csrf_token %}
+                  <button class="btn small danger" type="submit" style="margin-left:6px;">Verwijderen</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+
+    <!-- Gebruikers -->
+    <div class="card">
+      <div class="card-inner">
+        <h3 style="margin-top:0;">Gebruiker toevoegen</h3>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="form_kind" value="user_create">
+          <div class="form" style="padding:0;">
+            {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
+            {{ user_form.email.label_tag }} {{ user_form.email }}
+            {{ user_form.password.label_tag }} {{ user_form.password }}
+            {{ user_form.group.label_tag }} {{ user_form.group }}
+            <button class="btn" type="submit">Aanmaken</button>
+          </div>
+        </form>
+
+        <hr style="border-color:var(--border); margin:16px 0;">
+
+        <h3 style="margin-top:0;">Bestaande gebruikers</h3>
+        <table class="manage-table user-table">
+          <tr>
+            <th>Voornaam</th>
+            <th>E-mail</th>
+            <th>Groep</th>
+            <th>Acties</th>
+          </tr>
+
+          {% for u in users %}
+            <!-- Weergave-rij -->
+            <tr id="user-row-{{ u.id }}">
+              <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
+              <td title="{{ u.email }}">{{ u.email }}</td>
+              <td>
+                {% with g=u.groups.all|first %}
+                  {{ g.name|default:"-" }}
+                {% endwith %}
+              </td>
+              <td>
+                <div class="actions-wrap">
+                  <button type="button" class="btn small" onclick="toggleEdit('{{ u.id }}')">Bewerk</button>
+                  <form method="post" action="{% url 'user_delete' u.id %}" style="display:inline;"
+                        onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
+                    {% csrf_token %}
+                    <button class="btn small danger" type="submit">Verwijderen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Inline edit-rij (newline) -->
+            <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
+              <td colspan="4">
+                <form method="post" action="{% url 'user_update' u.id %}">
+                  {% csrf_token %}
+                  <div class="edit-grid">
+                    <div>
+                      <label>Voornaam</label>
+                      <input class="admin-input" type="text" name="first_name" value="{{ u.first_name|default:u.username }}">
+                    </div>
+                    <div>
+                      <label>E-mail</label>
+                      <input class="admin-input" type="email" name="email" value="{{ u.email }}">
+                    </div>
+                    <div>
+                      <label>Groep</label>
+                      <select name="group" class="admin-select narrow">
+                        {% with g=u.groups.all|first %}
+                          {% for grp in groups %}
+                            <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>{{ grp.name }}</option>
+                          {% endfor %}
+                        {% endwith %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="edit-actions" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn" type="submit">Opslaan</button>
+                    <button type="button" class="btn" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleEdit(id){
+  const row = document.getElementById("edit-row-" + id);
+  if(!row) return;
+  row.style.display = (row.style.display === "none" || row.style.display === "") ? "table-row" : "none";
+}
+function confirmDelete(name){
+  return confirm("Weet je zeker dat je " + (name || "deze gebruiker") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
+}
+</script>
+{% endblock %}

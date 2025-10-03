@@ -21,7 +21,7 @@
     .pages{display:grid; gap:12px; padding:16px}
     .page{width:100%; border:1px solid var(--border); border-radius:12px; background:#0a0f14; box-shadow:0 4px 12px var(--shadow); overflow:hidden}
     .page img{display:block; width:100%; height:auto}
-    .footer{position:sticky; bottom:0; z-index:1000; display:flex; justify-content:space-between; align-items:center; gap:6px; padding:8px 10px; background:linear-gradient(0deg, var(--panel), rgba(16,22,29,.85)); border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow); color:var(--muted); font-size:12px}
+    .footer{position:sticky; bottom:0; z-index:1000; display:flex; justify-content:space-between; align-items:center; gap:5px; padding:6px 8px; background:linear-gradient(0deg, var(--panel), rgba(16,22,29,.85)); border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow); color:var(--muted); font-size:11px}
     .flash{padding:10px 14px; border-left:3px solid #3aa675; background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0}
     .form{padding:16px}
     .form input, .form select{width:100%; background:#0f141a; color:var(--text); border:1px solid var(--border); padding:8px 10px; border-radius:10px; margin:6px 0 12px}
@@ -37,40 +37,43 @@
       {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
       <div class="title">Rooster</div>
       <nav class="nav">
-        {# Home niet tonen als je al op home zit #}
-        {% if request.resolver_match.url_name != 'index' %}
-            <a href="{% url 'index' %}">Home</a>
+        {% if request.resolver_match.url_name != 'index' and perms.core.can_view_roster %}
+          <a href="{% url 'index' %}">Rooster</a>
         {% endif %}
 
-        {% if request.user|has_group:"Admin" or request.user|has_group:"Manager" %}
-            {% if request.resolver_match.url_name != 'upload_roster' %}
+        {% if perms.core.can_access_availability %}
+          {% if request.resolver_match.url_name != 'availability_home' %}
+            <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
+          {% endif %}
+        {% endif %}
+
+        {% if perms.core.can_upload_roster %}
+          {% if request.resolver_match.url_name != 'upload_roster' %}
             <a href="{% url 'upload_roster' %}">Upload</a>
-            {% endif %}
+          {% endif %}
         {% endif %}
 
-        {% if request.user|has_group:"Admin" %}
-            {% if request.resolver_match.url_name != 'manage_users' %}
-            <a href="{% url 'manage_users' %}">Users</a>
-            {% endif %}
+        {% if perms.core.can_access_admin %}
+          {% if request.resolver_match.url_name != 'admin_panel' %}
+            <a href="{% url 'admin_panel' %}">Beheer</a>
+          {% endif %}
         {% endif %}
 
         {% if request.user.is_authenticated %}
-            {# Logout als POST (betrouwbaarder dan GET) #}
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn">Logout</button>
-            </form>
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}<button type="submit" class="btn">Logout</button>
+          </form>
         {% else %}
-            <a href="{% url 'login' %}">Login</a>
+          <a href="{% url 'login' %}">Login</a>
         {% endif %}
-    </nav>
+      </nav>
     </header>
     <main class="content">
       {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
       {% block content %}{% endblock %}
     </main>
     <footer class="footer">
-      <div>© {{ request.user.username|default:"Guest" }}</div><div></div>
+      <div>© {% now "Y" %} Sem de Groot</div><div></div>
     </footer>
   </div>
 </body>
