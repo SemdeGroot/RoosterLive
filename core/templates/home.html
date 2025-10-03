@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Home{% endblock %}
+{% block header_title %}Home{% endblock %}
+
 {% block content %}
 <div class="card" style="padding:16px;">
   <h3 style="margin-top:0;">Welkom</h3>
-  <div class="tiles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+  <div class="tiles">
     {% for t in tiles %}
       <a href="{% url t.url_name %}" class="tile" style="text-decoration:none;">
-        <div style="background:var(--panel-2);border:1px solid var(--border);border-radius:16px;
-                    box-shadow:0 8px 24px var(--shadow);padding:14px;display:flex;flex-direction:column;
-                    align-items:center;justify-content:center;gap:12px;transition:transform .12s ease;">
-          <img src="{% static t.img %}" alt="{{ t.name }}" style="max-width:96px;max-height:96px;display:block;">
-          <div style="color:var(--text);font-weight:600">{{ t.name }}</div>
+        <div class="tile-box">
+          <img src="{% static t.img %}" alt="{{ t.name }}" class="tile-img">
+          <div class="tile-name">{{ t.name }}</div>
         </div>
       </a>
     {% endfor %}
