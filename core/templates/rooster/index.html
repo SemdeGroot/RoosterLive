@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Rooster{% endblock %}
+{% block content %}
+<div class="card" style="padding:16px;">
+  <h3 style="margin-top:0;">Rooster</h3>
+  <div class="pages" style="display:grid;gap:12px;">
+    {% for url in page_urls %}
+      <div class="page" style="border:1px solid var(--border);border-radius:12px;background:#0a0f14;overflow:hidden;">
+        <img src="{{ url }}" alt="Pagina {{ forloop.counter }}" style="display:block;width:100%;height:auto;">
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

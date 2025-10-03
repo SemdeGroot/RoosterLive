@@ -1,76 +1,21 @@
 from django import forms
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.utils.text import slugify
-from .models import Roster
 
-class RosterUploadForm(forms.ModelForm):
-    class Meta:
-        model = Roster
-        fields = ["title", "pdf"]
-    def clean_pdf(self):
-        f = self.cleaned_data["pdf"]
-        if not f.name.lower().endswith(".pdf"):
-            raise forms.ValidationError("Upload een PDF-bestand.")
-        return f
-
-class UserForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=True)
-    role = forms.ChoiceField(choices=[("Admin","Admin"), ("Manager","Manager"), ("Viewer","Viewer")])
-
-    class Meta:
-        model = User
-        fields = ["username", "email", "password", "is_active"]
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
-        if commit:
-            user.save()
-            # rol toewijzen via Groups
-            role = self.cleaned_data["role"]
-            for gname in ["Admin","Manager","Viewer"]:
-                user.groups.remove(Group.objects.get_or_create(name=gname)[0])
-            user.groups.add(Group.objects.get_or_create(name=role)[0])
-        return user
-
-# ---- Simpele gebruiker toevoegen ----
-class SimpleUserCreateForm(forms.Form):
-    first_name = forms.CharField(label="Voornaam", max_length=150)
-    email = forms.EmailField(label="E-mail")
-    password = forms.CharField(label="Wachtwoord", widget=forms.PasswordInput)
-    group = forms.ModelChoiceField(label="Groep", queryset=Group.objects.all())
-
-    def save(self):
-        first = self.cleaned_data["first_name"].strip()
-        email = self.cleaned_data["email"].lower().strip()
-        password = self.cleaned_data["password"]
-        group = self.cleaned_data["group"]
-
-        # username uit e-mail (voor '@'), fallback op slug van voornaam
-        base = (email.split("@")[0] or slugify(first) or "user")[:150]
-        username = base
-        i = 1
-        while User.objects.filter(username=username).exists():
-            i += 1
-            username = f"{base}{i}"
-
-        user = User.objects.create_user(username=username, email=email, password=password,
-                                        first_name=first, is_active=True)
-        user.groups.add(group)
-        return user
-
-# ---- Groep met checkbox-permissies ----
 class GroupWithPermsForm(forms.ModelForm):
-    # beheer
+    # Beheer
     can_access_admin         = forms.BooleanField(required=False, label="Mag beheer openen")
     can_manage_users         = forms.BooleanField(required=False, label="Mag gebruikers beheren")
-    # rooster
+    # Rooster
     can_view_roster          = forms.BooleanField(required=False, label="Mag rooster bekijken")
     can_upload_roster        = forms.BooleanField(required=False, label="Mag roosters uploaden")
-    # beschikbaarheid
+    # Beschikbaarheid
     can_access_availability  = forms.BooleanField(required=False, label="Mag Beschikbaarheid openen")
     can_view_av_medications  = forms.BooleanField(required=False, label="Mag subtab Geneesmiddelen zien")
     can_view_av_nazendingen  = forms.BooleanField(required=False, label="Mag subtab Nazendingen zien")
+    # Nieuwe tabs
+    can_view_news            = forms.BooleanField(required=False, label="Mag Nieuws bekijken")
+    can_view_policies        = forms.BooleanField(required=False, label="Mag Werkafspraken bekijken")
 
     class Meta:
         model = Group
@@ -87,6 +32,8 @@ class GroupWithPermsForm(forms.ModelForm):
             "can_access_availability": perms_qs.get(codename="can_access_availability"),
             "can_view_av_medications": perms_qs.get(codename="can_view_av_medications"),
             "can_view_av_nazendingen": perms_qs.get(codename="can_view_av_nazendingen"),
+            "can_view_news":           perms_qs.get(codename="can_view_news"),
+            "can_view_policies":       perms_qs.get(codename="can_view_policies"),
         }
         if self.instance and self.instance.pk:
             current = set(self.instance.permissions.values_list("codename", flat=True))
@@ -94,44 +41,83 @@ class GroupWithPermsForm(forms.ModelForm):
                 self.fields[field].initial = (perm.codename in current)
 
     def save(self, commit=True):
-        group = super().save(commit)
+        g = super().save(commit)
         chosen = [perm for field, perm in self.perm_map.items() if self.cleaned_data.get(field)]
-        group.permissions.set(chosen)
-        return group
+        g.permissions.set(chosen)
+        return g
 
-class SimpleUserUpdateForm(forms.Form):
-    first_name = forms.CharField(label="Voornaam", max_length=150, required=False)
-    email = forms.EmailField(label="E-mail", required=False)
-    is_active = forms.BooleanField(label="Actief", required=False, initial=True)
+
+class SimpleUserCreateForm(forms.Form):
+    first_name = forms.CharField(label="Voornaam", max_length=150)
+    email = forms.EmailField(label="E-mail")
+    password = forms.CharField(label="Wachtwoord", widget=forms.PasswordInput)
+    group = forms.ModelChoiceField(label="Groep", queryset=Group.objects.all())
+
+    def save(self):
+        first = self.cleaned_data["first_name"].strip()
+        email = self.cleaned_data["email"].lower().strip()
+        password = self.cleaned_data["password"]
+        group = self.cleaned_data["group"]
+
+        base = slugify(first) or "user"
+        username = base[:150]
+        i = 1
+        while User.objects.filter(username=username).exists():
+            i += 1
+            username = f"{base}-{i}"[:150]
+
+        u = User.objects.create_user(
+            username=username, email=email, password=password,
+            first_name=first, is_active=True
+        )
+        u.groups.add(group)
+        return u
+
+
+class SimpleUserEditForm(forms.Form):
+    first_name = forms.CharField(label="Voornaam", max_length=150)
+    email = forms.EmailField(label="E-mail")
     group = forms.ModelChoiceField(label="Groep", queryset=Group.objects.all(), empty_label=None)
 
     def __init__(self, *args, **kwargs):
         self.instance: User = kwargs.pop("instance")
         super().__init__(*args, **kwargs)
-        # init met huidige waarden
-        self.fields["first_name"].initial = self.instance.first_name
+        self.fields["first_name"].initial = self.instance.first_name or self.instance.username
         self.fields["email"].initial = self.instance.email
-        self.fields["is_active"].initial = self.instance.is_active
-        # init group: kies eerste groep (of laat leeg als geen groep)
         g = self.instance.groups.first()
         if g:
             self.fields["group"].initial = g.id
 
     def save(self):
         u = self.instance
-        # Basisgegevens (alleen invullen als opgegeven)
-        fn = self.cleaned_data.get("first_name")
-        em = self.cleaned_data.get("email")
-        if fn is not None:
-            u.first_name = fn
-        if em:
-            u.email = em
-        u.is_active = bool(self.cleaned_data.get("is_active"))
+        first = self.cleaned_data["first_name"].strip()
+        email = self.cleaned_data["email"].lower().strip()
+        group = self.cleaned_data["group"]
 
-        # Zet precies één gekozen groep (en haal andere weg)
-        new_group: Group = self.cleaned_data["group"]
-        u.groups.clear()
-        if new_group:
-            u.groups.add(new_group)
+        base = slugify(first) or "user"
+        candidate = base[:150]
+        if candidate != u.username:
+            i = 1
+            uname = candidate
+            while User.objects.filter(username=uname).exclude(pk=u.pk).exists():
+                i += 1
+                uname = f"{base}-{i}"[:150]
+            u.username = uname
+
+        u.first_name = first
+        u.email = email
         u.save()
+        u.groups.clear()
+        if group:
+            u.groups.add(group)
         return u
+
+
+class AvailabilityUploadForm(forms.Form):
+    file = forms.FileField(label="Bestand (CSV of XLSX)", help_text="Upload een CSV of Excel-bestand.")
+    limit = forms.IntegerField(label="Max. rijen", min_value=1, max_value=1000, initial=50, required=False)
+
+
+class EmailOrUsernameLoginForm(forms.Form):
+    identifier = forms.CharField(label="Gebruikersnaam of e-mail")
+    password = forms.CharField(label="Wachtwoord", widget=forms.PasswordInput)

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Beschikbaarheid{% endblock %}
+{% block title %}Home{% endblock %}
 {% block content %}
 <div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Beschikbaarheid</h3>
+  <h3 style="margin-top:0;">Welkom</h3>
   <div class="tiles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
     {% for t in tiles %}
       <a href="{% url t.url_name %}" class="tile" style="text-decoration:none;">

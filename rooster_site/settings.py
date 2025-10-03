@@ -48,16 +48,19 @@ DATABASES = {
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
+# Static (serve icons from data/)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [BASE_DIR / "data"]
 
+# Media (uploads)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Convenience dirs
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
-CACHE_DIR = MEDIA_ROOT / "cache"     # gerenderde PNG’s
+CACHE_DIR = MEDIA_ROOT / "cache"     # rendered PNGs for roster
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGIN_URL = "/login/"
@@ -65,4 +68,3 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-

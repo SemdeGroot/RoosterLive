@@ -1,8 +1,68 @@
 {% extends "base.html" %}
-{% block title %}Beschikbaarheid • Geneesmiddelen{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
 <div class="card" style="padding:16px;">
   <h3 style="margin-top:0;">Geneesmiddelen</h3>
-  <p style="color:var(--muted)">(Placeholder) Content voor Geneesmiddelen…</p>
+
+  <form method="post" enctype="multipart/form-data" style="margin-bottom:12px;">
+    {% csrf_token %}
+    <div class="form" style="padding:0; display:grid; grid-template-columns:1fr 180px; gap:12px; align-items:end;">
+      <div>
+        <label>Upload CSV/XLSX</label>
+        {{ form.file }}
+      </div>
+      <div>
+        <label>Max. rijen</label>
+        <input type="number" name="limit" min="1" max="1000" value="{{ limit }}" class="admin-input">
+      </div>
+    </div>
+    <button class="btn" type="submit">Uploaden</button>
+    {% if has_file %}
+      <span style="margin-left:10px; color:var(--muted)">Huidig bestand: {{ file_name }}</span>
+    {% endif %}
+  </form>
+
+  <form method="get" style="margin: 0 0 12px 0;">
+    <div class="form" style="padding:0; display:grid; grid-template-columns: 1fr 140px 100px; gap:12px; align-items:end;">
+      <div>
+        <label>Zoeken</label>
+        <input type="text" name="q" value="{{ q }}" class="admin-input" placeholder="Zoekterm in alle kolommen">
+      </div>
+      <div>
+        <label>Max. rijen</label>
+        <input type="number" name="limit" min="1" max="1000" value="{{ limit }}" class="admin-input">
+      </div>
+      <div>
+        <button class="btn" type="submit">Toepassen</button>
+      </div>
+    </div>
+  </form>
+
+  {% if rows %}
+    <div style="overflow:auto;">
+      <table class="manage-table" style="min-width: 600px;">
+        <thead>
+          <tr>
+            {% for c in columns %}
+              <th>{{ c }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              {% for cell in r %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% elif has_file %}
+    <p style="color:var(--muted); margin:8px 0 0;">Geen resultaten (controleer je zoekterm of verhoog het aantal rijen).</p>
+  {% else %}
+    <p style="color:var(--muted); margin:8px 0 0;">Nog geen bestand geüpload.</p>
+  {% endif %}
 </div>
 {% endblock %}

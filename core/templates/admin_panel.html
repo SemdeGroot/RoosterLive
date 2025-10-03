@@ -19,18 +19,46 @@
   }
 
   /* Users tabel: smallere Voornaam/Groep; Acties flexibel */
-  table.user-table th:nth-child(1),table.user-table td:nth-child(1){
-    width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* Voornaam */
-  }
-  table.user-table th:nth-child(2),table.user-table td:nth-child(2){
-    width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* E-mail */
-  }
-  table.user-table th:nth-child(3),table.user-table td:nth-child(3){
-    width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis /* Groep */
-  }
-  table.user-table th:nth-child(4),table.user-table td:nth-child(4){
-    width:auto;white-space:normal /* Acties mag wrappen */
-  }
+
+    /*Voornaam*/
+    table.user-table th:nth-child(1),
+    table.user-table td:nth-child(1) {
+    width: 120px; 
+    white-space: normal;   /* <-- tekst mag afbreken */
+    overflow: visible;     /* geen ellipsis meer */
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    }
+
+    /*Email*/
+    table.user-table th:nth-child(2),
+    table.user-table td:nth-child(2) {
+    width: 270px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    }
+
+    /*Groep*/
+    table.user-table th:nth-child(3),
+    table.user-table td:nth-child(3) {
+    width: 130px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    }
+
+    /*Acties*/
+    table.user-table th:nth-child(4),
+    table.user-table td:nth-child(4) {
+    width: 200px;
+    white-space: normal;  /* Acties mag wrappen */
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    }
 
   /* Edit-row (newline onder gebruiker) */
   tr.edit-row td{background:#0f141a}
@@ -65,23 +93,23 @@
 
           <!-- Uitgelijnd formulier: labelkolom + veldkolom -->
           <div class="form" style="padding:0;display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;">
-            <div>{{ group_form.name.label_tag }}</div>
+            <div>Groepsnaam</div>
             <div>{{ group_form.name }}</div>
 
             <div>Permissies</div>
             <div style="display:grid;gap:6px;">
             <strong>Beheer</strong>
-            <label>{{ group_form.can_access_admin }} Mag beheer openen</label>
+            <label>{{ group_form.can_access_admin }} Mag tab Beheer openen</label>
             <label>{{ group_form.can_manage_users }} Mag gebruikers beheren</label>
 
-            <strong style="margin-top:8px;">Rooster</strong>
-            <label>{{ group_form.can_view_roster }} Mag rooster bekijken</label>
+            <strong style="margin-top:4px;">Rooster</strong>
+            <label>{{ group_form.can_view_roster }} Mag tab Rooster bekijken</label>
             <label>{{ group_form.can_upload_roster }} Mag roosters uploaden</label>
 
-            <strong style="margin-top:8px;">Beschikbaarheid</strong>
-            <label>{{ group_form.can_access_availability }} Mag Beschikbaarheid openen</label>
-            <label>{{ group_form.can_view_av_medications }} Mag subtab Geneesmiddelen zien</label>
-            <label>{{ group_form.can_view_av_nazendingen }} Mag subtab Nazendingen zien</label>
+            <strong style="margin-top:4px;">Beschikbaarheid</strong>
+            <label>{{ group_form.can_access_availability }} Mag tab Beschikbaarheid bekijken</label>
+            <label>{{ group_form.can_view_av_medications }} Mag subtab Geneesmiddelen bekijken</label>
+            <label>{{ group_form.can_view_av_nazendingen }} Mag subtab Nazendingen bekijken</label>
             </div>
           </div>
 
@@ -89,6 +117,7 @@
         </form>
 
         <hr style="border-color:var(--border); margin:16px 0;">
+        <h3 style="margin-top:0;">Bestaande groepen</h3>
 
         <table class="manage-table">
           <tr>
@@ -111,7 +140,7 @@
               <td style="white-space:nowrap;">
                 <a class="btn small" href="?group_id={{ row.group.id }}">Bewerk</a>
                 <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
-                      onsubmit="return confirm('Weet je zeker dat je de groep &quot;{{ row.group.name }}&quot; wilt verwijderen?\\n\\n⚠️ Deze actie kan niet ongedaan worden gemaakt!');">
+                      onsubmit="return confirm('Weet je zeker dat je de groep &quot;{{ row.group.name }}&quot; wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!');">
                   {% csrf_token %}
                   <button class="btn small danger" type="submit" style="margin-left:6px;">Verwijderen</button>
                 </form>
