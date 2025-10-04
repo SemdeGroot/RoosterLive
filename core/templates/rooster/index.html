@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Rooster{% endblock %}
+{% if perms.core.can_upload_roster %}
+  <div style="margin:8px 0 14px;">
+    <a class="btn" href="{% url 'upload_roster' %}">Nieuw rooster uploaden</a>
+  </div>
+{% endif %}
 {% block content %}
 <div class="card" style="padding:16px;">
   <h3 style="margin-top:0;">Rooster</h3>

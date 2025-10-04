@@ -86,73 +86,80 @@
     <div class="card">
       <div class="card-inner">
         <h3 style="margin-top:0;">Groepen</h3>
+            <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="group">
+            {{ group_form.non_field_errors }}
+            <div class="form" style="padding-top:0;">
+                {{ group_form.name.label_tag }} {{ group_form.name }}
 
-        <form method="post" style="margin-bottom:12px;">
-          {% csrf_token %}
-          <input type="hidden" name="form_kind" value="group">
-          {{ group_form.non_field_errors }}
+                <div class="perm-section-title">Beheer</div>
+                <div class="perms-grid">
+                <label class="perm-row">{{ group_form.can_access_admin }} <span>Mag tab Beheer openen</span></label>
+                <label class="perm-row">{{ group_form.can_manage_users }} <span>Mag gebruikers beheren</span></label>
+                </div>
 
-          <!-- Uitgelijnd formulier: labelkolom + veldkolom -->
-          <div class="form" style="padding:0;display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;">
-            <div>Groepsnaam</div>
-            <div>{{ group_form.name }}</div>
+                <div class="perm-section-title">Rooster</div>
+                <div class="perms-grid">
+                <label class="perm-row">{{ group_form.can_view_roster }} <span>Mag tab Rooster bekijken</span></label>
+                <label class="perm-row">{{ group_form.can_upload_roster }} <span>Mag roosters uploaden</span></label>
+                </div>
 
-            <div>Permissies</div>
-            <div style="display:grid;gap:6px;">
-            <strong>Beheer</strong>
-            <label>{{ group_form.can_access_admin }} Mag tab Beheer openen</label>
-            <label>{{ group_form.can_manage_users }} Mag gebruikers beheren</label>
+                <div class="perm-section-title">Beschikbaarheid</div>
+                <div class="perms-grid">
+                <label class="perm-row">{{ group_form.can_access_availability }} <span>Mag tab Beschikbaarheid bekijken</span></label>
+                <label class="perm-row">{{ group_form.can_view_av_medications }} <span>Mag subtab Geneesmiddelen bekijken</span></label>
+                <label class="perm-row">{{ group_form.can_view_av_nazendingen }} <span>Mag subtab Nazendingen bekijken</span></label>
+                </div>
 
-            <strong style="margin-top:4px;">Rooster</strong>
-            <label>{{ group_form.can_view_roster }} Mag tab Rooster bekijken</label>
-            <label>{{ group_form.can_upload_roster }} Mag roosters uploaden</label>
+                <div class="perm-section-title">Overig</div>
+                <div class="perms-grid">
+                <label class="perm-row">{{ group_form.can_view_news }} <span>Mag tab Nieuws bekijken</span></label>
+                <label class="perm-row">{{ group_form.can_view_policies }} <span>Mag tab Werkafspraken bekijken</span></label>
+                </div>
 
-            <strong style="margin-top:4px;">Beschikbaarheid</strong>
-            <label>{{ group_form.can_access_availability }} Mag tab Beschikbaarheid bekijken</label>
-            <label>{{ group_form.can_view_av_medications }} Mag subtab Geneesmiddelen bekijken</label>
-            <label>{{ group_form.can_view_av_nazendingen }} Mag subtab Nazendingen bekijken</label>
-
-            <label style="display:flex;align-items:center;gap:6px;">{{ group_form.can_view_news }} Mag tab Nieuws bekijken</label>
-            <label style="display:flex;align-items:center;gap:6px;">{{ group_form.can_view_policies }} Mag tab Werkafspraken bekijken</label>
-
+                <button class="btn" type="submit">Opslaan</button>
             </div>
-          </div>
-
-          <button class="btn" type="submit" style="margin-top:12px;">Opslaan</button>
-        </form>
+            </form>
 
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande groepen</h3>
 
         <table class="manage-table">
-          <tr>
-            <th style="width:30%;">Groep</th>
-            <th>Permissies</th>
-            <th style="width:1%;">Acties</th>
-          </tr>
-          {% for row in group_rows %}
+        <tr><th>Groep</th><th>Permissies</th><th>Leden</th><th style="width:1%;">Acties</th></tr>
+        {% for row in group_rows %}
             <tr>
-              <td>{{ row.group.name }}</td>
-              <td>
+            <td>{{ row.group.name }}</td>
+            <td>
                 {% if row.perm_labels %}
-                  {% for label in row.perm_labels %}
-                    <div>{{ label }}</div>  {# zelfde tekst als in de checkboxen #}
-                  {% endfor %}
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td style="white-space:nowrap;">
+                {% for lbl in row.perm_labels %}
+                    <div>{{ lbl }}</div>
+                {% endfor %}
+                {% else %}-{% endif %}
+            </td>
+            <td>{{ row.member_count }}</td>
+            <td>
                 <a class="btn small" href="?group_id={{ row.group.id }}">Bewerk</a>
-                <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
-                      onsubmit="return confirm('Weet je zeker dat je de groep &quot;{{ row.group.name }}&quot; wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!');">
-                  {% csrf_token %}
-                  <button class="btn small danger" type="submit" style="margin-left:6px;">Verwijderen</button>
+                <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;margin-left:6px;"
+                onsubmit='return confirmGroupDelete("{{ row.group.name }}", {{ row.member_count }});'>
+                {% csrf_token %}
+                <input type="hidden" name="force" value="1">
+                <button class="btn small" type="submit" style="background:#3a1d1d;">Verwijderen</button>
                 </form>
-              </td>
+            </td>
             </tr>
-          {% endfor %}
+        {% endfor %}
         </table>
+
+        <script>
+        function confirmGroupDelete(name, members){
+        if(members > 0){
+            return confirm("Groep ‘" + name + "’ heeft " + members +
+            " lid(leden).\nVerwijderen zal de groepskoppeling verbreken.\n\nWeet je het zeker?");
+        }
+        return confirm("Groep ‘" + name + "’ verwijderen?");
+        }
+        </script>
       </div>
     </div>
 
