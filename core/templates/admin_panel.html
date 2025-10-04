@@ -125,41 +125,57 @@
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande groepen</h3>
 
-        <table class="manage-table">
-        <tr><th>Groep</th><th>Permissies</th><th>Leden</th><th style="width:1%;">Acties</th></tr>
-        {% for row in group_rows %}
+            <table class="manage-table">
             <tr>
-            <td>{{ row.group.name }}</td>
-            <td>
-                {% if row.perm_labels %}
-                {% for lbl in row.perm_labels %}
-                    <div>{{ lbl }}</div>
-                {% endfor %}
-                {% else %}-{% endif %}
-            </td>
-            <td>{{ row.member_count }}</td>
-            <td>
-                <a class="btn small" href="?group_id={{ row.group.id }}">Bewerk</a>
-                <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;margin-left:6px;"
-                onsubmit='return confirmGroupDelete("{{ row.group.name }}", {{ row.member_count }});'>
-                {% csrf_token %}
-                <input type="hidden" name="force" value="1">
-                <button class="btn small" type="submit" style="background:#3a1d1d;">Verwijderen</button>
-                </form>
-            </td>
+                <th>Groep</th>
+                <th>Permissies</th>
+                <th>Leden</th>
+                <th>Acties</th>
             </tr>
-        {% endfor %}
-        </table>
+            {% for row in group_rows %}
+                <tr id="group-row-{{ row.group.id }}">
+                <td>{{ row.group.name }}</td>
+                <td>
+                    {% if row.perm_labels %}
+                    {% for lbl in row.perm_labels %}
+                        <div>{{ lbl }}</div>
+                    {% endfor %}
+                    {% else %}-{% endif %}
+                </td>
+                <td>{{ row.member_count }}</td>
+                <td>
+                    <div class="actions-wrap">
+                    <!-- Zelfde 'Bewerk' knopstijl als gebruikers -->
+                    <button type="button" class="btn small" onclick="editGroup('{{ row.group.id }}')">Bewerk</button>
 
-        <script>
-        function confirmGroupDelete(name, members){
-        if(members > 0){
-            return confirm("Groep ‘" + name + "’ heeft " + members +
-            " lid(leden).\nVerwijderen zal de groepskoppeling verbreken.\n\nWeet je het zeker?");
-        }
-        return confirm("Groep ‘" + name + "’ verwijderen?");
-        }
-        </script>
+                    <!-- Zelfde 'Verwijderen' formulier + danger knop en warning -->
+                    <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
+                        onsubmit="return confirmGroupDelete('{{ row.group.name|escapejs }}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="force" value="1">
+                    <button class="btn small danger" type="submit">Verwijderen</button>
+                    </form>
+
+                    </div>
+                </td>
+                </tr>
+            {% endfor %}
+            </table>
+
+            <script>
+            function editGroup(id){
+                // Zelfde UX-gedrag als bij de huidige 'Bewerk' link (navigeren naar bewerk-scherm)
+                window.location = "?group_id=" + id;
+            }
+
+                        
+            function confirmGroupDelete(name){
+                return confirm(
+                "Weet je zeker dat je de groep '" + (name || "onbekend") + "' wilt verwijderen?\n\n" +
+                "⚠️ Dit verbreekt de koppeling van gebruikers met deze groep en kan niet ongedaan worden gemaakt!"
+                );
+            }
+            </script>
       </div>
     </div>
 
