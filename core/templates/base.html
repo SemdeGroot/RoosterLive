@@ -71,6 +71,12 @@
       padding:8px 10px; background:linear-gradient(0deg,var(--panel),rgba(16,22,29,.85));
       border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow); color:var(--muted); font-size:12px;
     }
+    /* Inline checkboxes + compacte spacing in beheer */
+    .perms-grid{display:grid;grid-template-columns:1fr;gap:8px}
+    .perm-row{display:flex;align-items:center;gap:8px;line-height:1}
+    .perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
+    .perm-section-title{margin:10px 0 4px;font-weight:700;color:var(--text)}
+    
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -87,6 +93,10 @@
 
         {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
           <a href="{% url 'rooster' %}">Rooster</a>
+        {% endif %}
+
+        {% if perms.core.can_upload_roster and request.resolver_match.url_name != 'upload_roster' %}
+          <a href="{% url 'upload_roster' %}">Upload</a>
         {% endif %}
 
         {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
