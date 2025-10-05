@@ -66,7 +66,7 @@
 <div class="card" style="padding:16px;">
   <h3 style="margin-top:0;">Voorraad</h3>
 
-  {% if perms.core.can_access_admin %}
+  {% if perms.core.can_upload_voorraad %}
   <form method="post" enctype="multipart/form-data" class="uploader" id="medForm">
     {% csrf_token %}
     <input type="file" id="medFile" name="file" accept=".csv,.xlsx,.xls" hidden required>
@@ -101,7 +101,7 @@
 
   <div class="search-row">
     <label for="medSearch"><strong>Zoeken</strong></label>
-    <input id="medSearch" type="text" placeholder="Typ om te zoeken">
+    <input id="medSearch" type="text" placeholder="Typ om te zoeken...">
   </div>
 
   {% if rows %}
@@ -130,7 +130,7 @@
 
 <script>
 (function(){
-  // --- Dropzone
+  // --- Dropzone (no-op als elementen ontbreken)
   function wireUpload(inputId, dropId, metaId, nameId, uploadBtnId, clearBtnId){
     const dz = document.getElementById(dropId);
     const input = document.getElementById(inputId);
@@ -139,54 +139,80 @@
     const uploadBtn = document.getElementById(uploadBtnId);
     const clearBtn = document.getElementById(clearBtnId);
 
+    // Als er geen upload UI is (geen rechten), gewoon stoppen
+    if (!dz || !input) return;
+
     function setFile(file){
       if(!file) return;
       const ok = ['.csv','.xlsx','.xls'].some(ext => file.name.toLowerCase().endsWith(ext));
       if(!ok){ alert('Kies een CSV of Excel-bestand.'); return; }
       const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
-      nameSpan.textContent = file.name;
-      meta.style.display = ''; uploadBtn.disabled = false; clearBtn.style.display = '';
+      if (nameSpan) nameSpan.textContent = file.name;
+      if (meta) meta.style.display = '';
+      if (uploadBtn) uploadBtn.disabled = false;
+      if (clearBtn) clearBtn.style.display = '';
     }
 
-    input && input.addEventListener('change', ()=> setFile(input.files[0]));
-    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); }));
-    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
+    input.addEventListener('change', ()=> setFile(input.files[0]));
+    ['dragenter','dragover'].forEach(ev =>
+      dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); })
+    );
+    ['dragleave','drop'].forEach(ev =>
+      dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); })
+    );
     dz.addEventListener('drop', e => { const f = e.dataTransfer.files?.[0]; if(f) setFile(f); });
-    clearBtn?.addEventListener('click', ()=>{ input.value=''; nameSpan.textContent=''; meta.style.display='none'; uploadBtn.disabled=true; clearBtn.style.display='none'; });
-  }
-  wireUpload('medFile','medDrop','medMeta','medName','medUpload','medClear');
-
-  // --- Live zoeken + max 20 rijen
-  const DEFAULT_LIMIT = 20;
-  const q = document.getElementById('medSearch');
-  const table = document.getElementById('medTable');
-  const toggleBtn = document.getElementById('medToggle');
-  let showAll = false;
-
-  function applyFilter(){
-    if(!table) return;
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    const needle = (q?.value || '').trim().toLowerCase();
-
-    const matched = [];
-    rows.forEach(tr=>{
-      const ok = tr.textContent.toLowerCase().includes(needle);
-      tr.dataset.match = ok ? '1' : '0';
-      tr.style.display = 'none';
-      if(ok) matched.push(tr);
+    clearBtn && clearBtn.addEventListener('click', ()=>{
+      input.value=''; if (nameSpan) nameSpan.textContent='';
+      if (meta) meta.style.display='none';
+      if (uploadBtn) uploadBtn.disabled=true;
+      clearBtn.style.display='none';
     });
-
-    const limit = showAll ? matched.length : DEFAULT_LIMIT;
-    matched.slice(0, limit).forEach(tr => tr.style.display = '');
-    toggleBtn.style.display = matched.length > DEFAULT_LIMIT ? '' : 'none';
-    toggleBtn.textContent = showAll ? 'Toon eerste 20' : 'Toon alles';
   }
 
-  q && q.addEventListener('input', ()=>{ showAll = false; applyFilter(); });
-  toggleBtn && toggleBtn.addEventListener('click', ()=>{ showAll = !showAll; applyFilter(); });
+  // Alleen proberen te “wires” als het formulier er is
+  if (document.getElementById('medForm')) {
+    wireUpload('medFile','medDrop','medMeta','medName','medUpload','medClear');
+  }
+  if (document.getElementById('nazForm')) {
+    wireUpload('nazFile','nazDrop','nazMeta','nazName','nazUpload','nazClear');
+  }
 
-  applyFilter();
+  // --- Live zoeken + limiter blijft altijd werken (zonder uploadrechten)
+  function enableLiveSearch(tableId, inputId, toggleId){
+    const DEFAULT_LIMIT = 20;
+    const table = document.getElementById(tableId);
+    const q = document.getElementById(inputId);
+    const toggleBtn = document.getElementById(toggleId);
+    if (!table || !q) return;
+
+    let showAll = false;
+    function applyFilter(){
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const needle = (q.value || '').trim().toLowerCase();
+      const matched = [];
+
+      rows.forEach(tr=>{
+        const ok = tr.textContent.toLowerCase().includes(needle);
+        tr.style.display = 'none';
+        if (ok) matched.push(tr);
+      });
+
+      const limit = showAll ? matched.length : DEFAULT_LIMIT;
+      matched.slice(0, limit).forEach(tr => tr.style.display = '');
+      if (toggleBtn){
+        toggleBtn.style.display = matched.length > DEFAULT_LIMIT ? '' : 'none';
+        toggleBtn.textContent = showAll ? 'Toon eerste 20' : 'Toon alles';
+      }
+    }
+
+    q.addEventListener('input', ()=>{ showAll = false; applyFilter(); });
+    toggleBtn && toggleBtn.addEventListener('click', ()=>{ showAll = !showAll; applyFilter(); });
+    applyFilter();
+  }
+
+  // Voorraad
+  enableLiveSearch('medTable','medSearch','medToggle');
 })();
 </script>
 {% endblock %}

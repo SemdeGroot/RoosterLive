@@ -1,23 +1,25 @@
 {% extends "base.html" %}
-{% block title %}{{ title }}{% endblock %}
-{% block header_title %}{{ title }}{% endblock %}
+{% block title %}Nazendingen{% endblock %}
+{% block header_title %}Nazendingen{% endblock %}
 
 {% block content %}
 <style>
-  /* --- Uploader styles (zoals rooster & voorraad) --- */
+  /* --- Uploader styles --- */
   .uploader { margin-bottom: 14px; }
   .dropzone {
     display:flex; align-items:center; gap:12px;
-    padding:14px 16px; background:var(--panel-2);
-    border:1px dashed var(--border); border-radius:12px; cursor:pointer;
+    padding:14px 16px;
+    background:var(--panel-2);
+    border:1px dashed var(--border);
+    border-radius:12px;
+    cursor:pointer;
     transition:border-color .15s, box-shadow .15s;
   }
-  .dropzone:hover, .dropzone.is-dragover {
-    border-color:#1f4ba0;
-    box-shadow:0 0 0 2px rgba(31,75,160,.20) inset;
-  }
+  .dropzone:hover,
+  .dropzone.is-dragover { border-color:#1f4ba0; box-shadow:0 0 0 2px rgba(31,75,160,.20) inset; }
   .dz-icon {
-    flex:0 0 auto; width:36px; height:36px; border-radius:10px;
+    flex:0 0 auto;
+    width:36px; height:36px; border-radius:10px;
     display:flex; align-items:center; justify-content:center;
     background:#13223f; color:#cfe0ff; border:1px solid #223355;
   }
@@ -26,167 +28,114 @@
   .dz-hint { color:var(--muted); font-size:.95em; }
   .file-meta { margin-top:8px; color:var(--muted); }
   .file-name { color:var(--text); font-weight:600; }
-  .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; align-items:center; }
+
+  .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
   .btn.ghost { background:#17212b; }
 
-  /* Zoekveld */
-  .search-row {
-    display:flex; align-items:center; margin:16px 0 8px; gap:10px;
-  }
-  .search-row label { min-width:70px; }
-  .search-row input {
-    flex:1; background:var(--panel-2); border:1px solid var(--border);
-    border-radius:8px; color:var(--text); padding:8px 10px; font-size:0.95rem;
-  }
-  .search-row input:focus {
-    outline:none; border-color:#1f4ba0; box-shadow:0 0 0 1px #1f4ba0;
-  }
-
-  /* Tabel en knop */
-  .table-wrap { overflow:auto; }
-  table.manage-table { min-width:600px; }
-  .table-footer {
-    display:flex; justify-content:center; margin-top:10px;
-  }
-  .toggle-btn {
-    background:#17212b;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:7px 12px;
-    border-radius:8px;
-    cursor:pointer;
-    transition:all .15s;
-  }
-  .toggle-btn:hover {
-    border-color:#1f4ba0;
-    box-shadow:0 0 0 2px rgba(31,75,160,.20) inset;
-  }
+  /* Pagina grid */
+  .pages { display:grid; gap:12px; }
+  .page { border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; }
+  .page img {
+    display: block;
+    width: 70%;         /* bijvoorbeeld 70% van de kaartbreedte */
+    height: auto;
+    margin: 0 auto;     /* centreren */
+    border-radius: 8px; /* optioneel, wat zachter beeld */
+    }
 </style>
 
 <div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Nazendingen</h3>
+  {% if perms.core.can_upload_nazendingen %}
+    <form method="post" enctype="multipart/form-data" class="uploader" id="nazForm">
+      {% csrf_token %}
+      <input type="file" id="nazFile" name="file" accept="application/pdf" hidden required>
 
-  {% if perms.core.can_access_admin %}
-  <form method="post" enctype="multipart/form-data" class="uploader" id="nazForm">
-    {% csrf_token %}
-    <input type="file" id="nazFile" name="file" accept=".csv,.xlsx,.xls" hidden required>
-
-    <div class="dropzone" id="nazDrop" onclick="document.getElementById('nazFile').click()">
-      <div class="dz-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <path d="M14 2v6h6"/>
-          <path d="M12 12v6"/>
-          <path d="M9 15h6"/>
-        </svg>
-      </div>
-      <div class="dz-text">
-        <div class="dz-title">Sleep je nazendingen bestand hierheen of klik om te kiezen</div>
-        <div class="dz-hint">
-          Alleen .csv / .xlsx / .xls – Het nieuwe bestand vervangt automatisch het oude <strong>zodra je op Uploaden klikt.</strong>
+      <div class="dropzone" id="nazDrop" onclick="document.getElementById('nazFile').click()">
+        <div class="dz-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+            <path d="M12 12v6"/>
+            <path d="M9 15h6"/>
+          </svg>
+        </div>
+        <div class="dz-text">
+          <div class="dz-title">Sleep je PDF van de nazendingen hierheen of klik om te kiezen.</div>
+          <div class="dz-hint">Alleen .pdf - Het nieuwe bestand vervangt automatisch het oude <strong>zodra je op Uploaden klikt.</strong></div>
         </div>
       </div>
-    </div>
 
-    <div class="file-meta" id="nazMeta" style="display:none;">
-      Geselecteerd: <span class="file-name" id="nazName"></span>
-    </div>
+      <div class="file-meta" id="nazMeta" style="display:none;">
+        Geselecteerd: <span class="file-name" id="nazName"></span>
+      </div>
 
-    <div class="u-actions">
-      <button class="btn" type="submit" id="nazUpload" disabled>Uploaden</button>
-      <button type="button" class="btn ghost" id="nazClear" style="display:none;">Wissen</button>
-    </div>
-  </form>
+      <div class="u-actions">
+        <button class="btn" type="submit" id="nazUpload" disabled>Uploaden</button>
+        <button type="button" class="btn ghost" id="nazClear" style="display:none;">Wissen</button>
+      </div>
+    </form>
   {% endif %}
 
-  <div class="search-row">
-    <label for="nazSearch"><strong>Zoeken</strong></label>
-    <input id="nazSearch" type="text" placeholder="Typ om te zoeken">
-  </div>
-
-  {% if rows %}
-    <div class="table-wrap">
-      <table class="manage-table" id="nazTable">
-        <thead>
-          <tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-            <tr>{% for cell in r %}<td>{{ cell }}</td>{% endfor %}</tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Knop onderaan -->
-    <div class="table-footer">
-      <button type="button" class="toggle-btn" id="nazToggle" style="display:none;">Toon alles</button>
-    </div>
-
+  {% if no_nazending %}
+    <p style="color:var(--muted); margin-top:6px;">Nog geen nazending geüpload.</p>
   {% else %}
-    <p style="color:var(--muted); margin:8px 0 0;">Nog geen bestand geüpload.</p>
+    <div class="pages">
+      {% for url in page_urls %}
+        <div class="page">
+          <img src="{{ url }}" alt="Pagina {{ forloop.counter }}">
+        </div>
+      {% endfor %}
+    </div>
   {% endif %}
 </div>
 
 <script>
-(function(){
-  // --- Dropzone
-  function wireUpload(inputId, dropId, metaId, nameId, uploadBtnId, clearBtnId){
-    const dz = document.getElementById(dropId);
-    const input = document.getElementById(inputId);
-    const meta = document.getElementById(metaId);
-    const nameSpan = document.getElementById(nameId);
-    const uploadBtn = document.getElementById(uploadBtnId);
-    const clearBtn = document.getElementById(clearBtnId);
+  (function(){
+    const dz = document.getElementById('nazDrop');
+    const input = document.getElementById('nazFile');
+    const meta = document.getElementById('nazMeta');
+    const nameSpan = document.getElementById('nazName');
+    const uploadBtn = document.getElementById('nazUpload');
+    const clearBtn = document.getElementById('nazClear');
+
+    if (!dz || !input) return; // Geen uploadrechten? Stop hier.
 
     function setFile(file){
       if(!file) return;
-      const ok = ['.csv','.xlsx','.xls'].some(ext => file.name.toLowerCase().endsWith(ext));
-      if(!ok){ alert('Kies een CSV of Excel-bestand.'); return; }
-      const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+      if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
+        alert('Kies een PDF-bestand (.pdf).');
+        return;
+      }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+
       nameSpan.textContent = file.name;
-      meta.style.display = ''; uploadBtn.disabled = false; clearBtn.style.display = '';
+      meta.style.display = '';
+      uploadBtn.disabled = false;
+      clearBtn.style.display = '';
     }
 
-    input && input.addEventListener('change', ()=> setFile(input.files[0]));
-    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); }));
-    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
-    dz.addEventListener('drop', e => { const f = e.dataTransfer.files?.[0]; if(f) setFile(f); });
-    clearBtn?.addEventListener('click', ()=>{ input.value=''; nameSpan.textContent=''; meta.style.display='none'; uploadBtn.disabled=true; clearBtn.style.display='none'; });
-  }
-  wireUpload('nazFile','nazDrop','nazMeta','nazName','nazUpload','nazClear');
+    input.addEventListener('change', () => setFile(input.files[0]));
 
-  // --- Live zoeken + max 20 rijen
-  const DEFAULT_LIMIT = 20;
-  const q = document.getElementById('nazSearch');
-  const table = document.getElementById('nazTable');
-  const toggleBtn = document.getElementById('nazToggle');
-  let showAll = false;
-
-  function applyFilter(){
-    if(!table) return;
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    const needle = (q?.value || '').trim().toLowerCase();
-
-    const matched = [];
-    rows.forEach(tr=>{
-      const ok = tr.textContent.toLowerCase().includes(needle);
-      tr.dataset.match = ok ? '1' : '0';
-      tr.style.display = 'none';
-      if(ok) matched.push(tr);
+    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => {
+      e.preventDefault(); e.stopPropagation(); dz.classList.add('is-dragover');
+    }));
+    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => {
+      e.preventDefault(); e.stopPropagation(); dz.classList.remove('is-dragover');
+    }));
+    dz.addEventListener('drop', e => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f) setFile(f);
     });
 
-    const limit = showAll ? matched.length : DEFAULT_LIMIT;
-    matched.slice(0, limit).forEach(tr => tr.style.display = '');
-    toggleBtn.style.display = matched.length > DEFAULT_LIMIT ? '' : 'none';
-    toggleBtn.textContent = showAll ? 'Toon eerste 20' : 'Toon alles';
-  }
-
-  q && q.addEventListener('input', ()=>{ showAll = false; applyFilter(); });
-  toggleBtn && toggleBtn.addEventListener('click', ()=>{ showAll = !showAll; applyFilter(); });
-
-  applyFilter();
-})();
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      nameSpan.textContent = '';
+      meta.style.display = 'none';
+      uploadBtn.disabled = true;
+      clearBtn.style.display = 'none';
+    });
+  })();
 </script>
 {% endblock %}

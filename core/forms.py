@@ -13,10 +13,14 @@ class GroupWithPermsForm(forms.ModelForm):
     # Beschikbaarheid
     can_access_availability  = forms.BooleanField(required=False, label="Mag Beschikbaarheid openen")
     can_view_av_medications  = forms.BooleanField(required=False, label="Mag subtab Geneesmiddelen zien")
+    can_upload_voorraad  = forms.BooleanField(required=False, label="Mag voorraad uploaden")
     can_view_av_nazendingen  = forms.BooleanField(required=False, label="Mag subtab Nazendingen zien")
+    can_upload_nazendingen  = forms.BooleanField(required=False, label="Mag nazendingen uploaden zien")
     # Nieuwe tabs
     can_view_news            = forms.BooleanField(required=False, label="Mag Nieuws bekijken")
+    can_upload_news = forms.BooleanField(required=False, label="Mag Nieuws uploaden")
     can_view_policies        = forms.BooleanField(required=False, label="Mag Werkafspraken bekijken")
+    can_upload_werkafspraken = forms.BooleanField(required=False, label="Mag Werkafspraken uploaden")
 
     class Meta:
         model = Group

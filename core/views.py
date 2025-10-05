@@ -27,8 +27,16 @@ MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 MEDIA_URL = settings.MEDIA_URL
 
 # Cache: als settings.CACHE_DIR ontbreekt, gebruik MEDIA_ROOT/cache
-CACHE_DIR = Path(getattr(settings, "CACHE_DIR", MEDIA_ROOT / "cache"))
+# Cache basis (bestaat al)
+CACHE_DIR = settings.CACHE_DIR
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Gescheiden caches
+CACHE_ROSTER_DIR = CACHE_DIR / "rooster"
+CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
+
+CACHE_AVAIL_DIR = CACHE_DIR / "availability"
+CACHE_AVAIL_DIR.mkdir(parents=True, exist_ok=True)
 
 # Rooster (enkel huidig bestand)
 ROSTER_DIR = MEDIA_ROOT / "rooster"
@@ -47,9 +55,13 @@ PERM_LABELS = {
     "can_upload_roster":       "Mag roosters uploaden",
     "can_access_availability": "Mag Beschikbaarheid openen",
     "can_view_av_medications": "Mag subtab Voorraad zien",
+    "can_upload_voorraad":     "Mag Voorraad uploaden",
     "can_view_av_nazendingen": "Mag subtab Nazendingen zien",
+    "can_upload_nazendingen":  "Mag Nazendingen uploaden",
     "can_view_news":           "Mag Nieuws bekijken",
+    "can_upload_news": "Mag Nieuws uploaden",
     "can_view_policies":       "Mag Werkafspraken bekijken",
+    "can_upload_werkafspraken": "Mag Werkafspraken uploaden",
 }
 
 def _can(user, codename):
@@ -129,14 +141,14 @@ def _clear_dir(p: Path):
             except Exception:
                 pass
 
-def _render_pdf_to_cache(pdf_bytes: bytes, zoom: float = 2.0):
+def _render_pdf_to_cache(pdf_bytes: bytes, zoom: float = 2.0, cache_root: Path = CACHE_DIR):
     """
-    Render PDF-bytes naar PNG's in CACHE_DIR/<hash>/page_XXX.png
-    Geeft tuple (cache_subdir, n_pages) terug, waarbij cache_subdir relatief is aan MEDIA_ROOT
-    als CACHE_DIR onder MEDIA_ROOT staat; anders absolute pad.
+    Render PDF -> PNG's in een submap op basis van hash binnen cache_root.
+    Geeft (hash, n_pages) terug. Bestanden komen in: cache_root/<hash>/page_XXX.png
     """
     h = _pdf_hash(pdf_bytes)
-    out = CACHE_DIR / h
+    out = cache_root / h
+    # Render alleen als nog niet aanwezig
     if not out.exists() or not any(out.glob("page_*.png")):
         out.mkdir(parents=True, exist_ok=True)
         with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
@@ -145,15 +157,7 @@ def _render_pdf_to_cache(pdf_bytes: bytes, zoom: float = 2.0):
                 pix = page.get_pixmap(matrix=mat, alpha=False)
                 (out / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
     n_pages = len(list(out.glob("page_*.png")))
-
-    # Relatief pad t.o.v. MEDIA_ROOT, indien mogelijk, voor een correcte MEDIA_URL
-    try:
-        rel_to_media = out.relative_to(MEDIA_ROOT)
-        cache_subdir = str(rel_to_media).replace("\\", "/")
-    except ValueError:
-        # CACHE_DIR staat buiten MEDIA_ROOT -> val terug op 'cache/<hash>' onder MEDIA_URL
-        cache_subdir = f"cache/{h}"
-    return cache_subdir, n_pages
+    return h, n_pages
 
 @login_required
 def rooster(request):
@@ -171,7 +175,7 @@ def rooster(request):
 
         # Oude rooster + cache opruimen
         _clear_dir(ROSTER_DIR)
-        _clear_dir(CACHE_DIR)
+        _clear_dir(CACHE_ROSTER_DIR)
 
         # Nieuw rooster opslaan
         ROSTER_DIR.mkdir(parents=True, exist_ok=True)
@@ -190,8 +194,11 @@ def rooster(request):
         return render(request, "rooster/index.html", context)
 
     pdf_bytes = ROSTER_FILE.read_bytes()
-    cache_subdir, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0)
-    context["page_urls"] = [f"{settings.MEDIA_URL}{cache_subdir}/page_{i:03d}.png" for i in range(1, n + 1)]
+    h, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=CACHE_ROSTER_DIR)
+    context["page_urls"] = [
+        f"{settings.MEDIA_URL}cache/rooster/{h}/page_{i:03d}.png"
+        for i in range(1, n + 1)
+    ]
     return render(request, "rooster/index.html", context)
 
 @login_required
@@ -206,7 +213,7 @@ def upload_roster(request):
 
         # Oude rooster + cache opruimen
         _clear_dir(ROSTER_DIR)
-        _clear_dir(CACHE_DIR)
+        _clear_dir(CACHE_ROSTER_DIR)
 
         # Nieuw rooster opslaan
         ROSTER_DIR.mkdir(parents=True, exist_ok=True)
@@ -247,9 +254,11 @@ def _filter_and_limit(df, q, limit):
         work = work.head(limit)
     return work
 
-def _availability_view(request, key: str, page_title: str, can_view_perm: str):
+def _availability_table_view(request, key: str, page_title: str, can_view_perm: str):
+    """Algemene view voor tabellen (Excel/CSV)."""
     if not _can(request.user, "can_access_availability") or not _can(request.user, can_view_perm):
         return HttpResponseForbidden("Geen toegang.")
+
     existing_path = None
     for ext in (".xlsx", ".xls", ".csv"):
         c = AV_DIR / f"{key}{ext}"
@@ -259,9 +268,9 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
 
     form = AvailabilityUploadForm()
     if request.method == "POST":
-        # upload beperken tot admin (of vervang door eigen perm als je wilt)
-        if not _can(request.user, "can_access_admin"):
+        if not _can(request.user, "can_upload_voorraad"):
             return HttpResponseForbidden("Geen uploadrechten.")
+
         form = AvailabilityUploadForm(request.POST, request.FILES)
         if form.is_valid():
             f = form.cleaned_data["file"]
@@ -269,20 +278,24 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
             if ext not in (".xlsx", ".xls", ".csv"):
                 messages.error(request, "Alleen CSV of Excel (XLSX/XLS) toegestaan.")
                 return redirect(request.path)
-            # geen versies: wis oude varianten
+
+            # oude bestanden wissen
             for oldext in (".xlsx", ".xls", ".csv"):
                 p = AV_DIR / f"{key}{oldext}"
                 if p.exists():
                     p.unlink()
+
+            # nieuw opslaan
             dest = AV_DIR / f"{key}{ext}"
             with dest.open("wb") as fh:
                 for chunk in f.chunks():
                     fh.write(chunk)
+
             messages.success(request, f"Bestand geüpload: {f.name}")
             return redirect(request.path)
 
-    df = None
-    error = None
+    # tabel lezen
+    df, error = None, None
     if existing_path:
         df, error = _read_table(existing_path)
 
@@ -304,6 +317,61 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
     return render(request, f"availability/{key}.html", ctx)
 
 @login_required
+def _availability_pdf_view(request, key: str, page_title: str, can_view_perm: str):
+    if not _can(request.user, "can_access_availability") or not _can(request.user, can_view_perm):
+        return HttpResponseForbidden("Geen toegang.")
+
+    pdf_path = AV_DIR / f"{key}.pdf"
+    cache_root = CACHE_AVAIL_DIR / key
+    cache_root.mkdir(parents=True, exist_ok=True)
+
+    # Upload
+    if request.method == "POST":
+        if not _can(request.user, "can_upload_nazendingen"):
+            return HttpResponseForbidden("Geen uploadrechten.")
+        f = request.FILES.get("file")
+        if not f or not str(f.name).lower().endswith(".pdf"):
+            messages.error(request, "Alleen PDF-bestanden toegestaan.")
+            return redirect(request.path)
+
+        # Overschrijf oude PDF
+        with pdf_path.open("wb") as fh:
+            for chunk in f.chunks():
+                fh.write(chunk)
+
+        # LEEN ALLEEN DEZE CACHE LEEG (niet de globale)
+        _clear_dir(cache_root)
+
+        messages.success(request, f"PDF geüpload: {f.name}")
+        return redirect(request.path)
+
+    # Geen PDF aanwezig?
+    if not pdf_path.exists():
+        return render(request, f"availability/{key}.html", {
+            "logo_url": _logo_url(),
+            "title": page_title,
+            "no_nazending": True,
+            "page_urls": [],
+        })
+
+    # Renderen naar eigen cache-submap
+    pdf_bytes = pdf_path.read_bytes()
+    h, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=cache_root)
+    page_urls = [
+        f"{settings.MEDIA_URL}cache/availability/{key}/{h}/page_{i:03d}.png"
+        for i in range(1, n+1)
+    ]
+
+    return render(request, f"availability/{key}.html", {
+        "logo_url": _logo_url(),
+        "title": page_title,
+        "no_nazending": False,
+        "page_urls": page_urls,
+    })
+
+
+
+@login_required
 def availability_home(request):
     if not _can(request.user, "can_access_availability"):
         return HttpResponseForbidden("Geen toegang.")
@@ -316,11 +384,11 @@ def availability_home(request):
 
 @login_required
 def availability_medications(request):
-    return _availability_view(request, "medications", "Voorraad", "can_view_av_medications")
+    return _availability_table_view(request, "medications", "Voorraad", "can_view_av_medications")
 
 @login_required
 def availability_nazendingen(request):
-    return _availability_view(request, "nazendingen", "Nazendingen", "can_view_av_nazendingen")
+    return _availability_pdf_view(request, "nazendingen", "Nazendingen", "can_view_av_nazendingen")
 
 # ===== Nieuws & Werkafspraken =====
 @login_required
@@ -380,17 +448,13 @@ def admin_panel(request):
 
 @login_required
 @require_POST
-def group_delete(request, group_id: int):
-    if not _can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
-    g = get_object_or_404(Group, pk=group_id)
-    count = g.user_set.count()
-    force = request.POST.get("force") == "1"
-    if count > 0 and not force:
-        messages.error(request, f"Kan groep “{g.name}” niet verwijderen: {count} gebruikers zijn nog lid.")
+def group_delete(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if group.user_set.exists():
+        messages.error(request, f"Kan groep '{group.name}' niet verwijderen: er zijn nog {group.user_set.count()} leden gekoppeld.")
         return redirect("admin_panel")
-    g.delete()
-    messages.success(request, "Groep verwijderd.")
+    group.delete()
+    messages.success(request, f"Groep '{group.name}' is verwijderd.")
     return redirect("admin_panel")
 
 @login_required
