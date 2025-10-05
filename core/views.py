@@ -286,26 +286,21 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
     if existing_path:
         df, error = _read_table(existing_path)
 
-    q = request.GET.get("q", "").strip()
-    try:
-        limit = int(request.GET.get("limit", "") or 50)
-    except ValueError:
-        limit = 50
-
     columns, rows = [], None
     if df is not None and error is None:
-        filtered = _filter_and_limit(df, q, limit)
-        columns = list(filtered.columns)
-        rows = filtered.values.tolist()
+        columns = [str(c) for c in df.columns]
+        rows = df.values.tolist()
 
     ctx = {
         "logo_url": _logo_url(),
         "form": form,
         "has_file": existing_path is not None,
         "file_name": existing_path.name if existing_path else None,
-        "columns": columns, "rows": rows,
-        "q": q, "limit": limit, "title": page_title,
+        "columns": columns,
+        "rows": rows,
+        "title": page_title,
     }
+
     return render(request, f"availability/{key}.html", ctx)
 
 @login_required
@@ -321,11 +316,11 @@ def availability_home(request):
 
 @login_required
 def availability_medications(request):
-    return _availability_view(request, "medications", "Beschikbaarheid • Voorraad", "can_view_av_medications")
+    return _availability_view(request, "medications", "Voorraad", "can_view_av_medications")
 
 @login_required
 def availability_nazendingen(request):
-    return _availability_view(request, "nazendingen", "Beschikbaarheid • Nazendingen", "can_view_av_nazendingen")
+    return _availability_view(request, "nazendingen", "Nazendingen", "can_view_av_nazendingen")
 
 # ===== Nieuws & Werkafspraken =====
 @login_required
