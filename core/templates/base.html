@@ -9,7 +9,7 @@
     :root{
       --bg:#0b0f14; --panel:#10161d; --panel-2:#0f141a; --text:#e6edf3;
       --muted:#9fb2c8; --border:#233041; --shadow:rgba(0,0,0,.55);
-      --tile:#6c7175; /* lichter dan panel-2 voor betere contrast */
+      --tile:#64696d; /* lichter dan panel-2 voor betere contrast */
     }
     *{box-sizing:border-box}
     html,body{height:100%; margin:0; background:var(--bg); color:var(--text);
@@ -99,12 +99,12 @@
           <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
         {% endif %}
 
-        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
-          <a href="{% url 'news' %}">Nieuws</a>
-        {% endif %}
-
         {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
           <a href="{% url 'policies' %}">Werkafspraken</a>
+        {% endif %}
+
+        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
+          <a href="{% url 'news' %}">Nieuws</a>
         {% endif %}
 
         {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}

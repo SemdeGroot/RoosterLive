@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import Group, Permission, User
 from django.utils.text import slugify
+from django.core.validators import FileExtensionValidator
 
 class GroupWithPermsForm(forms.ModelForm):
     # Beheer
@@ -121,3 +122,10 @@ class AvailabilityUploadForm(forms.Form):
 class EmailOrUsernameLoginForm(forms.Form):
     identifier = forms.CharField(label="Gebruikersnaam of e-mail")
     password = forms.CharField(label="Wachtwoord", widget=forms.PasswordInput)
+
+class RosterUploadForm(forms.Form):
+    file = forms.FileField(
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        allow_empty_file=False,
+        label="Rooster (PDF)"
+    )

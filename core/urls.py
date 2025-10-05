@@ -4,7 +4,6 @@ from . import views
 urlpatterns = [
     path("", views.home, name="home"),
     path("rooster/", views.rooster, name="rooster"),
-    path("upload/", views.upload_roster, name="upload_roster"),
 
     path("beschikbaarheid/", views.availability_home, name="availability_home"),
     path("beschikbaarheid/voorraad/", views.availability_medications, name="availability_medications"),
@@ -19,7 +18,5 @@ urlpatterns = [
     path("beheer/group/<int:group_id>/delete/", views.group_delete, name="group_delete"),
 
     path("login/", views.login_view, name="login"),
-    path("logout/", views.logout_view, name="logout"),
-
-    path("hash/", views.hash_endpoint, name="hash"),  # optioneel; kun je weghalen als je niet meer gebruikt
+    path("logout/", views.logout_view, name="logout")
 ]

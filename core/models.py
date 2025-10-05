@@ -1,9 +1,10 @@
 from django.db import models
 
 class Roster(models.Model):
+    file = models.FileField(upload_to="rooster/current.pdf")
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    # Dit veld hoeft niet gebruikt te worden, maar laat 'm optioneel ivm bestaande rows:
-    file = models.FileField(upload_to="rooster/", blank=True, null=True)
+    # Lijst met relatieve paden naar gerenderde PNG-pagina’s in MEDIA_ROOT
+    pages = models.JSONField(default=list, blank=True)
 
     class Meta:
         permissions = [
@@ -17,3 +18,5 @@ class Roster(models.Model):
             ("can_view_news",             "Mag Nieuws bekijken"),          # <— NIEUW
             ("can_view_policies",         "Mag Werkafspraken bekijken"),   # <— NIEUW
         ]
+    def __str__(self):
+        return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"

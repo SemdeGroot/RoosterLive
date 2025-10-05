@@ -1,5 +1,4 @@
 import os
-import re
 import hashlib
 import shutil
 from pathlib import Path
@@ -12,8 +11,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group, Permission
-from django.http import HttpResponseForbidden, HttpResponse, Http404
+from django.contrib.auth.models import User, Group
+from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
@@ -24,17 +23,20 @@ from .forms import (
 
 # ===== PATHS =====
 DATA_DIR = settings.DATA_DIR
-MEDIA_ROOT = settings.MEDIA_ROOT
-CACHE_DIR = settings.CACHE_DIR
+MEDIA_ROOT = Path(settings.MEDIA_ROOT)
+MEDIA_URL = settings.MEDIA_URL
+
+# Cache: als settings.CACHE_DIR ontbreekt, gebruik MEDIA_ROOT/cache
+CACHE_DIR = Path(getattr(settings, "CACHE_DIR", MEDIA_ROOT / "cache"))
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-# Rooster enkel-bestand
-ROSTER_DIR = Path(MEDIA_ROOT) / "rooster"
+# Rooster (enkel huidig bestand)
+ROSTER_DIR = MEDIA_ROOT / "rooster"
 ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 ROSTER_FILE = ROSTER_DIR / "rooster.pdf"
 
 # Beschikbaarheid
-AV_DIR = Path(MEDIA_ROOT) / "availability"
+AV_DIR = MEDIA_ROOT / "availability"
 AV_DIR.mkdir(parents=True, exist_ok=True)
 
 # ===== PERM LABELS =====
@@ -44,7 +46,7 @@ PERM_LABELS = {
     "can_view_roster":         "Mag rooster bekijken",
     "can_upload_roster":       "Mag roosters uploaden",
     "can_access_availability": "Mag Beschikbaarheid openen",
-    "can_view_av_medications": "Mag subtab Geneesmiddelen zien",
+    "can_view_av_medications": "Mag subtab Voorraad zien",
     "can_view_av_nazendingen": "Mag subtab Nazendingen zien",
     "can_view_news":           "Mag Nieuws bekijken",
     "can_view_policies":       "Mag Werkafspraken bekijken",
@@ -54,19 +56,22 @@ def _can(user, codename):
     return user.is_superuser or user.has_perm(f"core.{codename}")
 
 def _logo_url():
+    """Zoekt het logo in MEDIA_ROOT/_data/logo.*"""
+    logo_dir = settings.MEDIA_ROOT / "_data"
     for ext in ("png", "jpg", "jpeg", "svg", "webp"):
-        p = settings.MEDIA_ROOT / f"logo.{ext}"
+        p = logo_dir / f"logo.{ext}"
         if p.exists():
-            return settings.MEDIA_URL + f"logo.{ext}"
+            return f"{settings.MEDIA_URL}_data/logo.{ext}"
     return None
 
 # ===== LOGIN/LOGOUT =====
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("home")
+
     form = EmailOrUsernameLoginForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        ident = form.cleaned_data["identifier"].strip()
+        ident = form.cleaned_data["identifier"].strip().lower()
         pwd = form.cleaned_data["password"]
         username = ident
         if "@" in ident:
@@ -78,7 +83,13 @@ def login_view(request):
             login(request, user)
             return redirect(request.GET.get("next") or "home")
         messages.error(request, "Ongeldige inloggegevens.")
-    return render(request, "auth/login.html", {"form": form, "logo_url": _logo_url()})
+
+    ctx = {
+        "form": form,
+        "logo_url": _logo_url(),                         # bv. /media/_data/logo.png
+        "bg_url": settings.MEDIA_URL + "_data/achtergrond.jpg",  # /media/_data/achtergrond.jpg
+    }
+    return render(request, "auth/login.html", ctx)
 
 @login_required
 @require_POST
@@ -94,10 +105,10 @@ def home(request):
         tiles.append({"name": "Rooster", "img": "rooster.png", "url_name": "rooster"})
     if _can(request.user, "can_access_availability"):
         tiles.append({"name": "Beschikbaarheid", "img": "beschikbaarheid.png", "url_name": "availability_home"})
-    if _can(request.user, "can_view_news"):
-        tiles.append({"name": "Nieuws", "img": "nieuws.png", "url_name": "news"})
     if _can(request.user, "can_view_policies"):
         tiles.append({"name": "Werkafspraken", "img": "afspraken.png", "url_name": "policies"})
+    if _can(request.user, "can_view_news"):
+        tiles.append({"name": "Nieuws", "img": "nieuws.png", "url_name": "news"})
     if _can(request.user, "can_access_admin"):
         tiles.append({"name": "Beheer", "img": "beheer.png", "url_name": "admin_panel"})
     return render(request, "home.html", {"tiles": tiles, "logo_url": _logo_url()})
@@ -106,7 +117,24 @@ def home(request):
 def _pdf_hash(pdf_bytes: bytes) -> str:
     return hashlib.sha256(pdf_bytes).hexdigest()[:16]
 
+def _clear_dir(p: Path):
+    if not p.exists():
+        return
+    for item in p.iterdir():
+        if item.is_dir():
+            shutil.rmtree(item, ignore_errors=True)
+        else:
+            try:
+                item.unlink()
+            except Exception:
+                pass
+
 def _render_pdf_to_cache(pdf_bytes: bytes, zoom: float = 2.0):
+    """
+    Render PDF-bytes naar PNG's in CACHE_DIR/<hash>/page_XXX.png
+    Geeft tuple (cache_subdir, n_pages) terug, waarbij cache_subdir relatief is aan MEDIA_ROOT
+    als CACHE_DIR onder MEDIA_ROOT staat; anders absolute pad.
+    """
     h = _pdf_hash(pdf_bytes)
     out = CACHE_DIR / h
     if not out.exists() or not any(out.glob("page_*.png")):
@@ -117,30 +145,54 @@ def _render_pdf_to_cache(pdf_bytes: bytes, zoom: float = 2.0):
                 pix = page.get_pixmap(matrix=mat, alpha=False)
                 (out / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
     n_pages = len(list(out.glob("page_*.png")))
-    return h, n_pages
 
-def _clear_dir(p: Path):
-    if not p.exists():
-        return
-    for item in p.iterdir():
-        if item.is_dir():
-            shutil.rmtree(item, ignore_errors=True)
-        else:
-            try: item.unlink()
-            except: pass
+    # Relatief pad t.o.v. MEDIA_ROOT, indien mogelijk, voor een correcte MEDIA_URL
+    try:
+        rel_to_media = out.relative_to(MEDIA_ROOT)
+        cache_subdir = str(rel_to_media).replace("\\", "/")
+    except ValueError:
+        # CACHE_DIR staat buiten MEDIA_ROOT -> val terug op 'cache/<hash>' onder MEDIA_URL
+        cache_subdir = f"cache/{h}"
+    return cache_subdir, n_pages
 
 @login_required
 def rooster(request):
     if not _can(request.user, "can_view_roster"):
         return HttpResponseForbidden("Geen toegang tot rooster.")
+
+    # Upload rechtstreeks vanaf index.html
+    if request.method == "POST":
+        if not _can(request.user, "can_upload_roster"):
+            return HttpResponseForbidden("Geen uploadrechten.")
+        f = request.FILES.get("file")
+        if not f or not f.name.lower().endswith(".pdf"):
+            messages.error(request, "Upload een PDF-bestand (.pdf).")
+            return redirect("rooster")
+
+        # Oude rooster + cache opruimen
+        _clear_dir(ROSTER_DIR)
+        _clear_dir(CACHE_DIR)
+
+        # Nieuw rooster opslaan
+        ROSTER_DIR.mkdir(parents=True, exist_ok=True)
+        with open(ROSTER_FILE, "wb") as fh:
+            for chunk in f.chunks():
+                fh.write(chunk)
+
+        messages.success(request, "Rooster geüpload.")
+        return redirect("rooster")  # PRG: voorkomt herposten
+
+    # GET: tonen (met of zonder rooster)
+    context = {"logo_url": _logo_url(), "year": datetime.now().year}
     if not ROSTER_FILE.exists():
-        return render(request, "rooster/empty.html", {"logo_url": _logo_url()})
+        context["page_urls"] = []
+        context["no_roster"] = True
+        return render(request, "rooster/index.html", context)
+
     pdf_bytes = ROSTER_FILE.read_bytes()
-    h, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0)
-    page_urls = [f"{settings.MEDIA_URL}cache/{h}/page_{i:03d}.png" for i in range(1, n+1)]
-    return render(request, "rooster/index.html", {
-        "page_urls": page_urls, "logo_url": _logo_url(), "year": datetime.now().year
-    })
+    cache_subdir, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0)
+    context["page_urls"] = [f"{settings.MEDIA_URL}{cache_subdir}/page_{i:03d}.png" for i in range(1, n + 1)]
+    return render(request, "rooster/index.html", context)
 
 @login_required
 def upload_roster(request):
@@ -151,11 +203,17 @@ def upload_roster(request):
         if not f or not f.name.lower().endswith(".pdf"):
             messages.error(request, "Upload een PDF-bestand.")
             return redirect("upload_roster")
-        _clear_dir(ROSTER_DIR)   # geen versies bewaren
-        _clear_dir(CACHE_DIR)    # cache leeg zodat nieuwe render verschijnt
+
+        # Oude rooster + cache opruimen
+        _clear_dir(ROSTER_DIR)
+        _clear_dir(CACHE_DIR)
+
+        # Nieuw rooster opslaan
+        ROSTER_DIR.mkdir(parents=True, exist_ok=True)
         with open(ROSTER_FILE, "wb") as fh:
             for chunk in f.chunks():
                 fh.write(chunk)
+
         messages.success(request, "Rooster geüpload.")
         return redirect("rooster")
     return render(request, "rooster/upload.html", {"logo_url": _logo_url()})
@@ -173,7 +231,8 @@ def _read_table(fp: Path):
         return None, f"Kon bestand niet lezen: {e}"
 
 def _filter_and_limit(df, q, limit):
-    if df is None: return df
+    if df is None:
+        return df
     work = df
     if q:
         ql = q.lower()
@@ -181,7 +240,8 @@ def _filter_and_limit(df, q, limit):
         for col in work.columns:
             try:
                 mask = mask | work[col].astype(str).str.lower().str.contains(ql, na=False)
-            except: pass
+            except Exception:
+                pass
         work = work[mask]
     if limit and limit > 0:
         work = work.head(limit)
@@ -199,7 +259,8 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
 
     form = AvailabilityUploadForm()
     if request.method == "POST":
-        if not _can(request.user, "can_access_admin"):  # upload-recht beperken tot admins
+        # upload beperken tot admin (of vervang door eigen perm als je wilt)
+        if not _can(request.user, "can_access_admin"):
             return HttpResponseForbidden("Geen uploadrechten.")
         form = AvailabilityUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -220,13 +281,16 @@ def _availability_view(request, key: str, page_title: str, can_view_perm: str):
             messages.success(request, f"Bestand geüpload: {f.name}")
             return redirect(request.path)
 
-    df = None; error = None
+    df = None
+    error = None
     if existing_path:
         df, error = _read_table(existing_path)
 
     q = request.GET.get("q", "").strip()
-    try: limit = int(request.GET.get("limit", "") or 50)
-    except ValueError: limit = 50
+    try:
+        limit = int(request.GET.get("limit", "") or 50)
+    except ValueError:
+        limit = 50
 
     columns, rows = [], None
     if df is not None and error is None:
@@ -250,14 +314,14 @@ def availability_home(request):
         return HttpResponseForbidden("Geen toegang.")
     subtiles = []
     if _can(request.user, "can_view_av_medications"):
-        subtiles.append({"name":"Geneesmiddelen","img":"medicijn_zoeken.png","url_name":"availability_medications"})
+        subtiles.append({"name": "Voorraad", "img": "medicijn_zoeken.png", "url_name": "availability_medications"})
     if _can(request.user, "can_view_av_nazendingen"):
-        subtiles.append({"name":"Nazendingen","img":"nazendingen.png","url_name":"availability_nazendingen"})
+        subtiles.append({"name": "Nazendingen", "img": "nazendingen.png", "url_name": "availability_nazendingen"})
     return render(request, "availability/home.html", {"tiles": subtiles, "logo_url": _logo_url()})
 
 @login_required
 def availability_medications(request):
-    return _availability_view(request, "medications", "Beschikbaarheid • Geneesmiddelen", "can_view_av_medications")
+    return _availability_view(request, "medications", "Beschikbaarheid • Voorraad", "can_view_av_medications")
 
 @login_required
 def availability_nazendingen(request):
@@ -282,7 +346,7 @@ def admin_panel(request):
     if not _can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
     group_form = GroupWithPermsForm(prefix="group")
-    user_form  = SimpleUserCreateForm(prefix="user")
+    user_form = SimpleUserCreateForm(prefix="user")
 
     if request.method == "POST" and request.POST.get("form_kind") == "group":
         gid = request.POST.get("group_id")
