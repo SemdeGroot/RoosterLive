@@ -5,7 +5,13 @@
 
 {% block content %}
 <div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Welkom</h3>
+    <h3 style="margin-top:0;">
+    {% if user.is_authenticated %}
+        Welkom, {{ user.first_name|default:user.username|capfirst }}! Navigeer hier naar de gewenste tabbladen.
+    {% else %}
+        Welkom! Navigeer hier naar de gewenste tabbladen.
+    {% endif %}
+    </h3>
   <div class="tiles">
     {% for t in tiles %}
       <a href="{% url t.url_name %}" class="tile" style="text-decoration:none;">
