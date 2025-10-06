@@ -36,9 +36,13 @@ class GroupWithPermsForm(forms.ModelForm):
             "can_upload_roster":       perms_qs.get(codename="can_upload_roster"),
             "can_access_availability": perms_qs.get(codename="can_access_availability"),
             "can_view_av_medications": perms_qs.get(codename="can_view_av_medications"),
+            "can_upload_voorraad": perms_qs.get(codename="can_upload_voorraad"),
             "can_view_av_nazendingen": perms_qs.get(codename="can_view_av_nazendingen"),
+            "can_upload_nazendingen": perms_qs.get(codename="can_upload_nazendingen"),
             "can_view_news":           perms_qs.get(codename="can_view_news"),
+            "can_upload_news": perms_qs.get(codename="can_upload_news"),
             "can_view_policies":       perms_qs.get(codename="can_view_policies"),
+            "can_upload_werkafspraken": perms_qs.get(codename="can_upload_werkafspraken"),
         }
         if self.instance and self.instance.pk:
             current = set(self.instance.permissions.values_list("codename", flat=True))

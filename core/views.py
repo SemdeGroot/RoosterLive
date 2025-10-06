@@ -431,6 +431,14 @@ def admin_panel(request):
         messages.error(request, "Groep opslaan mislukt.")
 
     # (… user_create code ongewijzigd …)
+    if request.method == "POST" and request.POST.get("form_kind") == "user_create":
+        user_form = SimpleUserCreateForm(request.POST, prefix="user")
+        if user_form.is_valid():
+            user_form.save()
+            messages.success(request, "Gebruiker aangemaakt.")
+            return redirect("admin_panel")
+        else:
+            messages.error(request, "Gebruiker aanmaken mislukt.")
 
     groups = Group.objects.all().order_by("name")
     users = User.objects.all().order_by("username")
