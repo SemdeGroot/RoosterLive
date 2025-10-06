@@ -156,6 +156,10 @@
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="form_kind" value="user_create">
+          
+            {{ user_form.non_field_errors }}
+            {{ user_form.errors }}
+
           <div class="form" style="padding:0;">
             {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
             {{ user_form.email.label_tag }} {{ user_form.email }}
