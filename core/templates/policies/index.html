@@ -4,6 +4,7 @@
 
 {% block content %}
 <style>
+  /* Uploader */
   .uploader { margin-bottom: 14px; }
   .dropzone {
     display:flex; align-items:center; gap:12px; padding:14px 16px;
@@ -20,15 +21,27 @@
   .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
   .btn.ghost { background:#17212b; }
 
-  .pages { display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); }
-  .page { position:relative; border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; padding:10px; }
+  /* Weergave: gecentreerd en groter, maar niet fullscreen */
+  .pages {
+    display:flex; flex-direction:column; gap:16px;
+    align-items:center; /* centreert de kaarten */
+  }
+  .page {
+    position:relative;
+    width:min(1000px, 90%);              /* mooi groot, maar met marge */
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#0a0f14;
+    overflow:hidden;
+    padding:12px;
+  }
   .page img { display:block; width:100%; height:auto; border-radius:8px; }
 
   /* Verwijder-kruisje */
   .del-btn {
-    position:absolute; top:8px; right:8px;
+    position:absolute; top:10px; right:10px;
     background:#2a3647; border:1px solid #3a4b63; color:#fff;
-    border-radius:8px; padding:6px 8px; cursor:pointer; opacity:.92;
+    border-radius:10px; padding:6px 10px; cursor:pointer; opacity:.92;
   }
   .del-btn:hover { background:#3a4b63; opacity:1; }
   .del-btn[disabled]{opacity:.5; cursor:not-allowed}
@@ -74,7 +87,7 @@
       {% for url in page_urls %}
         <div class="page" data-img="{{ url }}">
           {% if perms.core.can_upload_werkafspraken %}
-            <button class="del-btn" type="button" title="PNG verwijderen" data-img="{{ url }}">✕</button>
+            <button class="del-btn" type="button" title="PDF + PNG’s verwijderen" data-img="{{ url }}">✕</button>
           {% endif %}
           <img src="{{ url }}" alt="Werkafspraken pagina">
         </div>
@@ -85,7 +98,7 @@
 
 <script>
 (function(){
-  // --- upload UI ---
+  // Upload UI
   const dz=document.getElementById('polDrop'), input=document.getElementById('polFile'),
         meta=document.getElementById('polMeta'), nameSpan=document.getElementById('polName'),
         uploadBtn=document.getElementById('polUpload'), clearBtn=document.getElementById('polClear');
@@ -104,7 +117,7 @@
     clearBtn && clearBtn.addEventListener('click', ()=>{input.value=''; nameSpan.textContent=''; meta.style.display='none'; uploadBtn.disabled=true; clearBtn.style.display='none';});
   }
 
-  // --- inline delete via fetch (AJAX) ---
+  // Inline delete via fetch naar DEZELFDE URL
   const pages = document.getElementById('polPages');
   if(pages){
     function getCSRF(){
@@ -115,23 +128,27 @@
       if(!btn) return;
       const img = btn.getAttribute('data-img');
       if(!img) return;
-      if(!confirm('PNG verwijderen? Dit verwijdert niet de PDF, alleen deze pagina-weergave.')) return;
+      if(!confirm('Hele PDF + bijbehorende PNG-cache verwijderen?')) return;
       btn.disabled = true;
 
       try{
-        const resp = await fetch("{% url 'policies_delete_page' %}", {
+        const resp = await fetch(window.location.href, {
           method: "POST",
           headers: {
             "X-CSRFToken": getCSRF(),
             "X-Requested-With": "XMLHttpRequest",
             "Content-Type": "application/x-www-form-urlencoded"
           },
-          body: "img=" + encodeURIComponent(img)
+          body: "action=delete&img=" + encodeURIComponent(img)
         });
         const data = await resp.json();
         if(data && data.ok){
-          const card = btn.closest('.page');
-          card && card.remove();
+          // Verwijder alle tegels die tot dezelfde hash behoren (server geeft hash terug)
+          const hash = data.hash;
+          document.querySelectorAll('.page').forEach(card=>{
+            const u = card.getAttribute('data-img') || '';
+            if(u.includes('/cache/policies/'+hash+'/')) card.remove();
+          });
         }else{
           alert(data && data.error ? data.error : "Verwijderen mislukt.");
           btn.disabled = false;

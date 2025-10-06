@@ -405,80 +405,96 @@ def news(request):
         return HttpResponseForbidden("Geen toegang.")
     return render(request, "news/index.html", {"logo_url": _logo_url()})
 
+def _hash_from_img_url(img_url: str) -> str | None:
+    """
+    Verwacht een URL als /media/cache/policies/<hash>/page_001.png
+    Geeft <hash> terug of None.
+    """
+    prefix = f"{settings.MEDIA_URL}cache/policies/"
+    if not img_url.startswith(prefix):
+        return None
+    rest = img_url[len(prefix):]  # "<hash>/page_001.png"
+    parts = rest.split("/")
+    return parts[0] if parts else None
+
+def _delete_policies_by_hash(hash_str: str) -> int:
+    """
+    Verwijder alle PDF's in POL_DIR die dezelfde content-hash hebben,
+    en wis de bijbehorende cachemap cache/policies/<hash>.
+    Retourneert aantal verwijderde PDF's.
+    """
+    removed = 0
+    # 1) Cachemap opruimen
+    cache_path = (CACHE_POLICIES_DIR / hash_str)
+    if cache_path.exists():
+        shutil.rmtree(cache_path, ignore_errors=True)
+
+    # 2) Vind PDF's met deze hash en verwijder
+    for pdf_fp in list(POL_DIR.glob("*.pdf")):
+        try:
+            if _pdf_hash(pdf_fp.read_bytes()) == hash_str:
+                pdf_fp.unlink(missing_ok=True)
+                removed += 1
+        except Exception:
+            pass
+    return removed
+
 @login_required
 def policies(request):
-    # Bekijken mag met can_view_policies
     if not _can(request.user, "can_view_policies"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # Uploaden alleen met can_upload_werkafspraken
-    if request.method == "POST":
+    # --- Inline DELETE (AJAX op dezelfde URL) ---
+    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        if not _can(request.user, "can_upload_werkafspraken"):
+            return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
+        if request.POST.get("action") != "delete":
+            return JsonResponse({"ok": False, "error": "Ongeldig verzoek."}, status=400)
+        img_url = request.POST.get("img", "")
+        h = _hash_from_img_url(img_url)
+        if not h:
+            return JsonResponse({"ok": False, "error": "Ongeldige afbeelding."}, status=400)
+        removed = _delete_policies_by_hash(h)
+        if removed > 0:
+            return JsonResponse({"ok": True, "hash": h, "removed": removed})
+        else:
+            return JsonResponse({"ok": False, "error": "PDF niet gevonden."}, status=404)
+
+    # --- Upload PDF (stapelen) ---
+    if request.method == "POST" and "file" in request.FILES:
         if not _can(request.user, "can_upload_werkafspraken"):
             return HttpResponseForbidden("Geen uploadrechten.")
         f = request.FILES.get("file")
         if not f or not str(f.name).lower().endswith(".pdf"):
-            messages.error(request, "Alleen PDF-bestanden toegestaan.")
+            messages.error(request, "Alleen PDF toegestaan.")
             return redirect("policies")
 
-        # Sla op met timestamp zodat uploads stapelen
         from datetime import datetime
-        from pathlib import Path
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         safe_name = Path(str(f.name)).name.replace(" ", "_")
         dest = POL_DIR / f"{ts}__{safe_name}"
         with dest.open("wb") as fh:
             for chunk in f.chunks():
                 fh.write(chunk)
-
         messages.success(request, f"PDF geüpload: {f.name}")
         return redirect("policies")
 
-    # GET: alle PDFs in POL_DIR tonen
+    # --- GET: render alle policy-PDF’s naar PNG’s (gecentreerd) ---
     page_urls = []
     for pdf_fp in sorted(POL_DIR.glob("*.pdf")):
         try:
             pdf_bytes = pdf_fp.read_bytes()
         except Exception:
             continue
-        # Render per bestand in eigen hash-submap onder cache/policies
         h, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=CACHE_POLICIES_DIR)
+        # 1 hash-map per PDF; voeg alle pagina’s toe
         for i in range(1, n+1):
             page_urls.append(f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png")
 
-    ctx = {
+    return render(request, "policies/index.html", {
         "logo_url": _logo_url(),
-        "page_urls": page_urls,  # leeg = geen bestanden
-    }
-    return render(request, "policies/index.html", ctx)
-
-@login_required
-@require_POST
-def policies_delete_page(request):
-    if not _can(request.user, "can_upload_werkafspraken"):
-        # AJAX?
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
-        return redirect("policies")
-
-    img_url = request.POST.get("img", "")
-    if not img_url or not img_url.startswith(settings.MEDIA_URL):
-        return JsonResponse({"ok": False, "error": "Ongeldige afbeelding."}, status=400)
-
-    rel = img_url[len(settings.MEDIA_URL):]  # e.g. "cache/policies/<hash>/page_001.png"
-    target = (settings.MEDIA_ROOT / rel).resolve()
-    allowed_root = (CACHE_DIR / "policies").resolve()
-
-    # Safety: alleen onder cache/policies verwijderen
-    if not str(target).startswith(str(allowed_root)):
-        return JsonResponse({"ok": False, "error": "Niet toegestaan."}, status=403)
-
-    try:
-        if target.exists():
-            target.unlink()
-            return JsonResponse({"ok": True})
-        return JsonResponse({"ok": False, "error": "PNG niet gevonden."}, status=404)
-    except Exception:
-        return JsonResponse({"ok": False, "error": "Verwijderen mislukt."}, status=500)
+        "page_urls": page_urls,   # template centreert & schaalt
+    })
 
 # ===== Admin panel & Users =====
 @login_required

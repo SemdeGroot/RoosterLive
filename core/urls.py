@@ -11,7 +11,6 @@ urlpatterns = [
 
     path("nieuws/", views.news, name="news"),
     path("werkafspraken/", views.policies, name="policies"),
-    path("werkafspraken/delete-page/", views.policies_delete_page, name="policies_delete_page"),
 
     path("beheer/", views.admin_panel, name="admin_panel"),
     path("beheer/user/<int:user_id>/update/", views.user_update, name="user_update"),
