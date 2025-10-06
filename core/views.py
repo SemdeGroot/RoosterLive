@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
@@ -37,6 +37,14 @@ CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
 CACHE_AVAIL_DIR = CACHE_DIR / "availability"
 CACHE_AVAIL_DIR.mkdir(parents=True, exist_ok=True)
+
+# Policies (stapelbare PDF's)
+POL_DIR = MEDIA_ROOT / "policies"
+POL_DIR.mkdir(parents=True, exist_ok=True)
+
+# Gescheiden cache voor policies
+CACHE_POLICIES_DIR = CACHE_DIR / "policies"
+CACHE_POLICIES_DIR.mkdir(parents=True, exist_ok=True)
 
 # Rooster (enkel huidig bestand)
 ROSTER_DIR = MEDIA_ROOT / "rooster"
@@ -399,9 +407,78 @@ def news(request):
 
 @login_required
 def policies(request):
+    # Bekijken mag met can_view_policies
     if not _can(request.user, "can_view_policies"):
         return HttpResponseForbidden("Geen toegang.")
-    return render(request, "policies/index.html", {"logo_url": _logo_url()})
+
+    # Uploaden alleen met can_upload_werkafspraken
+    if request.method == "POST":
+        if not _can(request.user, "can_upload_werkafspraken"):
+            return HttpResponseForbidden("Geen uploadrechten.")
+        f = request.FILES.get("file")
+        if not f or not str(f.name).lower().endswith(".pdf"):
+            messages.error(request, "Alleen PDF-bestanden toegestaan.")
+            return redirect("policies")
+
+        # Sla op met timestamp zodat uploads stapelen
+        from datetime import datetime
+        from pathlib import Path
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        safe_name = Path(str(f.name)).name.replace(" ", "_")
+        dest = POL_DIR / f"{ts}__{safe_name}"
+        with dest.open("wb") as fh:
+            for chunk in f.chunks():
+                fh.write(chunk)
+
+        messages.success(request, f"PDF geüpload: {f.name}")
+        return redirect("policies")
+
+    # GET: alle PDFs in POL_DIR tonen
+    page_urls = []
+    for pdf_fp in sorted(POL_DIR.glob("*.pdf")):
+        try:
+            pdf_bytes = pdf_fp.read_bytes()
+        except Exception:
+            continue
+        # Render per bestand in eigen hash-submap onder cache/policies
+        h, n = _render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=CACHE_POLICIES_DIR)
+        for i in range(1, n+1):
+            page_urls.append(f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png")
+
+    ctx = {
+        "logo_url": _logo_url(),
+        "page_urls": page_urls,  # leeg = geen bestanden
+    }
+    return render(request, "policies/index.html", ctx)
+
+@login_required
+@require_POST
+def policies_delete_page(request):
+    if not _can(request.user, "can_upload_werkafspraken"):
+        # AJAX?
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
+        return redirect("policies")
+
+    img_url = request.POST.get("img", "")
+    if not img_url or not img_url.startswith(settings.MEDIA_URL):
+        return JsonResponse({"ok": False, "error": "Ongeldige afbeelding."}, status=400)
+
+    rel = img_url[len(settings.MEDIA_URL):]  # e.g. "cache/policies/<hash>/page_001.png"
+    target = (settings.MEDIA_ROOT / rel).resolve()
+    allowed_root = (CACHE_DIR / "policies").resolve()
+
+    # Safety: alleen onder cache/policies verwijderen
+    if not str(target).startswith(str(allowed_root)):
+        return JsonResponse({"ok": False, "error": "Niet toegestaan."}, status=403)
+
+    try:
+        if target.exists():
+            target.unlink()
+            return JsonResponse({"ok": True})
+        return JsonResponse({"ok": False, "error": "PNG niet gevonden."}, status=404)
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Verwijderen mislukt."}, status=500)
 
 # ===== Admin panel & Users =====
 @login_required

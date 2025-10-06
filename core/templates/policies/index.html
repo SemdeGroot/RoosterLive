@@ -1,9 +1,147 @@
 {% extends "base.html" %}
 {% block title %}Werkafspraken{% endblock %}
 {% block header_title %}Werkafspraken{% endblock %}
+
 {% block content %}
+<style>
+  .uploader { margin-bottom: 14px; }
+  .dropzone {
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:var(--panel-2); border:1px dashed var(--border); border-radius:12px;
+    cursor:pointer; transition:border-color .15s, box-shadow .15s;
+  }
+  .dropzone:hover, .dropzone.is-dragover { border-color:#1f4ba0; box-shadow:0 0 0 2px rgba(31,75,160,.20) inset; }
+  .dz-icon { flex:0 0 auto; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#13223f; color:#cfe0ff; border:1px solid #223355; }
+  .dz-text { display:flex; flex-direction:column; gap:4px; }
+  .dz-title { color:var(--text); font-weight:600; line-height:1.1; }
+  .dz-hint  { color:var(--muted); font-size:.95em; }
+  .file-meta { margin-top:8px; color:var(--muted); }
+  .file-name { color:var(--text); font-weight:600; }
+  .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+  .btn.ghost { background:#17212b; }
+
+  .pages { display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); }
+  .page { position:relative; border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; padding:10px; }
+  .page img { display:block; width:100%; height:auto; border-radius:8px; }
+
+  /* Verwijder-kruisje */
+  .del-btn {
+    position:absolute; top:8px; right:8px;
+    background:#2a3647; border:1px solid #3a4b63; color:#fff;
+    border-radius:8px; padding:6px 8px; cursor:pointer; opacity:.92;
+  }
+  .del-btn:hover { background:#3a4b63; opacity:1; }
+  .del-btn[disabled]{opacity:.5; cursor:not-allowed}
+</style>
+
 <div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Werkafspraken</h3>
-  <p style="color:var(--muted)">Nog geen werkafspraken geüpload.</p>
+
+  {% if perms.core.can_upload_werkafspraken %}
+  <form method="post" enctype="multipart/form-data" class="uploader" id="polForm">
+    {% csrf_token %}
+    <input type="file" id="polFile" name="file" accept="application/pdf" hidden required>
+
+    <div class="dropzone" id="polDrop" onclick="document.getElementById('polFile').click()">
+      <div class="dz-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M12 12v6"/>
+          <path d="M9 15h6"/>
+        </svg>
+      </div>
+      <div class="dz-text">
+        <div class="dz-title">Sleep je PDF van werkafspraken hierheen of klik om te kiezen.</div>
+        <div class="dz-hint">Alleen .pdf — Nieuwe uploads worden toegevoegd (vorige blijven staan).</div>
+      </div>
+    </div>
+
+    <div class="file-meta" id="polMeta" style="display:none;">
+      Geselecteerd: <span class="file-name" id="polName"></span>
+    </div>
+
+    <div class="u-actions">
+      <button class="btn" type="submit" id="polUpload" disabled>Uploaden</button>
+      <button type="button" class="btn ghost" id="polClear" style="display:none;">Wissen</button>
+    </div>
+  </form>
+  {% endif %}
+
+  {% if not page_urls %}
+    <p style="color:var(--muted); margin-top:6px;">Nog geen werkafspraken geüpload.</p>
+  {% else %}
+    <div class="pages" id="polPages">
+      {% for url in page_urls %}
+        <div class="page" data-img="{{ url }}">
+          {% if perms.core.can_upload_werkafspraken %}
+            <button class="del-btn" type="button" title="PNG verwijderen" data-img="{{ url }}">✕</button>
+          {% endif %}
+          <img src="{{ url }}" alt="Werkafspraken pagina">
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
+
+<script>
+(function(){
+  // --- upload UI ---
+  const dz=document.getElementById('polDrop'), input=document.getElementById('polFile'),
+        meta=document.getElementById('polMeta'), nameSpan=document.getElementById('polName'),
+        uploadBtn=document.getElementById('polUpload'), clearBtn=document.getElementById('polClear');
+
+  if(dz && input){
+    function setFile(file){
+      if(!file) return;
+      if(file.type!=='application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){ alert('Kies een PDF (.pdf).'); return; }
+      const dt=new DataTransfer(); dt.items.add(file); input.files=dt.files;
+      nameSpan.textContent=file.name; meta.style.display=''; uploadBtn.disabled=false; clearBtn.style.display='';
+    }
+    input.addEventListener('change', ()=> setFile(input.files[0]));
+    ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('is-dragover');}));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('is-dragover');}));
+    dz.addEventListener('drop', e=>{const f=e.dataTransfer.files?.[0]; if(f) setFile(f);});
+    clearBtn && clearBtn.addEventListener('click', ()=>{input.value=''; nameSpan.textContent=''; meta.style.display='none'; uploadBtn.disabled=true; clearBtn.style.display='none';});
+  }
+
+  // --- inline delete via fetch (AJAX) ---
+  const pages = document.getElementById('polPages');
+  if(pages){
+    function getCSRF(){
+      const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:"";
+    }
+    pages.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('.del-btn');
+      if(!btn) return;
+      const img = btn.getAttribute('data-img');
+      if(!img) return;
+      if(!confirm('PNG verwijderen? Dit verwijdert niet de PDF, alleen deze pagina-weergave.')) return;
+      btn.disabled = true;
+
+      try{
+        const resp = await fetch("{% url 'policies_delete_page' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCSRF(),
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "img=" + encodeURIComponent(img)
+        });
+        const data = await resp.json();
+        if(data && data.ok){
+          const card = btn.closest('.page');
+          card && card.remove();
+        }else{
+          alert(data && data.error ? data.error : "Verwijderen mislukt.");
+          btn.disabled = false;
+        }
+      }catch(err){
+        alert("Netwerkfout bij verwijderen.");
+        btn.disabled = false;
+      }
+    });
+  }
+})();
+</script>
 {% endblock %}
