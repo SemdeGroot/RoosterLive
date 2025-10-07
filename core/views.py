@@ -568,7 +568,7 @@ def group_delete(request, group_id: int):
         messages.error(
             request,
             f"Kan groep “{g.name}” niet verwijderen: {count} gebruiker(s) zijn nog lid. "
-            "👉 Wijs deze gebruikers eerst een andere groep toe."
+            "Wijs deze gebruikers eerst een andere groep toe."
         )
         return redirect("admin_panel")
     g.delete()
