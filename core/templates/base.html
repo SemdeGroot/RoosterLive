@@ -77,50 +77,166 @@
     .perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
     .perm-section-title{margin:10px 0 4px;font-weight:700;color:var(--text)}
 
-  </style>
+  /* --- Mobile Nav --- */
+  .nav-toggle{
+    display:none;
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    line-height:1;
+    align-items:center;
+    gap:10px;
+  }
+  .nav-toggle .burger{
+    position:relative;
+    width:22px; height:2px; background:var(--text);
+    transition:transform .2s ease, background .2s ease;
+  }
+  .nav-toggle .burger::before,
+  .nav-toggle .burger::after{
+    content:""; position:absolute; left:0; width:22px; height:2px; background:var(--text);
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  .nav-toggle .burger::before{ top:-7px }
+  .nav-toggle .burger::after{ top:7px }
+
+  /* Paneel dat onder de header in- en uitschuift */
+  .nav-panel{
+    position:fixed; inset:auto 12px 12px 12px; top:70px;
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:16px; box-shadow:0 18px 40px var(--shadow);
+    padding:12px; display:none; z-index:1200;
+  }
+  .nav-panel.open{ display:block; animation:pop .12s ease }
+  @keyframes pop{ from{ transform:translateY(-4px); opacity:.6 } to{ transform:none; opacity:1 } }
+
+  .nav-links{ display:flex; flex-direction:column; gap:8px }
+  .nav-links a, .nav-links form button{
+    width:100%; justify-content:flex-start;
+  }
+
+  /* Desktop vs mobile */
+  @media (max-width: 900px){
+    .nav{ display:none }                  /* verberg originele inline nav */
+    .nav-toggle{ display:inline-flex }    /* toon hamburger knop */
+  }
+  @media (min-width: 901px){
+    .nav-panel{ display:none !important } /* geen panel op desktop */
+    .nav-toggle[aria-expanded="true"] .burger{
+      background:transparent;
+    }
+    .nav-toggle[aria-expanded="true"] .burger::before{
+      transform:translateY(7px) rotate(45deg);
+    }
+    .nav-toggle[aria-expanded="true"] .burger::after{
+      transform:translateY(-7px) rotate(-45deg);
+    }
+  }
+
+  /* Focus styles voor toegankelijkheid */
+  .nav-toggle:focus-visible,
+  .nav-panel a:focus-visible,
+  .nav-panel button:focus-visible{
+    outline:2px solid #3aa675; outline-offset:3px;
+    border-color:#3aa675;
+  }
+</style>
   {% block head %}{% endblock %}
 </head>
 <body>
   <div class="app">
     <header class="header">
-      {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
-      <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
+  {% if logo_url %}
+    <div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>
+  {% endif %}
+  <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
 
-      <nav class="nav">
-        {% if request.resolver_match.url_name != 'home' %}
-          <a href="{% url 'home' %}">Home</a>
-        {% endif %}
+  <!-- Hamburger knop (mobiel) -->
+  <button class="nav-toggle" id="navToggle"
+          aria-label="Open navigatie"
+          aria-controls="navPanel"
+          aria-expanded="false">
+    <span class="burger" aria-hidden="true"></span>
+    <span class="sr-only" style="position:absolute;left:-9999px">Menu</span>
+  </button>
 
-        {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
-          <a href="{% url 'rooster' %}">Rooster</a>
-        {% endif %}
+  <!-- Originele inline nav (desktop) -->
+  <nav class="nav" aria-label="Hoofdmenu">
+    {% if request.resolver_match.url_name != 'home' %}
+      <a href="{% url 'home' %}">Home</a>
+    {% endif %}
 
-        {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
-          <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
-        {% endif %}
+    {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
+      <a href="{% url 'rooster' %}">Rooster</a>
+    {% endif %}
 
-        {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
-          <a href="{% url 'policies' %}">Werkafspraken</a>
-        {% endif %}
+    {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
+      <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
+    {% endif %}
 
-        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
-          <a href="{% url 'news' %}">Nieuws</a>
-        {% endif %}
+    {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
+      <a href="{% url 'policies' %}">Werkafspraken</a>
+    {% endif %}
 
-        {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}
-          <a href="{% url 'admin_panel' %}">Beheer</a>
-        {% endif %}
+    {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
+      <a href="{% url 'news' %}">Nieuws</a>
+    {% endif %}
 
-        {% if request.user.is_authenticated %}
-          <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}<button type="submit">Uitloggen</button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}">Login</a>
-        {% endif %}
-      </nav>
+    {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}
+      <a href="{% url 'admin_panel' %}">Beheer</a>
+    {% endif %}
+
+    {% if request.user.is_authenticated %}
+      <form action="{% url 'logout' %}" method="post" style="display:inline;">
+        {% csrf_token %}<button type="submit">Uitloggen</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+  </nav>
+</header>
+
+<!-- Mobiel paneel nav (zelfde links, maar onder elkaar) -->
+<nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
+  <div class="nav-links">
+    {% if request.resolver_match.url_name != 'home' %}
+      <a href="{% url 'home' %}">Home</a>
+    {% endif %}
+
+    {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
+      <a href="{% url 'rooster' %}">Rooster</a>
+    {% endif %}
+
+    {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
+      <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
+    {% endif %}
+
+    {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
+      <a href="{% url 'policies' %}">Werkafspraken</a>
+    {% endif %}
+
+    {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
+      <a href="{% url 'news' %}">Nieuws</a>
+    {% endif %}
+
+    {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}
+      <a href="{% url 'admin_panel' %}">Beheer</a>
+    {% endif %}
+
+    {% if request.user.is_authenticated %}
+      <form action="{% url 'logout' %}" method="post" style="display:inline;">
+        {% csrf_token %}<button type="submit">Uitloggen</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+  </div>
+</nav>
     </header>
-
     <main class="content">
       {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
       {% block content %}{% endblock %}
@@ -130,5 +246,47 @@
       <div>© {% now "Y" %} Sem de Groot</div><div></div>
     </footer>
   </div>
+
+<script>
+  const toggleBtn = document.getElementById('navToggle');
+  const panel = document.getElementById('navPanel');
+
+  if (toggleBtn && panel) {
+    const open = () => {
+      panel.hidden = false;
+      panel.classList.add('open');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      toggleBtn.setAttribute('aria-label', 'Sluit navigatie');
+    };
+    const close = () => {
+      panel.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.setAttribute('aria-label', 'Open navigatie');
+      setTimeout(() => { panel.hidden = true; }, 120);
+    };
+    const isOpen = () => toggleBtn.getAttribute('aria-expanded') === 'true';
+
+    toggleBtn.addEventListener('click', () => {
+      isOpen() ? close() : open();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!isOpen()) return;
+      const t = e.target;
+      if (!panel.contains(t) && !toggleBtn.contains(t)) close();
+    });
+
+    panel.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('click', () => { if (isOpen()) close(); });
+    });
+
+    const mq = window.matchMedia('(min-width: 901px)');
+    mq.addEventListener('change', () => { if (mq.matches) close(); });
+  }
+</script>
 </body>
 </html>
