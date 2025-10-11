@@ -11,7 +11,11 @@
 <body>
   <div class="app">
     <header class="header">
-      {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
+      {% if logo_url %}
+        <a href="{% url 'home' %}" class="logo-wrap">
+          <img class="logo" src="{{ logo_url }}" alt="Logo">
+        </a>
+      {% endif %}
       <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
 
       <!-- Hamburger knop (mobiel) -->
@@ -27,10 +31,19 @@
       <nav class="nav" aria-label="Hoofdmenu">
         {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
         {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
-        {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}<a href="{% url 'availability_home' %}">Beschikbaarheid</a>{% endif %}
+
+        {# ▼ Beschikbaarheid-hoofdpagina verwijderd; toon losse items #}
+        {% if perms.core.can_view_av_medications and request.resolver_match.url_name != 'medications' %}
+          <a href="{% url 'medications' %}">Voorraad</a>
+        {% endif %}
+        {% if perms.core.can_view_av_nazendingen and request.resolver_match.url_name != 'nazendingen' %}
+          <a href="{% url 'nazendingen' %}">Nazendingen</a>
+        {% endif %}
+
         {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
         {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
         {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
+
         {% if request.user.is_authenticated %}
           <form action="{% url 'logout' %}" method="post" style="display:inline;">
             {% csrf_token %}<button type="submit">Uitloggen</button>
@@ -46,10 +59,19 @@
       <div class="nav-links">
         {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
         {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
-        {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}<a href="{% url 'availability_home' %}">Beschikbaarheid</a>{% endif %}
+
+        {# ▼ Zelfde losse items op mobiel #}
+        {% if perms.core.can_view_av_medications and request.resolver_match.url_name != 'medications' %}
+          <a href="{% url 'medications' %}">Voorraad</a>
+        {% endif %}
+        {% if perms.core.can_view_av_nazendingen and request.resolver_match.url_name != 'nazendingen' %}
+          <a href="{% url 'nazendingen' %}">Nazendingen</a>
+        {% endif %}
+
         {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
         {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
         {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
+
         {% if request.user.is_authenticated %}
           <form action="{% url 'logout' %}" method="post" style="display:inline;">
             {% csrf_token %}<button type="submit">Uitloggen</button>
@@ -66,7 +88,7 @@
     </main>
 
     <footer class="footer">
-      <div>© {% now "Y" %} Sem de Groot</div><div></div>
+      <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div><div></div>
     </footer>
   </div>
 

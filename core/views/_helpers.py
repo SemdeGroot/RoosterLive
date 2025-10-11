@@ -41,7 +41,6 @@ PERM_LABELS = {
     "can_manage_users":        "Mag gebruikers beheren",
     "can_view_roster":         "Mag rooster bekijken",
     "can_upload_roster":       "Mag roosters uploaden",
-    "can_access_availability": "Mag Beschikbaarheid openen",
     "can_view_av_medications": "Mag subtab Voorraad zien",
     "can_upload_voorraad":     "Mag Voorraad uploaden",
     "can_view_av_nazendingen": "Mag subtab Nazendingen zien",
