@@ -7,12 +7,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
-from ._helpers import can, logo_url, PERM_LABELS
+from ._helpers import can, logo_url, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 
 @login_required
 def admin_panel(request):
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
+
+    # ✨ Zorg dat permissies in DB overeenkomen met PERM_LABELS
+    sync_custom_permissions()
 
     editing_group = None
     gid_get = request.GET.get("group_id")
@@ -61,6 +64,10 @@ def admin_panel(request):
         "editing_group": bool(editing_group),
         "editing_group_id": editing_group.id if editing_group else "",
         "logo_url": logo_url(),
+
+        # ▼ dynamisch voor de template
+        "perm_sections": PERM_SECTIONS,
+        "perm_labels": PERM_LABELS,
     })
 
 @login_required

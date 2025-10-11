@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static role_tags %}
+{% load static role_tags form_extras %}
 {% block title %}Beheer{% endblock %}
 {% block header_title %}Beheer{% endblock %}
 
@@ -15,54 +15,38 @@
     <!-- Groepen -->
     <div class="card">
       <div class="card-inner">
-        <h3 style="margin-top:0;">
-          {% if editing_group %}Groep bewerken{% else %}Nieuwe groep{% endif %}
-        </h3>
+        <h3 style="margin-top:0;">{% if editing_group %}Groep bewerken{% else %}Nieuwe groep{% endif %}</h3>
 
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="form_kind" value="group">
-          {% if editing_group_id %}
-            <input type="hidden" name="group_id" value="{{ editing_group_id }}">
-          {% endif %}
+          {% if editing_group_id %}<input type="hidden" name="group_id" value="{{ editing_group_id }}">{% endif %}
 
           {{ group_form.non_field_errors }}
           {{ group_form.errors }}
+
           <div class="form" style="padding-top:0;">
             Groepsnaam: {{ group_form.name }}
 
-            <div class="perm-section-title">Beheer</div>
-            <div class="perms-grid">
-              <label class="perm-row">{{ group_form.can_access_admin }} <span>Mag tab Beheer openen</span></label>
-              <label class="perm-row">{{ group_form.can_manage_users }} <span>Mag gebruikers beheren</span></label>
-            </div>
-
-            <div class="perm-section-title">Rooster</div>
-            <div class="perms-grid">
-              <label class="perm-row">{{ group_form.can_view_roster }} <span>Mag tab Rooster bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_upload_roster }} <span>Mag roosters uploaden</span></label>
-            </div>
-
-            <div class="perm-section-title">Beschikbaarheid</div>
-            <div class="perms-grid">
-              <label class="perm-row">{{ group_form.can_access_availability }} <span>Mag tab Beschikbaarheid bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_view_av_medications }} <span>Mag subtab Voorraad bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_upload_voorraad }} <span>Mag Voorraad uploaden</span></label>
-              <label class="perm-row">{{ group_form.can_view_av_nazendingen }} <span>Mag subtab Nazendingen bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_upload_nazendingen }} <span>Mag Nazendingen uploaden</span></label>
-            </div>
-
-            <div class="perm-section-title">Werkafspraken</div>
-            <div class="perms-grid">
-              <label class="perm-row">{{ group_form.can_view_policies }} <span>Mag tab Werkafspraken bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_upload_werkafspraken }} <span>Mag Werkafspraken uploaden</span></label>
-            </div>
-
-            <div class="perm-section-title">Nieuws</div>
-            <div class="perms-grid">
-              <label class="perm-row">{{ group_form.can_view_news }} <span>Mag tab Nieuws bekijken</span></label>
-              <label class="perm-row">{{ group_form.can_upload_news }} <span>Mag Nieuws uploaden</span></label>
-            </div>
+            <!-- Dynamisch laden -->
+             <strong style="font-size:1.1rem; display:block; margin-top:4px;">Permissies</strong>
+            {% for section_title, fields in perm_sections %}
+              <div class="perm-section-title">{{ section_title }}</div>
+              <div class="perms-grid">
+                {% for code in fields %}
+                  {% if group_form.fields|has_key:code %}
+                    {% with bf=group_form|field:code %}
+                      {% if bf %}
+                        <label class="perm-row">
+                          {{ bf }}
+                          <span>{{ perm_labels|get_item:code|default:bf.label|default:code }}</span>
+                        </label>
+                      {% endif %}
+                    {% endwith %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
 
             <button class="btn group-save" type="submit">Opslaan</button>
           </div>
@@ -93,7 +77,6 @@
                   <input type="hidden" name="group_id" value="{{ row.group.id }}">
                   <button class="btn small" type="submit">Bewerk</button>
                 </form>
-
                 <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
                       onsubmit="return confirmGroupDelete('{{ row.group.name|escapejs }}');">
                   {% csrf_token %}
@@ -114,9 +97,9 @@
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="form_kind" value="user_create">
-          
-            {{ user_form.non_field_errors }}
-            {{ user_form.errors }}
+
+          {{ user_form.non_field_errors }}
+          {{ user_form.errors }}
 
           <div class="form" style="padding:0;">
             {{ user_form.first_name.label_tag }} {{ user_form.first_name }}

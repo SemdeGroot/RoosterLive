@@ -2,57 +2,56 @@ from django import forms
 from django.contrib.auth.models import Group, Permission, User
 from django.utils.text import slugify
 from django.core.validators import FileExtensionValidator
+from django.contrib.contenttypes.models import ContentType
+
+from .views._helpers import PERM_LABELS, PERM_SECTIONS
+
 
 class GroupWithPermsForm(forms.ModelForm):
-    # Beheer
-    can_access_admin         = forms.BooleanField(required=False, label="Mag beheer openen")
-    can_manage_users         = forms.BooleanField(required=False, label="Mag gebruikers beheren")
-    # Rooster
-    can_view_roster          = forms.BooleanField(required=False, label="Mag rooster bekijken")
-    can_upload_roster        = forms.BooleanField(required=False, label="Mag roosters uploaden")
-    # Beschikbaarheid
-    can_access_availability  = forms.BooleanField(required=False, label="Mag Beschikbaarheid openen")
-    can_view_av_medications  = forms.BooleanField(required=False, label="Mag subtab Geneesmiddelen zien")
-    can_upload_voorraad  = forms.BooleanField(required=False, label="Mag voorraad uploaden")
-    can_view_av_nazendingen  = forms.BooleanField(required=False, label="Mag subtab Nazendingen zien")
-    can_upload_nazendingen  = forms.BooleanField(required=False, label="Mag nazendingen uploaden zien")
-    # Nieuwe tabs
-    can_view_news            = forms.BooleanField(required=False, label="Mag Nieuws bekijken")
-    can_upload_news = forms.BooleanField(required=False, label="Mag Nieuws uploaden")
-    can_view_policies        = forms.BooleanField(required=False, label="Mag Werkafspraken bekijken")
-    can_upload_werkafspraken = forms.BooleanField(required=False, label="Mag Werkafspraken uploaden")
-
+    """
+    Bouwt permissie-checkboxen dynamisch vanuit PERM_LABELS.
+    - Maakt BooleanFields tijdens __init__
+    - Vult initial op basis van group.permissions
+    - Slaat gekozen permissies op
+    """
     class Meta:
         model = Group
         fields = ["name"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        perms_qs = Permission.objects.filter(content_type__app_label="core")
-        self.perm_map = {
-            "can_access_admin":        perms_qs.get(codename="can_access_admin"),
-            "can_manage_users":        perms_qs.get(codename="can_manage_users"),
-            "can_view_roster":         perms_qs.get(codename="can_view_roster"),
-            "can_upload_roster":       perms_qs.get(codename="can_upload_roster"),
-            "can_access_availability": perms_qs.get(codename="can_access_availability"),
-            "can_view_av_medications": perms_qs.get(codename="can_view_av_medications"),
-            "can_upload_voorraad": perms_qs.get(codename="can_upload_voorraad"),
-            "can_view_av_nazendingen": perms_qs.get(codename="can_view_av_nazendingen"),
-            "can_upload_nazendingen": perms_qs.get(codename="can_upload_nazendingen"),
-            "can_view_news":           perms_qs.get(codename="can_view_news"),
-            "can_upload_news": perms_qs.get(codename="can_upload_news"),
-            "can_view_policies":       perms_qs.get(codename="can_view_policies"),
-            "can_upload_werkafspraken": perms_qs.get(codename="can_upload_werkafspraken"),
-        }
+
+        # 1) Alle permissies voor ons 'synthetische' content type
+        ct, _ = ContentType.objects.get_or_create(app_label="core", model="custompermission")
+
+        # Haal alle Permission objects op die we in PERM_LABELS gebruiken
+        perms_qs = Permission.objects.filter(content_type=ct, codename__in=PERM_LABELS.keys())
+        # Map: codename -> Permission object
+        self.perm_map = {p.codename: p for p in perms_qs}
+
+        # 2) Dynamisch BooleanFields aanmaken volgens PERM_LABELS
+        #    NB: we gebruiken de labels uit PERM_LABELS
+        for code, label in PERM_LABELS.items():
+            self.fields[code] = forms.BooleanField(required=False, label=label)
+
+        # 3) Initial waarden zetten als er een bestaande groep is
         if self.instance and self.instance.pk:
-            current = set(self.instance.permissions.values_list("codename", flat=True))
-            for field, perm in self.perm_map.items():
-                self.fields[field].initial = (perm.codename in current)
+            current_codes = set(self.instance.permissions.values_list("codename", flat=True))
+            for code in PERM_LABELS.keys():
+                # initial True als deze permission in de groep zit
+                self.fields[code].initial = (code in current_codes)
+
+        # 4) Optioneel: secties doorgeven aan de form zelf, gefilterd op bestaande velden
+        #    (handig als je in de template via form.sections wilt loopen)
+        self.sections = [(title, [c for c in codes if c in self.fields]) for title, codes in PERM_SECTIONS]
 
     def save(self, commit=True):
         g = super().save(commit)
-        chosen = [perm for field, perm in self.perm_map.items() if self.cleaned_data.get(field)]
-        g.permissions.set(chosen)
+        # Verzamel alle gekozen codenames die we als veld hebben
+        chosen_codes = [code for code in PERM_LABELS.keys() if self.cleaned_data.get(code)]
+        # Converteer naar Permission objects; permissies die nog niet bestaan gewoon overslaan
+        chosen_perms = [self.perm_map[code] for code in chosen_codes if code in self.perm_map]
+        g.permissions.set(chosen_perms)
         return g
 
 

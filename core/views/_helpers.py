@@ -7,6 +7,8 @@ import fitz  # PyMuPDF
 import pandas as pd
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 # ===== PATHS =====
 DATA_DIR = settings.DATA_DIR
@@ -41,15 +43,43 @@ PERM_LABELS = {
     "can_manage_users":        "Mag gebruikers beheren",
     "can_view_roster":         "Mag rooster bekijken",
     "can_upload_roster":       "Mag roosters uploaden",
-    "can_view_av_medications": "Mag subtab Voorraad zien",
+    "can_view_av_medications": "Mag Voorraad zien",
     "can_upload_voorraad":     "Mag Voorraad uploaden",
-    "can_view_av_nazendingen": "Mag subtab Nazendingen zien",
+    "can_view_av_nazendingen": "Mag Nazendingen zien",
     "can_upload_nazendingen":  "Mag Nazendingen uploaden",
     "can_view_news":           "Mag Nieuws bekijken",
     "can_upload_news":         "Mag Nieuws uploaden",
     "can_view_policies":       "Mag Werkafspraken bekijken",
     "can_upload_werkafspraken":"Mag Werkafspraken uploaden",
 }
+
+PERM_SECTIONS = [
+    ("Beheer",        ["can_access_admin", "can_manage_users"]),
+    ("Rooster",       ["can_view_roster", "can_upload_roster"]),
+    ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
+    ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
+    ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
+    ("Nieuws",        ["can_view_news", "can_upload_news"]),
+]
+
+def sync_custom_permissions():
+    """
+    Sync auth_permission met PERM_LABELS.
+    Mist er één? → aanmaken. Bestaat er één te veel? → verwijderen.
+    Gebruikt content type: (app_label='core', model='custompermission').
+    """
+    ct, _ = ContentType.objects.get_or_create(app_label="core", model="custompermission")
+    existing = set(Permission.objects.filter(content_type=ct).values_list("codename", flat=True))
+    desired = set(PERM_LABELS.keys())
+
+    # create missing
+    for code in desired - existing:
+        Permission.objects.create(codename=code, name=PERM_LABELS[code], content_type=ct)
+
+    # delete stale
+    stale = existing - desired
+    if stale:
+        Permission.objects.filter(content_type=ct, codename__in=stale).delete()
 
 def can(user, codename: str) -> bool:
     return user.is_superuser or user.has_perm(f"core.{codename}")
