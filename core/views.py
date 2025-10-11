@@ -544,7 +544,7 @@ def admin_panel(request):
         member_count = g.user_set.count()
         group_rows.append({"group": g, "perm_labels": labels, "member_count": member_count})
 
-    return render(request, "admin_panel.html", {
+    return render(request, "admin/admin_panel.html", {
         "groups": groups,
         "group_rows": group_rows,
         "users": users,
