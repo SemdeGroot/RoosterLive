@@ -1,55 +1,11 @@
 {% extends "base.html" %}
-{% load role_tags %}
+{% load static role_tags %}
 {% block title %}Beheer{% endblock %}
 {% block header_title %}Beheer{% endblock %}
 
 {% block head %}
-<style>
-  .admin-wrap{margin-top:18px}
-  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
-
-  .card-inner{padding:16px}
-
-  table.manage-table{width:100%;border-collapse:collapse}
-  table.manage-table th,table.manage-table td{
-    border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:middle
-  }
-
-  /* Users kolombreedtes */
-  table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
-  table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere}
-  table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere}
-  table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere}
-
-  tr.edit-row td{background:#0f141a}
-  .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
-
-  .admin-input,.admin-select{
-    width:100%;max-width:100%;background:#0f141a;color:var(--text);
-    border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.95em
-  }
-  .admin-select.narrow{max-width:160px;width:160px}
-
-  .btn.small{padding:4px 8px;font-size:.85em}
-  .actions-wrap{display:flex;flex-wrap:wrap;gap:8px}
-  .danger{background:#3a1d1d}
-
-  .perms-grid{display:grid;gap:8px}
-  .perm-row{display:flex;align-items:center;gap:8px}
-  .perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
-  .perm-section-title{margin:14px 0 6px;font-weight:700;color:var(--text)}
-  .group-save{margin-top:16px}
-
-  /* Users zoekbalk */
-  .search-bar{margin:10px 0 12px;display:flex;gap:8px}
-  .search-bar input{flex:1;background:#0f141a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
-  input:focus, textarea:focus, select:focus, .admin-input:focus, .admin-select:focus {
-  outline: none;
-  border-color: #1f4ba0;
-}
-</style>
+  <link rel="stylesheet" href="{% static 'core/css/admin_panel.css' %}">
+  <script src="{% static 'core/js/admin_panel.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -133,13 +89,11 @@
             <td>{{ row.member_count }}</td>
             <td>
               <div class="actions-wrap">
-                <!-- Zelfde 'Bewerk' UX: navigeert naar ?group_id= -->
                 <form method="get">
                   <input type="hidden" name="group_id" value="{{ row.group.id }}">
                   <button class="btn small" type="submit">Bewerk</button>
                 </form>
 
-                <!-- Verwijderen zonder force -->
                 <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
                       onsubmit="return confirmGroupDelete('{{ row.group.name|escapejs }}');">
                   {% csrf_token %}
@@ -176,7 +130,6 @@
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande gebruikers</h3>
 
-        <!-- Zoekbalk -->
         <div class="search-bar">
           <input type="text" id="userSearch" placeholder="Typ om te zoeken…">
         </div>
@@ -190,7 +143,6 @@
           </tr>
 
           {% for u in users %}
-          <!-- Weergave-rij -->
           <tr class="user-row" id="user-row-{{ u.id }}">
             <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
             <td title="{{ u.email }}">{{ u.email }}</td>
@@ -211,7 +163,6 @@
             </td>
           </tr>
 
-          <!-- Inline edit-rij -->
           <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
             <td colspan="4">
               <form method="post" action="{% url 'user_update' u.id %}">
@@ -250,29 +201,4 @@
 
   </div>
 </div>
-
-<script>
-function toggleEdit(id){
-  const row = document.getElementById("edit-row-" + id);
-  if(!row) return;
-  row.style.display = (row.style.display === "none" || row.style.display === "") ? "table-row" : "none";
-}
-function confirmDelete(name){
-  return confirm("Weet je zeker dat je " + (name || "deze gebruiker") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
-}
-function confirmGroupDelete(name){
-  return confirm("Weet je zeker dat je " + (name || "deze groep") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
-}
-/* Live gebruikers-zoekfunctie */
-const userSearch = document.getElementById('userSearch');
-if(userSearch){
-  userSearch.addEventListener('input', function(){
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('#userTable .user-row').forEach(row=>{
-      const txt = row.innerText.toLowerCase();
-      row.style.display = txt.includes(q) ? '' : 'none';
-    });
-  });
-}
-</script>
 {% endblock %}

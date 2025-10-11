@@ -1,0 +1,44 @@
+.admin-wrap{margin-top:18px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
+
+.card-inner{padding:16px}
+
+table.manage-table{width:100%;border-collapse:collapse}
+table.manage-table th,table.manage-table td{
+  border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:middle
+}
+
+/* Users kolombreedtes */
+table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
+table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere}
+table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere}
+table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere}
+
+tr.edit-row td{background:#0f141a}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
+
+.admin-input,.admin-select{
+  width:100%;max-width:100%;background:#0f141a;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.95em
+}
+.admin-select.narrow{max-width:160px;width:160px}
+
+.btn.small{padding:4px 8px;font-size:.85em}
+.actions-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.danger{background:#3a1d1d}
+
+.perms-grid{display:grid;gap:8px}
+.perm-row{display:flex;align-items:center;gap:8px}
+.perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
+.perm-section-title{margin:14px 0 6px;font-weight:700;color:var(--text)}
+.group-save{margin-top:16px}
+
+/* Users zoekbalk */
+.search-bar{margin:10px 0 12px;display:flex;gap:8px}
+.search-bar input{flex:1;background:#0f141a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+input:focus, textarea:focus, select:focus, .admin-input:focus, .admin-select:focus {
+  outline: none;
+  border-color: #1f4ba0;
+}

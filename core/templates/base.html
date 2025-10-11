@@ -5,238 +5,61 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Rooster{% endblock %}</title>
-  <style>
-    :root{
-      --bg:#0b0f14; --panel:#10161d; --panel-2:#0f141a; --text:#e6edf3;
-      --muted:#9fb2c8; --border:#233041; --shadow:rgba(0,0,0,.55);
-      --tile:#64696d; /* lichter dan panel-2 voor betere contrast */
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%; margin:0; background:var(--bg); color:var(--text);
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
-    .app{display:grid; grid-template-rows:auto 1fr auto; min-height:100dvh}
-
-    /* Header */
-    .header{
-      position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:20px;
-      background:linear-gradient(180deg,var(--panel),rgba(16,22,29,.85));
-      backdrop-filter:blur(6px); border-bottom:1px solid var(--border);
-      padding:16px 24px; box-shadow:0 4px 14px var(--shadow);
-    }
-    .logo-wrap{background:#fff; padding:10px 16px; border-radius:16px; display:flex; align-items:center; justify-content:center}
-    .logo{max-height:52px; width:auto; object-fit:contain; display:block}
-    .title{font-size:1.9rem; font-weight:700; letter-spacing:.5px}
-    .nav{margin-left:auto; display:flex; gap:10px}
-    /* Links en Logout-knop exact gelijk stylen */
-    .nav a, .nav button{
-      color:var(--text); background:#17212b; border:1px solid var(--border);
-      padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer;
-      font:inherit; line-height:1.2; display:inline-flex; align-items:center; justify-content:center;
-    }
-
-    /* Content & cards */
-    .content{padding:18px; display:grid; gap:18px}
-    .card{
-      background:linear-gradient(180deg,var(--panel),var(--panel-2));
-      border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow); overflow:hidden;
-    }
-    .flash{padding:10px 14px; border-left:3px solid #3aa675; background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0}
-
-    /* Buttons & inputs */
-    .btn{background:#1d2936; border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:10px; cursor:pointer}
-    .form{padding:16px}
-    .form input,.form select{
-      width:100%; background:#0f141a; color:var(--text); border:1px solid var(--border);
-      padding:8px 10px; border-radius:10px; margin:6px 0 12px;
-    }
-
-    /* Tabel basis */
-    table{width:100%; border-collapse:collapse}
-    th,td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:middle}
-
-    /* Tiles (home & availability) */
-    .tiles{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px;}
-    .tile-box{
-      background:var(--tile); border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow);
-      padding:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
-      transition:transform .12s ease, box-shadow .12s ease;
-    }
-    .tile-box:hover{transform:translateY(-1px); box-shadow:0 10px 28px var(--shadow)}
-    .tile-img{max-width:120px; max-height:120px; display:block}
-    .tile-name{color:var(--text); font-weight:600}
-
-    /* Footer */
-    .footer{
-      position:sticky; bottom:0; z-index:1000; display:flex; justify-content:space-between; align-items:center; gap:6px;
-      padding:8px 10px; background:linear-gradient(0deg,var(--panel),rgba(16,22,29,.85));
-      border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow); color:var(--muted); font-size:12px;
-    }
-    /* Inline checkboxes + compacte spacing in beheer */
-    .perms-grid{display:grid;grid-template-columns:1fr;gap:8px}
-    .perm-row{display:flex;align-items:center;gap:8px;line-height:1}
-    .perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
-    .perm-section-title{margin:10px 0 4px;font-weight:700;color:var(--text)}
-
-  /* --- Mobile Nav --- */
-  .nav-toggle{
-    display:none;
-    background:#17212b;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 12px;
-    border-radius:12px;
-    cursor:pointer;
-    line-height:1;
-    align-items:center;
-    gap:10px;
-  }
-  .nav-toggle .burger{
-    position:relative;
-    width:22px; height:2px; background:var(--text);
-    transition:transform .2s ease, background .2s ease;
-  }
-  .nav-toggle .burger::before,
-  .nav-toggle .burger::after{
-    content:""; position:absolute; left:0; width:22px; height:2px; background:var(--text);
-    transition:transform .2s ease, opacity .2s ease;
-  }
-  .nav-toggle .burger::before{ top:-7px }
-  .nav-toggle .burger::after{ top:7px }
-
-  /* Paneel dat onder de header in- en uitschuift */
-  .nav-panel{
-    position:fixed; inset:auto 12px 12px 12px; top:70px;
-    background:linear-gradient(180deg,var(--panel),var(--panel-2));
-    border:1px solid var(--border);
-    border-radius:16px; box-shadow:0 18px 40px var(--shadow);
-    padding:12px; display:none; z-index:1200;
-  }
-  .nav-panel.open{ display:block; animation:pop .12s ease }
-  @keyframes pop{ from{ transform:translateY(-4px); opacity:.6 } to{ transform:none; opacity:1 } }
-
-  .nav-links{ display:flex; flex-direction:column; gap:8px }
-  .nav-links a, .nav-links form button{
-    width:100%; justify-content:flex-start;
-  }
-
-  /* Desktop vs mobile */
-  @media (max-width: 900px){
-    .nav{ display:none }                  /* verberg originele inline nav */
-    .nav-toggle{ display:inline-flex }    /* toon hamburger knop */
-  }
-  @media (min-width: 901px){
-    .nav-panel{ display:none !important } /* geen panel op desktop */
-    .nav-toggle[aria-expanded="true"] .burger{
-      background:transparent;
-    }
-    .nav-toggle[aria-expanded="true"] .burger::before{
-      transform:translateY(7px) rotate(45deg);
-    }
-    .nav-toggle[aria-expanded="true"] .burger::after{
-      transform:translateY(-7px) rotate(-45deg);
-    }
-  }
-
-  /* Focus styles voor toegankelijkheid */
-  .nav-toggle:focus-visible,
-  .nav-panel a:focus-visible,
-  .nav-panel button:focus-visible{
-    outline:2px solid #3aa675; outline-offset:3px;
-    border-color:#3aa675;
-  }
-</style>
+  <link rel="stylesheet" href="{% static 'core/css/base.css' %}">
   {% block head %}{% endblock %}
 </head>
 <body>
   <div class="app">
     <header class="header">
-  {% if logo_url %}
-    <div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>
-  {% endif %}
-  <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
+      {% if logo_url %}<div class="logo-wrap"><img class="logo" src="{{ logo_url }}" alt="Logo"></div>{% endif %}
+      <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
 
-  <!-- Hamburger knop (mobiel) -->
-  <button class="nav-toggle" id="navToggle"
-          aria-label="Open navigatie"
-          aria-controls="navPanel"
-          aria-expanded="false">
-    <span class="burger" aria-hidden="true"></span>
-    <span class="sr-only" style="position:absolute;left:-9999px">Menu</span>
-  </button>
+      <!-- Hamburger knop (mobiel) -->
+      <button class="nav-toggle" id="navToggle"
+              aria-label="Open navigatie"
+              aria-controls="navPanel"
+              aria-expanded="false">
+        <span class="burger" aria-hidden="true"></span>
+        <span class="sr-only" style="position:absolute;left:-9999px">Menu</span>
+      </button>
 
-  <!-- Originele inline nav (desktop) -->
-  <nav class="nav" aria-label="Hoofdmenu">
-    {% if request.resolver_match.url_name != 'home' %}
-      <a href="{% url 'home' %}">Home</a>
-    {% endif %}
-
-    {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
-      <a href="{% url 'rooster' %}">Rooster</a>
-    {% endif %}
-
-    {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
-      <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
-    {% endif %}
-
-    {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
-      <a href="{% url 'policies' %}">Werkafspraken</a>
-    {% endif %}
-
-    {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
-      <a href="{% url 'news' %}">Nieuws</a>
-    {% endif %}
-
-    {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}
-      <a href="{% url 'admin_panel' %}">Beheer</a>
-    {% endif %}
-
-    {% if request.user.is_authenticated %}
-      <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}<button type="submit">Uitloggen</button>
-      </form>
-    {% else %}
-      <a href="{% url 'login' %}">Login</a>
-    {% endif %}
-  </nav>
-</header>
-
-<!-- Mobiel paneel nav (zelfde links, maar onder elkaar) -->
-<nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
-  <div class="nav-links">
-    {% if request.resolver_match.url_name != 'home' %}
-      <a href="{% url 'home' %}">Home</a>
-    {% endif %}
-
-    {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}
-      <a href="{% url 'rooster' %}">Rooster</a>
-    {% endif %}
-
-    {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}
-      <a href="{% url 'availability_home' %}">Beschikbaarheid</a>
-    {% endif %}
-
-    {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}
-      <a href="{% url 'policies' %}">Werkafspraken</a>
-    {% endif %}
-
-    {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}
-      <a href="{% url 'news' %}">Nieuws</a>
-    {% endif %}
-
-    {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}
-      <a href="{% url 'admin_panel' %}">Beheer</a>
-    {% endif %}
-
-    {% if request.user.is_authenticated %}
-      <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}<button type="submit">Uitloggen</button>
-      </form>
-    {% else %}
-      <a href="{% url 'login' %}">Login</a>
-    {% endif %}
-  </div>
-</nav>
+      <!-- Originele inline nav (desktop) -->
+      <nav class="nav" aria-label="Hoofdmenu">
+        {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
+        {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
+        {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}<a href="{% url 'availability_home' %}">Beschikbaarheid</a>{% endif %}
+        {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
+        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
+        {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
+        {% if request.user.is_authenticated %}
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}<button type="submit">Uitloggen</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+      </nav>
     </header>
+
+    <!-- Mobiel paneel nav (zelfde links, maar onder elkaar) -->
+    <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
+      <div class="nav-links">
+        {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
+        {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
+        {% if perms.core.can_access_availability and request.resolver_match.url_name != 'availability_home' %}<a href="{% url 'availability_home' %}">Beschikbaarheid</a>{% endif %}
+        {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
+        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
+        {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
+        {% if request.user.is_authenticated %}
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}<button type="submit">Uitloggen</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+      </div>
+    </nav>
+
     <main class="content">
       {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
       {% block content %}{% endblock %}
@@ -247,46 +70,6 @@
     </footer>
   </div>
 
-<script>
-  const toggleBtn = document.getElementById('navToggle');
-  const panel = document.getElementById('navPanel');
-
-  if (toggleBtn && panel) {
-    const open = () => {
-      panel.hidden = false;
-      panel.classList.add('open');
-      toggleBtn.setAttribute('aria-expanded', 'true');
-      toggleBtn.setAttribute('aria-label', 'Sluit navigatie');
-    };
-    const close = () => {
-      panel.classList.remove('open');
-      toggleBtn.setAttribute('aria-expanded', 'false');
-      toggleBtn.setAttribute('aria-label', 'Open navigatie');
-      setTimeout(() => { panel.hidden = true; }, 120);
-    };
-    const isOpen = () => toggleBtn.getAttribute('aria-expanded') === 'true';
-
-    toggleBtn.addEventListener('click', () => {
-      isOpen() ? close() : open();
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isOpen()) close();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!isOpen()) return;
-      const t = e.target;
-      if (!panel.contains(t) && !toggleBtn.contains(t)) close();
-    });
-
-    panel.querySelectorAll('a,button').forEach(el => {
-      el.addEventListener('click', () => { if (isOpen()) close(); });
-    });
-
-    const mq = window.matchMedia('(min-width: 901px)');
-    mq.addEventListener('change', () => { if (mq.matches) close(); });
-  }
-</script>
+  <script src="{% static 'core/js/base.js' %}" defer></script>
 </body>
 </html>
