@@ -1,22 +1,29 @@
 from django.urls import path
-from . import views
+from .views import (
+    home, login_view, logout_view,
+    rooster, upload_roster,
+    availability_home, availability_medications, availability_nazendingen,
+    news, policies,
+    admin_panel, group_delete, user_update, user_delete,
+)
 
 urlpatterns = [
-    path("", views.home, name="home"),
-    path("rooster/", views.rooster, name="rooster"),
+    path("", home, name="home"),
+    path("login/", login_view, name="login"),
+    path("logout/", logout_view, name="logout"),
 
-    path("beschikbaarheid/", views.availability_home, name="availability_home"),
-    path("beschikbaarheid/voorraad/", views.availability_medications, name="availability_medications"),
-    path("beschikbaarheid/nazendingen/", views.availability_nazendingen, name="availability_nazendingen"),
+    path("rooster/", rooster, name="rooster"),
+    path("rooster/upload/", upload_roster, name="upload_roster"),
 
-    path("nieuws/", views.news, name="news"),
-    path("werkafspraken/", views.policies, name="policies"),
+    path("availability/", availability_home, name="availability_home"),
+    path("availability/medications/", availability_medications, name="availability_medications"),
+    path("availability/nazendingen/", availability_nazendingen, name="availability_nazendingen"),
 
-    path("beheer/", views.admin_panel, name="admin_panel"),
-    path("beheer/user/<int:user_id>/update/", views.user_update, name="user_update"),
-    path("beheer/user/<int:user_id>/delete/", views.user_delete, name="user_delete"),
-    path("beheer/group/<int:group_id>/delete/", views.group_delete, name="group_delete"),
+    path("news/", news, name="news"),
+    path("policies/", policies, name="policies"),
 
-    path("login/", views.login_view, name="login"),
-    path("logout/", views.logout_view, name="logout")
+    path("beheer/", admin_panel, name="admin_panel"),
+    path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
+    path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
+    path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete")
 ]
