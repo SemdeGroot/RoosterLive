@@ -116,11 +116,9 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
     background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0; max-width:100%;
 }
 
-/* ---------- Buttons (hersteld) ---------- */
-/* Themed knoppen overal, behalve nav-knoppen en file-upload */
-button:not(.nav .nav-btn),
-input[type="button"],
-input[type="submit"]{
+/* ---------- Buttons ---------- */
+/* Alleen .btn (en je .nav .nav-btn) worden gestyled; niets generieks meer */
+.btn{
     background:#1d2936;
     border:1px solid var(--border);
     color:var(--text);
@@ -128,34 +126,21 @@ input[type="submit"]{
     border-radius:10px;
     cursor:pointer;
     transition:background .2s ease;
-    font:inherit;
-    line-height:1.2;
-}
-button:not(.nav .nav-btn):hover,
-input[type="button"]:hover,
-input[type="submit"]:hover{
-    background:#253646;
-}
-
-/* Optionele varianten (als je die gebruikt) */
-.btn{ /* klassiek .btn blijft werken */
-    background:#1d2936; border:1px solid var(--border); color:var(--text);
-    padding:10px 14px; border-radius:10px; cursor:pointer; transition:background .2s ease;
 }
 .btn:hover{ background:#253646; }
 .btn-danger{ background:#3a1212; border-color:#4a1a1a; }
 .btn-danger:hover{ background:#4a1616; }
 
-/* Form fields – geen styling op buttons hier! */
+/* Form fields (file input uitgezonderd) */
 .form{ padding:16px; max-width:100%; }
-.form input,
+.form input:not([type="file"]),
 .form select,
 .form textarea{
     width:100%; background:#0f141a; color:var(--text); border:1px solid var(--border);
     padding:10px 12px; border-radius:10px; margin:6px 0 12px; font-size:16px;
 }
 
-/* Uploadknop: terug naar OS-default (oude stijl), alleen 16px font en marge */
+/* Uploadknop terug naar OS-default */
 input[type="file"]{
     font-size:16px;           /* voorkomt iOS-zoom */
     width:auto;
@@ -167,7 +152,7 @@ input[type="file"]{
     border-radius:initial;
     -webkit-appearance:auto; appearance:auto;
 }
-/* géén custom ::file-selector-button → OS tekent ‘Uploaden’ zoals vroeger */
+/* geen ::file-selector-button styling → pure OS look */
 
 /* Touch/zoom helpers */
 a, button, input[type="button"], input[type="submit"]{ touch-action:manipulation; }
