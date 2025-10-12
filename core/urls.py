@@ -16,11 +16,11 @@ urlpatterns = [
     path("rooster/upload/", upload_roster, name="upload_roster"),
 
     # Beschikbaarheid-tab is weg
-    path("medications/", medications_view, name="medications"),
+    path("voorraad/", medications_view, name="medications"),
     path("nazendingen/", nazendingen_view, name="nazendingen"),
 
-    path("news/", news, name="news"),
-    path("policies/", policies, name="policies"),
+    path("nieuws/", news, name="news"),
+    path("werkafspraken/", policies, name="policies"),
 
     path("beheer/", admin_panel, name="admin_panel"),
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),

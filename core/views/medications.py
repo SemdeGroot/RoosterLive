@@ -65,4 +65,4 @@ def medications_view(request):
         "rows": rows,
         "title": "Voorraad",
     }
-    return render(request, "availability/medications.html", ctx)
+    return render(request, "voorraad/index.html", ctx)

@@ -48,7 +48,7 @@ def nazendingen_view(request):
         for i in range(1, n + 1)
     ]
 
-    return render(request, "availability/nazendingen.html", {
+    return render(request, "nazendingen/index.html", {
         "logo_url": logo_url(),
         "title": "Nazendingen",
         "no_nazending": False,
