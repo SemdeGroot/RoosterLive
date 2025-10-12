@@ -1,44 +1,155 @@
-.admin-wrap{margin-top:18px}
-.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
+/* ===== Layout ===== */
+.admin-wrap{ margin-top:18px; }
 
-.card-inner{padding:16px}
-
-table.manage-table{width:100%;border-collapse:collapse}
-table.manage-table th,table.manage-table td{
-  border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:middle
+.admin-wrap .admin-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:18px;
+}
+@media (max-width:1100px){
+  .admin-wrap .admin-grid{ grid-template-columns:1fr; }
 }
 
-/* Users kolombreedtes */
-table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
-table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere}
-table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere}
-table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere}
+.admin-wrap .card-inner{ padding:16px; }
 
-tr.edit-row td{background:#0f141a}
-.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
-
-.admin-input,.admin-select{
-  width:100%;max-width:100%;background:#0f141a;color:var(--text);
-  border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.95em
+/* ===== Tabel: override base.css 'fake responsive' ===== */
+/* Zet admin-tabellen terug naar échte tabel-layout zodat kolombreedtes werken */
+.admin-wrap table.manage-table{
+  width:100%;
+  border-collapse:collapse;
+  display:table !important;
+  table-layout:auto !important;
+  overflow-x:visible !important;
 }
-.admin-select.narrow{max-width:160px;width:160px}
+.admin-wrap table.manage-table thead{ display:table-header-group !important; width:auto !important; }
+.admin-wrap table.manage-table tbody{ display:table-row-group   !important; width:auto !important; }
+.admin-wrap table.manage-table tr   { display:table-row         !important; width:auto !important; }
 
-.btn.small{padding:4px 8px;font-size:.85em}
-.actions-wrap{display:flex;flex-wrap:wrap;gap:8px}
-.danger{background:#3a1d1d}
+.admin-wrap table.manage-table th,
+.admin-wrap table.manage-table td{
+  border-bottom:1px solid var(--border);
+  padding:8px 10px;
+  text-align:left;
+  vertical-align:middle;
+  box-sizing:border-box;
+}
 
-.perms-grid{display:grid;gap:8px}
-.perm-row{display:flex;align-items:center;gap:8px}
-.perm-row input[type="checkbox"]{width:16px;height:16px;margin:0}
-.perm-section-title{margin:14px 0 6px;font-weight:700;color:var(--text)}
-.group-save{margin-top:16px}
+/* >>> Kolombreedtes in 'Bestaande groepen' <<< */
+.admin-wrap table.manage-table th:nth-child(2),
+.admin-wrap table.manage-table td:nth-child(2){ width:48% !important; } /* Permissies breder */
+.admin-wrap table.manage-table th:nth-child(3),
+.admin-wrap table.manage-table td:nth-child(3){ width:18% !important; } /* Leden smaller */
 
-/* Users zoekbalk */
-.search-bar{margin:10px 0 12px;display:flex;gap:8px}
-.search-bar input{flex:1;background:#0f141a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
-input:focus, textarea:focus, select:focus, .admin-input:focus, .admin-select:focus {
-  outline: none;
-  border-color: #1f4ba0;
+/* Users-kolommen zoals je had */
+.admin-wrap table.user-table th:nth-child(1),
+.admin-wrap table.user-table td:nth-child(1){ width:120px; overflow-wrap:anywhere; }
+.admin-wrap table.user-table th:nth-child(2),
+.admin-wrap table.user-table td:nth-child(2){ width:270px; overflow-wrap:anywhere; }
+.admin-wrap table.user-table th:nth-child(3),
+.admin-wrap table.user-table td:nth-child(3){ width:130px; overflow-wrap:anywhere; }
+.admin-wrap table.user-table th:nth-child(4),
+.admin-wrap table.user-table td:nth-child(4){ width:200px; overflow-wrap:anywhere; }
+
+/* ===== Edit-rijen & formulieren ===== */
+.admin-wrap tr.edit-row td{ background:#0f141a; }
+
+.admin-wrap .edit-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px;
+}
+@media (max-width:720px){
+  .admin-wrap .edit-grid{ grid-template-columns:1fr; }
+}
+
+.admin-wrap .admin-input,
+.admin-wrap .admin-select{
+  width:100%; max-width:100%;
+  background:#0f141a; color:var(--text);
+  border:1px solid var(--border); border-radius:8px;
+  padding:6px 8px; font-size:.95em;
+}
+.admin-wrap .admin-select.narrow{ max-width:160px; width:160px; }
+
+/* Permissies raster */
+.admin-wrap .perms-grid{ display:grid; gap:8px; }
+.admin-wrap .perm-row{ display:flex; align-items:center; gap:8px; }
+.admin-wrap .perm-row input[type="checkbox"]{ width:16px; height:16px; margin:0; }
+.admin-wrap .perm-section-title{ margin:14px 0 6px; font-weight:700; color:var(--text); }
+
+/* Zoekbalk */
+.admin-wrap .search-bar{ margin:10px 0 12px; display:flex; gap:8px; }
+.admin-wrap .search-bar input{
+  flex:1; background:#0f141a; color:var(--text);
+  border:1px solid var(--border); border-radius:8px; padding:6px 8px;
+}
+
+/* ===== Knoppen: forceer dezelfde hover als nav ===== */
+.admin-wrap .btn,
+.admin-wrap button,
+.admin-wrap input[type="button"],
+.admin-wrap input[type="submit"]{
+  background:#1d2936 !important;
+  border:1px solid var(--border) !important;
+  color:var(--text) !important;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:background .2s ease, border-color .2s ease;
+  font:inherit; line-height:1.2;
+}
+.admin-wrap .btn:hover,
+.admin-wrap button:hover,
+.admin-wrap input[type="button"]:hover,
+.admin-wrap input[type="submit"]:hover{
+  background:#1f2d3d !important;   /* match .nav a:hover */
+  border-color:var(--accent) !important;
+}
+
+/* Verwijderen = rood, binnenkant lichter */
+.admin-wrap .danger,
+.admin-wrap .btn.danger,
+.admin-wrap .btn.small.danger{
+  color:#ffecec !important;
+  background:linear-gradient(180deg,#c54646,#7a2323) !important;
+  border:1px solid #5a1919 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.admin-wrap .danger:hover,
+.admin-wrap .btn.danger:hover,
+.admin-wrap .btn.small.danger:hover{
+  background:linear-gradient(180deg,#cf4f4f,#862828) !important;
+  border-color:#6a1f1f !important;
+}
+
+/* Kleine knopvariant */
+.admin-wrap .btn.small{ padding:4px 8px; font-size:.85em; }
+.admin-wrap .actions-wrap{ display:flex; flex-wrap:wrap; gap:8px; }
+
+/* ===== Plaatsing van 'Opslaan' en 'Aanmaken' ===== */
+/* Maak alléén de twee formblokken flex, zodat align-self werkt ondanks base.css */
+.admin-wrap .card:nth-of-type(1) .form,   /* Groepen (met .group-save) */
+.admin-wrap .card:nth-of-type(2) .form{   /* Gebruikers (met 'Aanmaken') */
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px;
+}
+
+/* Opslaan (Groepen) */
+.admin-wrap .group-save{
+  align-self:center !important;  /* horizontaal centreren */
+  margin-top:12px;               /* nette lucht */
+  margin-bottom:12px;
+}
+
+/* Aanmaken (Gebruikers) – laatste button in dat form */
+.admin-wrap .card:nth-of-type(2) .form > button[type="submit"]{
+  align-self:center !important;
+  margin-top:12px;
+  margin-bottom:12px;
+}
+
+/* Focuskleur */
+.admin-wrap input:focus,
+.admin-wrap textarea:focus,
+.admin-wrap select:focus,
+.admin-wrap .admin-input:focus,
+.admin-wrap .admin-select:focus{
+  outline:none; border-color:#1f4ba0;
 }

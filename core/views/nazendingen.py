@@ -41,7 +41,7 @@ def nazendingen_view(request):
         })
 
     pdf_bytes = pdf_path.read_bytes()
-    h, n = render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=cache_root)
+    h, n = render_pdf_to_cache(pdf_bytes, dpi=200, cache_root=cache_root)
     page_urls = [
         f"{settings.MEDIA_URL}cache/availability/{key}/{h}/page_{i:03d}.png"
         for i in range(1, n + 1)

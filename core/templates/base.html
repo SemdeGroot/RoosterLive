@@ -2,94 +2,118 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Rooster{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-  {% block head %}{% endblock %}
+    <meta charset="utf-8" />
+    <!-- voorkom auto-zoom op focus + notch support -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <title>{% block title %}Rooster{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+    {% block head %}{% endblock %}
 </head>
 <body>
-  <div class="app">
-    <header class="header">
-      <a href="{% url 'home' %}" class="logo-wrap">
-        <img class="logo" src="{% static 'img/logo.jpg' %}" alt="Logo">
-      </a>
-      <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
+    <div class="app">
+        <header class="header">
+            <a href="{% url 'home' %}" class="logo-wrap">
+                <img class="logo" src="{% static 'img/logo.jpg' %}" alt="Logo">
+            </a>
 
-      <!-- Hamburger knop (mobiel) -->
-      <button class="nav-toggle" id="navToggle"
-              aria-label="Open navigatie"
-              aria-controls="navPanel"
-              aria-expanded="false">
-        <span class="burger" aria-hidden="true"></span>
-        <span class="sr-only" style="position:absolute;left:-9999px">Menu</span>
-      </button>
+            <div class="title-wrapper">
+                <h1 class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</h1>
+            </div>
 
-      <!-- Originele inline nav (desktop) -->
-      <nav class="nav" aria-label="Hoofdmenu">
-        {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
-        {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
+            <!-- Hamburger knop (mobiel) -->
+            <button class="nav-toggle" id="navToggle" aria-label="Open navigatie" aria-controls="navPanel" aria-expanded="false">
+                <span class="burger-line burger-line-1"></span>
+                <span class="burger-line burger-line-2"></span>
+                <span class="burger-line burger-line-3"></span>
+            </button>
 
-        {# ▼ Beschikbaarheid-hoofdpagina verwijderd; toon losse items #}
-        {% if perms.core.can_view_av_medications and request.resolver_match.url_name != 'medications' %}
-          <a href="{% url 'medications' %}">Voorraad</a>
-        {% endif %}
-        {% if perms.core.can_view_av_nazendingen and request.resolver_match.url_name != 'nazendingen' %}
-          <a href="{% url 'nazendingen' %}">Nazendingen</a>
-        {% endif %}
+            <!-- Desktop nav (onder logo/titel, wrappend) -->
+            <nav class="nav" aria-label="Hoofdmenu">
+                <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Home</a>
+                {% if perms.core.can_view_roster %}
+                    <a href="{% url 'rooster' %}" {% if request.resolver_match.url_name == 'rooster' %}class="active"{% endif %}>Rooster</a>
+                {% endif %}
+                {% if perms.core.can_view_av_medications %}
+                    <a href="{% url 'medications' %}" {% if request.resolver_match.url_name == 'medications' %}class="active"{% endif %}>Voorraad</a>
+                {% endif %}
+                {% if perms.core.can_view_av_nazendingen %}
+                    <a href="{% url 'nazendingen' %}" {% if request.resolver_match.url_name == 'nazendingen' %}class="active"{% endif %}>Nazendingen</a>
+                {% endif %}
+                {% if perms.core.can_view_policies %}
+                    <a href="{% url 'policies' %}" {% if request.resolver_match.url_name == 'policies' %}class="active"{% endif %}>Werkafspraken</a>
+                {% endif %}
+                {% if perms.core.can_view_news %}
+                    <a href="{% url 'news' %}" {% if request.resolver_match.url_name == 'news' %}class="active"{% endif %}>Nieuws</a>
+                {% endif %}
+                {% if perms.core.can_access_admin %}
+                    <a href="{% url 'admin_panel' %}" {% if request.resolver_match.url_name == 'admin_panel' %}class="active"{% endif %}>Beheer</a>
+                {% endif %}
+                {% if request.user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}<button type="submit" class="nav-btn">Uitloggen</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </nav>
+        </header>
 
-        {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
-        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
-        {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
+        <!-- Overlay voor mobiel menu -->
+        <div class="nav-overlay" id="navOverlay"></div>
 
-        {% if request.user.is_authenticated %}
-          <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}<button type="submit">Uitloggen</button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}">Login</a>
-        {% endif %}
-      </nav>
-    </header>
+        <!-- Mobiel paneel nav -->
+        <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
+            <div class="nav-panel-header">
+                <span class="nav-panel-title">Menu</span>
+                <button class="nav-close" id="navClose" aria-label="Sluit menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="nav-links">
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+                {% if perms.core.can_view_roster %}
+                    <a href="{% url 'rooster' %}" class="nav-link {% if request.resolver_match.url_name == 'rooster' %}active{% endif %}">Rooster</a>
+                {% endif %}
+                {% if perms.core.can_view_av_medications %}
+                    <a href="{% url 'medications' %}" class="nav-link {% if request.resolver_match.url_name == 'medications' %}active{% endif %}">Voorraad</a>
+                {% endif %}
+                {% if perms.core.can_view_av_nazendingen %}
+                    <a href="{% url 'nazendingen' %}" class="nav-link {% if request.resolver_match.url_name == 'nazendingen' %}active{% endif %}">Nazendingen</a>
+                {% endif %}
+                {% if perms.core.can_view_policies %}
+                    <a href="{% url 'policies' %}" class="nav-link {% if request.resolver_match.url_name == 'policies' %}active{% endif %}">Werkafspraken</a>
+                {% endif %}
+                {% if perms.core.can_view_news %}
+                    <a href="{% url 'news' %}" class="nav-link {% if request.resolver_match.url_name == 'news' %}active{% endif %}">Nieuws</a>
+                {% endif %}
+                {% if perms.core.can_access_admin %}
+                    <a href="{% url 'admin_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_panel' %}active{% endif %}">Beheer</a>
+                {% endif %}
+                <div class="nav-divider"></div>
+                {% if request.user.is_authenticated %}
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link nav-logout">Uitloggen</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link">Login</a>
+                {% endif %}
+            </div>
+        </nav>
 
-    <!-- Mobiel paneel nav (zelfde links, maar onder elkaar) -->
-    <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
-      <div class="nav-links">
-        {% if request.resolver_match.url_name != 'home' %}<a href="{% url 'home' %}">Home</a>{% endif %}
-        {% if perms.core.can_view_roster and request.resolver_match.url_name != 'rooster' %}<a href="{% url 'rooster' %}">Rooster</a>{% endif %}
+        <main class="content">
+            {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+            {% block content %}{% endblock %}
+        </main>
 
-        {# ▼ Zelfde losse items op mobiel #}
-        {% if perms.core.can_view_av_medications and request.resolver_match.url_name != 'medications' %}
-          <a href="{% url 'medications' %}">Voorraad</a>
-        {% endif %}
-        {% if perms.core.can_view_av_nazendingen and request.resolver_match.url_name != 'nazendingen' %}
-          <a href="{% url 'nazendingen' %}">Nazendingen</a>
-        {% endif %}
-
-        {% if perms.core.can_view_policies and request.resolver_match.url_name != 'policies' %}<a href="{% url 'policies' %}">Werkafspraken</a>{% endif %}
-        {% if perms.core.can_view_news and request.resolver_match.url_name != 'news' %}<a href="{% url 'news' %}">Nieuws</a>{% endif %}
-        {% if perms.core.can_access_admin and request.resolver_match.url_name != 'admin_panel' %}<a href="{% url 'admin_panel' %}">Beheer</a>{% endif %}
-
-        {% if request.user.is_authenticated %}
-          <form action="{% url 'logout' %}" method="post" style="display:inline;">
-            {% csrf_token %}<button type="submit">Uitloggen</button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}">Login</a>
-        {% endif %}
-      </div>
-    </nav>
-
-    <main class="content">
-      {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
-      {% block content %}{% endblock %}
-    </main>
-
-    <footer class="footer">
-      <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div><div></div>
-    </footer>
-  </div>
-
-  <script src="{% static 'js/base/base.js' %}" defer></script>
+        <footer class="footer">
+            <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div>
+        </footer>
+    </div>
+    <script src="{% static 'js/base/base.js' %}" defer></script>
 </body>
 </html>

@@ -43,7 +43,7 @@ def rooster(request):
         return render(request, "rooster/index.html", context)
 
     pdf_bytes = ROSTER_FILE.read_bytes()
-    h, n = render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=CACHE_ROSTER_DIR)
+    h, n = render_pdf_to_cache(pdf_bytes, dpi=200, cache_root=CACHE_ROSTER_DIR)
     context["page_urls"] = [
         f"{settings.MEDIA_URL}cache/rooster/{h}/page_{i:03d}.png" for i in range(1, n + 1)
     ]

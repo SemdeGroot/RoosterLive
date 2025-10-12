@@ -100,9 +100,9 @@ def clear_dir(p: Path):
             except Exception:
                 pass
 
-def render_pdf_to_cache(pdf_bytes: bytes, zoom: float, cache_root: Path):
+def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 200, cache_root: Path = Path("cache")):
     """
-    Render PDF -> PNG's in cache_root/<hash>/page_XXX.png.
+    Render PDF -> PNG's in cache_root/<hash>/page_XXX.png met hoge kwaliteit.
     Return (hash, n_pages).
     """
     h = pdf_hash(pdf_bytes)
@@ -110,9 +110,8 @@ def render_pdf_to_cache(pdf_bytes: bytes, zoom: float, cache_root: Path):
     if not out.exists() or not any(out.glob("page_*.png")):
         out.mkdir(parents=True, exist_ok=True)
         with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
-            mat = fitz.Matrix(zoom, zoom)
             for i, page in enumerate(doc):
-                pix = page.get_pixmap(matrix=mat, alpha=False)
+                pix = page.get_pixmap(dpi=dpi, alpha=False)
                 (out / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
     n_pages = len(list(out.glob("page_*.png")))
     return h, n_pages
