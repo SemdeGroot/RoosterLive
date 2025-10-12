@@ -1,7 +1,7 @@
 # core/views/home.py
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from ._helpers import can, logo_url
+from ._helpers import can
 
 @login_required
 def home(request):
@@ -21,4 +21,4 @@ def home(request):
     if can(request.user, "can_access_admin"):
         tiles.append({"name": "Beheer", "img": "beheer.png", "url_name": "admin_panel"})
 
-    return render(request, "home.html", {"tiles": tiles, "logo_url": logo_url()})
+    return render(request, "home.html", {"tiles": tiles})

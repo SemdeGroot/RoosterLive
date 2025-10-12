@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from ..forms import AvailabilityUploadForm
-from ._helpers import can, logo_url, AV_DIR, read_table
+from ._helpers import can, AV_DIR, read_table
 
 @login_required
 def medications_view(request):
@@ -57,7 +57,6 @@ def medications_view(request):
         rows = df.values.tolist()
 
     ctx = {
-        "logo_url": logo_url(),
         "form": form,
         "has_file": existing_path is not None,
         "file_name": existing_path.name if existing_path else None,

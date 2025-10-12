@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
-from ._helpers import can, logo_url, AV_DIR, CACHE_AVAIL_DIR, render_pdf_to_cache, clear_dir
+from ._helpers import can, AV_DIR, CACHE_AVAIL_DIR, render_pdf_to_cache, clear_dir
 
 @login_required
 def nazendingen_view(request):
@@ -35,7 +35,6 @@ def nazendingen_view(request):
 
     if not pdf_path.exists():
         return render(request, "availability/nazendingen.html", {
-            "logo_url": logo_url(),
             "title": "Nazendingen",
             "no_nazending": True,
             "page_urls": [],
@@ -49,7 +48,6 @@ def nazendingen_view(request):
     ]
 
     return render(request, "nazendingen/index.html", {
-        "logo_url": logo_url(),
         "title": "Nazendingen",
         "no_nazending": False,
         "page_urls": page_urls,

@@ -7,7 +7,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 
 from ._helpers import (
-    can, logo_url,
+    can,
     ROSTER_DIR, ROSTER_FILE, CACHE_ROSTER_DIR,
     clear_dir, render_pdf_to_cache
 )
@@ -36,7 +36,7 @@ def rooster(request):
         messages.success(request, "Rooster geüpload.")
         return redirect("rooster")
 
-    context = {"logo_url": logo_url(), "year": datetime.now().year}
+    context = { "year": datetime.now().year}
     if not ROSTER_FILE.exists():
         context["page_urls"] = []
         context["no_roster"] = True
@@ -69,4 +69,4 @@ def upload_roster(request):
 
         messages.success(request, "Rooster geüpload.")
         return redirect("rooster")
-    return render(request, "rooster/upload.html", {"logo_url": logo_url()})
+    return render(request, "rooster/upload.html")

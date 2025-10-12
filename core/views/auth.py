@@ -5,10 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.conf import settings
 
 from ..forms import EmailOrUsernameLoginForm
-from ._helpers import logo_url
+
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -29,15 +28,12 @@ def login_view(request):
             return redirect(request.GET.get("next") or "home")
         messages.error(request, "Ongeldige inloggegevens.")
 
-    ctx = {
-        "form": form,
-        "logo_url": logo_url(),
-        "bg_url": settings.MEDIA_URL + "_data/achtergrond.jpg", 
-    }
+    ctx = {"form": form}
     return render(request, "auth/login.html", ctx)
+
 
 @login_required
 @require_POST
-def logout_view(request): 
+def logout_view(request):
     logout(request)
     return redirect("login")

@@ -11,11 +11,9 @@
 <body>
   <div class="app">
     <header class="header">
-      {% if logo_url %}
-        <a href="{% url 'home' %}" class="logo-wrap">
-          <img class="logo" src="{{ logo_url }}" alt="Logo">
-        </a>
-      {% endif %}
+      <a href="{% url 'home' %}" class="logo-wrap">
+        <img class="logo" src="{% static 'img/logo.jpg' %}" alt="Logo">
+      </a>
       <div class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</div>
 
       <!-- Hamburger knop (mobiel) -->

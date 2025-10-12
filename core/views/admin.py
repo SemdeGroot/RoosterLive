@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
-from ._helpers import can, logo_url, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
+from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 
 @login_required
 def admin_panel(request):
@@ -63,7 +63,6 @@ def admin_panel(request):
         "user_form": user_form,
         "editing_group": bool(editing_group),
         "editing_group_id": editing_group.id if editing_group else "",
-        "logo_url": logo_url(),
 
         # ▼ dynamisch voor de template
         "perm_sections": PERM_SECTIONS,

@@ -123,7 +123,6 @@ class SimpleUserEditForm(forms.Form):
 
 class AvailabilityUploadForm(forms.Form):
     file = forms.FileField(label="Bestand (CSV of XLSX)", help_text="Upload een CSV of Excel-bestand.")
-    limit = forms.IntegerField(label="Max. rijen", min_value=1, max_value=1000, initial=50, required=False)
 
 
 class EmailOrUsernameLoginForm(forms.Form):

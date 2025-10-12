@@ -7,7 +7,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 
 from ._helpers import (
-    can, logo_url,
+    can,
     POL_DIR, CACHE_POLICIES_DIR,
     render_pdf_to_cache, hash_from_img_url
 )
@@ -77,6 +77,5 @@ def policies(request):
             page_urls.append(f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png")
 
     return render(request, "policies/index.html", {
-        "logo_url": logo_url(),
         "page_urls": page_urls,
     })

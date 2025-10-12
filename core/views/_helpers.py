@@ -84,15 +84,6 @@ def sync_custom_permissions():
 def can(user, codename: str) -> bool:
     return user.is_superuser or user.has_perm(f"core.{codename}")
 
-def logo_url() -> str | None:
-    """Zoekt het logo in MEDIA_ROOT/_data/logo.*"""
-    logo_dir = settings.MEDIA_ROOT / "_data"
-    for ext in ("png", "jpg", "jpeg", "svg", "webp"):
-        p = logo_dir / f"logo.{ext}"
-        if p.exists():
-            return f"{settings.MEDIA_URL}_data/logo.{ext}"
-    return None
-
 # ===== Generieke helpers =====
 def pdf_hash(pdf_bytes: bytes) -> str:
     return hashlib.sha256(pdf_bytes).hexdigest()[:16]
