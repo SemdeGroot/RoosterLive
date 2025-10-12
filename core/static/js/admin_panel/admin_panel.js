@@ -5,11 +5,11 @@ window.toggleEdit = function(id){
 }
 
 window.confirmDelete = function(name){
-  return confirm("Weet je zeker dat je " + (name || "deze gebruiker") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
+  return confirm("Weet je zeker dat je de gebruiker " + (name || "deze gebruiker") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
 }
 
 window.confirmGroupDelete = function(name){
-  return confirm("Weet je zeker dat je " + (name || "deze groep") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
+  return confirm("Weet je zeker dat je de groep " + (name || "deze groep") + " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!");
 }
 
 /* Live gebruikers-zoekfunctie */

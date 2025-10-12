@@ -1,155 +1,236 @@
-/* ===== Layout ===== */
-.admin-wrap{ margin-top:18px; }
+:root{
+    --bg:#0b0f14;
+    --panel:#10161d;
+    --panel-2:#0f141a;
+    --text:#e6edf3;
+    --muted:#9fb2c8;
+    --border:#233041;
+    --shadow:rgba(0,0,0,.55);
+    --tile:#64696d;
+    --accent:#1f4ba0;
 
-.admin-wrap .admin-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:18px;
-}
-@media (max-width:1100px){
-  .admin-wrap .admin-grid{ grid-template-columns:1fr; }
-}
-
-.admin-wrap .card-inner{ padding:16px; }
-
-/* ===== Tabel: override base.css 'fake responsive' ===== */
-/* Zet admin-tabellen terug naar échte tabel-layout zodat kolombreedtes werken */
-.admin-wrap table.manage-table{
-  width:100%;
-  border-collapse:collapse;
-  display:table !important;
-  table-layout:auto !important;
-  overflow-x:visible !important;
-}
-.admin-wrap table.manage-table thead{ display:table-header-group !important; width:auto !important; }
-.admin-wrap table.manage-table tbody{ display:table-row-group   !important; width:auto !important; }
-.admin-wrap table.manage-table tr   { display:table-row         !important; width:auto !important; }
-
-.admin-wrap table.manage-table th,
-.admin-wrap table.manage-table td{
-  border-bottom:1px solid var(--border);
-  padding:8px 10px;
-  text-align:left;
-  vertical-align:middle;
-  box-sizing:border-box;
+    --header-gap:18px; /* desktop header spacing */
 }
 
-/* >>> Kolombreedtes in 'Bestaande groepen' <<< */
-.admin-wrap table.manage-table th:nth-child(2),
-.admin-wrap table.manage-table td:nth-child(2){ width:80% !important; } /* Permissies breder */
-.admin-wrap table.manage-table th:nth-child(3),
-.admin-wrap table.manage-table td:nth-child(3){ width:18% !important; } /* Leden smaller */
+*{box-sizing:border-box}
+html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif; overflow-x:hidden}
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
+.app{display:grid; grid-template-rows:auto 1fr auto; min-height:100dvh; max-width:100vw; overflow-x:hidden}
 
-/* Users-kolommen zoals je had */
-.admin-wrap table.user-table th:nth-child(1),
-.admin-wrap table.user-table td:nth-child(1){ width:120px; overflow-wrap:anywhere; }
-.admin-wrap table.user-table th:nth-child(2),
-.admin-wrap table.user-table td:nth-child(2){ width:270px; overflow-wrap:anywhere; }
-.admin-wrap table.user-table th:nth-child(3),
-.admin-wrap table.user-table td:nth-child(3){ width:130px; overflow-wrap:anywhere; }
-.admin-wrap table.user-table th:nth-child(4),
-.admin-wrap table.user-table td:nth-child(4){ width:200px; overflow-wrap:anywhere; }
-
-/* ===== Edit-rijen & formulieren ===== */
-.admin-wrap tr.edit-row td{ background:#0f141a; }
-
-.admin-wrap .edit-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:12px;
-}
-@media (max-width:720px){
-  .admin-wrap .edit-grid{ grid-template-columns:1fr; }
+/* Header – mobile first (flex) */
+.header{
+    position:sticky; top:0; z-index:1000;
+    display:flex; align-items:center; gap:12px;
+    background:linear-gradient(180deg,var(--panel),rgba(16,22,29,.95));
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:12px 16px;
+    box-shadow:0 4px 14px var(--shadow);
+    max-width:100vw;
+    flex-wrap:nowrap; /* mobile: logo, title, burger on single row */
 }
 
-.admin-wrap .admin-input,
-.admin-wrap .admin-select{
-  width:100%; max-width:100%;
-  background:#0f141a; color:var(--text);
-  border:1px solid var(--border); border-radius:8px;
-  padding:6px 8px; font-size:.95em;
+.logo-wrap{
+    background:#fff; padding:8px 12px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.admin-wrap .admin-select.narrow{ max-width:160px; width:160px; }
+.logo{ max-height:32px; width:auto; object-fit:contain; display:block; }
 
-/* Permissies raster */
-.admin-wrap .perms-grid{ display:grid; gap:8px; }
-.admin-wrap .perm-row{ display:flex; align-items:center; gap:8px; }
-.admin-wrap .perm-row input[type="checkbox"]{ width:16px; height:16px; margin:0; }
-.admin-wrap .perm-section-title{ margin:14px 0 6px; font-weight:700; color:var(--text); }
-
-/* Zoekbalk */
-.admin-wrap .search-bar{ margin:10px 0 12px; display:flex; gap:8px; }
-.admin-wrap .search-bar input{
-  flex:1; background:#0f141a; color:var(--text);
-  border:1px solid var(--border); border-radius:8px; padding:6px 8px;
+.title-wrapper{ flex:1 1 auto; min-width:0; display:flex; align-items:center; }
+.title{
+    font-size:1.2rem; font-weight:700; letter-spacing:.3px; margin:0; line-height:1.3;
+    word-break:break-word; overflow-wrap:anywhere; hyphens:auto;
 }
 
-/* ===== Knoppen: forceer dezelfde hover als nav ===== */
-.admin-wrap .btn,
-.admin-wrap button,
-.admin-wrap input[type="button"],
-.admin-wrap input[type="submit"]{
-  background:#1d2936 !important;
-  border:1px solid var(--border) !important;
-  color:var(--text) !important;
-  padding:10px 14px;
-  border-radius:10px;
-  cursor:pointer;
-  transition:background .2s ease, border-color .2s ease;
-  font:inherit; line-height:1.2;
+/* Desktop nav (hidden on mobile) */
+.nav{
+    margin:0; padding:0;
+    display:none; gap:10px; flex-wrap:wrap;
 }
-.admin-wrap .btn:hover,
-.admin-wrap button:hover,
-.admin-wrap input[type="button"]:hover,
-.admin-wrap input[type="submit"]:hover{
-  background:#1f2d3d !important;   /* match .nav a:hover */
-  border-color:var(--accent) !important;
+.nav a, .nav .nav-btn{
+    color:var(--text); background:#17212b; border:1px solid var(--border);
+    padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer;
+    font:inherit; line-height:1.2; display:inline-flex; align-items:center; justify-content:center;
+    transition:background .2s ease, border-color .2s ease;
+}
+.nav a:hover, .nav .nav-btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+.nav a.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
+
+/* Hamburger (mobile) */
+.nav-toggle{
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px;
+    background:transparent; border:none; padding:8px; cursor:pointer; width:44px; height:44px;
+    border-radius:10px; transition:background .2s ease; flex-shrink:0;
+}
+.nav-toggle:hover{ background:rgba(255,255,255,.05); }
+.burger-line{ display:block; width:24px; height:2.5px; background:var(--text); border-radius:2px;
+    transition:transform .25s ease, opacity .2s ease; transform-origin:center; }
+.nav-toggle[aria-expanded="true"] .burger-line-1{ transform:translateY(7.5px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] .burger-line-2{ opacity:0; transform:scaleX(0); }
+.nav-toggle[aria-expanded="true"] .burger-line-3{ transform:translateY(-7.5px) rotate(-45deg); }
+
+/* Overlay & mobile panel */
+.nav-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px);
+    z-index:1100; opacity:0; transition:opacity .25s ease; }
+.nav-overlay.active{ display:block; opacity:1; }
+
+.nav-panel{
+    position:fixed; top:0; right:0; bottom:0; width:min(320px,85vw);
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border-left:1px solid var(--border); box-shadow:-8px 0 40px var(--shadow);
+    padding:0; display:flex; flex-direction:column; z-index:1200;
+    transform:translateX(100%); transition:transform .25s ease; overflow-y:auto;
+}
+.nav-panel.open{ transform:translateX(0); }
+
+.nav-panel-header{ display:flex; justify-content:space-between; align-items:center; padding:20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.nav-panel-title{ font-size:1.3rem; font-weight:700; color:var(--text); }
+.nav-close{ background:transparent; border:none; color:var(--text); cursor:pointer; padding:8px;
+    display:flex; align-items:center; justify-content:center; border-radius:8px; transition:background .2s ease; }
+.nav-close:hover{ background:rgba(255,255,255,.1); }
+
+.nav-links{ display:flex; flex-direction:column; gap:4px; padding:12px; flex:1; }
+.nav-link{
+    display:flex; align-items:center; padding:14px 16px; color:var(--text); text-decoration:none;
+    border-radius:12px; transition:background .2s ease, border-color .2s ease;
+    cursor:pointer; background:transparent; border:2px solid transparent; width:100%; text-align:left; font:inherit; font-size:1rem;
+}
+.nav-link.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
+.nav-divider{ height:1px; background:var(--border); margin:12px 0; }
+.nav-logout{ color:#ff6b6b; }
+.nav-logout:hover{ background:rgba(255,107,107,.1); }
+.nav-links form{ display:contents; }
+
+/* Content & cards */
+.content{
+    padding:18px; display:grid; gap:18px; max-width:100vw; overflow-x:hidden;
+    align-content:start; align-items:start;
+}
+.card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow);
+    overflow:hidden; max-width:100%;
+}
+.flash{
+    padding:12px 16px; border-left:3px solid var(--accent);
+    background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0; max-width:100%;
 }
 
-/* Verwijderen = rood, binnenkant lichter */
-.admin-wrap .danger,
-.admin-wrap .btn.danger,
-.admin-wrap .btn.small.danger{
-  color:#ffecec !important;
-  background:linear-gradient(180deg,#c54646,#7a2323) !important;
-  border:1px solid #5a1919 !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+/* ---------- Buttons ---------- */
+/* Alleen .btn (en je .nav .nav-btn) worden gestyled; niets generieks meer */
+.btn{
+    background:#1d2936;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .2s ease;
 }
-.admin-wrap .danger:hover,
-.admin-wrap .btn.danger:hover,
-.admin-wrap .btn.small.danger:hover{
-  background:linear-gradient(180deg,#cf4f4f,#862828) !important;
-  border-color:#6a1f1f !important;
-}
+.btn:hover{ background:#253646; }
+.btn-danger{ background:#3a1212; border-color:#4a1a1a; }
+.btn-danger:hover{ background:#4a1616; }
 
-/* Kleine knopvariant */
-.admin-wrap .btn.small{ padding:4px 8px; font-size:.85em; }
-.admin-wrap .actions-wrap{ display:flex; flex-wrap:wrap; gap:8px; }
-
-/* ===== Plaatsing van 'Opslaan' en 'Aanmaken' ===== */
-/* Maak alléén de twee formblokken flex, zodat align-self werkt ondanks base.css */
-.admin-wrap .card:nth-of-type(1) .form,   /* Groepen (met .group-save) */
-.admin-wrap .card:nth-of-type(2) .form{   /* Gebruikers (met 'Aanmaken') */
-  display:flex !important;
-  flex-direction:column !important;
-  gap:10px;
+/* Form fields (file input uitgezonderd) */
+.form{ padding:16px; max-width:100%; }
+.form input:not([type="file"]),
+.form select,
+.form textarea{
+    width:100%; background:#0f141a; color:var(--text); border:1px solid var(--border);
+    padding:10px 12px; border-radius:10px; margin:6px 0 12px; font-size:16px;
 }
 
-/* Opslaan (Groepen) */
-.admin-wrap .group-save{
-  align-self:center !important;  /* horizontaal centreren */
-  margin-top:12px;               /* nette lucht */
-  margin-bottom:12px;
+/* Uploadknop terug naar OS-default */
+input[type="file"]{
+    font-size:16px;           /* voorkomt iOS-zoom */
+    width:auto;
+    margin:6px 0 12px;
+    color:initial;
+    background:initial;
+    border:initial;
+    padding:initial;
+    border-radius:initial;
+    -webkit-appearance:auto; appearance:auto;
+}
+/* geen ::file-selector-button styling → pure OS look */
+
+/* Touch/zoom helpers */
+a, button, input[type="button"], input[type="submit"]{ touch-action:manipulation; }
+input, select, textarea, button{ font-size:16px; line-height:1.3; }
+input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"]{ font-size:16px; }
+
+/* Tables */
+table{ width:100%; border-collapse:collapse; display:block; overflow-x:auto; }
+thead,tbody,tr{ display:table; width:100%; table-layout:fixed; }
+th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; vertical-align:middle; word-wrap:break-word; }
+
+/* Tiles */
+.tiles{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+.tile{ display:block; text-decoration:none; color:inherit; }
+.tile:visited{ color:inherit; }
+.tile-box{
+    background:var(--tile); border:1px solid var(--border); border-radius:14px; box-shadow:0 6px 20px var(--shadow);
+    padding:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    transition:transform .2s ease, box-shadow .2s ease; min-height:140px;
+}
+.tile-box:hover{ transform:translateY(-2px); box-shadow:0 8px 24px var(--shadow); }
+.tile-img{ max-width:80px; max-height:80px; display:block; object-fit:contain; }
+.tile-name{ color:var(--text); font-weight:600; text-align:center; font-size:0.95rem; }
+
+/* Footer */
+.footer{
+    position:sticky; bottom:0; z-index:1000;
+    display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px;
+    padding:12px 16px; background:linear-gradient(0deg,var(--panel),rgba(16,22,29,.95));
+    border-top:1px solid var(--border); box-shadow:0 -4px 14px var(--shadow);
+    color:var(--muted); font-size:11px; text-align:center; max-width:100vw;
 }
 
-/* Aanmaken (Gebruikers) – laatste button in dat form */
-.admin-wrap .card:nth-of-type(2) .form > button[type="submit"]{
-  align-self:center !important;
-  margin-top:12px;
-  margin-bottom:12px;
+/* Focus styles */
+.nav-toggle:focus-visible, .nav-close:focus-visible, .nav a:focus-visible, .nav .nav-btn:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+}
+.nav-panel .nav-link:focus-visible{ outline:none; }
+
+/* Tablet */
+@media (min-width:600px){
+    .header{ padding:14px 20px; gap:16px; }
+    .logo{ max-height:44px; }
+    .title{ font-size:1.5rem; }
+    .tiles{ grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+    .tile-box{ padding:18px; min-height:160px; }
+    .tile-img{ max-width:100px; max-height:100px; }
 }
 
-/* Focuskleur */
-.admin-wrap input:focus,
-.admin-wrap textarea:focus,
-.admin-wrap select:focus,
-.admin-wrap .admin-input:focus,
-.admin-wrap .admin-select:focus{
-  outline:none; border-color:#1f4ba0;
+/* Desktop: header as grid with equal vertical spacing */
+@media (min-width:900px){
+    .header{
+        display:grid;
+        grid-template-columns:auto 1fr auto;
+        grid-template-areas:
+            "logo title burger"
+            "nav  nav   nav";
+        align-items:center;
+        column-gap:16px;
+        row-gap:var(--header-gap);
+        padding-top:var(--header-gap);
+        padding-bottom:var(--header-gap);
+        padding-left:24px;
+        padding-right:24px;
+    }
+
+    .logo{ max-height:52px; }
+    .logo-wrap{ grid-area:logo; padding:10px 16px; border-radius:16px; }
+    .title-wrapper{ grid-area:title; }
+    .nav-toggle{ grid-area:burger; display:none; }
+    .nav-overlay, .nav-panel{ display:none !important; }
+
+    .nav{ display:flex; grid-area:nav; }
+
+    .title{ font-size:1.9rem; }
+
+    .tiles{ grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
+    .tile-box{ padding:18px; min-height:180px; }
+    .tile-img{ max-width:120px; max-height:120px; }
+    .tile-name{ font-size:1rem; }
 }
