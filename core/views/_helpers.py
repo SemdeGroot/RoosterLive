@@ -100,7 +100,7 @@ def clear_dir(p: Path):
             except Exception:
                 pass
 
-def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 200, cache_root: Path = Path("cache")):
+def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300, cache_root: Path = Path("cache")):
     """
     Render PDF -> PNG's in cache_root/<hash>/page_XXX.png met hoge kwaliteit.
     Return (hash, n_pages).
