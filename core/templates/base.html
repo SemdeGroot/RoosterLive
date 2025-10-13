@@ -1,4 +1,7 @@
 {% load static %}
+{% if debug %}
+  <script src="{% static 'django_browser_reload/reload.js' %}"></script>
+{% endif %}
 <!doctype html>
 <html lang="nl">
 <head>

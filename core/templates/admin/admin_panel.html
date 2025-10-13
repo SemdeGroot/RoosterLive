@@ -25,11 +25,10 @@
           {{ group_form.non_field_errors }}
           {{ group_form.errors }}
 
-          <div class="form" style="padding-top:0;">
+          <div class="form form-sticky-actions" style="padding-top:0;">
             Groepsnaam: {{ group_form.name }}
 
-            <!-- Dynamisch laden -->
-             <strong style="font-size:1.1rem; display:block; margin-top:4px;">Permissies</strong>
+            <strong style="font-size:1.1rem; display:block; margin-top:4px;">Permissies</strong>
             {% for section_title, fields in perm_sections %}
               <div class="perm-section-title">{{ section_title }}</div>
               <div class="perms-grid">
@@ -48,44 +47,52 @@
               </div>
             {% endfor %}
 
-            <button class="btn group-save" type="submit">Opslaan</button>
+            <button class="btn block group-save" type="submit">Opslaan</button>
           </div>
         </form>
 
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande groepen</h3>
 
-        <table class="manage-table" id="groupTable">
-          <tr>
-            <th>Groep</th>
-            <th>Permissies</th>
-            <th>Leden</th>
-            <th>Acties</th>
-          </tr>
-          {% for row in group_rows %}
-          <tr id="group-row-{{ row.group.id }}">
-            <td>{{ row.group.name }}</td>
-            <td>
-              {% if row.perm_labels %}
-                {% for lbl in row.perm_labels %}<div>{{ lbl }}</div>{% endfor %}
-              {% else %}-{% endif %}
-            </td>
-            <td>{{ row.member_count }}</td>
-            <td>
-              <div class="actions-wrap">
-                <form method="get">
-                  <input type="hidden" name="group_id" value="{{ row.group.id }}">
-                  <button class="btn small" type="submit">Bewerk</button>
-                </form>
-                <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
-                      onsubmit="return confirmGroupDelete('{{ row.group.name|escapejs }}');">
-                  {% csrf_token %}
-                  <button class="btn small danger" type="submit">Verwijderen</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
+        <div class="search-bar">
+          <input type="text" id="groupSearch" placeholder="Typ om te zoeken…">
+        </div>
+
+        <table class="manage-table group-table" id="groupTable" style="display:table;table-layout:fixed;width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th>Groep</th>
+              <th>Permissies</th>
+              <th>Leden</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in group_rows %}
+            <tr class="group-row" id="group-row-{{ row.group.id }}">
+              <td>{{ row.group.name }}</td>
+              <td>
+                {% if row.perm_labels %}
+                  {% for lbl in row.perm_labels %}<div>{{ lbl }}</div>{% endfor %}
+                {% else %}-{% endif %}
+              </td>
+              <td style="text-align:center;">{{ row.member_count }}</td>
+              <td>
+                <div class="actions-wrap">
+                  <form method="get">
+                    <input type="hidden" name="group_id" value="{{ row.group.id }}">
+                    <button class="btn small block" type="submit">Bewerken</button>
+                  </form>
+                  <form method="post" action="{% url 'group_delete' row.group.id %}" style="display:inline;"
+                        onsubmit="return confirmGroupDelete('{{ row.group.name|escapejs }}');">
+                    {% csrf_token %}
+                    <button class="btn small danger block" type="submit">Verwijderen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
       </div>
     </div>
@@ -101,12 +108,12 @@
           {{ user_form.non_field_errors }}
           {{ user_form.errors }}
 
-          <div class="form" style="padding:0;">
+          <div class="form form-sticky-actions" style="padding:0;">
             {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
             {{ user_form.email.label_tag }} {{ user_form.email }}
             {{ user_form.password.label_tag }} {{ user_form.password }}
             {{ user_form.group.label_tag }} {{ user_form.group }}
-            <button class="btn" type="submit">Aanmaken</button>
+            <button class="btn block user-create" type="submit">Aanmaken</button>
           </div>
         </form>
 
@@ -135,12 +142,12 @@
               {% endwith %}
             </td>
             <td>
-              <div class="actions-wrap">
-                <button type="button" class="btn small" onclick="toggleEdit('{{ u.id }}')">Bewerk</button>
+              <div class="actions-wrap user-actions-vertical">
+                <button type="button" class="btn small block" onclick="toggleEdit('{{ u.id }}')">Bewerken</button>
                 <form method="post" action="{% url 'user_delete' u.id %}" style="display:inline;"
                       onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
                   {% csrf_token %}
-                  <button class="btn small danger" type="submit">Verwijderen</button>
+                  <button class="btn small danger block" type="submit">Verwijderen</button>
                 </form>
               </div>
             </td>

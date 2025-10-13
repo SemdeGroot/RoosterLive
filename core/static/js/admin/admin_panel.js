@@ -23,3 +23,15 @@ if(userSearch){
     });
   });
 }
+
+/* Live groepen-zoekfunctie */
+const groupSearch = document.getElementById('groupSearch');
+if (groupSearch) {
+  groupSearch.addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#groupTable .group-row').forEach(row => {
+      const txt = row.innerText.toLowerCase();
+      row.style.display = txt.includes(q) ? '' : 'none';
+    });
+  });
+}

@@ -1,1 +1,125 @@
-.admin-wrap{margin-top:18px} .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media (max-width:1100px){.admin-grid{grid-template-columns:1fr}} .card-inner{padding:16px} table.manage-table{width:100%;border-collapse:collapse} table.manage-table th,table.manage-table td{ border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:middle } /* Users kolombreedtes */ table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere} table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere} table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere} table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere} tr.edit-row td{background:#0f141a} .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media (max-width:720px){.edit-grid{grid-template-columns:1fr}} .admin-input,.admin-select{ width:100%;max-width:100%;background:#0f141a;color:var(--text); border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:.95em } .admin-select.narrow{max-width:160px;width:160px} .btn.small{padding:4px 8px;font-size:.85em} .actions-wrap{display:flex;flex-wrap:wrap;gap:8px} .danger{background:#3a1d1d} .perms-grid{display:grid;gap:8px} .perm-row{display:flex;align-items:center;gap:8px} .perm-row input[type="checkbox"]{width:16px;height:16px;margin:0} .perm-section-title{margin:14px 0 6px;font-weight:700;color:var(--text)} .group-save{margin-top:16px} /* Users zoekbalk */ .search-bar{margin:10px 0 12px;display:flex;gap:8px} .search-bar input{flex:1;background:#0f141a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px} input:focus, textarea:focus, select:focus, .admin-input:focus, .admin-select:focus { outline: none; border-color: #1f4ba0; }
+.admin-wrap{margin-top:18px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
+.card-inner{padding:16px}
+
+/* ---------- Algemene tabelstijl ---------- */
+table.manage-table{width:100%;border-collapse:collapse}
+table.manage-table th,table.manage-table td{
+  border-bottom:1px solid var(--border);
+  padding:8px 10px;
+  text-align:left;
+  vertical-align:middle
+}
+
+/* ---------- Users kolombreedtes ---------- */
+table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
+table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere}
+table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere}
+table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere}
+
+/* Rijen compacter in Bestaande gebruikers */
+.user-table th, .user-table td{ padding:6px 8px }
+.user-table .actions-wrap{ gap:6px }
+
+/* Edit-rij */
+tr.edit-row td{background:#0f141a}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
+
+.admin-input,.admin-select{
+  width:100%;max-width:100%;
+  background:#0f141a;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  padding:6px 8px;font-size:.95em
+}
+.admin-select.narrow{max-width:160px;width:160px}
+
+/* ---------- Buttons (match nav-stijl uit base.css) ---------- */
+.btn{
+  background:#17212b;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:background .2s ease, border-color .2s ease;
+}
+.btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+
+/* Kleinere small-knop (beetje compacter) */
+.btn.small{ padding:5px 9px; font-size:.82em }
+
+/* Danger donker + rode focus */
+.danger{
+  background:#8d1b13;
+  border-color:#a1261d;
+  color:#fff
+}
+.danger:hover{ background:#9e231a; border-color:#b7352b }
+.danger:focus-visible{
+  outline:2px solid #e1584f;
+  outline-offset:2px;
+}
+
+/* Buttons focus (niet overdreven) */
+.btn:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+/* ---------- Acties: onder elkaar en ietsje smaller (users & groups) ---------- */
+.actions-wrap{ display:flex; flex-wrap:wrap; gap:6px }
+.user-table td:nth-child(4) .actions-wrap,
+#groupTable  td:nth-child(4) .actions-wrap{
+  flex-direction:column; align-items:flex-start;
+}
+.user-table td:nth-child(4) .actions-wrap .btn,
+#groupTable  td:nth-child(4) .actions-wrap .btn{
+  width:auto;
+  min-width:96px;   /* kleiner dan eerst, maar nog leesbaar */
+  max-width:100%;
+}
+
+/* ---------- Zoekbalk ---------- */
+.search-bar{margin:10px 0 12px;display:flex;gap:8px}
+.search-bar input{
+  flex:1;background:#0f141a;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;padding:6px 8px
+}
+
+/* ---------- Focus: ALLE inputs enkele rand (geen dubbele) ---------- */
+input:focus, textarea:focus, select:focus,
+.admin-input:focus, .admin-select:focus,
+.form input:not([type="file"]):focus,
+.form select:focus, .form textarea:focus,
+.search-bar input:focus{
+  outline:none;                 /* geen extra outline */
+  box-shadow:none;              /* geen extra glow → geen “dubbele” rand */
+  border-color:var(--accent);   /* één enkele blauwe rand */
+}
+
+/* ---------- Permissies sectie compacter ---------- */
+.perms-grid{ display:grid; gap:4px }        /* was 8px */
+.perm-row{ display:flex; align-items:center; gap:6px }  /* dichter op het vinkje */
+.perm-row span{ line-height:1.2 }           /* visueel compacter label */
+.perm-row input[type="checkbox"]{ width:16px; height:16px; margin:0 }
+.perm-section-title{ margin:10px 0 4px; font-weight:700; color:var(--text) } /* korter op elkaar */
+
+/* ---------- Submit-knoppen onder formulier gecentreerd ---------- */
+.card-inner > form .form{ display:flex; flex-direction:column; gap:10px }
+.card-inner > form .form button[type="submit"]{ align-self:center }
+
+/* ---------- Groepen kolombreedtes ---------- */
+/* 1: Groep | 2: Permissies (breder) | 3: Leden (smaller) | 4: Acties */
+#groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:180px }
+#groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:48% }
+#groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:90px; text-align:center }
+#groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:160px }
+
+@media (max-width:900px){
+  #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:160px }
+  #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:auto }
+  #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:70px }
+  #groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:140px }
+}
