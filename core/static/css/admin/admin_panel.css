@@ -4,7 +4,10 @@
 .card-inner{padding:16px}
 
 /* ---------- Algemene tabelstijl ---------- */
-table.manage-table{width:100%;border-collapse:collapse}
+table.manage-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 table.manage-table th,table.manage-table td{
   border-bottom:1px solid var(--border);
   padding:8px 10px;
@@ -15,8 +18,8 @@ table.manage-table th,table.manage-table td{
 /* ---------- Users kolombreedtes ---------- */
 table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
 table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:270px;overflow-wrap:anywhere}
-table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:130px;overflow-wrap:anywhere}
-table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:200px;overflow-wrap:anywhere}
+table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:120px;overflow-wrap:anywhere}
+table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:120px;overflow-wrap:anywhere}
 
 /* Rijen compacter in Bestaande gebruikers */
 .user-table th, .user-table td{ padding:6px 8px }
@@ -103,68 +106,84 @@ input:focus, textarea:focus, select:focus,
 /*  NIEUWE GROEP – TUNING */
 /* ===================== */
 
-/* 1) Linkeruitlijning gelijk met titel (“Nieuwe groep”) */
+/* 1) Linkeruitlijning exact gelijk met de h3 en met “Voornaam” uit het andere form */
 .card-inner > form .form{
-  /* base.css zet padding:16px; dat geeft extra inspringing t.o.v. de h3.
-     We halen L/R padding weg zodat velden exact onder de titel starten. */
-  padding-left:0; padding-right:0;
-  display:flex; flex-direction:column; gap:8px;
+  padding-left:0; padding-right:0;          /* geen extra inspringing */
+  display:flex; flex-direction:column; gap:4px;
 }
 
-/* 2) Permissies: titels dichter op hun eigen checkbox-lijst,
-      maar méér ruimte tussen secties onderling */
+/* 2) Sectietitels: dichter op hun eigen regels, maar groter gat naar volgende sectie */
 .perm-section-title{
-  margin:16px 0 4px;          /* ruimte vóór sectie (tussen secties) > ruimte tot eerste regel */
+  margin:8px 0 4px;                          /* klein gat naar de 1e regel */
   font-weight:700; color:var(--text);
-  padding-left:0;              /* links gelijk aan titel */
+  padding-left:0;
 }
-.perm-section-title:first-of-type{ margin-top:10px } /* eerste sectie iets dichter op “Permissies” */
+.perm-section-title:not(:first-of-type){
+  margin-top:8px;                            /* groter gat tussen secties */
+}
 
-/* 3) Lijst binnen een sectie kort op elkaar */
+/* 3) Regels in een sectie: kort op elkaar */
 .perms-grid{
   display:grid;
-  gap:2px;                     /* korte afstand tussen regels */
+  gap:0px;
   margin:0; padding:0;
 }
 
-/* 4) Elke regel: tekst exact gecentreerd op het vinkje, weinig horizontale gap */
+/* 4) Checkbox + tekst perfect gecentreerd en uitgelijnd */
 .perm-row{
   display:flex;
-  align-items:center;          /* verticaal centreren */
-  gap:6px;                     /* kleine ruimte tussen checkbox en tekst */
-  line-height:1.2;             /* teksthoogte ≈ checkboxhoogte */
-  margin:0; padding:2px 0;     /* compact */
+  align-items:center;                         /* verticaal centreren */
+  gap:7px;                                    /* ruimte tussen vinkje en tekst */
+  margin:0; padding:0px 0;
+  font-size:1rem; line-height:1.25;           /* consistente regelhoogte */
 }
 .perm-row input[type="checkbox"]{
-  width:18px; height:18px;     /* oogt gelijk aan teksthoogte */
+  width:1.25em; height:1.25em;                /* schaal met teksthoogte */
   flex-shrink:0;
+  margin:0;                                   /* geen extra offset */
+  vertical-align:middle;
   accent-color:var(--accent);
-  margin:0;                    /* geen extra offset */
 }
 .perm-row span{
+  display:inline-block;
+  line-height:1;                           /* teksthoogte = regelhoogte */
   margin:0; padding:0;
 }
 
-/* 5) Labels/inputs bovenaan form wat compacter */
-.card-inner > form .form label{ margin:0 0 4px }
+/* 5) Labels/inputs compacter; “Groepsnaam” precies uitgelijnd met andere formvelden */
+.card-inner > form .form label{ margin:0 0 4px; padding-left:0 }
 .card-inner > form .form input:not([type="file"]),
 .card-inner > form .form select,
 .card-inner > form .form textarea{
-  margin:2px 0 10px;           /* korter op elkaar dan standaard */
+  margin:2px 0 8px;
   padding:6px 8px;
 }
-.group-save{ margin-top:10px }
+
+/* 6) Opslaan-knop netjes gecentreerd en weinig ondermarge */
+.group-save {
+  display: flex;
+  justify-content: center;       /* centreert de knop horizontaal */
+  width: 100%;                   /* vult de volledige breedte van het formulier */
+  margin-top: 4px;
+  margin-bottom: -8px;
+}
+.group-save .btn {
+  width: 100%;                   /* knop zelf vult ook horizontaal */
+  max-width: 240px;              /* maar niet té breed op grote schermen */
+}
 
 /* ---------- Groepen kolombreedtes ---------- */
 /* 1: Groep | 2: Permissies (breder) | 3: Leden (smaller) | 4: Acties */
 #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:180px }
 #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:48% }
 #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:90px; text-align:center }
-#groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:160px }
+#groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:120px }
 
 @media (max-width:900px){
   #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:160px }
-  #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:auto }
+  #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:48% }
   #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:70px }
   #groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:140px }
 }
+
+.perm-row span{ transform: translateY(-0.2em); }
