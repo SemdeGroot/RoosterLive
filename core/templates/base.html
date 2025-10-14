@@ -1,4 +1,5 @@
 {% load static %}
+{% load menu_tiles %}
 {% if debug %}
   <script src="{% static 'django_browser_reload/reload.js' %}"></script>
 {% endif %}
@@ -33,7 +34,6 @@
 
             <!-- Desktop nav (onder logo/titel, wrappend) -->
             <nav class="nav" aria-label="Hoofdmenu">
-                <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Home</a>
                 {% if perms.core.can_view_roster %}
                     <a href="{% url 'rooster' %}" {% if request.resolver_match.url_name == 'rooster' %}class="active"{% endif %}>Rooster</a>
                 {% endif %}
@@ -67,44 +67,37 @@
 
         <!-- Mobiel paneel nav -->
         <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
-            <div class="nav-panel-header">
-                <span class="nav-panel-title">Menu</span>
-                <button class="nav-close" id="navClose" aria-label="Sluit menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-            <div class="nav-links">
-                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
-                {% if perms.core.can_view_roster %}
-                    <a href="{% url 'rooster' %}" class="nav-link {% if request.resolver_match.url_name == 'rooster' %}active{% endif %}">Rooster</a>
-                {% endif %}
-                {% if perms.core.can_view_av_medications %}
-                    <a href="{% url 'medications' %}" class="nav-link {% if request.resolver_match.url_name == 'medications' %}active{% endif %}">Voorraad</a>
-                {% endif %}
-                {% if perms.core.can_view_av_nazendingen %}
-                    <a href="{% url 'nazendingen' %}" class="nav-link {% if request.resolver_match.url_name == 'nazendingen' %}active{% endif %}">Nazendingen</a>
-                {% endif %}
-                {% if perms.core.can_view_policies %}
-                    <a href="{% url 'policies' %}" class="nav-link {% if request.resolver_match.url_name == 'policies' %}active{% endif %}">Werkafspraken</a>
-                {% endif %}
-                {% if perms.core.can_view_news %}
-                    <a href="{% url 'news' %}" class="nav-link {% if request.resolver_match.url_name == 'news' %}active{% endif %}">Nieuws</a>
-                {% endif %}
-                {% if perms.core.can_access_admin %}
-                    <a href="{% url 'admin_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_panel' %}active{% endif %}">Beheer</a>
-                {% endif %}
-                <div class="nav-divider"></div>
-                {% if request.user.is_authenticated %}
-                    <form action="{% url 'logout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-link nav-logout">Uitloggen</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}" class="nav-link">Login</a>
-                {% endif %}
+        <div class="nav-panel-header">
+            <span class="nav-panel-title">Menu</span>
+            <button class="nav-close" id="navClose" aria-label="Sluit menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            </button>
+        </div>
+
+        <div class="nav-links">
+            {% user_tiles as tiles_for_nav %}
+            {% for t in tiles_for_nav %}
+            <a href="{% url t.url_name %}" 
+                class="nav-link {% if request.resolver_match.url_name == t.url_name %}active{% endif %}">
+                <span class="nav-icon" 
+                    style="--icon: url('{% static 'img/' %}{{ t.img }}')"></span>
+                <span>{{ t.name }}</span>
+            </a>
+            {% endfor %}
+
+            <div class="nav-divider"></div>
+            {% if request.user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="nav-link nav-logout">Uitloggen</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+            {% endif %}
             </div>
         </nav>
 

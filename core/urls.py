@@ -1,11 +1,12 @@
 from django.urls import path
-from .views import (
-    home, login_view, logout_view,
-    rooster, upload_roster,
-    medications_view, nazendingen_view,
-    news, policies,
-    admin_panel, group_delete, user_update, user_delete,
-)
+from core.views.home import home
+from core.views.roster import rooster, upload_roster
+from core.views.medications import medications_view
+from core.views.nazendingen import nazendingen_view
+from core.views.news import news
+from core.views.policies import policies
+from core.views.admin import admin_panel, group_delete, user_update, user_delete
+from core.views.auth import login_view, logout_view
 
 urlpatterns = [
     path("", home, name="home"),

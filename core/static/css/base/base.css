@@ -234,3 +234,42 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
     .tile-img{ max-width:120px; max-height:120px; }
     .tile-name{ font-size:1rem; }
 }
+
+/* Zelfde linker marge als "Menu" header */
+.nav-links {
+  /* top right bottom left */
+  padding: 12px 12px 12px 12px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Mask-techniek voor witte iconen */
+.nav-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: var(--text); /* kleur van het icoon (wit) */
+  -webkit-mask: var(--icon) center / contain no-repeat;
+          mask: var(--icon) center / contain no-repeat;
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: background 0.2s ease;
+}
+
+/* Hover/active behoudt wit maar kan subtiel oplichten */
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(255,255,255,0.4);
+}
+
+@media (min-width:900px) {
+  .nav-icon {
+    width: 34px;
+    height: 34px;
+  }
+}
