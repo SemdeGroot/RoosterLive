@@ -6,13 +6,31 @@
 <!doctype html>
 <html lang="nl">
 <head>
-    <meta charset="utf-8" />
-    <!-- voorkom auto-zoom op focus + notch support -->
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <title>{% block title %}Rooster{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    {% block head %}{% endblock %}
+  <meta charset="utf-8" />
+  <!-- notch + goede zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>{% block title %}Rooster{% endblock %}</title>
+
+  <meta name="description" content="RoosterLive webapp" />
+  <meta name="application-name" content="RoosterLive" />
+  <meta name="apple-mobile-web-app-title" content="RoosterLive" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- kleur adresbalk / titelbalk -->
+  <meta name="theme-color" content="#10161d">
+  <meta name="color-scheme" content="dark light" />
+
+  <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+
+  <!-- Manifest + icons -->
+  <link rel="manifest" href="{% static 'pwa/manifest.webmanifest' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'pwa/icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'pwa/icons/icon-180.png' %}">
+
+  {% block head %}{% endblock %}
 </head>
 <body>
     <div class="app">

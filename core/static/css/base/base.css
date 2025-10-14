@@ -273,3 +273,27 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
     height: 34px;
   }
 }
+
+/* Alleen in geïnstalleerde PWA (standalone) extra ruimte onderin voor de home indicator */
+@media (display-mode: standalone) {
+  .footer{
+    padding-bottom: calc(env(safe-area-inset-bottom));
+  }
+  /* Optioneel: als content soms achter de footer verdwijnt bij scrollen,
+     geef de content ook een beetje extra lucht onderin: */
+  .content{
+    padding-bottom: calc(env(safe-area-inset-bottom));
+  }
+}
+
+/* Fallback voor oudere iOS versies (constant()) */
+@supports (padding: constant(safe-area-inset-bottom)) {
+  @media (display-mode: standalone) {
+    .footer{
+      padding-bottom: calc(constant(safe-area-inset-bottom));
+    }
+    .content{
+      padding-bottom: calc(constant(safe-area-inset-bottom));
+    }
+  }
+}
