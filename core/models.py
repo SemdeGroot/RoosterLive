@@ -21,6 +21,8 @@ class Roster(models.Model):
             ("can_upload_news",           "Mag Nieuws uploaden"),   
             ("can_view_policies",         "Mag Werkafspraken bekijken"),
             ("can_upload_werkafspraken",  "Mag Werkafspraken uploaden"),
+            ("can_send_beschikbaarheid",  "Mag Beschikbaarheid doorgeven"),
+            ("can_view_beschikbaarheidsdashboard", "Mag Beschikbaarheid Personeel bekijken")
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"

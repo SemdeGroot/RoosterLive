@@ -8,6 +8,10 @@ def build_tiles(user):
 
     if can(user, "can_view_roster"):
         tiles.append({"name": "Rooster", "img": "rooster.png", "url_name": "rooster"})
+    if can(user, "can_send_beschikbaarheid"):
+        tiles.append({"name": "Beschikbaarheid", "img": "beschikbaarheid_doorgeven.png", "url_name": "mijnbeschikbaarheid"})
+    if can(user, "can_view_beschikbaarheidsdashboard"):
+        tiles.append({"name": "Teamdashboard", "img": "personeel_dashboard.png", "url_name": "beschikbaarheidpersoneel"})
     if can(user, "can_view_av_medications"):
         tiles.append({"name": "Voorraad", "img": "medicijn_zoeken.png", "url_name": "medications"})
     if can(user, "can_view_av_nazendingen"):

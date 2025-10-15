@@ -7,6 +7,8 @@ from core.views.news import news
 from core.views.policies import policies
 from core.views.admin import admin_panel, group_delete, user_update, user_delete
 from core.views.auth import login_view, logout_view
+from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
+from core.views.personeelsdashboard import personeelsdashboard_view
 
 urlpatterns = [
     path("", home, name="home"),
@@ -16,7 +18,9 @@ urlpatterns = [
     path("rooster/", rooster, name="rooster"),
     path("rooster/upload/", upload_roster, name="upload_roster"),
 
-    # Beschikbaarheid-tab is weg
+    path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
+    path("teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
+
     path("voorraad/", medications_view, name="medications"),
     path("nazendingen/", nazendingen_view, name="nazendingen"),
 

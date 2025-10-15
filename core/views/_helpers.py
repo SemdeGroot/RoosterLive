@@ -51,6 +51,8 @@ PERM_LABELS = {
     "can_upload_news":         "Mag Nieuws uploaden",
     "can_view_policies":       "Mag Werkafspraken bekijken",
     "can_upload_werkafspraken":"Mag Werkafspraken uploaden",
+    "can_send_beschikbaarheid":  "Mag Beschikbaarheid doorgeven",
+    "can_view_beschikbaarheidsdashboard": "Mag Beschikbaarheid Personeel bekijken"
 }
 
 PERM_SECTIONS = [
@@ -60,6 +62,7 @@ PERM_SECTIONS = [
     ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
     ("Nieuws",        ["can_view_news", "can_upload_news"]),
+    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"])
 ]
 
 def sync_custom_permissions():

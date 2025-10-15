@@ -52,27 +52,18 @@
 
             <!-- Desktop nav (onder logo/titel, wrappend) -->
             <nav class="nav" aria-label="Hoofdmenu">
-                {% if perms.core.can_view_roster %}
-                    <a href="{% url 'rooster' %}" {% if request.resolver_match.url_name == 'rooster' %}class="active"{% endif %}>Rooster</a>
-                {% endif %}
-                {% if perms.core.can_view_av_medications %}
-                    <a href="{% url 'medications' %}" {% if request.resolver_match.url_name == 'medications' %}class="active"{% endif %}>Voorraad</a>
-                {% endif %}
-                {% if perms.core.can_view_av_nazendingen %}
-                    <a href="{% url 'nazendingen' %}" {% if request.resolver_match.url_name == 'nazendingen' %}class="active"{% endif %}>Nazendingen</a>
-                {% endif %}
-                {% if perms.core.can_view_policies %}
-                    <a href="{% url 'policies' %}" {% if request.resolver_match.url_name == 'policies' %}class="active"{% endif %}>Werkafspraken</a>
-                {% endif %}
-                {% if perms.core.can_view_news %}
-                    <a href="{% url 'news' %}" {% if request.resolver_match.url_name == 'news' %}class="active"{% endif %}>Nieuws</a>
-                {% endif %}
-                {% if perms.core.can_access_admin %}
-                    <a href="{% url 'admin_panel' %}" {% if request.resolver_match.url_name == 'admin_panel' %}class="active"{% endif %}>Beheer</a>
-                {% endif %}
+                {% user_tiles as tiles_for_nav %}
+                {% for t in tiles_for_nav %}
+                    <a href="{% url t.url_name %}"
+                    {% if request.resolver_match.url_name == t.url_name %}class="active"{% endif %}>
+                    {{ t.name }}
+                    </a>
+                {% endfor %}
+
                 {% if request.user.is_authenticated %}
                     <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}<button type="submit" class="nav-btn">Uitloggen</button>
+                        {% csrf_token %}
+                        <button type="submit" class="nav-btn">Uitloggen</button>
                     </form>
                 {% else %}
                     <a href="{% url 'login' %}">Login</a>
