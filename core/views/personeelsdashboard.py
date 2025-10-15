@@ -36,6 +36,10 @@ def personeelsdashboard_view(request):
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
+    # ✅ Housekeeping (globaal, voor alle users)
+    Availability.objects.filter(date__lt=min_monday).delete()
+
+    # Weekselectie (alleen huidige → +6mnd)
     qs_week = request.GET.get("week")
     qs_monday = request.GET.get("monday")
     if qs_monday:
@@ -56,7 +60,6 @@ def personeelsdashboard_view(request):
     monday = _clamp_week(monday, min_monday, max_monday)
     week_end = monday + timedelta(days=4)
 
-    # Navigatie
     prev_raw = monday - timedelta(weeks=1)
     next_raw = monday + timedelta(weeks=1)
     has_prev = prev_raw >= min_monday
@@ -64,10 +67,8 @@ def personeelsdashboard_view(request):
     prev_monday = prev_raw if has_prev else min_monday
     next_monday = next_raw if has_next else max_monday
 
-    # Dagen (ma-vr)
     days = [monday + timedelta(days=i) for i in range(5)]
 
-    # Query availability
     av_qs = (
         Availability.objects
         .filter(date__in=days)
@@ -75,19 +76,20 @@ def personeelsdashboard_view(request):
         .prefetch_related("user__groups")
     )
 
-    # Unieke users (die iets hebben ingevuld in deze week)
+    # Users met invoer in deze week
     users = sorted(
         {av.user for av in av_qs},
         key=lambda u: (_user_group(u).lower(), _user_firstname_cap(u).lower())
     )
 
-    # Matrix: default False
+    # Matrix
+    from collections import defaultdict
     matrix = defaultdict(lambda: {d: {"morning": False, "afternoon": False} for d in days})
     for av in av_qs:
         matrix[av.user][av.date]["morning"] = bool(av.morning)
         matrix[av.user][av.date]["afternoon"] = bool(av.afternoon)
 
-    # Tellen per dag/slot
+    # Tellen
     counts = {d: {"morning": 0, "afternoon": 0} for d in days}
     for u in users:
         for d in days:
@@ -96,18 +98,18 @@ def personeelsdashboard_view(request):
             if matrix[u][d]["afternoon"]:
                 counts[d]["afternoon"] += 1
 
-    # Context per dag voor template (voorkomt dict-lookup-issues)
+    # Dag-context voor template
     days_ctx = []
     for d in days:
         days_ctx.append({
             "date": d,
             "iso": d.isoformat(),
-            "weekday_label": d.strftime("%A").capitalize(),  # NL door translation.activate
+            "weekday_label": d.strftime("%A").capitalize(),
             "morning_count": counts[d]["morning"],
             "afternoon_count": counts[d]["afternoon"],
         })
 
-    # Rijen (per user)
+    # Rijen
     rows = []
     for u in users:
         cells = []
@@ -117,7 +119,7 @@ def personeelsdashboard_view(request):
                 "morning": matrix[u][d]["morning"],
                 "afternoon": matrix[u][d]["afternoon"],
             })
-        # data-attrs string voor snelle JS-sortering
+        # data-attrs voor sorteer-JS
         data_attrs_parts = []
         for d in days:
             iso = d.strftime("%Y-%m-%d")
@@ -130,7 +132,7 @@ def personeelsdashboard_view(request):
             "data_attrs": " ".join(data_attrs_parts),
         })
 
-    # Week dropdown
+    # Week dropdown alleen huidige → +6mnd
     week_options = []
     cur = min_monday
     while cur <= max_monday:
@@ -145,22 +147,18 @@ def personeelsdashboard_view(request):
 
     iso_year, iso_week, _ = monday.isocalendar()
     header_title = f"Week {iso_week} – {iso_year}"
-    default_sort_slot = f"{days[0].isoformat()}|morning"  # maandagochtend
+    default_sort_slot = f"{days[0].isoformat()}|morning"
 
-    return render(
-        request,
-        "personeelsdashboard/index.html",
-        {
-            "monday": monday,
-            "week_end": week_end,
-            "days_ctx": days_ctx,      # gebruik deze i.p.v. 'days' + 'counts'
-            "rows": rows,
-            "week_options": week_options,
-            "has_prev": has_prev,
-            "has_next": has_next,
-            "prev_monday": prev_monday,
-            "next_monday": next_monday,
-            "header_title": header_title,
-            "default_sort_slot": default_sort_slot,
-        },
-    )
+    return render(request, "personeelsdashboard/index.html", {
+        "monday": monday,
+        "week_end": week_end,
+        "days_ctx": days_ctx,
+        "rows": rows,
+        "week_options": week_options,
+        "has_prev": has_prev,
+        "has_next": has_next,
+        "prev_monday": prev_monday,
+        "next_monday": next_monday,
+        "header_title": header_title,
+        "default_sort_slot": default_sort_slot,
+    })

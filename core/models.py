@@ -34,7 +34,7 @@ class Availability(models.Model):
     met twee tijdvakken: ochtend/middag.
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availabilities")
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     morning = models.BooleanField(default=False)
     afternoon = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
