@@ -117,3 +117,28 @@ input[type="password"]::-webkit-password-toggle-button {
   filter: invert(1);
   opacity: 0.9;
 }
+
+
+/* Globaal: voorkom zoom op ALLE inputs/velden op mobiel */
+@media (max-width: 900px){
+  .search-bar input,
+  .search-row input,          /* <-- toegevoegd */
+  .admin-input,
+  .admin-select,
+  .form input:not([type="file"]),
+  .form select,
+  .form textarea {
+    font-size:16px !important;
+  }
+}
+@supports (-webkit-touch-callout: none) {
+  .search-bar input,
+  .search-row input,          /* <-- toegevoegd */
+  .admin-input,
+  .admin-select,
+  .form input:not([type="file"]),
+  .form select,
+  .form textarea {
+    font-size:16px !important;
+  }
+}

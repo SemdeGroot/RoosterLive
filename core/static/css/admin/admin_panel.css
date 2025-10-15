@@ -175,15 +175,33 @@ input:focus, textarea:focus, select:focus,
 /* ---------- Groepen kolombreedtes ---------- */
 /* 1: Groep | 2: Permissies (breder) | 3: Leden (smaller) | 4: Acties */
 #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:180px }
-#groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:48% }
+#groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:200px }
 #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:90px; text-align:center }
 #groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:120px }
 
 @media (max-width:900px){
-  #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:160px }
-  #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:48% }
-  #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:70px }
+  #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:180px }
+  #groupTable th:nth-child(2), #groupTable td:nth-child(2){ width:200px }
+  #groupTable th:nth-child(3), #groupTable td:nth-child(3){ width:90px }
   #groupTable th:nth-child(4), #groupTable td:nth-child(4){ width:140px }
 }
 
 .perm-row span{ transform: translateY(-0.2em); }
+
+/* ---------- Groepen-tabel: zelfde horizontale scroll als user-table ---------- */
+@media (max-width:900px){
+  .group-table {
+    display:block;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    width:100%;
+  }
+  .group-table thead,
+  .group-table tbody {
+    width:100%;
+  }
+  .group-table th,
+  .group-table td {
+    white-space:nowrap;
+  }
+}
