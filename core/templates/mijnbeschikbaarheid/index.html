@@ -1,12 +1,232 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Mijn Beschikbaarheid{% endblock %}
+{% block title %}Beschikbaarheid{% endblock %}
+{% block header_title %}Beschikbaarheid{% endblock %}
 
-{% block header_title %}Mijn Beschikbaarheid{% endblock %}
+{% block head %}
+<style>
+  /* --- Tabel strak en uitgelijnd --- */
+  .availability-wrap { overflow-x:auto; }
+  .availability-table { width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+  .availability-table colgroup col:first-child { width:44%; }
+  .availability-table colgroup col:nth-child(2),
+  .availability-table colgroup col:nth-child(3) { width:28%; }
+  .availability-table thead th { padding:12px 14px; text-align:center; font-weight:700; }
+  .availability-table thead th:first-child { text-align:left; }
+  .availability-table tbody td { padding:12px 14px; vertical-align:middle; }
+  .availability-table tbody td:nth-child(2),
+  .availability-table tbody td:nth-child(3) { text-align:center; }
+
+  /* Zebra, geen hover-kleurwissel */
+  .availability-table tbody tr { border-bottom:1px solid var(--border); }
+  .availability-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
+
+  .weekday-title { display:flex; gap:.6rem; align-items:baseline; }
+  .weekday-title small { color: var(--muted); font-weight:500; }
+
+  /* Blauwe checkbox via theme-accent */
+  .availability-table input[type="checkbox"]{
+    width:18px; height:18px; cursor:pointer; accent-color: var(--accent);
+  }
+
+  /* --- Controls (knoppen/dropdown) --- */
+  .week-controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .week-nav { display:flex; align-items:center; gap:10px; }
+
+  /* Gebruik exact jouw .btn-stijl; geen extra hover-glow */
+  .btn{
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+
+  /* Select gedraagt zich als rustige button zonder 'oplichten' */
+  select.btn {
+    appearance:none;
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    transition:background .2s ease, border-color .2s ease;
+    min-width:260px;
+  }
+  select.btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+  select.btn:focus{ outline:none; }
+
+  .availability-daterange { margin:4px 0 16px; color:var(--muted); font-weight:500; }
+
+  @media (max-width: 640px) {
+    .weekday-title { flex-direction:column; gap:0; }
+    select.btn { min-width:220px; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Mijn Beschikbaarheid</h2>
-    <p>Hier kun je binnenkort je beschikbaarheid invullen. (In ontwikkeling)</p>
+<div class="card">
+  <div class="form">
+
+    <!-- Placeholder header -->
+    <h3 style="margin:0 0 8px 0;">Vink hier je beschikbaarheid aan voor:</h3>
+
+    <!-- Navigatie + dropdown -->
+    <div class="week-controls">
+      <div class="week-nav">
+        <form method="get" action="">
+          {% if has_prev %}
+            <input type="hidden" name="monday" value="{{ prev_monday|date:'Y-m-d' }}">
+            <button class="btn" type="submit" aria-label="Vorige week">←</button>
+          {% else %}
+            <button class="btn" type="button" disabled aria-disabled="true">←</button>
+          {% endif %}
+        </form>
+
+        <h2 style="margin:0;">{{ header_title }}</h2>
+
+        <form method="get" action="">
+          {% if has_next %}
+            <input type="hidden" name="monday" value="{{ next_monday|date:'Y-m-d' }}">
+            <button class="btn" type="submit" aria-label="Volgende week">→</button>
+          {% else %}
+            <button class="btn" type="button" disabled aria-disabled="true">→</button>
+          {% endif %}
+        </form>
+      </div>
+
+      <div>
+        <label for="weekSelect" style="display:block; margin-bottom:4px; font-weight:700;">Ga naar week:</label>
+        <select id="weekSelect" class="btn">
+          {% for opt in week_options %}
+            <option value="{{ opt.value }}" {% if opt.value == monday|date:'Y-m-d' %}selected{% endif %}>
+              Week {{ opt.iso_week }} – {{ opt.iso_year }} ({{ opt.start|date:"d-m" }} – {{ opt.end|date:"d-m" }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- NL datumrange -->
+    <div class="availability-daterange">
+      {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
+    </div>
+
+    <!-- Form -->
+    <form id="availabilityForm" method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" id="redirectToMonday" name="redirect_to_monday" value="">
+
+      <div class="availability-wrap">
+        <table class="availability-table" aria-label="Beschikbaarheid maandag t/m vrijdag">
+          <colgroup>
+            <col />
+            <col />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Dag</th>
+              <th>Ochtend</th>
+              <th>Middag</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>
+                <div class="weekday-title">
+                  <strong>{{ r.date|date:"l"|capfirst }}</strong>
+                  <small>{{ r.date|date:"d-m-Y" }}</small>
+                </div>
+              </td>
+              <td><input type="checkbox" name="morning_{{ r.date|date:'Y-m-d' }}" {% if r.morning %}checked{% endif %}></td>
+              <td><input type="checkbox" name="afternoon_{{ r.date|date:'Y-m-d' }}" {% if r.afternoon %}checked{% endif %}></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button type="submit" class="btn">Opslaan</button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<script>
+(function(){
+  const form = document.getElementById('availabilityForm');
+  const redirectField = document.getElementById('redirectToMonday');
+  const weekSelect = document.getElementById('weekSelect');
+
+  // Dirty tracking
+  let dirty = false;
+  const checkboxes = Array.from(form.querySelectorAll('input[type="checkbox"]'));
+  const initial = new Map(checkboxes.map(cb => [cb.name, cb.checked]));
+  const isDirty = () => checkboxes.some(cb => cb.checked !== initial.get(cb.name));
+  const markDirty = () => { dirty = isDirty(); };
+  checkboxes.forEach(cb => cb.addEventListener('change', markDirty));
+
+  // Prompttekst NL
+  const PROMPT = "Wil je je wijzigingen opslaan?";
+
+  /** Sla op en ga naar target week (ISO yyyy-mm-dd). */
+  function saveThenGo(targetMondayISO) {
+    redirectField.value = targetMondayISO || "";
+    form.submit();
+  }
+
+  /** Ga naar target week zonder opslaan (wijzigingen worden genegeerd). */
+  function discardAndGo(targetMondayISO) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('monday', targetMondayISO);
+    window.location.href = url.toString();
+  }
+
+  // Intercept pijltjes (GET-forms)
+  document.querySelectorAll('.week-nav form[method="get"]').forEach(f => {
+    f.addEventListener('submit', function(ev){
+      if (!dirty) return; // niets aangepast → normale GET
+      ev.preventDefault();
+      const target = (f.querySelector('input[name="monday"]') || {}).value || "";
+      if (confirm(PROMPT)) {
+        saveThenGo(target);
+      } else {
+        // ✅ Annuleren = NIET opslaan, WEL navigeren
+        discardAndGo(target);
+      }
+    }, {capture:true});
+  });
+
+  // Dropdown
+  if (weekSelect) {
+    weekSelect.addEventListener('change', () => {
+      const target = weekSelect.value;
+      if (dirty) {
+        if (confirm(PROMPT)) {
+          saveThenGo(target);
+        } else {
+          // ✅ direct navigeren zonder opslaan
+          discardAndGo(target);
+        }
+      } else {
+        discardAndGo(target); // geen wijzigingen → gewone navigatie
+      }
+    });
+  }
+
+  // Na PRG: dirty resetten
+  window.addEventListener('pageshow', () => {
+    checkboxes.forEach(cb => initial.set(cb.name, cb.checked));
+    dirty = false;
+  });
+})();
+</script>
 {% endblock %}

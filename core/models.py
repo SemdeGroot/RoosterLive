@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Roster(models.Model):
     file = models.FileField(upload_to="rooster/current.pdf", null=True)
@@ -26,3 +27,21 @@ class Roster(models.Model):
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"
+
+class Availability(models.Model):
+    """
+    Bewaart beschikbaarheid per gebruiker per datum (ma-vr),
+    met twee tijdvakken: ochtend/middag.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availabilities")
+    date = models.DateField()
+    morning = models.BooleanField(default=False)
+    afternoon = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "date")
+        ordering = ["date"]
+
+    def __str__(self):
+        return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon})"
