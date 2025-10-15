@@ -3,36 +3,68 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- notch + goede zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
   <title>Login | Apotheek Jansen</title>
+
+  <!-- PWA & theming (zoals base.html) -->
+  <meta name="description" content="Mijn Apotheek Jansen Portaal">
+  <meta name="application-name" content="Mijn Apotheek Jansen Portaal">
+  <meta name="apple-mobile-web-app-title" content="Mijn Apotheek Jansen Portaal">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#10161d">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Manifest + icons -->
+  <link rel="manifest" href="{% static 'pwa/manifest.webmanifest' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'pwa/icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'pwa/icons/icon-180.png' %}">
+
   <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
 </head>
 <body>
-  <div class="login-box">
+  <main class="login-app">
+    <div class="login-box">
 
-    {% static 'img/logo.jpg' as static_logo %}
-    {% if logo_url or static_logo %}
-      <div class="logo-wrap">
-        <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
-      </div>
-    {% endif %}
+      {% static 'img/logo.jpg' as static_logo %}
+      {% if logo_url or static_logo %}
+        <div class="logo-wrap">
+          <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
+        </div>
+      {% endif %}
 
-    {% for m in messages %}
-      <div class="flash">{{ m }}</div>
-    {% endfor %}
+      {% for m in messages %}
+        <div class="flash">{{ m }}</div>
+      {% endfor %}
 
-    <form method="post" autocomplete="off">
-      {% csrf_token %}
-      <label for="id_identifier">Voornaam / E-mail</label>
-      <input type="text" id="id_identifier" name="identifier"
-             value="{{ form.identifier.value|default:'' }}" required>
+      <form method="post" autocomplete="off" novalidate>
+        {% csrf_token %}
+        <label for="id_identifier">Voornaam / E-mail</label>
+        <input
+          type="text"
+          id="id_identifier"
+          name="identifier"
+          inputmode="email"
+          autocapitalize="none"
+          autocomplete="username"
+          value="{{ form.identifier.value|default:'' }}"
+          required>
 
-      <label for="id_password">Wachtwoord</label>
-      <input type="password" id="id_password" name="password" required>
+        <label for="id_password">Wachtwoord</label>
+        <input
+          type="password"
+          id="id_password"
+          name="password"
+          autocomplete="current-password"
+          required>
 
-      <button type="submit">Inloggen</button>
-    </form>
-  </div>
+        <button type="submit">Inloggen</button>
+      </form>
+    </div>
+  </main>
 
   <script src="{% static 'css/auth/login.js' %}"></script>
 </body>
