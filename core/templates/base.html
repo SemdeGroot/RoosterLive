@@ -111,6 +111,16 @@
         </nav>
 
         <main class="content">
+
+            <div id="pushBanner" style="display:none; margin-bottom:12px;">
+            <div class="flash flash-info" style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+                <span id="pushBannerText">Wil je een melding krijgen als er een nieuw rooster is?</span>
+                <div style="display:flex; gap:8px;">
+                <button class="btn" id="enablePushBtn">Notificaties inschakelen</button>
+                <button class="btn" id="declinePushBtn" aria-label="Niet nu">Niet nu</button>
+                </div>
+            </div>
+            </div>
             {% for message in messages %}
             <div class="flash flash-{{ message.tags|default:'info' }}">
                 {{ message }}
@@ -123,6 +133,10 @@
             <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div>
         </footer>
     </div>
+    <script>
+    window.PWA = window.PWA || {};
+    window.PWA.VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ=";
+    </script>
     <script src="{% static 'js/base/base.js' %}" defer></script>
 </body>
 </html>

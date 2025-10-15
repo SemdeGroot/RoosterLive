@@ -10,6 +10,10 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "treasonably-noncerebral-samir.ngrok-free.dev"]
 CSRF_TRUSTED_ORIGINS = ["https://treasonably-noncerebral-samir.ngrok-free.dev"]
 
+VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ="
+VAPID_PRIVATE_KEY = "ilECdajPSsDaev-gkhnlvm99dq3sjdRd1OlsSKTW0_Y="
+VAPID_CLAIMS = {"sub": "mailto:semdegroot2003@gmail.com"}
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

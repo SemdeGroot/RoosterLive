@@ -12,6 +12,8 @@ from ._helpers import (
     clear_dir, render_pdf_to_cache
 )
 
+from core.utils.push import send_roster_updated_push
+
 @login_required
 def rooster(request):
     if not can(request.user, "can_view_roster"):
@@ -34,6 +36,7 @@ def rooster(request):
                 fh.write(chunk)
 
         messages.success(request, "Rooster geüpload.")
+        send_roster_updated_push()
         return redirect("rooster")
 
     context = { "year": datetime.now().year}
@@ -68,5 +71,6 @@ def upload_roster(request):
                 fh.write(chunk)
 
         messages.success(request, "Rooster geüpload.")
+        send_roster_updated_push()   
         return redirect("rooster")
     return render(request, "rooster/upload.html")
