@@ -111,7 +111,11 @@
         </nav>
 
         <main class="content">
-            {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+            {% for message in messages %}
+            <div class="flash flash-{{ message.tags|default:'info' }}">
+                {{ message }}
+            </div>
+            {% endfor %}
             {% block content %}{% endblock %}
         </main>
 

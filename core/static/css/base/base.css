@@ -111,9 +111,43 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
     border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow);
     overflow:hidden; max-width:100%;
 }
-.flash{
-    padding:12px 16px; border-left:3px solid var(--accent);
-    background:#0f1a12; color:#bfe4c8; border-radius:8px; margin:0 0 12px 0; max-width:100%;
+/* ---------- Flash messages ---------- */
+.flash {
+  padding: 12px 16px;
+  border-left: 3px solid var(--border); /* neutrale default */
+  background: #0f141a;
+  color: var(--text);
+  border-radius: 8px;
+  margin: 0 0 12px 0;
+  max-width: 100%;
+}
+
+/* Succes (groen) */
+.flash-success {
+  border-left-color: #1f7a3e;
+  background: #0f1a12;
+  color: #bfe4c8;
+}
+
+/* Foutmelding (rood) */
+.flash-error {
+  border-left-color: #a01f1f;
+  background: #1a0f0f;
+  color: #f2c7c7;
+}
+
+/* Waarschuwing (geel/oranje) */
+.flash-warning {
+  border-left-color: #b38900;
+  background: #1a1608;
+  color: #f3e2b2;
+}
+
+/* Informatief (blauw) */
+.flash-info {
+  border-left-color: var(--accent);
+  background: rgba(31, 75, 160, 0.12);
+  color: #d5e0f7;
 }
 
 /* ---------- Buttons ---------- */

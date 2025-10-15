@@ -1,12 +1,248 @@
 {% extends "base.html" %}
 
 {% block title %}Teamdashboard{% endblock %}
-
 {% block header_title %}Teamdashboard{% endblock %}
 
+{% block head %}
+<style>
+  .matrix-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* soepel scrollen op iOS */
+  }
+
+  /* Grid-tabel */
+  table.matrix {
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    min-width: 900px;  /* voorkomt wrappen op kleine schermen */
+  }
+  table.matrix th, table.matrix td {
+    border:1px solid var(--border);
+    text-align:center;
+    padding:8px;
+  }
+  table.matrix thead th {
+    background:#121a23;
+    font-weight:700;
+  }
+  table.matrix tbody tr:nth-child(odd){
+    background:rgba(255,255,255,0.02);
+  }
+  /* Kolombreedtes: Groep, Voornaam, dan 10 subkolommen (5 dagen x 2) */
+  table.matrix colgroup col.col-group { width:20%; }
+  table.matrix colgroup col.col-name  { width:16%; }
+
+  /* Beschikbaarheidscel */
+  .avail-pill {
+    height:26px; border-radius:8px;
+    background:transparent;
+  }
+  .avail-pill.available {
+    background:#0b3a21;           /* donkergroen */
+    border:1px solid #178a3a;
+  }
+
+  /* Klikbare pill-badges in de subheader (hover-lijn blauw) */
+  .slot-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .slot-badge:hover{
+    background:#1f2d3d;
+    border-color:var(--accent);    /* zelfde blauwe omlijning als btn */
+  }
+  .slot-badge.active{
+    outline:1px solid var(--accent);
+  }
+
+  /* Controls */
+  .week-controls {
+    display:flex; flex-wrap:wrap; gap:12px;
+    align-items:center; justify-content:space-between; margin-bottom:10px;
+  }
+  .week-nav { display:flex; align-items:center; gap:10px; }
+
+  .btn{
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+
+  select.btn{
+    appearance:none;
+    background:#17212b;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    min-width:260px;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  select.btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h2>Personeelsdashboard</h2>
-    <p>Hier komt het dashboard met personeelsinformatie. (In ontwikkeling)</p>
+<div class="card">
+  <div class="form">
+    <h3 style="margin:0 0 8px 0;">Overzicht beschikbaarheden voor:</h3>
+
+    <div class="week-controls">
+      <div class="week-nav">
+        <form method="get" action="">
+          {% if has_prev %}
+            <input type="hidden" name="monday" value="{{ prev_monday|date:'Y-m-d' }}">
+            <button class="btn" type="submit" aria-label="Vorige week">←</button>
+          {% else %}
+            <button class="btn" type="button" disabled aria-disabled="true">←</button>
+          {% endif %}
+        </form>
+
+        <h2 style="margin:0;">{{ header_title }}</h2>
+
+        <form method="get" action="">
+          {% if has_next %}
+            <input type="hidden" name="monday" value="{{ next_monday|date:'Y-m-d' }}">
+            <button class="btn" type="submit" aria-label="Volgende week">→</button>
+          {% else %}
+            <button class="btn" type="button" disabled aria-disabled="true">→</button>
+          {% endif %}
+        </form>
+      </div>
+
+      <div>
+        <label for="weekSelect" style="display:block;margin-bottom:4px;font-weight:700;">Ga naar week:</label>
+        <select id="weekSelect" class="btn">
+          {% for opt in week_options %}
+            <option value="{{ opt.value }}" {% if opt.value == monday|date:'Y-m-d' %}selected{% endif %}>
+              Week {{ opt.iso_week }} – {{ opt.iso_year }} ({{ opt.start|date:"d-m" }} – {{ opt.end|date:"d-m" }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div style="margin:4px 0 16px;color:var(--muted);font-weight:500;">
+      {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
+    </div>
+
+    <div class="matrix-wrap">
+      <table class="matrix" id="matrixTable" aria-label="Beschikbaarheid per medewerker en dagdeel">
+        <colgroup>
+          <col class="col-group"/>
+          <col class="col-name"/>
+          {% for d in days_ctx %}
+            <col/><col/>
+          {% endfor %}
+        </colgroup>
+
+        <thead>
+          <!-- Hoofdheaders -->
+          <tr>
+            <th>Groep</th>
+            <th>Voornaam</th>
+            {% for day in days_ctx %}
+              <th colspan="2">{{ day.weekday_label }}</th>
+            {% endfor %}
+          </tr>
+          <!-- Subheaders met badge die hovert en klikbaar is -->
+          <tr>
+            <th></th>
+            <th></th>
+            {% for day in days_ctx %}
+              <th>
+                <span class="slot-badge" data-slot="{{ day.iso }}|morning">
+                  Ochtend ({{ day.morning_count }})
+                </span>
+              </th>
+              <th>
+                <span class="slot-badge" data-slot="{{ day.iso }}|afternoon">
+                  Middag ({{ day.afternoon_count }})
+                </span>
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody id="matrixBody">
+          {% for r in rows %}
+            <tr class="matrix-row" data-group="{{ r.group }}" data-firstname="{{ r.firstname }}" {{ r.data_attrs|safe }}>
+              <td style="text-align:left;">{{ r.group }}</td>
+              <td style="text-align:left;">{{ r.firstname }}</td>
+              {% for c in r.cells %}
+                <td><div class="avail-pill {% if c.morning %}available{% endif %}"></div></td>
+                <td><div class="avail-pill {% if c.afternoon %}available{% endif %}"></div></td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
+<script>
+(function(){
+  // Week dropdown nav
+  const sel = document.getElementById('weekSelect');
+  if (sel){
+    sel.addEventListener('change', () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('monday', sel.value);
+      window.location.href = url.toString();
+    });
+  }
+
+  const body = document.getElementById('matrixBody');
+  const badges = document.querySelectorAll('.slot-badge');
+
+  function setActiveBadge(slotId){
+    badges.forEach(b => b.classList.toggle('active', b.dataset.slot === slotId));
+  }
+
+  function sortBySlot(slotId){
+    // slotId: "YYYY-MM-DD|morning" of "|afternoon"
+    const [d, part] = slotId.split('|');
+    const rows = Array.from(body.querySelectorAll('.matrix-row'));
+
+    rows.sort((a, b) => {
+      const aAvail = Number(a.getAttribute(`data-${d}-${part}`));
+      const bAvail = Number(b.getAttribute(`data-${d}-${part}`));
+      if (bAvail !== aAvail) return bAvail - aAvail; // beschikbaar eerst
+      const ag = (a.getAttribute('data-group') || '').toLowerCase();
+      const bg = (b.getAttribute('data-group') || '').toLowerCase();
+      if (ag !== bg) return ag.localeCompare(bg);
+      const af = (a.getAttribute('data-firstname') || '').toLowerCase();
+      const bf = (b.getAttribute('data-firstname') || '').toLowerCase();
+      return af.localeCompare(bf);
+    });
+
+    rows.forEach(r => body.appendChild(r));
+    setActiveBadge(slotId);
+  }
+
+  // Click handlers: sorteren op die badge
+  badges.forEach(b => {
+    b.addEventListener('click', () => sortBySlot(b.dataset.slot));
+  });
+
+  // Standaard sorteer op maandagochtend
+  sortBySlot("{{ default_sort_slot }}");
+})();
+</script>
 {% endblock %}
