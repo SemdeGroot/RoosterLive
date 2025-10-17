@@ -15,11 +15,12 @@
   <div class="tiles">
     {% for t in tiles %}
       <a href="{% url t.url_name %}" class="tile" aria-label="{{ t.name }}">
-        <div class="tile-box">
-          {# Belangrijk: t.img bevat bestandsnamen; prepend 'img/' zodat /static/img/... opgevraagd wordt #}
+      <div class="tile-box">
+        <div class="tile-icon">
           <img src="{% static 'img/' %}{{ t.img }}" alt="{{ t.name }}" class="tile-img">
-          <div class="tile-name">{{ t.name }}</div>
         </div>
+        <div class="tile-name">{{ t.name }}</div>
+      </div>
       </a>
     {% endfor %}
   </div>
