@@ -72,7 +72,7 @@ def policies(request):
             pdf_bytes = pdf_fp.read_bytes()
         except Exception:
             continue
-        h, n = render_pdf_to_cache(pdf_bytes, zoom=2.0, cache_root=CACHE_POLICIES_DIR)
+        h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_POLICIES_DIR)
         for i in range(1, n+1):
             page_urls.append(f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png")
 

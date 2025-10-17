@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from ..forms import AvailabilityUploadForm
-from ._helpers import can, AV_DIR, read_table
+from ._helpers import can, VOORRAAD_DIR, read_table
 
 @login_required
 def medications_view(request):
@@ -16,7 +16,7 @@ def medications_view(request):
     key = "medications"
     existing_path = None
     for ext in (".xlsx", ".xls", ".csv"):
-        c = AV_DIR / f"{key}{ext}"
+        c = VOORRAAD_DIR / f"{key}{ext}"
         if c.exists():
             existing_path = c
             break
@@ -35,11 +35,11 @@ def medications_view(request):
                 return redirect(request.path)
 
             for oldext in (".xlsx", ".xls", ".csv"):
-                p = AV_DIR / f"{key}{oldext}"
+                p = VOORRAAD_DIR / f"{key}{oldext}"
                 if p.exists():
                     p.unlink()
 
-            dest = AV_DIR / f"{key}{ext}"
+            dest = VOORRAAD_DIR / f"{key}{ext}"
             with dest.open("wb") as fh:
                 for chunk in f.chunks():
                     fh.write(chunk)

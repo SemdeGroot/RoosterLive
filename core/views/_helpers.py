@@ -21,8 +21,11 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_ROSTER_DIR = CACHE_DIR / "rooster"
 CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
-CACHE_AVAIL_DIR = CACHE_DIR / "availability"
-CACHE_AVAIL_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_VOORRAAD_DIR = CACHE_DIR / "voorraad"
+CACHE_VOORRAAD_DIR.mkdir(parents=True, exist_ok=True)
+
+CACHE_NAZENDINGEN_DIR = CACHE_DIR / "nazendingen"
+CACHE_NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
 
 POL_DIR = MEDIA_ROOT / "policies"
 POL_DIR.mkdir(parents=True, exist_ok=True)
@@ -34,8 +37,11 @@ ROSTER_DIR = MEDIA_ROOT / "rooster"
 ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 ROSTER_FILE = ROSTER_DIR / "rooster.pdf"
 
-AV_DIR = MEDIA_ROOT / "availability"
-AV_DIR.mkdir(parents=True, exist_ok=True)
+VOORRAAD_DIR = MEDIA_ROOT / "voorraad"
+VOORRAAD_DIR.mkdir(parents=True, exist_ok=True)
+
+NAZENDINGEN_DIR = MEDIA_ROOT / "nazendingen"
+NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
 
 # ===== PERM LABELS =====
 PERM_LABELS = {
