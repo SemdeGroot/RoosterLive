@@ -1,7 +1,10 @@
 from django.urls import path
 from django.views import View
+from django.views.generic import RedirectView
 from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.staticfiles import finders
+from django.templatetags.static import static
+
 from core.views.home import home
 from core.views.roster import rooster, upload_roster
 from core.views.medications import medications_view
@@ -55,4 +58,8 @@ urlpatterns = [
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
 
     path('service-worker.js', ServiceWorkerView.as_view(), name='service-worker'),
+    
+    path("favicon.ico", RedirectView.as_view(url=static("pwa/icons/favicon.ico"), permanent=False)),
+    path("apple-touch-icon.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
+    path("apple-touch-icon-precomposed.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
 ]

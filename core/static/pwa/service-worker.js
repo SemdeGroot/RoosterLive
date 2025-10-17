@@ -66,8 +66,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body,
       tag,
-      badge: '/static/pwa/icons/icon-192.png',
-      icon: '/static/pwa/icons/icon-192.png',
+      badge: '/static/pwa/icons/android-chrome-192x192.png',
+      icon: '/static/pwa/icons/android-chrome-192x192.png',
       data: { url },
     })
   );
