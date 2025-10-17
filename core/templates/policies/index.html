@@ -4,47 +4,63 @@
 
 {% block content %}
 <style>
-  /* Uploader */
-  .uploader { margin-bottom: 14px; }
-  .dropzone {
-    display:flex; align-items:center; gap:12px; padding:14px 16px;
-    background:var(--panel-2); border:1px dashed var(--border); border-radius:12px;
-    cursor:pointer; transition:border-color .15s, box-shadow .15s;
-  }
-  .dropzone:hover, .dropzone.is-dragover { border-color:#1f4ba0; box-shadow:0 0 0 2px rgba(31,75,160,.20) inset; }
-  .dz-icon { flex:0 0 auto; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#13223f; color:#cfe0ff; border:1px solid #223355; }
-  .dz-text { display:flex; flex-direction:column; gap:4px; }
-  .dz-title { color:var(--text); font-weight:600; line-height:1.1; }
-  .dz-hint  { color:var(--muted); font-size:.95em; }
-  .file-meta { margin-top:8px; color:var(--muted); }
-  .file-name { color:var(--text); font-weight:600; }
-  .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-  .btn.ghost { background:#17212b; }
+/* Uploader */
+.uploader { margin-bottom: 14px; }
+.dropzone {
+  display:flex; align-items:center; gap:12px; padding:14px 16px;
+  background:var(--panel-2); border:1px dashed var(--border); border-radius:12px;
+  cursor:pointer; transition:border-color .15s, box-shadow .15s;
+}
+.dropzone:hover, .dropzone.is-dragover { border-color:#1f4ba0; box-shadow:0 0 0 2px rgba(31,75,160,.20) inset; }
+.dz-icon { flex:0 0 auto; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#13223f; color:#cfe0ff; border:1px solid #223355; }
+.dz-text { display:flex; flex-direction:column; gap:4px; }
+.dz-title { color:var(--text); font-weight:600; line-height:1.1; }
+.dz-hint  { color:var(--muted); font-size:.95em; }
+.file-meta { margin-top:8px; color:var(--muted); }
+.file-name { color:var(--text); font-weight:600; }
+.u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+.btn.ghost { background:#17212b; }
 
-  /* Weergave: gecentreerd en groter, maar niet fullscreen */
-  .pages {
-    display:flex; flex-direction:column; gap:16px;
-    align-items:center; /* centreert de kaarten */
-  }
-  .page {
-    position:relative;
-    width:min(1000px, 90%);              /* mooi groot, maar met marge */
-    border:1px solid var(--border);
-    border-radius:12px;
-    background:#0a0f14;
-    overflow:hidden;
-    padding:12px;
-  }
-  .page img { display:block; width:100%; height:auto; border-radius:8px; }
+/* Weergave */
+.pages{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  align-items:stretch;   /* laat kinderen 100% breedte pakken */
+  width:100%;
+}
 
-  /* Verwijder-kruisje */
-  .del-btn {
-    position:absolute; top:10px; right:10px;
-    background:#2a3647; border:1px solid #3a4b63; color:#fff;
-    border-radius:10px; padding:6px 10px; cursor:pointer; opacity:.92;
-  }
-  .del-btn:hover { background:#3a4b63; opacity:1; }
-  .del-btn[disabled]{opacity:.5; cursor:not-allowed}
+.page{
+  position: relative;    /* nodig voor absolute .del-btn */
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 8px 24px var(--shadow);
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+  padding:0;             /* full-bleed image binnenin */
+}
+
+.page img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:cover;      /* voorkomt witte balken bij rare verhoudingen */
+  border-radius:0;
+  position: relative;    /* zorgt voor voorspelbare stacking */
+  z-index:1;
+}
+
+/* Verwijder-kruisje */
+.del-btn {
+  position:absolute; top:10px; right:10px;
+  z-index:2;                      /* boven de image */
+  background:#2a3647; border:1px solid #3a4b63; color:#fff;
+  border-radius:10px; padding:6px 10px; cursor:pointer; opacity:.92;
+}
+.del-btn:hover { background:#3a4b63; opacity:1; }
+.del-btn[disabled]{opacity:.5; cursor:not-allowed}
 </style>
 
 <div class="card" style="padding:16px;">
@@ -65,7 +81,7 @@
       </div>
       <div class="dz-text">
         <div class="dz-title">Sleep je PDF van werkafspraken hierheen of klik om te kiezen.</div>
-        <div class="dz-hint">Alleen .pdf — Nieuwe uploads worden toegevoegd (vorige blijven staan).</div>
+        <div class="dz-hint">Alleen .pdf - Nieuwe uploads worden toegevoegd (vorige blijven staan) <strong>zodra je op Uploaden klikt.</strong></div>
       </div>
     </div>
 
@@ -87,7 +103,7 @@
       {% for url in page_urls %}
         <div class="page" data-img="{{ url }}">
           {% if perms.core.can_upload_werkafspraken %}
-            <button class="del-btn" type="button" title="PDF + PNG’s verwijderen" data-img="{{ url }}">✕</button>
+            <button class="del-btn" type="button" title="Upload verwijderen" data-img="{{ url }}">✕</button>
           {% endif %}
           <img src="{{ url }}" alt="Werkafspraken pagina">
         </div>
