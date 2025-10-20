@@ -1,14 +1,13 @@
-:root{
-    --bg:#0b0f14;
-    --panel:#10161d;
-    --panel-2:#0f141a;
-    --text:#e6edf3;
-    --muted:#9fb2c8;
-    --border:#233041;
-    --shadow:rgba(0,0,0,.55);
-    --tile:#64696d;
-    --accent:#204887;
-
+:root {
+    --bg:        #0d131b;   /* was #0b0f14 → donker marinegrijs */
+    --panel:     #131a24;   /* was #10161d → iets lichter, koel blauwgrijs */
+    --panel-2:   #101720;   /* was #0f141a → iets meer blauw erin */
+    --text:      #e6edf3;
+    --muted:     #9fb2c8;
+    --border:    #223144;   /* subtiel blauwgrijs, niet te fel */
+    --shadow:    rgba(0,0,0,.52);
+    --tile:      #64696d;
+    --accent:    #072a72;   /* blijft jouw hoofdkleur */
     --header-gap:18px; /* desktop header spacing */
 }
 
@@ -102,15 +101,41 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .nav-links form{ display:contents; }
 
 /* Content & cards */
-.content{
-    padding:18px; display:grid; gap:18px; max-width:100vw; overflow-x:hidden;
-    align-content:start; align-items:start;
+.content {
+    padding: 18px;
+    display: grid;
+    gap: 18px;
+    max-width: 100vw;
+    overflow-x: hidden;
+    align-content: start;
+    align-items: start;
+    position: relative; /* nodig voor pseudo-element positioning */
 }
-.card{
-    background:linear-gradient(180deg,var(--panel),var(--panel-2));
-    border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 24px var(--shadow);
-    overflow:hidden; max-width:100%;
+
+.card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px var(--shadow);
+    overflow: hidden;
+    max-width: 100%;
+    position: relative;
 }
+
+/* Egale blauwe streep die de rand overschrijft */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0px; /* iets omhoog zodat hij de border verbergt */
+    left: -1px;
+    right: -1px;
+    height: 2px; /* iets dikker zodat hij mooi zichtbaar blijft */
+    background-color: var(--accent); /* jouw #204887 */
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    z-index: 2; /* zorgt dat hij boven de card-border ligt */
+}
+
 /* ---------- Flash messages ---------- */
 .flash {
   padding: 12px 16px;
