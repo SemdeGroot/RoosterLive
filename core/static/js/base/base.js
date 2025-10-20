@@ -82,7 +82,7 @@ if (toggleBtn && panel && overlay) {
     });
 }
 
-// ---------- Web Push init (iOS/Android/Desktop) ----------
+// ---------- Web Push init (alleen mobiel, met modaal) ----------
 
 // VAPID key: eerst uit window.PWA, anders van data-attribute op dit script
 const VAPID =
@@ -96,20 +96,25 @@ const VAPID =
 (function(){
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
 
-  const VAPID = (window.PWA && window.PWA.VAPID_PUBLIC_KEY) || null;
+  // Basis platform-detectie
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true; // iOS legacy
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+  const pushSupported = 'PushManager' in window;
 
-  const banner   = document.getElementById('pushBanner');
-  const btnAllow = document.getElementById('enablePushBtn');
-  const btnNope  = document.getElementById('declinePushBtn');
-  const txt      = document.getElementById('pushBannerText');
+  // Elements voor modaal
+  const modal   = document.getElementById('pushPrompt');
+  const btnAllow = document.getElementById('pushAllowBtn');
+  const btnDecl  = document.getElementById('pushDeclineBtn');
+  const btnCloseX= document.getElementById('pushCloseX');
+  const titleEl  = document.getElementById('pushTitle');
+  const textEl   = document.getElementById('pushText');
 
-  // Zorg dat banner altijd klikbaar is (boven overlays)
-  if (banner) { banner.style.position = 'relative'; banner.style.zIndex = 1101; }
-
+  // Helpers (uit jouw bestaande code)
   function b64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -147,23 +152,59 @@ const VAPID =
     }
   }
 
+  // ✅ Show logic: alleen tonen als push écht kan én zinvol is
+  function canOfferPush() {
+    if (!modal || !btnAllow || !btnDecl) return false;
+    if (!VAPID) return false;                   // zonder VAPID geen aanbod
+    if (!onHttps) return false;                 // push vereist HTTPS
+    if (!pushSupported) return false;           // Push API nodig
+    if (Notification.permission === 'granted') return false; // al ingesteld
+    if (Notification.permission === 'denied') return false;  // gebruiker blokkeerde
+    if (localStorage.getItem('pushDismissed') === '1') return false; // eerder weggeklikt
+
+    // ❌ Desktop overslaan (alleen mobiel)
+    if (!isMobileUA) return false;
+
+    // iOS: alleen aanbieden als PWA/standalone (iOS 16.4+)
+    if (isIOS) return isStandalone;
+
+    // Android: mobiel + pushSupported is voldoende
+    if (isAndroid) return true;
+
+    // Overig mobiel (zeldzaam): conservatief uit
+    return false;
+  }
+
+  function openModal() {
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    // kleine UX-tweak: focus op primaire knop
+    requestAnimationFrame(() => btnAllow && btnAllow.focus());
+  }
+
+  function closeModal() {
+    modal.setAttribute('aria-hidden', 'true');
+    // verberg na animatie; hier simpel direct:
+    modal.hidden = true;
+  }
+
   async function subscribeFlow() {
     if (!VAPID) { alert('VAPID sleutel ontbreekt.'); return; }
     if (!onHttps) { alert('Notificaties vereisen HTTPS.'); return; }
+
+    // iOS guard (zou met canOfferPush niet nodig hoeven zijn, maar dubbel is oké)
     if (isIOS && !isStandalone) {
-      alert('Installeer deze app op je beginscherm om notificaties te kunnen ontvangen:\n\nDeel ▸ Zet op beginscherm\n\nOpen daarna de app vanaf je beginscherm en probeer opnieuw.');
+      alert('Installeer deze app op je beginscherm om notificaties te ontvangen:\n\nDeel ▸ Zet op beginscherm\n\nOpen daarna de app vanaf je beginscherm en probeer opnieuw.');
       return;
     }
 
     const reg = await registerSW();
     if (!reg) return;
 
-    // User-gesture pad → nu mag iOS vragen
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      // Gebruiker weigerde → banner weg & opslaan keuze
       localStorage.setItem('pushDismissed', '1');
-      if (banner) banner.style.display = 'none';
+      closeModal();
       return;
     }
 
@@ -174,54 +215,53 @@ const VAPID =
     });
     await saveSubscription(sub);
 
-    localStorage.setItem('pushDismissed', '1'); // niet opnieuw vragen
-    if (banner) banner.style.display = 'none';
+    localStorage.setItem('pushDismissed', '1');
+    closeModal();
   }
 
   function declineFlow() {
-    localStorage.setItem('pushDismissed', '1'); // respecteer: niet nu
-    if (banner) banner.style.display = 'none';
+    localStorage.setItem('pushDismissed', '1');
+    closeModal();
   }
 
-  function showBannerIfNeeded() {
-    if (!banner || !btnAllow || !btnNope) return;
+  function showPromptIfEligible() {
+    if (!canOfferPush()) return;
 
-    // Als al ingesteld of bewust weggeklikt → geen banner
-    if (localStorage.getItem('pushDismissed') === '1') {
-      banner.style.display = 'none';
-      return;
-    }
-
-    if (Notification.permission === 'granted') {
-      banner.style.display = 'none';
-      return;
-    }
-
-    // Toon banner met correcte tekst per situatie
-    banner.style.display = 'block';
+    // Contextuele tekst
     if (!onHttps) {
-      txt.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.';
+      textEl && (textEl.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.');
     } else if (isIOS && !isStandalone) {
-      txt.textContent = 'Installeer de app op je beginscherm om notificaties te ontvangen.';
-    } else if (Notification.permission === 'denied') {
-      txt.textContent = 'Meldingen zijn geblokkeerd. Schakel ze in via Instellingen → Meldingen → “Jansen Portaal”.';
+      textEl && (textEl.textContent = 'Installeer de app op je beginscherm om notificaties te ontvangen.');
     } else {
-      txt.textContent = 'Wil je een melding krijgen als er een nieuw rooster is?';
+      textEl && (textEl.textContent = 'Wil je een melding krijgen als er een nieuw rooster is?');
     }
 
-    btnAllow.onclick = subscribeFlow;
-    btnNope.onclick  = declineFlow;
+    openModal();
   }
 
+  // Wire up
+  if (btnAllow)  btnAllow.onclick  = subscribeFlow;
+  if (btnDecl)   btnDecl.onclick   = declineFlow;
+  if (btnCloseX) btnCloseX.onclick = declineFlow;
+  // backdrop klik sluit ook
+  const backdrop = modal ? modal.querySelector('.push-backdrop') : null;
+  if (backdrop)  backdrop.addEventListener('click', declineFlow);
+
+  // ESC sluit
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.hidden) declineFlow();
+  });
+
+  // Init
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', showBannerIfNeeded);
+    document.addEventListener('DOMContentLoaded', showPromptIfEligible);
   } else {
-    showBannerIfNeeded();
+    showPromptIfEligible();
   }
 
-  // Handig in console:
+  // Debug in console
   window.__pushDebug = {
-    isIOS, isStandalone, onHttps,
-    perm: Notification.permission
+    isIOS, isAndroid, isMobileUA, isStandalone, onHttps,
+    pushSupported, perm: Notification.permission
   };
 })();

@@ -12,15 +12,15 @@
 
   <title>{% block title %}Rooster{% endblock %}</title>
 
-  <meta name="description" content="Mijn Apotheek Jansen Portaal" />
-  <meta name="application-name" content="Mijn Apotheek Jansen Portaal" />
-  <meta name="apple-mobile-web-app-title" content="Mijn Apotheek Jansen Portaal" />
+  <meta name="description" content="Jansen App" />
+  <meta name="application-name" content="Jansen App" />
+  <meta name="apple-mobile-web-app-title" content="Jansen App" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
   <!-- kleur adresbalk / titelbalk -->
-  <meta name="theme-color" content="#10161d">
+  <meta name="theme-color" content="#131a24">
   <meta name="color-scheme" content="dark light" />
 
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
@@ -33,6 +33,36 @@
 
   {% block head %}{% endblock %}
 </head>
+
+<!-- iOS PWA install uitleg -->
+<div id="iosInstallModal" class="push-modal" hidden aria-modal="true" role="dialog" aria-labelledby="iosInstallTitle">
+  <div class="push-backdrop"></div>
+  <div class="push-card" role="document">
+    <button class="push-close" id="iosInstallClose" aria-label="Sluiten">✕</button>
+    <h2 id="iosInstallTitle" class="push-title">App op je beginscherm zetten</h2>
+    <p class="push-text" style="text-align:left">
+      1) Tik onderin op <strong>Deel</strong> (vierkant met pijl omhoog).<br/>
+      2) Kies <strong>Zet op beginscherm</strong>.<br/>
+      3) Tik op <strong>Voeg toe</strong>.
+    </p>
+    <div class="push-actions">
+      <button class="btn-ghost" id="iosInstallLater">Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- Android install CTA (wordt alleen getoond als beforeinstallprompt vuurt) -->
+<div id="androidInstallBar" style="display:none; position:fixed; left:16px; right:16px; bottom:16px; z-index:1101;">
+  <div class="flash flash-info" style="display:flex; gap:10px; align-items:center; justify-content:space-between; padding:12px; border-radius:12px;">
+    <span>App installeren op je startscherm?</span>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-primary" id="androidInstallBtn">Installeren</button>
+      <button class="btn-ghost" id="androidInstallLater">Later</button>
+    </div>
+  </div>
+</div>
+
+
 <body>
     <div class="app">
         <header class="header">
@@ -112,16 +142,6 @@
         </nav>
 
         <main class="content">
-
-            <div id="pushBanner" style="display:none; margin-bottom:12px;">
-            <div class="flash flash-info" style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
-                <span id="pushBannerText">Wil je een melding krijgen als er een nieuw rooster is?</span>
-                <div style="display:flex; gap:8px;">
-                <button class="btn" id="enablePushBtn">Notificaties inschakelen</button>
-                <button class="btn" id="declinePushBtn" aria-label="Niet nu">Niet nu</button>
-                </div>
-            </div>
-            </div>
             {% for message in messages %}
             <div class="flash flash-{{ message.tags|default:'info' }}">
                 {{ message }}
@@ -129,6 +149,21 @@
             {% endfor %}
             {% block content %}{% endblock %}
         </main>
+
+        <!-- Nieuwe push prompt modal -->
+        <div id="pushPrompt" class="push-modal" hidden aria-modal="true" role="dialog" aria-labelledby="pushTitle">
+        <div class="push-backdrop"></div>
+        <div class="push-card" role="document">
+            <button id="pushCloseX" class="push-close" aria-label="Sluiten">✕</button>
+            <img id="pushIcon" src="{% static 'img/notification.png' %}" alt="" class="push-icon" />
+            <h2 id="pushTitle" class="push-title">Meldingen inschakelen?</h2>
+            <p id="pushText" class="push-text">Wil je meldingen krijgen over nieuwe roosters en andere updates?</p>
+            <div class="push-actions">
+            <button id="pushAllowBtn" class="btn-primary">Ja, inschakelen</button>
+            <button id="pushDeclineBtn" class="btn-ghost">Nee, misschien later</button>
+            </div>
+        </div>
+        </div>
 
         <footer class="footer">
             <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div>

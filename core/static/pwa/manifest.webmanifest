@@ -1,6 +1,6 @@
 {
-  "name": "Jansen Portaal",
-  "short_name": "Jansen Portaal",
+  "name": "Jansen App",
+  "short_name": "Jansen App",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

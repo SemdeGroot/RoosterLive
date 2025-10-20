@@ -396,3 +396,41 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
     font-size:16px !important;
   }
 }
+
+.push-modal { position: fixed; inset: 0; z-index: 1101; display: none; }
+.push-modal[aria-hidden="false"], .push-modal:not([hidden]) { display: block; }
+
+.push-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+
+.push-card {
+  position: relative;
+  margin: 6vh auto 0;
+  max-width: 420px;
+  background: #111;
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.push-icon { width: 64px; height: 64px; display: block; margin: 8px auto 12px; }
+.push-title { margin: 0 0 8px; font-size: 1.25rem; text-align: center; }
+.push-text { margin: 0 0 16px; color: #ccc; text-align: center; }
+
+.push-actions { display: grid; gap: 10px; grid-template-columns: 1fr; }
+.btn-primary { padding: 12px 16px; border-radius: 10px; border: 0; background: #22c55e; color: #08110a; font-weight: 700; }
+.btn-ghost { padding: 12px 16px; border-radius: 10px; border: 1px solid #333; background: transparent; color: #ddd; }
+
+.push-close { position: absolute; top: 8px; right: 8px; border: 0; background: transparent; color: #aaa; font-size: 18px; cursor: pointer; }
+.push-close:hover { color: #fff; }
+
+/* Verwijder standaard focus-outline van modale knoppen */
+.btn-primary:focus,
+.btn-primary:focus-visible,
+.btn-ghost:focus,
+.btn-ghost:focus-visible,
+.push-close:focus,
+.push-close:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
