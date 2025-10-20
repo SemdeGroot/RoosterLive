@@ -7,7 +7,7 @@
     --border:#233041;
     --shadow:rgba(0,0,0,.55);
     --tile:#64696d;
-    --accent:#1f4ba0;
+    --accent:#204887;
 
     --header-gap:18px; /* desktop header spacing */
 }
@@ -306,19 +306,15 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border-radius: 3px;
-  background: var(--text); /* kleur van het icoon (wit) */
-  -webkit-mask: var(--icon) center / contain no-repeat;
-          mask: var(--icon) center / contain no-repeat;
-  box-shadow: 0 1px 2px var(--shadow);
-  transition: background 0.2s ease;
-}
-
-/* Hover/active behoudt wit maar kan subtiel oplichten */
-.nav-link:hover .nav-icon,
-.nav-link.active .nav-icon {
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(255,255,255,0.4);
+  background-image: var(--icon);
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 0.2s ease;
 }
 
 @media (min-width:900px) {
