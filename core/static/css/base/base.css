@@ -434,3 +434,77 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Coachmark styling */
+.coachmark { position: fixed; inset: 0; pointer-events: none; z-index: 1102; }
+.coach-bubble {
+  position: absolute;
+  background: #111;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  font-size: 15px;
+  pointer-events: auto; /* zodat je het evt. kunt aanklikken */
+}
+.coach-arrow {
+  position: absolute;
+  width: 0; height: 0;
+  border: 10px solid transparent;
+}
+
+/* iPhone (portret/landschap) – pijl wijst naar onder-midden (Deel-knop) */
+@media (hover:none) and (pointer:coarse) {
+  /* Bubble boven de toolbar, gecentreerd */
+  #iosCoachmark .coach-bubble {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 90px; /* iets boven de iOS onderbalk */
+  }
+  #iosCoachmark .coach-arrow {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 74px;
+    border-top-color: #111; /* driehoekje naar beneden wijzend */
+    border-width: 10px 10px 0 10px;
+  }
+}
+
+/* iPad – pijl rechtsboven waar de Deel-knop zit */
+@media (min-width: 768px) {
+  #iosCoachmark .coach-bubble {
+    top: 16px;
+    right: 86px; /* naast de Deel-knop */
+  }
+  #iosCoachmark .coach-arrow {
+    top: 44px;
+    right: 64px;
+    border-right-color: #111; /* pijl naar rechts */
+    border-width: 10px 0 10px 10px;
+  }
+}
+
+/* iOS visuals in modal */
+.ios-visuals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 10px 0 6px;
+}
+.ios-visuals img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+}
+
+/* Steps lijst netjes */
+.ios-steps { text-align: left; margin: 8px 0 16px; padding-left: 20px; }
+.ios-steps li { margin: 6px 0; }
+
+/* Geen blauwe outline op knoppen van deze modal */
+.btn-primary:focus, .btn-primary:focus-visible,
+.btn-ghost:focus, .btn-ghost:focus-visible,
+.push-close:focus, .push-close:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
