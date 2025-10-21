@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils import timezone, translation
-
+from django.utils.formats import date_format
 from ._helpers import can
 from core.models import Availability
 from core.views.mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
@@ -104,7 +104,7 @@ def personeelsdashboard_view(request):
         days_ctx.append({
             "date": d,
             "iso": d.isoformat(),
-            "weekday_label": d.strftime("%A").capitalize(),
+            "weekday_label": date_format(d, "l").capitalize(),
             "morning_count": counts[d]["morning"],
             "afternoon_count": counts[d]["afternoon"],
         })
