@@ -30,7 +30,7 @@ def mijnbeschikbaarheid_view(request):
     translation.activate("nl")
 
     today = timezone.localdate()
-    WEEKS_AHEAD = 24  # 6 maanden vooruit
+    WEEKS_AHEAD = 12  # 6 maanden vooruit
 
     min_monday = _monday_of_iso_week(today)                     # huidige week (ma)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
