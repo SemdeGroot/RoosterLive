@@ -16,6 +16,7 @@ from core.views.auth import login_view, logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
+from core.views import views_webauthn
 
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
@@ -62,4 +63,9 @@ urlpatterns = [
     path("favicon.ico", RedirectView.as_view(url=static("pwa/icons/favicon.ico"), permanent=False)),
     path("apple-touch-icon.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
     path("apple-touch-icon-precomposed.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
+
+    path('webauthn/register/begin/',    views_webauthn.register_begin,    name='webauthn_register_begin'),
+    path('webauthn/register/complete/', views_webauthn.register_complete, name='webauthn_register_complete'),
+    path('webauthn/auth/begin/',        views_webauthn.auth_begin,        name='webauthn_auth_begin'),
+    path('webauthn/auth/complete/',     views_webauthn.auth_complete,     name='webauthn_auth_complete'),
 ]

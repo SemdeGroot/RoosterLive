@@ -47,6 +47,7 @@ TEMPLATES = [
             "django.template.context_processors.request",
             "django.contrib.auth.context_processors.auth",
             "django.contrib.messages.context_processors.messages",
+            "core.context_processors.security_flags",
         ]},
     }
 ]
@@ -75,3 +76,26 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --- WebAuthn / Passkeys ---
+# Gebruik ENV zodat je eenvoudig kunt wisselen tussen localhost en ngrok/productie
+WEBAUTHN_RP_NAME = os.getenv("WEBAUTHN_RP_NAME", "Apotheek Jansen")
+
+# RP ID = hostname (zonder schema en zonder poort)
+# Voor dev is 'localhost' toegestaan als 'secure context'
+WEBAUTHN_RP_ID = os.getenv("WEBAUTHN_RP_ID", "localhost")
+
+# Expected origin = scheme + host (+ optionele poort)
+# Chrome accepteert http://localhost, iOS/Safari vereist https in het echt
+WEBAUTHN_ORIGIN = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:8000")
+
+# Cookies & security (zet deze aan in echte omgeving)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+# Houd Lax aan, dan werkt je app prima met standaard navigaties
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# In productie meestal True:
+SECURE_SSL_REDIRECT = False if DEBUG else True

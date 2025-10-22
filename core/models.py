@@ -56,3 +56,15 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user} – {self.endpoint[:40]}…"
+
+class WebAuthnCredential(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='webauthn_credentials')
+    name = models.CharField(max_length=100, default='Mijn toestel')
+    credential_id = models.CharField(max_length=255, unique=True)  # base64url string
+    public_key = models.TextField()                                 # PEM/COSE as b64url (lib levert dit)
+    sign_count = models.IntegerField(default=0)
+    transports = models.CharField(max_length=200, blank=True)       # csv
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} – {self.name}"
