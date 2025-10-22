@@ -1,14 +1,14 @@
 :root{
-    --bg:        #0d131b;   /* was #0b0f14 → donker marinegrijs */
-    --panel:     #131a24;   /* was #10161d → iets lichter, koel blauwgrijs */
-    --panel-2:   #101720;   /* was #0f141a → iets meer blauw erin */
-    --text:      #e6edf3;
-    --muted:     #9fb2c8;
-    --border:    #223144;   /* subtiel blauwgrijs, niet te fel */
-    --shadow:    rgba(0,0,0,.52);
-    --tile:      #64696d;
-    --accent:    #072a72;   /* blijft jouw hoofdkleur */
-  --danger:#cc3b3b;
+  --bg:        #0d131b;   /* donker marinegrijs */
+  --panel:     #131a24;   /* koel blauwgrijs */
+  --panel-2:   #101720;
+  --text:      #e6edf3;
+  --muted:     #9fb2c8;
+  --border:    #223144;
+  --shadow:    rgba(0,0,0,.52);
+  --tile:      #64696d;
+  --accent:    #072a72;   /* hoofdkleur */
+  --danger:    #cc3b3b;
 }
 
 *{ box-sizing:border-box }
@@ -22,15 +22,16 @@ html{
 
 body{
   margin:0;
-  min-height:100vh;
+  min-height:100%;
   background:var(--bg);
   color:var(--text);
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  overflow:hidden; /* voorkomt verschuiving door scroll */
 }
 
 /* Center + safe areas voor PWA */
 .login-app{
-  min-height:100vh;
+  min-height: 100dvh;  /* stabiele viewport op mobiel */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -39,6 +40,14 @@ body{
   padding-right:calc(env(safe-area-inset-right) + 16px);
   padding-top:calc(env(safe-area-inset-top) + 16px);
   padding-bottom:calc(env(safe-area-inset-bottom) + 16px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* fallback voor oudere browsers zonder dvh */
+@supports not (height: 100dvh) {
+  .login-app { min-height: 100svh; }
 }
 
 /* Cardbox – mobiel compacter, desktop ruimer */
@@ -48,7 +57,6 @@ body{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
-  /* ↑ meer ruimte boven en onder binnen de card, geen effect op wit van het logo */
   padding: clamp(26px, 6vw, 44px) 16px clamp(26px, 6vw, 44px);
   box-shadow:0 8px 24px var(--shadow);
   text-align:center;
@@ -71,24 +79,22 @@ body{
 .logo-wrap{
   width:100%;
   max-width:min(280px, 80%);
-  padding: clamp(12px, 2.5vw, 12px) clamp(12px, 3vw, 20px); /* ongewijzigd: geen extra wit */
+  padding: clamp(12px, 2.5vw, 12px) clamp(12px, 3vw, 20px);
   border-radius:16px;
   background:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
-  /* ↑ extra ruimte rondom de logobox in de card (boven/onder) */
   margin: clamp(18px, 5vw, 28px) auto clamp(28px, 7vw, 48px);
 }
 
-
 .logo{
   display:block;
-  max-width:100%;                      /* schaal naar de wrapperbreedte */
-  height:auto;                         /* behoud aspectratio */
-  max-height:clamp(36px, 12vw, 56px);  /* klein op mobiel, nooit té groot op desktop */
-  object-fit:contain;                  /* netjes binnen de box */
+  max-width:100%;
+  height:auto;
+  max-height:clamp(36px, 12vw, 56px);
+  object-fit:contain;
 }
 
 form{text-align:left}
@@ -105,7 +111,7 @@ input[type="text"], input[type="password"]{
   background:#0f141a;
   color:var(--text);
   border:1px solid var(--border);
-  padding:12px;                /* iets groter voor touch */
+  padding:12px;
   border-radius:10px;
   margin-bottom:18px;
   font-size:16px !important;   /* fix: niet inzoomen */
@@ -113,11 +119,10 @@ input[type="text"], input[type="password"]{
   transition:border-color .2s, box-shadow .2s;
 }
 
-/* ENKELE focus-border (geen dubbele) */
 input:focus{
   outline:none;
   border-color:var(--accent);
-  box-shadow:none; 
+  box-shadow:none;
 }
 
 button{
@@ -173,11 +178,8 @@ input[type="password"]::-webkit-password-toggle-button {
   }
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden; /* voorkomt verschuiving door scroll */
-}
-
-.login-app {
-  overflow-y: auto;
+/* Universele safeguard tegen zoom bij focus */
+input, select, textarea, button {
+  font-size:16px !important;
+  line-height:1.35;
 }

@@ -4,15 +4,24 @@
 <head>
   <meta charset="utf-8">
   <!-- notch + goede zoom -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 
   <title>Login | Apotheek Jansen</title>
 
   <!-- PWA theming -->
+  <meta name="description" content="Jansen App" />
+  <meta name="application-name" content="Jansen App" />
+  <meta name="apple-mobile-web-app-title" content="Jansen App" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- kleur adresbalk / titelbalk -->
   <meta name="theme-color" content="#0d131b">
-  <meta name="color-scheme" content="dark light">
+  <meta name="color-scheme" content="dark light" />
 
   <!-- Manifest + icons -->
+  <link rel="manifest" href="{% static 'pwa/manifest.webmanifest' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'pwa/icons/favicon-32x32.png' %}">
   <link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
   <link rel="shortcut icon" href="{% static 'pwa/icons/favicon.ico' %}">
