@@ -32,7 +32,7 @@
 .week-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-start;  /* 🔹 links uitgelijnd standaard (desktop) */
+  justify-content: flex-start;  /* links uitgelijnd standaard (desktop) */
   gap: 10px;
   margin-bottom: 10px;
   flex-wrap: wrap;
@@ -77,7 +77,7 @@
     display:flex; align-items:baseline; justify-content:space-between;
     gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer;
   }
-  .week-option:hover, .week-option:focus { background:#1a2432; outline:none; }
+  .week-option:hover, .week-option:focus { background:#1a2432; outline:none !important; box-shadow: none; border: none; }
   .week-option.is-active { border:1px solid var(--accent); }
   .week-option small { color: var(--muted); }
 
