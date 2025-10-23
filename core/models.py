@@ -68,3 +68,9 @@ class WebAuthnCredential(models.Model):
 
     def __str__(self):
         return f"{self.user} – {self.name}"
+    
+    # Om te verwijderen voor debug:
+    # python manage.py shell
+    # from core.models import WebAuthnCredential
+    # WebAuthnCredential.objects.filter(user__username="sem").delete()
+    # exit()
