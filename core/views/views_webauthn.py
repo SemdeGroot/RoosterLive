@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login, get_user_model
 from django.utils.text import capfirst
+from django.conf import settings
 
 from core.models import WebAuthnCredential
 
@@ -44,6 +45,21 @@ logger = logging.getLogger(__name__)
 
 def bytes_to_b64u(b: bytes) -> str:
     return base64.urlsafe_b64encode(b).decode().rstrip("=")
+
+def _rp_id(request) -> str:
+    """
+    Gebruik vaste RP-ID uit settings (bijv. 'ngrok-free.dev') als die aanwezig is.
+    Valt anders terug op host (zonder poort).
+    """
+    return getattr(settings, "WEBAUTHN_RP_ID", None) or _expected_rp_id(request)
+
+def _expected_origin(request) -> str:
+    host = request.get_host()
+    # beschouw ngrok-domeinen als secure
+    ngrok_hosts = (".ngrok-free.dev", ".ngrok-free.app", ".ngrok.app")
+    secure = request.is_secure() or host.endswith(ngrok_hosts)
+    scheme = "https" if secure else "http"
+    return f"{scheme}://{host}"
 
 def _expected_rp_id(request) -> str:
     # host zonder poort
@@ -100,14 +116,14 @@ def _extract_challenge_b64u(options_json: dict) -> Optional[str]:
 def register_begin(request):
     user = request.user
 
-    # exclude_credentials als structs + transport enums
+    # exclude_credentials als structs + transport enums (let op enum type!)
     exclude: List[PublicKeyCredentialDescriptor] = []
     for cred in user.webauthn_credentials.all():
         transports = [t for t in (cred.transports.split(",") if cred.transports else []) if t]
         exclude.append(
             PublicKeyCredentialDescriptor(
                 id=base64url_to_bytes(cred.credential_id),
-                type="public-key",
+                type=PublicKeyCredentialType.PUBLIC_KEY,   # ⬅️ enum i.p.v. "public-key"
                 transports=[AuthenticatorTransport(t) for t in transports] if transports else None,
             )
         )
@@ -123,8 +139,8 @@ def register_begin(request):
     # Nieuwe en legacy signature ondersteunen
     try:
         opts = generate_registration_options(
-            rp_id=_expected_rp_id(request),
-            rp_name="Jansen App",
+            rp_id=_rp_id(request),                    # ⬅️ vaste RP-ID
+            rp_name=getattr(settings, "WEBAUTHN_RP_NAME", "Jansen App"),
             user=u,
             authenticator_selection=selection,
             timeout=60000,
@@ -133,8 +149,8 @@ def register_begin(request):
         )
     except TypeError:
         opts = generate_registration_options(
-            rp_id=_expected_rp_id(request),
-            rp_name="Jansen App",
+            rp_id=_rp_id(request),
+            rp_name=getattr(settings, "WEBAUTHN_RP_NAME", "Jansen App"),
             user_id=u["id"],
             user_name=u["name"],
             user_display_name=u["display_name"],
@@ -151,8 +167,9 @@ def register_begin(request):
     request.session["webauthn_register_challenge"] = challenge_b64u
 
     logger.debug("[register_begin] rp_id=%s origin=%s challenge=%s",
-                 _expected_rp_id(request), _expected_origin(request), _safe(challenge_b64u))
+                 _rp_id(request), _expected_origin(request), _safe(challenge_b64u))
     return JsonResponse(resp)
+
 
 
 @login_required
@@ -205,8 +222,8 @@ def register_complete(request):
     try:
         verified = verify_registration_response(
             credential=cred_struct,
-            expected_challenge=base64url_to_bytes(expected_challenge),  # BYTES!
-            expected_rp_id=_expected_rp_id(request),
+            expected_challenge=base64url_to_bytes(expected_challenge),
+            expected_rp_id=_rp_id(request),                 # ⬅️ vaste RP-ID
             expected_origin=_expected_origin(request),
             require_user_verification=True,
         )
@@ -246,30 +263,21 @@ def auth_begin(request):
 
     username = (payload.get("username") or "").strip()
     if not username:
-        # We willen GEEN discoverable fallback → anders krijg je juist een keuze-prompt
+        # Expliciet géén discoverable: voorkomt account/method chooser
         return HttpResponseBadRequest("username required for non-discoverable auth")
 
     User = get_user_model()
     try:
         u = User.objects.get(username=username)
     except User.DoesNotExist:
-        # Geen geforceerde discoverable prompt
         return HttpResponseBadRequest("user not found")
 
-    # Creds ophalen en eerst filteren op 'internal' transport (platform authenticator)
     creds_qs = list(u.webauthn_credentials.all())
-    platform_creds = []
-    for c in creds_qs:
-        transports = [t for t in (c.transports.split(",") if c.transports else []) if t]
-        if ("internal" in transports) or (not transports):
-            platform_creds.append(c)
-
-    use_creds = platform_creds or creds_qs  # val terug op alles als er geen 'internal' is
-    if not use_creds:
+    if not creds_qs:
         return HttpResponseBadRequest("no credentials for user")
 
     allow_credentials: List[PublicKeyCredentialDescriptor] = []
-    for cred in use_creds:
+    for cred in creds_qs:
         transports = [t for t in (cred.transports.split(",") if cred.transports else []) if t]
         try:
             trans_enums = [AuthenticatorTransport(t) for t in transports] if transports else None
@@ -278,22 +286,21 @@ def auth_begin(request):
         allow_credentials.append(
             PublicKeyCredentialDescriptor(
                 id=base64url_to_bytes(cred.credential_id),
-                type=PublicKeyCredentialType.PUBLIC_KEY,  # enum
-                transports=trans_enums,                   # hint: ['internal'] stuurt naar FaceID/biometrie
+                type=PublicKeyCredentialType.PUBLIC_KEY,  # ⬅️ enum
+                transports=trans_enums,                   # hint; mag None blijven voor iOS
             )
         )
 
-    # Opties genereren (zoals bij register)
     try:
         opts = generate_authentication_options(
-            rp_id=_expected_rp_id(request),
+            rp_id=_rp_id(request),                      # ⬅️ vaste RP-ID
             timeout=60000,
             user_verification=UserVerificationRequirement.REQUIRED,
-            allow_credentials=allow_credentials,  # gerichte lijst => geen discoverable chooser
+            allow_credentials=allow_credentials,        # gericht => direct Face ID
         )
     except TypeError:
         opts = generate_authentication_options(
-            rp_id=_expected_rp_id(request),
+            rp_id=_rp_id(request),
             user_verification=UserVerificationRequirement.REQUIRED,
             allow_credentials=allow_credentials,
             timeout=60000,
@@ -306,8 +313,9 @@ def auth_begin(request):
     request.session["webauthn_auth_challenge"] = challenge_b64u
 
     logger.debug("[auth_begin] rp_id=%s origin=%s challenge=%s username=%s",
-                 _expected_rp_id(request), _expected_origin(request), _safe(challenge_b64u), username)
+                 _rp_id(request), _expected_origin(request), _safe(challenge_b64u), username)
     return JsonResponse(resp)
+
 
 
 @require_POST
@@ -362,7 +370,7 @@ def auth_complete(request):
         verified = verify_authentication_response(
             credential=cred_struct,
             expected_challenge=base64url_to_bytes(expected_challenge),
-            expected_rp_id=_expected_rp_id(request),
+            expected_rp_id=_rp_id(request),                 # ⬅️ vaste RP-ID
             expected_origin=_expected_origin(request),
             require_user_verification=True,
             credential_public_key_lookup=_lookup_public_key,
