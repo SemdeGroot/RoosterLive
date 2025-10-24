@@ -136,34 +136,6 @@
         </div>
         </div>
 
-        {# --- Biometrie prompt modal --- #}
-        <div id="bioPrompt" class="push-modal" hidden aria-modal="true" role="dialog" aria-labelledby="bioTitle">
-        <div class="push-backdrop"></div>
-        <div class="push-card" role="document">
-            <button id="bioCloseX" class="push-close" aria-label="Sluiten">✕</button>
-            <img id="bioIcon" src="{% static 'img/biometric.png' %}" alt="" class="push-icon" />
-            <h2 id="bioTitle" class="push-title">Biometrisch inloggen inschakelen?</h2>
-            <p id="bioText" class="push-text">
-            Gebruik Face ID of vingerafdruk om sneller en veiliger in te loggen.
-            </p>
-            <div class="push-actions">
-            <button id="bioAllowBtn" class="btn-primary">Ja, instellen</button>
-            <button id="bioDeclineBtn" class="btn-ghost">Nee, misschien later</button>
-            </div>
-        </div>
-        </div>
-
-        <script id="security-data" type="application/json">
-        {{ SECURITY_JSON|default:"{}"|safe }}
-        </script>
-        <script>
-        try {
-            window.SECURITY = JSON.parse(document.getElementById('security-data').textContent);
-        } catch (e) {
-            window.SECURITY = {};
-        }
-        </script>
-
         <footer class="footer">
             <div>© {% now "Y" %} Apotheek Jansen Amersfoort - Sem de Groot</div>
         </footer>

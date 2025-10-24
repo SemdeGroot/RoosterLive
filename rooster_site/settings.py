@@ -60,7 +60,6 @@ TEMPLATES = [
             "django.template.context_processors.request",
             "django.contrib.auth.context_processors.auth",
             "django.contrib.messages.context_processors.messages",
-            "core.context_processors.security_flags",
         ]},
     }
 ]
@@ -85,15 +84,6 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# --- WebAuthn / Passkeys ---
-# Gebruik ENV zodat je eenvoudig kunt wisselen tussen localhost en ngrok/productie
-WEBAUTHN_RP_NAME = "Apotheek Jansen"
-WEBAUTHN_RP_ID = "ngrok-free.dev" 
-
-# Expected origin = scheme + host (+ optionele poort)
-# Chrome accepteert http://localhost, iOS/Safari vereist https in het echt
-WEBAUTHN_ORIGIN = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:8000")
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

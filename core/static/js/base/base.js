@@ -129,6 +129,7 @@ const VAPID =
     return m ? decodeURIComponent(m[1]) : '';
   }
 
+  // Stabiel device-ID voor server-side dedupe
   async function getDeviceHash() {
     const ua = navigator.userAgent || "";
     const platform = navigator.platform || "";
@@ -143,7 +144,7 @@ const VAPID =
     const bytes = Array.from(new Uint8Array(buf));
     return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  
+
   async function saveSubscription(sub) {
     try {
       const device_hash = await getDeviceHash();
@@ -154,9 +155,9 @@ const VAPID =
         credentials: 'same-origin',
         body: JSON.stringify({
           subscription: sub,
-          device_hash,          // << belangrijk: zorgt dat server oude rijen kan droppen
-          user_agent: ua,       // << handig als extra hint (je hebt dit veld in je model)
-          replace: true         // << optioneel: flag voor “vervang eerdere rows voor dit device”
+          device_hash,
+          user_agent: ua,
+          replace: true
         }),
       });
     } catch (e) {
@@ -229,6 +230,10 @@ const VAPID =
       window.addEventListener('keydown', esc);
 
       // Contextuele tekst
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                        || window.navigator.standalone === true;
       if (!onHttps) {
         textEl && (textEl.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.');
       } else if (isIOS && !isStandalone) {
@@ -243,157 +248,25 @@ const VAPID =
 
   // Debug
   window.__pushDebug = {
-    isIOS, isAndroid, isMobileUA, isStandalone, onHttps,
-    pushSupported, perm: Notification.permission
+    onHttps,
+    pushSupported,
+    perm: Notification.permission
   };
 })();
 
-// ---------- BIOMETRIE (WebAuthn / Passkeys) ----------
+// ---------- ONBOARDING ORCHESTRATOR: alleen PUSH ----------
 (function () {
-  const modal    = document.getElementById('bioPrompt');
-  const allowBtn = document.getElementById('bioAllowBtn');
-  const declineBtn = document.getElementById('bioDeclineBtn');
-  const closeX   = document.getElementById('bioCloseX');
-  if (!modal || !allowBtn || !declineBtn) return;
-
-  const SEC = window.SECURITY || {};
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                    || window.navigator.standalone === true;
-  const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
-
-  async function supported() {
-    if (!('PublicKeyCredential' in window) || !window.isSecureContext) return false;
-    try {
-      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    } catch { return false; }
-  }
-
-  function canOfferBio() {
-    if (!SEC.authenticated) return false;          // registreren vereist ingelogd
-    if (SEC.has_webauthn) return false;            // al ingesteld? niet meer aanbieden
-    if (!isStandalone) return false;
-    if (!onHttps) return false;
-    return true;
-  }
-
-  function openBioModal() { modal.hidden = false; modal.setAttribute('aria-hidden','false'); allowBtn && allowBtn.focus(); }
-  function closeBioModal(){ modal.setAttribute('aria-hidden','true'); modal.hidden = true; }
-
-  const b64uToBuf = (b64u) => {
-    const s = b64u.replace(/-/g,'+').replace(/_/g,'/');
-    const pad = s.length % 4 === 2 ? '==' : s.length % 4 === 3 ? '=' : '';
-    const str = atob(s + pad);
-    const buf = new ArrayBuffer(str.length);
-    const view = new Uint8Array(buf);
-    for (let i=0;i<str.length;i++) view[i] = str.charCodeAt(i);
-    return buf;
-  };
-  const bufToB64u = (buf) => {
-    const bytes = new Uint8Array(buf);
-    let s = ''; for (let i=0;i<bytes.byteLength;i++) s += String.fromCharCode(bytes[i]);
-    return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  };
-
-  async function beginRegistration() {
-    const csrf = (document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/) || [,''])[1] || '';
-    const res = await fetch('/webauthn/register/begin/', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'X-CSRFToken': csrf },
-      credentials:'same-origin',
-      body: '{}'
-    });
-    if (!res.ok) throw new Error('register/begin faalde');
-    const options = await res.json();
-
-    const pubKey = options.publicKey || options;
-    pubKey.challenge = b64uToBuf(pubKey.challenge);
-    if (pubKey.user && pubKey.user.id) pubKey.user.id = b64uToBuf(pubKey.user.id);
-    if (Array.isArray(pubKey.excludeCredentials)) {
-      pubKey.excludeCredentials = pubKey.excludeCredentials.map(c => ({ ...c, id: b64uToBuf(c.id) }));
-    }
-
-    const cred = await navigator.credentials.create({ publicKey: pubKey });
-    const att = cred.response;
-    const payload = {
-      id: cred.id,
-      rawId: bufToB64u(cred.rawId),
-      type: cred.type,
-      response: {
-        clientDataJSON: bufToB64u(att.clientDataJSON),
-        attestationObject: bufToB64u(att.attestationObject),
-      },
-      transports: (att.getTransports ? att.getTransports() : []),
-    };
-
-    const fin = await fetch('/webauthn/register/complete/', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'X-CSRFToken': csrf },
-      credentials: 'same-origin',
-      body: JSON.stringify(payload)
-    });
-    if (!fin.ok) throw new Error('register/complete faalde');
-
-    // Succes: markeer passkey en onthoud username
-    try {
-      localStorage.setItem('passkeyEnabled','1');
-      if (SEC && SEC.authenticated && SEC.username) {
-        localStorage.setItem('lastUsername', SEC.username);
-      }
-    } catch {}
-    closeBioModal();
-  }
-
-  // ---- Promise-achtige prompt voor serial use ----
-  window.offerBioPrompt = async function () {
-    try { if (!(await supported()) || !canOfferBio()) return; } catch { return; }
-    return new Promise((resolve) => {
-      const done = () => { closeBioModal(); resolve(); };
-      const onAllow = () => { Promise.resolve(beginRegistration()).finally(done); };
-      const onDecl  = () => { done(); };
-
-      allowBtn   && (allowBtn.onclick   = onAllow);
-      declineBtn && (declineBtn.onclick = onDecl);
-      closeX     && (closeX.onclick     = onDecl);
-      const backdrop = modal ? modal.querySelector('.push-backdrop') : null;
-      if (backdrop) backdrop.addEventListener('click', onDecl, { once:true });
-      const esc = (e)=>{ if (e.key === 'Escape') { onDecl(); window.removeEventListener('keydown', esc); } };
-      window.addEventListener('keydown', esc);
-
-      openBioModal();
-    });
-  };
-})();
-
-// ---------- ORCHESTRATOR: EERSTE PWA-OPEN (als ingelogd) → EERST BIO, DAN PUSH ----------
-(function () {
-  const SEC = window.SECURITY || {};
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
 
-  // Laat prompts precies één keer zien (onboarding)
-  const onboardingDone = localStorage.getItem('onboardingDone') === '1';
-
-  // We tonen bij de eerste keer dat de user de PWA opent (standalone) EN al ingelogd is
-  if (!isStandalone || !SEC.authenticated || onboardingDone) {
-    // Wel username onthouden als die bekend is
-    try { if (SEC.username) localStorage.setItem('lastUsername', SEC.username); } catch {}
-    return;
-  }
+  // Toon push-prompt precies één keer bij eerste PWA-open
+  const done = localStorage.getItem('onboardingPushDone') === '1';
+  if (!isStandalone || done) return;
 
   (async () => {
-    // 1) eerst biometrie
-    if (typeof window.offerBioPrompt === 'function') {
-      try { await window.offerBioPrompt(); } catch {}
-    }
-    // 2) dan push
     if (typeof window.offerPushPrompt === 'function') {
       try { await window.offerPushPrompt(); } catch {}
     }
-
-    // Markeer afgerond: niet nogmaals vragen bij volgende opens/logins
-    try { localStorage.setItem('onboardingDone', '1'); } catch {}
-
-    // Onthoud username voor auto-passkey op loginpagina
-    try { if (SEC.username) localStorage.setItem('lastUsername', SEC.username); } catch {}
+    try { localStorage.setItem('onboardingPushDone', '1'); } catch {}
   })();
 })();
