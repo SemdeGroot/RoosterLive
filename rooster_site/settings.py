@@ -7,8 +7,21 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change")
 DEBUG = os.getenv("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "treasonably-noncerebral-samir.ngrok-free.dev"]
-CSRF_TRUSTED_ORIGINS = ["https://treasonably-noncerebral-samir.ngrok-free.dev"]
+
+# ---- Proxy/HTTPS achter ngrok ----
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+# ---- Hosts & CSRF (wildcards) ----
+ALLOWED_HOSTS = [
+    'localhost', '127.0.0.1',
+    '.ngrok-free.dev', '.ngrok-free.app', '.ngrok.app',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.app',
+]
 
 VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ="
 VAPID_PRIVATE_KEY = "ilECdajPSsDaev-gkhnlvm99dq3sjdRd1OlsSKTW0_Y="
@@ -75,23 +88,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- WebAuthn / Passkeys ---
 # Gebruik ENV zodat je eenvoudig kunt wisselen tussen localhost en ngrok/productie
-WEBAUTHN_RP_NAME = os.getenv("WEBAUTHN_RP_NAME", "Apotheek Jansen")
-
-# RP ID = hostname (zonder schema en zonder poort)
-# Voor dev is 'localhost' toegestaan als 'secure context'
-WEBAUTHN_RP_ID = os.getenv("WEBAUTHN_RP_ID", "localhost")
+WEBAUTHN_RP_NAME = "Apotheek Jansen"
+WEBAUTHN_RP_ID = "ngrok-free.dev" 
 
 # Expected origin = scheme + host (+ optionele poort)
 # Chrome accepteert http://localhost, iOS/Safari vereist https in het echt
 WEBAUTHN_ORIGIN = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:8000")
 
-# Cookies & security (zet deze aan in echte omgeving)
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_SSL_REDIRECT = False  # in dev via ngrok
 
-# Houd Lax aan, dan werkt je app prima met standaard navigaties
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SAMESITE = "Lax"
-
-# In productie meestal True:
-SECURE_SSL_REDIRECT = False if DEBUG else True
+# 24 uur sessie
+SESSION_COOKIE_AGE = 60 * 60 * 24           # 1 dag
+# Niet-persistente sessiecookie (logout bij sluiten browser/app*)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# (Optioneel) elke request verlengt de sessie → rolling window
+SESSION_SAVE_EVERY_REQUEST = True

@@ -28,6 +28,7 @@ from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
     AuthenticatorTransport,
     PublicKeyCredentialDescriptor,
+    PublicKeyCredentialType,
     ResidentKeyRequirement,
     UserVerificationRequirement,
     # Payload-structs die verify_* verwachten
@@ -235,6 +236,7 @@ def register_complete(request):
 
 # -------------------- AUTHENTICATION --------------------
 
+
 @require_POST
 def auth_begin(request):
     try:
@@ -243,31 +245,59 @@ def auth_begin(request):
         payload = {}
 
     username = (payload.get("username") or "").strip()
+    if not username:
+        # We willen GEEN discoverable fallback → anders krijg je juist een keuze-prompt
+        return HttpResponseBadRequest("username required for non-discoverable auth")
 
-    allow_credentials: Optional[List[PublicKeyCredentialDescriptor]] = None
-    if username:
-        User = get_user_model()
+    User = get_user_model()
+    try:
+        u = User.objects.get(username=username)
+    except User.DoesNotExist:
+        # Geen geforceerde discoverable prompt
+        return HttpResponseBadRequest("user not found")
+
+    # Creds ophalen en eerst filteren op 'internal' transport (platform authenticator)
+    creds_qs = list(u.webauthn_credentials.all())
+    platform_creds = []
+    for c in creds_qs:
+        transports = [t for t in (c.transports.split(",") if c.transports else []) if t]
+        if ("internal" in transports) or (not transports):
+            platform_creds.append(c)
+
+    use_creds = platform_creds or creds_qs  # val terug op alles als er geen 'internal' is
+    if not use_creds:
+        return HttpResponseBadRequest("no credentials for user")
+
+    allow_credentials: List[PublicKeyCredentialDescriptor] = []
+    for cred in use_creds:
+        transports = [t for t in (cred.transports.split(",") if cred.transports else []) if t]
         try:
-            u = User.objects.get(username=username)
-            descs: List[PublicKeyCredentialDescriptor] = []
-            for cred in u.webauthn_credentials.all():
-                descs.append(
-                    PublicKeyCredentialDescriptor(
-                        id=base64url_to_bytes(cred.credential_id),
-                        type="public-key",
-                        transports=None,
-                    )
-                )
-            allow_credentials = descs or None
-        except User.DoesNotExist:
-            pass  # discoverable toestaan
+            trans_enums = [AuthenticatorTransport(t) for t in transports] if transports else None
+        except Exception:
+            trans_enums = None
+        allow_credentials.append(
+            PublicKeyCredentialDescriptor(
+                id=base64url_to_bytes(cred.credential_id),
+                type=PublicKeyCredentialType.PUBLIC_KEY,  # enum
+                transports=trans_enums,                   # hint: ['internal'] stuurt naar FaceID/biometrie
+            )
+        )
 
-    opts = generate_authentication_options(
-        rp_id=_expected_rp_id(request),
-        timeout=60000,
-        user_verification=UserVerificationRequirement.REQUIRED,
-        allow_credentials=allow_credentials,  # None => discoverable toegestaan
-    )
+    # Opties genereren (zoals bij register)
+    try:
+        opts = generate_authentication_options(
+            rp_id=_expected_rp_id(request),
+            timeout=60000,
+            user_verification=UserVerificationRequirement.REQUIRED,
+            allow_credentials=allow_credentials,  # gerichte lijst => geen discoverable chooser
+        )
+    except TypeError:
+        opts = generate_authentication_options(
+            rp_id=_expected_rp_id(request),
+            user_verification=UserVerificationRequirement.REQUIRED,
+            allow_credentials=allow_credentials,
+            timeout=60000,
+        )
 
     resp = _options_to_json_dict(opts)
     challenge_b64u = _extract_challenge_b64u(resp)
@@ -275,8 +305,8 @@ def auth_begin(request):
         return HttpResponseBadRequest("Challenge ontbreekt in opties.")
     request.session["webauthn_auth_challenge"] = challenge_b64u
 
-    logger.debug("[auth_begin] rp_id=%s origin=%s challenge=%s",
-                 _expected_rp_id(request), _expected_origin(request), _safe(challenge_b64u))
+    logger.debug("[auth_begin] rp_id=%s origin=%s challenge=%s username=%s",
+                 _expected_rp_id(request), _expected_origin(request), _safe(challenge_b64u), username)
     return JsonResponse(resp)
 
 
@@ -291,16 +321,10 @@ def auth_complete(request):
     except Exception:
         return HttpResponseBadRequest("Ongeldige JSON.")
 
-    # Debug/early sanity
+    # (debug + checks blijven zoals je had)
     cdj = (body.get("response") or {}).get("clientDataJSON")
     cd = _parse_client_data_json(cdj) if cdj else {}
     cd_type = cd.get("type"); cd_origin = cd.get("origin"); cd_chal = cd.get("challenge")
-    logger.debug(
-        "[auth_complete] expected_rp_id=%s expected_origin=%s expected_chal=%s "
-        "client.type=%s client.origin=%s client.chal=%s",
-        _expected_rp_id(request), _expected_origin(request), _safe(expected_challenge),
-        cd_type, cd_origin, _safe(cd_chal)
-    )
     if cd_type and cd_type != "webauthn.get":
         return HttpResponseBadRequest(f"clientDataJSON.type mismatch: {cd_type}")
     if cd_origin and cd_origin != _expected_origin(request):
@@ -308,11 +332,11 @@ def auth_complete(request):
     if cd_chal and cd_chal != expected_challenge:
         return HttpResponseBadRequest("challenge mismatch (client vs server).")
 
-    # Structs (LET OP: response velden naar BYTES)
+    # Struct opbouwen (zoals je had)
     try:
         cred_struct = AuthenticationCredential(
-            id=body["id"],  # string
-            raw_id=base64url_to_bytes(body.get("rawId") or body["id"]),  # bytes
+            id=body["id"],
+            raw_id=base64url_to_bytes(body.get("rawId") or body["id"]),
             type=body.get("type", "public-key"),
             response=AuthenticatorAssertionResponse(
                 client_data_json=base64url_to_bytes(body["response"]["clientDataJSON"]),
@@ -327,7 +351,6 @@ def auth_complete(request):
     except KeyError:
         return HttpResponseBadRequest("Onvolledige credential payload.")
 
-    # Lookups voor verify
     def _lookup_public_key(credential_id_b64u: str) -> bytes:
         cred = WebAuthnCredential.objects.get(credential_id=credential_id_b64u)
         return base64url_to_bytes(cred.public_key)
@@ -335,11 +358,10 @@ def auth_complete(request):
     def _lookup_sign_count(credential_id_b64u: str) -> int:
         return WebAuthnCredential.objects.get(credential_id=credential_id_b64u).sign_count
 
-    # Verify met challenge als BYTES (consistent met registration)
     try:
         verified = verify_authentication_response(
             credential=cred_struct,
-            expected_challenge=base64url_to_bytes(expected_challenge),  # BYTES!
+            expected_challenge=base64url_to_bytes(expected_challenge),
             expected_rp_id=_expected_rp_id(request),
             expected_origin=_expected_origin(request),
             require_user_verification=True,
@@ -350,12 +372,12 @@ def auth_complete(request):
         logger.exception("verify_authentication_response failed: %s", e)
         return HttpResponseBadRequest(f"Authenticatie mislukt: {e}")
 
-    # Update counter
+    # Counter updaten
     WebAuthnCredential.objects.filter(
         credential_id=verified.credential_id
     ).update(sign_count=int(verified.new_sign_count))
 
-    # Vind user en log in
+    # User inloggen + sessie-expiry op 1 dag
     try:
         cred = WebAuthnCredential.objects.select_related("user").get(
             credential_id=verified.credential_id
@@ -364,6 +386,11 @@ def auth_complete(request):
         return HttpResponseBadRequest("Credential niet gevonden.")
 
     auth_login(request, cred.user)
+    request.session.set_expiry(86400)
+
     request.session.pop("webauthn_auth_challenge", None)
-    logger.debug("[auth_complete] OK cred_id=%s", _safe(verified.credential_id))
-    return JsonResponse({"status": "ok"})
+    username = cred.user.get_username()
+    logger.debug("[auth_complete] OK cred_id=%s user=%s", _safe(verified.credential_id), username)
+
+    # Geef username terug zodat frontend 'm kan onthouden
+    return JsonResponse({"status": "ok", "username": username})

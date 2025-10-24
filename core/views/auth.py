@@ -29,10 +29,12 @@ def login_view(request):
         if user is not None and user.is_active:
             login(request, user)
 
-            # ✅ BELANGRIJK: markeer 'net ingelogd' voor de biometrie-prompt
+            # ⬇️ Zet sessie-expiratie op 24 uur (ook bij herstart app)
+            request.session.set_expiry(86400)
+
+            # ✅ markeer 'net ingelogd' voor eventuele prompts
             request.session["just_logged_in"] = True
 
-            # (optioneel) veilige 'next' afhandeling
             nxt = request.GET.get("next")
             if nxt and url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}):
                 return redirect(nxt)
@@ -42,7 +44,6 @@ def login_view(request):
 
     ctx = {"form": form}
     return render(request, "auth/login.html", ctx)
-
 
 @login_required
 @require_POST
