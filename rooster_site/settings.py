@@ -65,9 +65,6 @@ STATICFILES_DIRS = [BASE_DIR / "data"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Convenience dirs
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
 CACHE_DIR = MEDIA_ROOT / "cache"     # rendered PNGs for roster
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
