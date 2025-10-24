@@ -129,13 +129,35 @@ const VAPID =
     return m ? decodeURIComponent(m[1]) : '';
   }
 
+  async function getDeviceHash() {
+    const ua = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    const vendor = navigator.vendor || "";
+    const lang = navigator.language || "";
+    const hw = [screen.width, screen.height, screen.colorDepth, navigator.hardwareConcurrency || 0].join('x');
+    const touch = navigator.maxTouchPoints || 0;
+    const data = [ua, platform, vendor, lang, hw, touch].join('|');
+
+    const enc = new TextEncoder().encode(data);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    const bytes = Array.from(new Uint8Array(buf));
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  
   async function saveSubscription(sub) {
     try {
+      const device_hash = await getDeviceHash();
+      const ua = navigator.userAgent || "";
       await fetch('/api/push/subscribe/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
         credentials: 'same-origin',
-        body: JSON.stringify({ subscription: sub }),
+        body: JSON.stringify({
+          subscription: sub,
+          device_hash,          // << belangrijk: zorgt dat server oude rijen kan droppen
+          user_agent: ua,       // << handig als extra hint (je hebt dit veld in je model)
+          replace: true         // << optioneel: flag voor “vervang eerdere rows voor dit device”
+        }),
       });
     } catch (e) {
       console.warn('[push] opslaan subscription faalde:', e);

@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.middleware.csrf import get_token
+from django.db import transaction
 
 from core.models import PushSubscription
 
@@ -11,25 +12,47 @@ from core.models import PushSubscription
 @require_POST
 def push_subscribe(request):
     try:
-        data = json.loads(request.body.decode("utf-8"))
-        sub = data.get("subscription", {})
+        data = json.loads(request.body.decode("utf-8")) or {}
+        sub = data.get("subscription", {}) or {}
         endpoint = sub.get("endpoint")
-        keys = sub.get("keys", {})
+        keys = sub.get("keys", {}) or {}
         p256dh = keys.get("p256dh")
         auth = keys.get("auth")
+
         if not (endpoint and p256dh and auth):
             return HttpResponseBadRequest("Invalid subscription")
-        # upsert (zelfde endpoint)
-        obj, _created = PushSubscription.objects.update_or_create(
-            endpoint=endpoint,
-            defaults={
-                "user": request.user,
-                "p256dh": p256dh,
-                "auth": auth,
-                "user_agent": request.META.get("HTTP_USER_AGENT", "")[:300],
-            },
-        )
-        return JsonResponse({"ok": True})
+
+        # device-hash en user-agent (device-hash komt uit de frontend)
+        device_hash = (data.get("device_hash") or "").strip()
+        user_agent = (data.get("user_agent")
+                      or request.META.get("HTTP_USER_AGENT", "")
+                      or "")[:300]
+
+        with transaction.atomic():
+            replaced = 0
+            # Verwijder oudere rows van ditzelfde device voor deze user (maar laat huidig endpoint staan)
+            if device_hash:
+                qs = PushSubscription.objects.filter(
+                    user=request.user,
+                    device_hash=device_hash
+                ).exclude(endpoint=endpoint)
+                replaced = qs.count()
+                if replaced:
+                    qs.delete()
+
+            # Upsert op endpoint (zoals je al deed)
+            obj, created = PushSubscription.objects.update_or_create(
+                endpoint=endpoint,
+                defaults={
+                    "user": request.user,
+                    "p256dh": p256dh,
+                    "auth": auth,
+                    "user_agent": user_agent,
+                    "device_hash": device_hash[:64] if device_hash else "",
+                },
+            )
+
+        return JsonResponse({"ok": True, "created": created, "replaced": replaced})
     except Exception as e:
         return HttpResponseBadRequest(str(e))
 

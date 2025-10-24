@@ -11,7 +11,6 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 # ===== PATHS =====
-DATA_DIR = settings.DATA_DIR
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 MEDIA_URL = settings.MEDIA_URL
 

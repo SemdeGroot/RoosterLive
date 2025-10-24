@@ -52,6 +52,7 @@ class PushSubscription(models.Model):
     p256dh = models.CharField(max_length=200)
     auth = models.CharField(max_length=100)
     user_agent = models.CharField(max_length=300, blank=True)
+    device_hash = models.CharField(max_length=64, blank=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

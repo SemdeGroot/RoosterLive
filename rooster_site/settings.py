@@ -59,7 +59,6 @@ DATABASES = {
 # Static (serve icons from data/)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "data"]
 
 # Media (uploads)
 MEDIA_URL = "/media/"
