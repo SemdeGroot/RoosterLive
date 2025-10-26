@@ -4,21 +4,16 @@
   --panel-2:   #101720;
   --text:      #e6edf3;
   --muted:     #9fb2c8;
-  --border:    #223144;
+  --border:    #223144;   /* omlijning */
   --shadow:    rgba(0,0,0,.52);
   --tile:      #64696d;
-  --accent:    #072a72;   /* hoofdkleur */
+  --accent:    #072a72;   /* knopkleur */
   --danger:    #cc3b3b;
 }
 
 *{ box-sizing:border-box }
-html, body{
-  height:100%;
-}
-html{
-  -webkit-text-size-adjust:100%;
-  text-size-adjust:100%;
-}
+html, body{ height:100%; }
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
 body{
   margin:0;
@@ -57,25 +52,25 @@ body{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
-  padding: 10px 16px;
+  padding: 16px 16px; /* iets meer ademruimte */
   box-shadow:0 8px 24px var(--shadow);
   text-align:center;
 }
 @media (min-width:480px){
-  .login-box{ padding:15px 26px; }
+  .login-box{ padding:20px 26px; }
 }
 @media (min-width:900px){
-  .login-box{ padding:15px 40px; }
+  .login-box{ padding:20px 40px; }
 }
 
 .welcome-text{
   color:var(--muted);
   font-size:15px;
-  margin:0 0 18px;
+  margin:0; /* spacing via stackregels onderaan */
   letter-spacing:0.3px;
 }
 
-/* --- Responsive logo tuning --- */
+/* --- Logo met 40px blokmarge --- */
 .logo-wrap{
   width:100%;
   max-width:min(280px, 80%);
@@ -86,8 +81,10 @@ body{
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
-  margin: clamp(18px, 5vw, 28px) auto clamp(18px, 7vw, 48px);
+  margin: 40px auto; /* 40px boven/onder */
 }
+/* 40px naar het volgende element */
+.login-box .logo-wrap + *{ margin-top:40px !important; }
 
 .logo{
   display:block;
@@ -97,23 +94,24 @@ body{
   object-fit:contain;
 }
 
-form{text-align:left}
+form{ text-align:left }
 label{
   display:block;
-  margin-bottom:6px;
+  margin:0;              /* we regelen spacing met sibling-regels */
   font-weight:600;
   color:#eaeff6;
 }
 
-/* BELANGRIJK: 16px → voorkomt iOS zoom op focus */
-input[type="text"], input[type="password"]{
+/* Fields */
+input[type="text"],
+input[type="password"]{
   width:100%;
   background:#0f141a;
   color:var(--text);
   border:1px solid var(--border);
   padding:12px;
   border-radius:10px;
-  margin-bottom:18px;
+  margin:0; /* spacing via stackregels */
   font-size:16px !important;   /* fix: niet inzoomen */
   line-height:1.35;
   transition:border-color .2s, box-shadow .2s;
@@ -125,29 +123,38 @@ input:focus{
   box-shadow:none;
 }
 
+/* BUTTONS — basis = accentkleur; hover voegt alléén extra omlijning toe */
 button{
   width:100%;
-  background:var(--accent);
+  background:var(--accent);      /* #072a72 */
   color:#fff;
-  border:none;
+  border:1px solid var(--border);
   padding:12px;
   border-radius:10px;
   font-size:16px;
   font-weight:600;
   cursor:pointer;
-  transition:background .2s, transform .1s;
-  margin: 8px 0;
+  transition:box-shadow .2s ease, transform .1s ease;
+  margin:0;                      /* spacing via stackregels */
 }
-button:hover{background:var(--accent-hover);}
-button:active{transform:scale(0.99)}
+button:hover{
+  /* zelfde achtergrond/tekst houden; alléén extra omlijning erbij */
+  box-shadow:0 0 0 2px var(--border);
+}
+button:active{ transform:scale(0.99) }
+button:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--border);
+}
 
+/* Flash */
 .flash{
   background:rgba(204,59,59,.1);
   border-left:4px solid var(--danger);
   color:#ffb3b3;
   padding:10px 14px;
   border-radius:8px;
-  margin-bottom:16px;
+  margin:0; /* spacing via stackregels */
   text-align:left;
 }
 
@@ -158,16 +165,14 @@ input[type="password"]::-ms-clear { filter: invert(1); }
 input[type="password"]::-webkit-credentials-auto-fill-button,
 input[type="password"]::-webkit-clear-button,
 input[type="password"]::-webkit-inner-spin-button,
-input[type="password"]::-webkit-password-toggle-button {
+input[type="password"]::-webkit-password-toggle-button{
   filter: invert(1);
   opacity: 0.9;
 }
 
 /* Extra zekerheid op mobiel/iOS */
 @supports (-webkit-touch-callout: none) {
-  input[type="text"], input[type="password"]{
-    font-size:16px !important;
-  }
+  input[type="text"], input[type="password"]{ font-size:16px !important; }
 }
 
 /* Login-box iets hoger plaatsen op kleine schermen */
@@ -184,9 +189,17 @@ input, select, textarea, button {
   line-height:1.35;
 }
 
-/* 2FA header nóg compacter */
-.twofa-image-wrap{ display:flex; justify-content:center; margin: 8px 0; }
-.twofa-image{ width: 80px; height:auto; border:none!important; background:none!important; box-shadow:none!important; border-radius:0!important; }
+/* 2FA header met 40px blokmarge (consistent met logo) */
+.twofa-image-wrap{
+  display:flex; justify-content:center;
+  margin:30px 0;
+}
+.login-box .twofa-image-wrap + *{ margin-top:40px !important; }
+
+.twofa-image{
+  width: 80px; height:auto;
+  border:none!important; background:none!important; box-shadow:none!important; border-radius:0!important;
+}
 
 /* Compacte stap-stack */
 .twofa-stack{
@@ -194,8 +207,10 @@ input, select, textarea, button {
   gap:14px; margin:6px 0 6px;
 }
 
-/* QR: wit, heel dunne rand, iets kleiner */
-.qr-wrap{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+/* QR */
+.qr-wrap{
+  text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
 .qr-card{
   background:#fff; padding:0px;
   border:1px solid var(--border);
@@ -215,7 +230,7 @@ input, select, textarea, button {
 /* Form exact zoals login (breedte) */
 .twofa-form{ width:100%; max-width:360px; }
 
-/* Number input stijl exact gelijk aan je text/password velden */
+/* Number input in lijn met text/password velden */
 input[type="number"]{
   width:100%;
   background:#0f141a;
@@ -223,7 +238,7 @@ input[type="number"]{
   border:1px solid var(--border);
   padding:10px;
   border-radius:10px;
-  margin-bottom:12px;
+  margin:0; /* spacing via stackregels */
   font-size:16px !important;
   line-height:1.35;
   transition:border-color .2s, box-shadow .2s;
@@ -236,6 +251,20 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   text-align:center;
   color:var(--muted);
   margin-top: 0;
-  font-size: 0.8rem;   /* iets kleiner dan standaard bodytekst */
+  font-size: 0.8rem;
   line-height: 1.4;
 }
+
+/* ---------- VERTICALE RHYTHM (onderaan zodat niets het overschrijft) ---------- */
+/* Standaard: 15px tussen ALLE directe kinderen in .login-box */
+.login-box > * + * { margin-top:15px; }
+
+/* Standaard: 15px tussen ALLE directe kinderen binnen het form */
+.login-box form > * + * { margin-top:15px; }
+
+/* Field-groep “geplakt”: kleine verticale afstand in het formulier */
+.login-box form label + *             { margin-top:8px !important; }  /* label → input */
+.login-box form input + label         { margin-top:8px !important; }  /* input → volgend label */
+.login-box form input + input         { margin-top:8px !important; }  /* input → volgende input */
+.login-box form input[type="password"] + button,
+.login-box form input[type="text"] + button { margin-top:15px !important; } /* input → button terug naar standaard */
