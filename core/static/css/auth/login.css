@@ -57,15 +57,15 @@ body{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
-  padding: clamp(26px, 6vw, 44px) 16px clamp(26px, 6vw, 44px);
+  padding: 10px 16px;
   box-shadow:0 8px 24px var(--shadow);
   text-align:center;
 }
 @media (min-width:480px){
-  .login-box{ padding:36px 28px 26px; }
+  .login-box{ padding:15px 26px; }
 }
 @media (min-width:900px){
-  .login-box{ padding:52px 44px 40px; }
+  .login-box{ padding:15px 40px; }
 }
 
 .welcome-text{
@@ -86,7 +86,7 @@ body{
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
-  margin: clamp(18px, 5vw, 28px) auto clamp(28px, 7vw, 48px);
+  margin: clamp(18px, 5vw, 28px) auto clamp(18px, 7vw, 48px);
 }
 
 .logo{
@@ -136,7 +136,7 @@ button{
   font-weight:600;
   cursor:pointer;
   transition:background .2s, transform .1s;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 button:hover{background:var(--accent-hover);}
 button:active{transform:scale(0.99)}
@@ -185,7 +185,7 @@ input, select, textarea, button {
 }
 
 /* 2FA header nóg compacter */
-.twofa-image-wrap{ display:flex; justify-content:center; margin-bottom: 4px; }
+.twofa-image-wrap{ display:flex; justify-content:center; margin: 8px 0; }
 .twofa-image{ width: 80px; height:auto; border:none!important; background:none!important; box-shadow:none!important; border-radius:0!important; }
 
 /* Compacte stap-stack */
@@ -230,7 +230,6 @@ input[type="number"]{
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-input[type="number"]{ -moz-appearance:textfield; }
 
 /* Helptekst subtiel */
 .twofa-help{

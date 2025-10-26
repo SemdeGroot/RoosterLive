@@ -37,7 +37,9 @@
     {# STAP 2: TOTP code (veldnaam kan otp_token of token heten) #}
     {% elif form.otp_token or form.token %}
       <h1>{% trans "Voer je 2FA-code in" %}</h1>
-      <p>Open je authenticator app en vul de 6-cijferige code in.</p>
+      <p class="muted">
+        Open je authenticator app en vul de 6-cijferige code in.
+    </p>
 
       {% if form.otp_token %}
         <label for="{{ form.otp_token.id_for_label }}">6-cijferige code</label>
