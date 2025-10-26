@@ -16,7 +16,7 @@ from core.views.auth import login_view, logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
-from core.views.invite import set_password
+from core.views.account import CustomPasswordConfirmView
 
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
@@ -37,7 +37,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
-    path("accounts/set-password/<uidb64>/<token>/", set_password, name="set_password"),
+    path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password",),
 
     path("rooster/", rooster, name="rooster"),
     path("rooster/upload/", upload_roster, name="upload_roster"),
