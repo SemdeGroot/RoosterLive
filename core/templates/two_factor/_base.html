@@ -1,0 +1,36 @@
+{% load static %}
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <title>Login | Apotheek Jansen</title>
+
+  <!-- ... je meta + icons ... -->
+
+  <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+</head>
+<body>
+  <main class="login-app">
+    <div class="login-box">
+
+    {% block login_header_image %}
+    {% static 'img/logo.jpg' as static_logo %}
+    <div class="logo-wrap default-logo">
+        <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
+    </div>
+    {% endblock %}
+
+      {% for m in messages %}
+        <div class="flash">{{ m }}</div>
+      {% endfor %}
+
+      {% block content %}{% endblock %}
+
+    </div>
+    
+  </main>
+
+  <script src="{% static 'js/auth/login.js' %}"></script>
+</body>
+</html>

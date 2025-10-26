@@ -183,3 +183,60 @@ input, select, textarea, button {
   font-size:16px !important;
   line-height:1.35;
 }
+
+/* 2FA header nóg compacter */
+.twofa-image-wrap{ display:flex; justify-content:center; margin-bottom: 4px; }
+.twofa-image{ width: 80px; height:auto; border:none!important; background:none!important; box-shadow:none!important; border-radius:0!important; }
+
+/* Compacte stap-stack */
+.twofa-stack{
+  display:flex; flex-direction:column; align-items:center;
+  gap:14px; margin:6px 0 6px;
+}
+
+/* QR: wit, heel dunne rand, iets kleiner */
+.qr-wrap{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.qr-card{
+  background:#fff; padding:0px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 3px 10px var(--shadow);
+}
+.qr-image{ display:block; width:180px; height:180px; }
+.qr-caption{ font-size:.95rem; color:var(--muted); }
+
+/* Secret key */
+.manual-secret{ margin-top:0px; font-size:.95rem; color:var(--muted); }
+.manual-secret code{
+  display:inline-block; margin-top:0px; padding:4px 8px; border-radius:6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Form exact zoals login (breedte) */
+.twofa-form{ width:100%; max-width:360px; }
+
+/* Number input stijl exact gelijk aan je text/password velden */
+input[type="number"]{
+  width:100%;
+  background:#0f141a;
+  color:var(--text);
+  border:1px solid var(--border);
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:12px;
+  font-size:16px !important;
+  line-height:1.35;
+  transition:border-color .2s, box-shadow .2s;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+input[type="number"]{ -moz-appearance:textfield; }
+
+/* Helptekst subtiel */
+.twofa-help{
+  text-align:center;
+  color:var(--muted);
+  margin-top: 0;
+  font-size: 0.8rem;   /* iets kleiner dan standaard bodytekst */
+  line-height: 1.4;
+}

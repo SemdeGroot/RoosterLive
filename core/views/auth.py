@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.utils.http import url_has_allowed_host_and_scheme  # (optioneel, voor veilige next)
 from django.conf import settings
+from django.urls import reverse
 
 from ..forms import EmailOrUsernameLoginForm
 
@@ -49,4 +50,4 @@ def login_view(request):
 @require_POST
 def logout_view(request):
     logout(request)
-    return redirect("login")
+    return redirect(reverse("two_factor:login"))

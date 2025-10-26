@@ -36,6 +36,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core",
     "django_browser_reload",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
+    "two_factor",
 ]
 
 MIDDLEWARE = [
@@ -44,9 +48,14 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
+    "two_factor.middleware.threadlocals.ThreadLocals",
+    "core.middleware.Enforce2FAMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
+
 
 ROOT_URLCONF = "rooster_site.urls"
 WSGI_APPLICATION = "rooster_site.wsgi.application"
@@ -79,9 +88,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 CACHE_DIR = MEDIA_ROOT / "cache"     # rendered PNGs for roster
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-LOGIN_URL = "/login/"
+# Auth
+LOGIN_URL = "two_factor:login"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/account/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -97,3 +107,17 @@ SESSION_COOKIE_AGE = 60 * 60 * 24           # 1 dag
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # (Optioneel) elke request verlengt de sessie → rolling window
 SESSION_SAVE_EVERY_REQUEST = True
+
+# ==== EMAIL (eerst voor test) ====
+# Voor lokaal debuggen kan ook: "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "testwachtwoordreset@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "app-password-hier")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Link-opbouw in mails
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost:8000")  # in prod: jouw domein
+USE_HTTPS_IN_EMAIL_LINKS = os.getenv("USE_HTTPS_IN_EMAIL_LINKS", "False") == "True"

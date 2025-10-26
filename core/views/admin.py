@@ -5,9 +5,14 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.contrib.auth import get_user_model
+from django.contrib import messages
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
+from core.utils.invite import send_invite_email
+
+User = get_user_model()
 
 @login_required
 def admin_panel(request):
@@ -17,6 +22,7 @@ def admin_panel(request):
     # ✨ Zorg dat permissies in DB overeenkomen met PERM_LABELS
     sync_custom_permissions()
 
+    # ---- Groepen (bewerken/opslaan) ----
     editing_group = None
     gid_get = request.GET.get("group_id")
     if gid_get:
@@ -35,15 +41,59 @@ def admin_panel(request):
             return redirect("admin_panel")
         messages.error(request, "Groep opslaan mislukt.")
 
+    # ---- Gebruiker aanmaken + uitnodiging sturen ----
     if request.method == "POST" and request.POST.get("form_kind") == "user_create":
         user_form = SimpleUserCreateForm(request.POST, prefix="user")
         if user_form.is_valid():
-            user_form.save()
-            messages.success(request, "Gebruiker aangemaakt.")
+            first_name = user_form.cleaned_data.get("first_name", "").strip()
+            email = (user_form.cleaned_data.get("email") or "").strip().lower()
+            group = user_form.cleaned_data.get("group")
+
+            if not email:
+                messages.error(request, "E-mail is verplicht.")
+                return redirect("admin_panel")
+
+            if User.objects.filter(email__iexact=email).exists():
+                messages.error(request, "Er bestaat al een gebruiker met dit e-mailadres.")
+                return redirect("admin_panel")
+
+            # Maak user zonder wachtwoord; zet 'unusable password'
+            user = User.objects.create(
+                username=email,                  # pas aan als je ander username-veld gebruikt
+                first_name=first_name,
+                email=email,
+                is_active=True,
+            )
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
+
+            # Koppel groep (optioneel)
+            if group:
+                # group kan een instance (uit ModelChoiceField) of id zijn; beide ondersteunen add()
+                if isinstance(group, Group):
+                    user.groups.add(group)
+                else:
+                    try:
+                        grp = Group.objects.get(pk=group)
+                        user.groups.add(grp)
+                    except Group.DoesNotExist:
+                        pass
+
+            # Stuur uitnodiging met eenmalige set-password link
+            try:
+                send_invite_email(user)
+                messages.success(request, f"Gebruiker aangemaakt. Uitnodiging verzonden naar {email}.")
+            except Exception as e:
+                messages.warning(
+                    request,
+                    f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}"
+                )
+
             return redirect("admin_panel")
         else:
             messages.error(request, "Gebruiker aanmaken mislukt.")
 
+    # ---- Lijsten voor de tabel(len) ----
     groups = Group.objects.all().order_by("name")
     users = User.objects.all().order_by("username")
 
@@ -63,8 +113,6 @@ def admin_panel(request):
         "user_form": user_form,
         "editing_group": bool(editing_group),
         "editing_group_id": editing_group.id if editing_group else "",
-
-        # ▼ dynamisch voor de template
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
     })

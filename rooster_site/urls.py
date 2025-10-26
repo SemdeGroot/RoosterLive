@@ -2,9 +2,20 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from two_factor.views import (
+    LoginView, QRGeneratorView,
+)
+from core.views.twofa import CustomSetupView
+
+two_factor_patterns = [
+    path("account/login/", LoginView.as_view(), name="login"),
+    path("account/two_factor/setup/", CustomSetupView.as_view(), name="setup"),
+    path("account/two_factor/qrcode/", QRGeneratorView.as_view(), name="qr"),
+]
 
 urlpatterns = [
-    path("", include("core.urls"))
+    path("", include("core.urls")),
+    path("", include((two_factor_patterns, "two_factor"), namespace="two_factor")),
 ]
 
 if settings.DEBUG:

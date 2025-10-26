@@ -57,3 +57,10 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user} – {self.endpoint[:40]}…"
+
+# 2FA subscriptions verwijderen uit db om te testen:
+# python manage.py shell
+# from django.contrib.auth.models import User
+# from django_otp.plugins.otp_totp.models import TOTPDevice
+# user = User.objects.get(username="sem")
+# TOTPDevice.objects.filter(user=user).delete()

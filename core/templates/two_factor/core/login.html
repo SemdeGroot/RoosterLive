@@ -1,0 +1,60 @@
+{% extends "two_factor/_base.html" %}
+{% load i18n static %}
+
+{# Header-afbeelding: toon 2FA.png als we in de token-stap zitten, anders het standaardlogo #}
+{% block login_header_image %}
+  {% load static %}
+  {% if form.otp_token or form.token %}
+    <div class="twofa-image-wrap">
+      <img src="{% static 'img/2FA.png' %}" alt="2FA" class="twofa-image">
+    </div>
+  {% else %}
+    <div class="logo-wrap default-logo">
+      {% static 'img/logo.jpg' as static_logo %}
+      <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <form method="post" autocomplete="off" novalidate>
+    {% csrf_token %}
+    {{ wizard.management_form }}
+    {{ form.non_field_errors }}
+
+    {# STAP 1: username + password #}
+    {% if form.username and form.password %}
+      <label for="{{ form.username.id_for_label }}">Voornaam / E-mail</label>
+      {{ form.username.errors }}
+      {{ form.username }}
+
+      <label for="{{ form.password.id_for_label }}">Wachtwoord</label>
+      {{ form.password.errors }}
+      {{ form.password }}
+
+      <button type="submit">{% trans "Inloggen" %}</button>
+
+    {# STAP 2: TOTP code (veldnaam kan otp_token of token heten) #}
+    {% elif form.otp_token or form.token %}
+      <h1>{% trans "Voer je 2FA-code in" %}</h1>
+      <p>Open je authenticator app en vul de 6-cijferige code in.</p>
+
+      {% if form.otp_token %}
+        <label for="{{ form.otp_token.id_for_label }}">6-cijferige code</label>
+        {{ form.otp_token.errors }}
+        {{ form.otp_token }}
+      {% else %}
+        <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
+        {{ form.token.errors }}
+        {{ form.token }}
+      {% endif %}
+
+      <button type="submit">{% trans "Bevestigen" %}</button>
+
+    {# Fallback #}
+    {% else %}
+      {{ form.as_p }}
+      <button type="submit">{% trans "Doorgaan" %}</button>
+    {% endif %}
+  </form>
+{% endblock %}

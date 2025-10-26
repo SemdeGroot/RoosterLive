@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from django.views import View
 from django.views.generic import RedirectView
 from django.http import HttpResponse, HttpResponseNotFound
@@ -16,6 +16,7 @@ from core.views.auth import login_view, logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
+from core.views.invite import set_password
 
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
@@ -36,6 +37,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
+    path("accounts/set-password/<uidb64>/<token>/", set_password, name="set_password"),
 
     path("rooster/", rooster, name="rooster"),
     path("rooster/upload/", upload_roster, name="upload_roster"),
@@ -62,5 +64,4 @@ urlpatterns = [
     path("favicon.ico", RedirectView.as_view(url=static("pwa/icons/favicon.ico"), permanent=False)),
     path("apple-touch-icon.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
     path("apple-touch-icon-precomposed.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.png"), permanent=False)),
-
 ]
