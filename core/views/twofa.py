@@ -4,6 +4,10 @@ from django.urls import reverse
 from two_factor.views.core import LoginView as TwoFALoginView
 from two_factor.forms import AuthenticationTokenForm, BackupTokenForm# jouw bestaande classes
 from core.forms import IdentifierAuthenticationForm
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 
 
 class CustomSetupView(SetupView):
@@ -49,3 +53,9 @@ class CustomLoginView(TwoFALoginView):
         (TwoFALoginView.TOKEN_STEP, AuthenticationTokenForm),
         (TwoFALoginView.BACKUP_STEP, BackupTokenForm),
     )
+
+@login_required
+@require_POST
+def logout_view(request):
+    logout(request)
+    return redirect(reverse("two_factor:login"))
