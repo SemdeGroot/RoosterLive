@@ -3,14 +3,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from two_factor.views import (
-    LoginView, QRGeneratorView,
+    LoginView
 )
-from core.views.twofa import CustomSetupView
+from core.views.twofa import CustomSetupView, CustomQRGeneratorView
 
 two_factor_patterns = [
     path("account/login/", LoginView.as_view(), name="login"),
     path("account/two_factor/setup/", CustomSetupView.as_view(), name="setup"),
-    path("account/two_factor/qrcode/", QRGeneratorView.as_view(), name="qr"),
+    path("account/two_factor/qrcode/", CustomQRGeneratorView.as_view(), name="qr"),
 ]
 
 urlpatterns = [

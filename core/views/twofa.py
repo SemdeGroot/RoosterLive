@@ -1,9 +1,9 @@
 # core/views/twofa.py
+from two_factor.views import SetupView, QRGeneratorView
 from django.urls import reverse
-from two_factor.views import SetupView
+
 
 class CustomSetupView(SetupView):
-    # sla welcome/method over
     condition_dict = {"welcome": False, "method": False}
 
     def get(self, request, *args, **kwargs):
@@ -16,4 +16,21 @@ class CustomSetupView(SetupView):
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse("home")  # of jouw dashboard
+        return reverse("home")
+
+
+class CustomQRGeneratorView(QRGeneratorView):
+    """Gebruik 'Jansen App' als issuer en de voornaam als accountnaam."""
+
+    def get_issuer(self):
+        # Non-breaking space zodat Google Auth geen '+' toont
+        return "Jansen\u00A0App"
+
+    def get_username(self):
+        user = getattr(self.request, "user", None)
+        # Gebruik voornaam (gecapitaliseerd) als die er is
+        first = (getattr(user, "first_name", "") or "").strip()
+        if first:
+            return first.capitalize()
+        # Fallback: standaard gedrag (username/e-mail)
+        return super().get_username()
