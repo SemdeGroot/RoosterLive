@@ -1,5 +1,5 @@
 /* v1 */
-const CACHE_NAME = 'app-static-v2';
+const CACHE_NAME = 'app-static-v3';
 const APP_SHELL = [
   '/',                        // homepage / app shell
   '/static/css/base/base.css',
