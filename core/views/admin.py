@@ -45,7 +45,7 @@ def admin_panel(request):
     if request.method == "POST" and request.POST.get("form_kind") == "user_create":
         user_form = SimpleUserCreateForm(request.POST, prefix="user")
         if user_form.is_valid():
-            first_name = user_form.cleaned_data.get("first_name", "").strip()
+            first_name = (user_form.cleaned_data.get("first_name") or "").strip().lower()
             email = (user_form.cleaned_data.get("email") or "").strip().lower()
             group = user_form.cleaned_data.get("group")
 
@@ -57,19 +57,16 @@ def admin_panel(request):
                 messages.error(request, "Er bestaat al een gebruiker met dit e-mailadres.")
                 return redirect("admin_panel")
 
-            # Maak user zonder wachtwoord; zet 'unusable password'
             user = User.objects.create(
-                username=email,                  # pas aan als je ander username-veld gebruikt
-                first_name=first_name,
-                email=email,
+                username=email,          # username = email
+                first_name=first_name,   # opgeslagen in lowercase
+                email=email,             # opgeslagen in lowercase
                 is_active=True,
             )
             user.set_unusable_password()
             user.save(update_fields=["password"])
 
-            # Koppel groep (optioneel)
             if group:
-                # group kan een instance (uit ModelChoiceField) of id zijn; beide ondersteunen add()
                 if isinstance(group, Group):
                     user.groups.add(group)
                 else:
@@ -79,15 +76,11 @@ def admin_panel(request):
                     except Group.DoesNotExist:
                         pass
 
-            # Stuur uitnodiging met eenmalige set-password link
             try:
                 send_invite_email(user)
                 messages.success(request, f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden naar {email}.")
             except Exception as e:
-                messages.warning(
-                    request,
-                    f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}"
-                )
+                messages.warning(request, f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}")
 
             return redirect("admin_panel")
         else:

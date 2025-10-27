@@ -5,10 +5,10 @@ from django.conf.urls.static import static
 from two_factor.views import (
     LoginView
 )
-from core.views.twofa import CustomSetupView, CustomQRGeneratorView
+from core.views.twofa import CustomLoginView, CustomSetupView, CustomQRGeneratorView
 
 two_factor_patterns = [
-    path("account/login/", LoginView.as_view(), name="login"),
+    path("account/login/", CustomLoginView.as_view(), name="login"),
     path("account/two_factor/setup/", CustomSetupView.as_view(), name="setup"),
     path("account/two_factor/qrcode/", CustomQRGeneratorView.as_view(), name="qr"),
 ]

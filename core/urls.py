@@ -12,7 +12,7 @@ from core.views.nazendingen import nazendingen_view
 from core.views.news import news
 from core.views.policies import policies
 from core.views.admin import admin_panel, group_delete, user_update, user_delete
-from core.views.auth import login_view, logout_view
+from core.views.auth import logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
@@ -35,7 +35,6 @@ class ServiceWorkerView(View):
 
 urlpatterns = [
     path("", home, name="home"),
-    path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password",),
 

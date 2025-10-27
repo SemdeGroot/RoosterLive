@@ -1,6 +1,9 @@
 # core/views/twofa.py
 from two_factor.views import SetupView, QRGeneratorView
 from django.urls import reverse
+from two_factor.views.core import LoginView as TwoFALoginView
+from two_factor.forms import AuthenticationTokenForm, BackupTokenForm# jouw bestaande classes
+from core.forms import IdentifierAuthenticationForm
 
 
 class CustomSetupView(SetupView):
@@ -34,3 +37,15 @@ class CustomQRGeneratorView(QRGeneratorView):
             return first.capitalize()
         # Fallback: standaard gedrag (username/e-mail)
         return super().get_username()
+    
+class CustomLoginView(TwoFALoginView):
+    """
+    Two-factor login met eigen auth-form die ook first_name en e-mail ondersteunt.
+    """
+    # Gebruik dezelfde stapnamen als parent:
+    # AUTH_STEP = "auth"; TOKEN_STEP = "token"; BACKUP_STEP = "backup"
+    form_list = (
+        (TwoFALoginView.AUTH_STEP, IdentifierAuthenticationForm),
+        (TwoFALoginView.TOKEN_STEP, AuthenticationTokenForm),
+        (TwoFALoginView.BACKUP_STEP, BackupTokenForm),
+    )
