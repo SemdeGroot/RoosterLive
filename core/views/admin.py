@@ -82,7 +82,7 @@ def admin_panel(request):
             # Stuur uitnodiging met eenmalige set-password link
             try:
                 send_invite_email(user)
-                messages.success(request, f"Gebruiker aangemaakt. Uitnodiging verzonden naar {email}.")
+                messages.success(request, f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden naar {email}.")
             except Exception as e:
                 messages.warning(
                     request,
@@ -155,7 +155,7 @@ def user_delete(request, user_id: int):
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
     u = get_object_or_404(User, pk=user_id)
-    username = u.username
+    username = u.first_name
     u.delete()
-    messages.success(request, f"Gebruiker “{username}” verwijderd.")
+    messages.success(request, f"Gebruiker {username} verwijderd.")
     return redirect("admin_panel")

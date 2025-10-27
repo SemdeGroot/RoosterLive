@@ -119,5 +119,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "app-password-hier")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Link-opbouw in mails
-SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost:8000")  # in prod: jouw domein
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "https://treasonably-noncerebral-samir.ngrok-free.dev")  # in prod: jouw domein
 USE_HTTPS_IN_EMAIL_LINKS = os.getenv("USE_HTTPS_IN_EMAIL_LINKS", "False") == "True"
