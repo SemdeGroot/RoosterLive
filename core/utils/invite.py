@@ -32,7 +32,7 @@ def send_invite_email(user):
     subject = "Welkom bij de Jansen App – stel je wachtwoord in"
 
     # Pad naar je logo in de static map
-    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "logo.jpg")
+    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "logo_transparant.png")
 
     # ---------- Plaintext ----------
     text_content = (
