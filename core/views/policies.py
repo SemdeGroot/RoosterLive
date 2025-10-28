@@ -1,5 +1,8 @@
 # core/views/policies.py
 import shutil
+from datetime import datetime
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -32,6 +35,7 @@ def policies(request):
     if not can(request.user, "can_view_policies"):
         return HttpResponseForbidden("Geen toegang.")
 
+    # AJAX delete (zoals voorheen)
     if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
         if not can(request.user, "can_upload_werkafspraken"):
             return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
@@ -47,6 +51,7 @@ def policies(request):
         else:
             return JsonResponse({"ok": False, "error": "PDF niet gevonden."}, status=404)
 
+    # Upload (zoals voorheen)
     if request.method == "POST" and "file" in request.FILES:
         if not can(request.user, "can_upload_werkafspraken"):
             return HttpResponseForbidden("Geen uploadrechten.")
@@ -55,9 +60,7 @@ def policies(request):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect("policies")
 
-        from datetime import datetime
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        from pathlib import Path
         safe_name = Path(str(f.name)).name.replace(" ", "_")
         dest = POL_DIR / f"{ts}__{safe_name}"
         with dest.open("wb") as fh:
@@ -66,8 +69,15 @@ def policies(request):
         messages.success(request, f"PDF geüpload: {f.name}")
         return redirect("policies")
 
+    # sorteer op laatst geüpload eerst
+    pdf_files = sorted(
+        POL_DIR.glob("*.pdf"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True
+    )
+
     page_urls = []
-    for pdf_fp in sorted(POL_DIR.glob("*.pdf")):
+    for pdf_fp in pdf_files:
         try:
             pdf_bytes = pdf_fp.read_bytes()
         except Exception:

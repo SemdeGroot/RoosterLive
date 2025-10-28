@@ -26,12 +26,12 @@
   display:flex;
   flex-direction:column;
   gap:16px;
-  align-items:stretch;   /* laat kinderen 100% breedte pakken */
+  align-items:stretch;
   width:100%;
 }
 
 .page{
-  position: relative;    /* nodig voor absolute .del-btn */
+  position: relative;
   background:linear-gradient(180deg,var(--panel),var(--panel-2));
   border:1px solid var(--border);
   border-radius:16px;
@@ -39,23 +39,23 @@
   width:100%;
   max-width:100%;
   overflow:hidden;
-  padding:0;             /* full-bleed image binnenin */
+  padding:0;
 }
 
 .page img{
   display:block;
   width:100%;
   height:auto;
-  object-fit:cover;      /* voorkomt witte balken bij rare verhoudingen */
+  object-fit:cover;
   border-radius:0;
-  position: relative;    /* zorgt voor voorspelbare stacking */
+  position: relative;
   z-index:1;
 }
 
 /* Verwijder-kruisje */
 .del-btn {
   position:absolute; top:10px; right:10px;
-  z-index:2;                      /* boven de image */
+  z-index:2;
   background:#2a3647; border:1px solid #3a4b63; color:#fff;
   border-radius:10px; padding:6px 10px; cursor:pointer; opacity:.92;
 }
@@ -133,7 +133,7 @@
     clearBtn && clearBtn.addEventListener('click', ()=>{input.value=''; nameSpan.textContent=''; meta.style.display='none'; uploadBtn.disabled=true; clearBtn.style.display='none';});
   }
 
-  // Inline delete via fetch naar DEZELFDE URL
+  // Inline delete via fetch naar DEZELFDE URL (met confirm)
   const pages = document.getElementById('polPages');
   if(pages){
     function getCSRF(){
@@ -159,7 +159,6 @@
         });
         const data = await resp.json();
         if(data && data.ok){
-          // Verwijder alle tegels die tot dezelfde hash behoren (server geeft hash terug)
           const hash = data.hash;
           document.querySelectorAll('.page').forEach(card=>{
             const u = card.getAttribute('data-img') || '';

@@ -154,11 +154,20 @@ def filter_and_limit(df, q, limit):
 
 def hash_from_img_url(img_url: str) -> str | None:
     """
-    /media/cache/policies/<hash>/page_001.png -> <hash>
+    Haalt de hash uit een image-URL van het type:
+      /media/cache/<subdir>/<hash>/page_001.png
+
+    Werkt voor alle cache-submappen (bv. policies, news, voorraad, nazendingen, enz.).
+    Verwacht dat MEDIA_URL correct eindigt met een '/'.
     """
-    prefix = f"{settings.MEDIA_URL}cache/policies/"
+    prefix = f"{settings.MEDIA_URL}cache/"
     if not img_url.startswith(prefix):
         return None
-    rest = img_url[len(prefix):]
+
+    rest = img_url[len(prefix):]  # bv. "policies/<hash>/page_001.png"
     parts = rest.split("/")
-    return parts[0] if parts else None
+    if len(parts) >= 2:
+        # parts[0] = subdir (policies, news, etc.)
+        # parts[1] = hash
+        return parts[1]
+    return None
