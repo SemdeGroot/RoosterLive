@@ -118,7 +118,7 @@
 
     <!-- Knop onderaan -->
     <div class="table-footer">
-      <button type="button" class="toggle-btn" id="medToggle" style="display:none;">Toon alles</button>
+      <button type="button" class="toggle-btn" id="medToggle" style="display:none;">Toon meer</button>
     </div>
 
   {% else %}
@@ -137,7 +137,6 @@
     const uploadBtn = document.getElementById(uploadBtnId);
     const clearBtn = document.getElementById(clearBtnId);
 
-    // Als er geen upload UI is (geen rechten), gewoon stoppen
     if (!dz || !input) return;
 
     function setFile(file){
@@ -167,7 +166,6 @@
     });
   }
 
-  // Alleen proberen te “wires” als het formulier er is
   if (document.getElementById('medForm')) {
     wireUpload('medFile','medDrop','medMeta','medName','medUpload','medClear');
   }
@@ -175,41 +173,54 @@
     wireUpload('nazFile','nazDrop','nazMeta','nazName','nazUpload','nazClear');
   }
 
-  // --- Live zoeken + limiter blijft altijd werken (zonder uploadrechten)
+  // --- Live zoeken + "Toon meer"
   function enableLiveSearch(tableId, inputId, toggleId){
-    const DEFAULT_LIMIT = 20;
+    const STEP = 20;
     const table = document.getElementById(tableId);
     const q = document.getElementById(inputId);
     const toggleBtn = document.getElementById(toggleId);
     if (!table || !q) return;
 
-    let showAll = false;
+    let currentLimit = STEP;
+
     function applyFilter(){
       const tbody = table.querySelector('tbody');
       const rows = Array.from(tbody.querySelectorAll('tr'));
       const needle = (q.value || '').trim().toLowerCase();
       const matched = [];
 
-      rows.forEach(tr=>{
+      rows.forEach(tr => {
         const ok = tr.textContent.toLowerCase().includes(needle);
         tr.style.display = 'none';
         if (ok) matched.push(tr);
       });
 
-      const limit = showAll ? matched.length : DEFAULT_LIMIT;
-      matched.slice(0, limit).forEach(tr => tr.style.display = '');
+      const visible = Math.min(currentLimit, matched.length);
+      matched.slice(0, visible).forEach(tr => tr.style.display = '');
+
       if (toggleBtn){
-        toggleBtn.style.display = matched.length > DEFAULT_LIMIT ? '' : 'none';
-        toggleBtn.textContent = showAll ? 'Toon eerste 20' : 'Toon alles';
+        if (matched.length > visible){
+          toggleBtn.style.display = '';
+          toggleBtn.textContent = 'Toon meer';
+        } else {
+          toggleBtn.style.display = 'none';
+        }
       }
     }
 
-    q.addEventListener('input', ()=>{ showAll = false; applyFilter(); });
-    toggleBtn && toggleBtn.addEventListener('click', ()=>{ showAll = !showAll; applyFilter(); });
+    q.addEventListener('input', () => {
+      currentLimit = STEP;
+      applyFilter();
+    });
+
+    toggleBtn && toggleBtn.addEventListener('click', () => {
+      currentLimit += STEP;
+      applyFilter();
+    });
+
     applyFilter();
   }
 
-  // Voorraad
   enableLiveSearch('medTable','medSearch','medToggle');
 })();
 </script>
