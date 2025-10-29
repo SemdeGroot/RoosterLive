@@ -177,16 +177,38 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 
 /* ---------- Buttons ---------- */
 /* Alleen .btn (en je .nav .nav-btn) worden gestyled; niets generieks meer */
-.btn{
-    background:#1d2936;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:10px;
-    cursor:pointer;
-    transition:background .2s ease;
+.btn {
+  color: var(--text);
+  background: #17212b;                 /* zelfde basiskleur als nav-knoppen */
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s ease, border-color .2s ease;
 }
-.btn:hover{ background:#253646; }
+
+/* Hover-effect gelijk aan nav */
+.btn:hover {
+  background: #1f2d3d;
+  border-color: var(--accent);
+}
+
+/* Actieve/focusstijl (optioneel, consistent met nav) */
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Optioneel: disabled variant */
+.btn:disabled {
+  cursor: not-allowed;
+}
 .btn-danger{ background:#3a1212; border-color:#4a1a1a; }
 .btn-danger:hover{ background:#4a1616; }
 
