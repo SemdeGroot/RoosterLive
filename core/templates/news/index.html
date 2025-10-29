@@ -61,6 +61,23 @@
 }
 .del-btn:hover { background:#3a4b63; opacity:1; }
 .del-btn[disabled]{opacity:.5; cursor:not-allowed}
+
+/* Footer met "Toon meer" */
+.pages-footer{
+  display:flex;
+  justify-content:center;
+  margin-top:12px;
+}
+.more-btn{
+  background:#17212b;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.more-btn:hover{ background:#1f2d3d; border-color:#072a72; }
 </style>
 
 <div class="card" style="padding:16px;">
@@ -112,12 +129,17 @@
         </div>
       {% endfor %}
     </div>
+
+    <!-- "Toon meer" knop onder de lijst -->
+    <div class="pages-footer">
+      <button type="button" class="more-btn" id="newsMore" style="display:none;">Toon meer</button>
+    </div>
   {% endif %}
 </div>
 
 <script>
 (function(){
-  // Upload UI
+  // --- Upload UI
   const dz=document.getElementById('newsDrop'),
         input=document.getElementById('newsFile'),
         meta=document.getElementById('newsMeta'),
@@ -132,20 +154,63 @@
         alert('Kies een PDF (.pdf).'); return;
       }
       const dt=new DataTransfer(); dt.items.add(file); input.files=dt.files;
-      nameSpan.textContent=file.name; meta.style.display=''; uploadBtn.disabled=false; clearBtn.style.display='';
+      if(nameSpan) nameSpan.textContent=file.name;
+      if(meta) meta.style.display='';
+      if(uploadBtn) uploadBtn.disabled=false;
+      if(clearBtn) clearBtn.style.display='';
     }
     input.addEventListener('change', ()=> setFile(input.files[0]));
-    ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('is-dragover');}));
-    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('is-dragover');}));
-    dz.addEventListener('drop', e=>{const f=e.dataTransfer.files?.[0]; if(f) setFile(f);});
+    ['dragenter','dragover'].forEach(ev=>dz && dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('is-dragover');}));
+    ['dragleave','drop'].forEach(ev=>dz && dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('is-dragover');}));
+    dz && dz.addEventListener('drop', e=>{const f=e.dataTransfer.files?.[0]; if(f) setFile(f);});
     clearBtn && clearBtn.addEventListener('click', ()=>{
-      input.value=''; nameSpan.textContent=''; meta.style.display='none';
-      uploadBtn.disabled=true; clearBtn.style.display='none';
+      input.value=''; if(nameSpan) nameSpan.textContent='';
+      if(meta) meta.style.display='none';
+      if(uploadBtn) uploadBtn.disabled=true;
+      clearBtn.style.display='none';
     });
   }
 
-  // Inline delete via fetch naar DEZELFDE URL
+  // --- "Toon meer" voor PNG's
   const pages = document.getElementById('newsPages');
+  const moreBtn = document.getElementById('newsMore');
+  const STEP = 10;
+  let currentLimit = STEP;
+
+  function applyLimit(){
+    if(!pages) return;
+    const cards = Array.from(pages.children); // .page elementen
+    const total = cards.length;
+
+    // Zorgt dat alleen de eerste currentLimit zichtbaar zijn
+    cards.forEach((el, idx) => {
+      el.style.display = (idx < currentLimit) ? '' : 'none';
+    });
+
+    // Knop tonen als er nog meer te laten zien is
+    if(moreBtn){
+      if(total > currentLimit){
+        moreBtn.style.display = '';
+        moreBtn.disabled = false;
+        moreBtn.textContent = 'Toon meer';
+      } else {
+        moreBtn.style.display = 'none';
+      }
+    }
+  }
+
+  // Init na pagina-load
+  if(pages){
+    applyLimit();
+  }
+
+  // Elke klik toont 10 extra PNG's
+  moreBtn && moreBtn.addEventListener('click', () => {
+    currentLimit += STEP;
+    applyLimit();
+  });
+
+  // --- Inline delete via fetch naar DEZELFDE URL
   if(pages){
     function getCSRF(){
       const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:"";
@@ -176,6 +241,8 @@
             const u = card.getAttribute('data-img') || '';
             if(u.includes('/cache/news/'+hash+'/')) card.remove();
           });
+          // Herbereken zichtbaarheid/knop na verwijderen
+          applyLimit();
         }else{
           alert(data && data.error ? data.error : "Verwijderen mislukt.");
           btn.disabled = false;
