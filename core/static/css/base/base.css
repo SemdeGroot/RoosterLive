@@ -9,6 +9,10 @@
     --accent:    #072a72;   /* blijft jouw hoofdkleur */
     --button-color: #17212b;
     --button-hover: #1f2d3d;
+    --logout-color: #ff6b6b;
+    --danger: #3a1212;
+    --danger-border: #4a1a1a;
+    --danger-hover: #4a1616;
     --header-gap:18px; /* desktop header spacing */
 }
 
@@ -55,6 +59,13 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 }
 .nav a:hover, .nav .nav-btn:hover{ background:var(--button-hover); border-color:var(--accent); }
 .nav a.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
+.nav .nav-btn.nav-logout {
+    color: var(--logout-color);
+}
+.nav .nav-btn.nav-logout:hover {
+    background: var(--button-hover);
+    border-color: var(--danger-border);
+}
 
 /* Hamburger (mobile) */
 .nav-toggle{
@@ -97,7 +108,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 }
 .nav-link.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
 .nav-divider{ height:1px; background:var(--border); margin:12px 0; }
-.nav-logout{ color:#ff6b6b; }
+.nav-logout{ color:var(--logout-color); }
 .nav-logout:hover{ background:rgba(255,107,107,.1); }
 .nav-links form{ display:contents; }
 
@@ -210,8 +221,8 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .btn:disabled {
   cursor: not-allowed;
 }
-.btn-danger{ background:#3a1212; border-color:#4a1a1a; }
-.btn-danger:hover{ background:#4a1616; }
+.btn-danger{ background: var(--danger); border-color:var(--danger-border); }
+.btn-danger:hover{ background:var(--danger-hover); }
 
 /* Form fields (file input uitgezonderd) */
 .form{ padding:16px; max-width:100%; }
