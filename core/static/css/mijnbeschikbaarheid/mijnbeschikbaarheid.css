@@ -25,8 +25,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;  /* links uitgelijnd desktop */
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-top: 12px; 
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -39,7 +40,18 @@
   min-width: 260px; justify-content: center;
 }
 .week-picker-btn[aria-expanded="true"] .wp-caret { transform: rotate(180deg); }
-.wp-caret { transition: transform .15s ease; }
+.wp-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  transition: transform .15s ease;
+  vertical-align: middle;
+}
+
+.wp-caret svg {
+  display: block; /* voorkomt dat de SVG op de tekst-baseline zweeft */
+}
 
 .week-menu {
   position: absolute;
@@ -67,7 +79,7 @@
 .week-option.is-active { border: 1px solid var(--accent); }
 .week-option small { color: var(--muted); }
 
-.availability-daterange { margin: 4px 0 16px; color: var(--muted); font-weight: 500; }
+.availability-daterange { margin: 4px 0 16px; color: var(--muted); font-weight: 500; font-size: 1.1rem;}
 
 @media (max-width: 640px) {
   .weekday-title { flex-direction: column; gap: 0; }
