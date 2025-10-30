@@ -31,7 +31,7 @@ def personeelsdashboard_view(request):
 
     translation.activate("nl")
     today = timezone.localdate()
-    WEEKS_AHEAD = 26
+    WEEKS_AHEAD = 12
 
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
