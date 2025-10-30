@@ -3,23 +3,40 @@
   html.splash-lock { overflow: hidden; }
   #app-splash{
     position:fixed; inset:0;
-    background:var(--bg, #0d131b); /* fallback voorkomt witte flits */
-    display:flex; align-items:center; justify-content:center;
+    background:var(--bg, #0d131b);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
     z-index:2147483647;
     transition:opacity .28s ease, visibility .28s ease;
   }
-  #app-splash img{ width:min(196px,40vw); opacity:.9; -webkit-user-drag:none; user-select:none; }
+  #app-splash img{
+    width:min(96px,40vw);
+    opacity:.9;
+    -webkit-user-drag:none; user-select:none;
+  }
+  #splash-footer{
+    position:absolute;
+    bottom:36px;
+    width:100%;
+    text-align:center;
+    font-size:.9rem;
+    color:rgba(255,255,255,.5);
+    font-weight:500;
+  }
   .splash--hide{ opacity:0; visibility:hidden; pointer-events:none; }
-  body{ background:var(--bg, #0d131b); } /* Safari/iOS anti-flash */
+  body{ background:var(--bg, #0d131b); }
 </style>
 
 <div id="app-splash" role="status" aria-label="Bezig met laden">
   <img src="{% static 'img/app_icon_trans-512x512.png' %}" alt="Apotheek Jansen">
+  <div id="splash-footer">
+    &copy; {% now "Y" %} Apotheek Jansen Amersfoort
+  </div>
 </div>
 
 <script>
   document.documentElement.classList.add('splash-lock');
-  const MIN_MS = 1000; // minimaal 1s tonen
+  const MIN_MS = 1500;
   const t0 = performance.now();
 
   function hideSplash(){
