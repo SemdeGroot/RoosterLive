@@ -1,0 +1,34 @@
+{% load static %}
+<style>
+  html.splash-lock { overflow: hidden; }
+  #app-splash{
+    position:fixed; inset:0;
+    background:var(--bg, #0d131b); /* fallback voorkomt witte flits */
+    display:flex; align-items:center; justify-content:center;
+    z-index:2147483647;
+    transition:opacity .28s ease, visibility .28s ease;
+  }
+  #app-splash img{ width:min(180px,40vw); opacity:.9; -webkit-user-drag:none; user-select:none; }
+  .splash--hide{ opacity:0; visibility:hidden; pointer-events:none; }
+  body{ background:var(--bg, #0d131b); } /* Safari/iOS anti-flash */
+</style>
+
+<div id="app-splash" role="status" aria-label="Bezig met laden">
+  <img src="{% static 'img/app_icon_trans-512x512.png' %}" alt="Apotheek Jansen">
+</div>
+
+<script>
+  document.documentElement.classList.add('splash-lock');
+  const MIN_MS = 1000; // minimaal 1s tonen (pas aan naar smaak)
+  const t0 = performance.now();
+
+  function hideSplash(){
+    const wait = Math.max(0, MIN_MS - (performance.now()-t0));
+    setTimeout(()=>{
+      const s = document.getElementById('app-splash');
+      if(s){ s.classList.add('splash--hide'); setTimeout(()=>s.remove(), 320); }
+      document.documentElement.classList.remove('splash-lock');
+    }, wait);
+  }
+  document.addEventListener('DOMContentLoaded', hideSplash);
+</script>

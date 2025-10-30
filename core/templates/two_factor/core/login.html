@@ -1,6 +1,12 @@
 {% extends "two_factor/_base.html" %}
 {% load i18n static %}
 
+{% block pre_body %}
+  {% if form.username and form.password %}
+    {% include "includes/splash.html" %}
+  {% endif %}
+{% endblock %}
+
 {# Header-afbeelding: toon 2FA.png als we in de token-stap zitten, anders het standaardlogo #}
 {% block login_header_image %}
   {% load static %}
