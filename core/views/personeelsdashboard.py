@@ -132,7 +132,7 @@ def personeelsdashboard_view(request):
             "data_attrs": " ".join(data_attrs_parts),
         })
 
-    # Week dropdown alleen huidige → +6mnd
+    # Week dropdown alleen huidige → x weken
     week_options = []
     cur = min_monday
     while cur <= max_monday:

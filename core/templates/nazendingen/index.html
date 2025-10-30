@@ -1,79 +1,43 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Nazendingen{% endblock %}
 {% block header_title %}Nazendingen{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/nazendingen/nazendingen.css' %}">
+{% endblock %}
+
 {% block content %}
-<style>
-  /* --- Uploader styles --- */
-  .uploader { margin-bottom: 14px; }
-  .dropzone {
-    display:flex; align-items:center; gap:12px;
-    padding:14px 16px;
-    background:var(--panel-2);
-    border:1px dashed var(--border);
-    border-radius:12px;
-    cursor:pointer;
-    transition:border-color .15s, box-shadow .15s;
-  }
-  .dropzone:hover,
-  .dropzone.is-dragover { border-color:#072a72; }
-  .dz-icon {
-    flex:0 0 auto;
-    width:36px; height:36px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    background:#13223f; color:#cfe0ff; border:1px solid #223355;
-  }
-  .dz-text { display:flex; flex-direction:column; gap:4px; }
-  .dz-title { color:var(--text); font-weight:600; line-height:1.1; }
-  .dz-hint { color:var(--muted); font-size:.95em; }
-  .file-meta { margin-top:8px; color:var(--muted); }
-  .file-name { color:var(--text); font-weight:600; }
-
-  .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-  .btn.ghost { background:#17212b; }
-
-  /* Pagina grid */
-  .pages { display:grid; gap:12px; }
-  .page { border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; }
-  .page img {
-    display: block;
-    width: 100%;         /* bijvoorbeeld 70% van de kaartbreedte */
-    height: auto;
-    margin: 0 auto;     /* centreren */
-    border-radius: 8px; /* optioneel, wat zachter beeld */
-    }
-</style>
-
 <div class="card" style="padding:16px;">
   {% if perms.core.can_upload_nazendingen %}
-    <form method="post" enctype="multipart/form-data" class="uploader" id="nazForm">
-      {% csrf_token %}
-      <input type="file" id="nazFile" name="file" accept="application/pdf" hidden required>
+  <form method="post" enctype="multipart/form-data" class="uploader" id="nazForm">
+    {% csrf_token %}
+    <input type="file" id="nazFile" name="file" accept="application/pdf" hidden required>
 
-      <div class="dropzone" id="nazDrop" onclick="document.getElementById('nazFile').click()">
-        <div class="dz-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <path d="M14 2v6h6"/>
-            <path d="M12 12v6"/>
-            <path d="M9 15h6"/>
-          </svg>
-        </div>
-        <div class="dz-text">
-          <div class="dz-title">Sleep je PDF van de nazendingen hierheen of klik om te kiezen.</div>
-          <div class="dz-hint">Alleen .pdf - Het nieuwe bestand vervangt automatisch het oude <strong>zodra je op Uploaden klikt.</strong></div>
-        </div>
+    <div class="dropzone" id="nazDrop" onclick="document.getElementById('nazFile').click()">
+      <div class="dz-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M12 12v6"/>
+          <path d="M9 15h6"/>
+        </svg>
       </div>
+      <div class="dz-text">
+        <div class="dz-title">Sleep je PDF van de nazendingen hierheen of klik om te kiezen.</div>
+        <div class="dz-hint">Alleen .pdf — Het nieuwe bestand vervangt automatisch het oude <strong>zodra je op Uploaden klikt.</strong></div>
+      </div>
+    </div>
 
-      <div class="file-meta" id="nazMeta" style="display:none;">
-        Geselecteerd: <span class="file-name" id="nazName"></span>
-      </div>
+    <div class="file-meta" id="nazMeta" style="display:none;">
+      Geselecteerd: <span class="file-name" id="nazName"></span>
+    </div>
 
-      <div class="u-actions">
-        <button class="btn" type="submit" id="nazUpload" disabled>Uploaden</button>
-        <button type="button" class="btn ghost" id="nazClear" style="display:none;">Wissen</button>
-      </div>
-    </form>
+    <div class="u-actions">
+      <button class="btn" type="submit" id="nazUpload" disabled>Uploaden</button>
+      <button type="button" class="btn ghost" id="nazClear" style="display:none;">Wissen</button>
+    </div>
+  </form>
   {% endif %}
 
   {% if no_nazending %}
@@ -89,53 +53,5 @@
   {% endif %}
 </div>
 
-<script>
-  (function(){
-    const dz = document.getElementById('nazDrop');
-    const input = document.getElementById('nazFile');
-    const meta = document.getElementById('nazMeta');
-    const nameSpan = document.getElementById('nazName');
-    const uploadBtn = document.getElementById('nazUpload');
-    const clearBtn = document.getElementById('nazClear');
-
-    if (!dz || !input) return; // Geen uploadrechten? Stop hier.
-
-    function setFile(file){
-      if(!file) return;
-      if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
-        alert('Kies een PDF-bestand (.pdf).');
-        return;
-      }
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-
-      nameSpan.textContent = file.name;
-      meta.style.display = '';
-      uploadBtn.disabled = false;
-      clearBtn.style.display = '';
-    }
-
-    input.addEventListener('change', () => setFile(input.files[0]));
-
-    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => {
-      e.preventDefault(); e.stopPropagation(); dz.classList.add('is-dragover');
-    }));
-    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => {
-      e.preventDefault(); e.stopPropagation(); dz.classList.remove('is-dragover');
-    }));
-    dz.addEventListener('drop', e => {
-      const f = e.dataTransfer.files && e.dataTransfer.files[0];
-      if(f) setFile(f);
-    });
-
-    clearBtn.addEventListener('click', () => {
-      input.value = '';
-      nameSpan.textContent = '';
-      meta.style.display = 'none';
-      uploadBtn.disabled = true;
-      clearBtn.style.display = 'none';
-    });
-  })();
-</script>
+<script src="{% static 'js/nazendingen/nazendingen.js' %}" defer></script>
 {% endblock %}

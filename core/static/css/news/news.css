@@ -1,0 +1,73 @@
+/* Uploader */
+.uploader { margin-bottom: 14px; }
+.dropzone {
+  display:flex; align-items:center; gap:12px; padding:14px 16px;
+  background:var(--panel-2); border:1px dashed var(--border); border-radius:12px;
+  cursor:pointer; transition:border-color .15s, box-shadow .15s;
+}
+.dropzone:hover, .dropzone.is-dragover { border-color: var(--accent); }
+.dz-icon { flex:0 0 auto; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#13223f; color:#cfe0ff; border:1px solid #223355; }
+.dz-text { display:flex; flex-direction:column; gap:4px; }
+.dz-title { color:var(--text); font-weight:600; line-height:1.1; }
+.dz-hint  { color:var(--muted); font-size:.95em; }
+.file-meta { margin-top:8px; color:var(--muted); }
+.file-name { color:var(--text); font-weight:600; }
+.u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+
+/* Weergave */
+.pages{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  align-items:stretch;
+  width:100%;
+}
+
+.page{
+  position: relative;
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 8px 24px var(--shadow);
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+  padding:0;
+}
+
+.page img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:cover;
+  border-radius:0;
+  position: relative;
+  z-index:1;
+}
+
+/* Verwijder-knop */
+.del-btn {
+  position:absolute; top:10px; right:10px;
+  z-index:2;
+  background:#2a3647; border:1px solid #3a4b63; color:#fff;
+  border-radius:10px; padding:6px 10px; cursor:pointer; opacity:.92;
+}
+.del-btn:hover { background:#3a4b63; opacity:1; }
+.del-btn[disabled]{opacity:.5; cursor:not-allowed}
+
+/* Footer met "Toon meer" */
+.pages-footer{
+  display:flex;
+  justify-content:center;
+  margin-top:12px;
+}
+.more-btn{
+  background:#17212b;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.more-btn:hover{ background:#1f2d3d; border-color: var(--accent); }
