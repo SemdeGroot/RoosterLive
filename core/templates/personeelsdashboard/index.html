@@ -6,7 +6,7 @@
 
 {% block head %}
 <style>
-  /* --- Beschikbaarheid-stijl (overgenomen) --- */
+  /* --- Beschikbaarheid-stijl (ongewijzigd) --- */
   .availability-wrap { overflow-x: auto; }
   .availability-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
   .availability-table colgroup col:first-child { width: 44%; }
@@ -21,29 +21,31 @@
   .availability-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
   .weekday-title { display: flex; gap: .6rem; align-items: baseline; }
   .weekday-title small { color: var(--muted); font-weight: 500; }
-  .availability-table input[type="checkbox"]{
-    width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);
-  }
+  .availability-table input[type="checkbox"]{ width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
 
-  /* --- Week picker (exacte look & feel van beschikbaarheid) --- */
+  /* --- Week picker (exacte look & feel + mobile scroller + identieke spacing) --- */
   .week-wrap{
     width: 100%;
-    overflow-x: auto;              /* horizontaal scrollen op smalle schermen */
+    margin: 0;                      /* zelfde als beschikbaarheid */
+    padding: 0;                     /* idem */
+    overflow-x: auto;               /* horizontale scroller op smalle schermen */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    text-align: center;            /* centreert de inline-flex rail op desktop */
-    padding-bottom: 2px;
+    text-align: center;             /* centreert de inline-flex rail op desktop */
+    padding-bottom: 2px;            /* ruimte voor evt. scrollbar */
   }
   .week-controls {
-    display: inline-flex;          /* inline-flex om te centreren via parent */
+    display: inline-flex;           /* inline-flex om te centreren via parent */
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin-top: 12px;
-    margin-bottom: 12px;
-    flex-wrap: nowrap;             /* niet wrappen; laat liever scroll toe */
-    white-space: nowrap;
+    margin: 12px 0;                 /* exact als beschikbaarheid (boven/onder) */
+    flex-wrap: nowrap;              /* niet wrappen; laat liever scroll toe */
+    white-space: nowrap;            /* één lijn → scrolbaar */
   }
+  .week-controls > * { flex: 0 0 auto; } /* voorkom krimp/wrap van items */
+
+  /* Gebruik je globale .btn uit base.css — niet opnieuw stijlen! */
   .btn-icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
 
   .week-picker { position: relative; display: inline-block; }
@@ -57,9 +59,9 @@
 
   /* --- Dropdown menu: PORTAL + FIXED (onafhankelijk van tabel/overflow) --- */
   .week-menu {
-    position: fixed;               /* los van layout, niet geclipt door tabel */
+    position: fixed;                /* los van layout, niet geclipt door tabel */
     top: 0; left: 0;
-    transform: translate(-50%, 0); /* exacte positie wordt in JS gezet */
+    transform: translate(-50%, 0);  /* exacte positie wordt in JS gezet */
     width: auto;
     min-width: 340px;
     max-width: calc(100vw - 16px);
@@ -70,9 +72,8 @@
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0,0,0,.3);
     padding: 6px;
-    z-index: 9999;                 /* boven alles */
+    z-index: 9999;                  /* boven alles */
     outline: none !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,.3);
   }
 
   .week-option {
@@ -85,10 +86,9 @@
   .week-option.is-active { border: 1px solid var(--accent); }
   .week-option small { color: var(--muted); }
 
-  .availability-daterange {
-    margin: 4px 0 16px; color: var(--muted); font-weight: 500; font-size: 1.1rem; text-align: center;
-  }
-  .form h3 { text-align: center; }
+  /* Titel & daterange met exact dezelfde marges als beschikbaarheid */
+  .form h3 { margin: 0 0 8px 0; text-align: center; }
+  .availability-daterange { margin: 4px 0 16px; color: var(--muted); font-weight: 500; font-size: 1.1rem; text-align: center; }
 
   @media (max-width: 640px) {
     .weekday-title { flex-direction: column; gap: 0; }
@@ -108,7 +108,7 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    min-width: 1100px; /* forceer horizontale scroll op small screens */
+    min-width: 1100px;             /* forceer horizontale scroll op small screens */
   }
   table.matrix th, table.matrix td { border:1px solid var(--border); text-align:center; padding:8px; }
   table.matrix thead th { background:#121a23; font-weight:700; }
@@ -138,6 +138,7 @@
   /* Verwijder generieke focusring (blauwe outline) op deze UI-onderdelen */
   *:focus-visible { outline: none !important; }
 </style>
+
 {% endblock %}
 
 {% block content %}
