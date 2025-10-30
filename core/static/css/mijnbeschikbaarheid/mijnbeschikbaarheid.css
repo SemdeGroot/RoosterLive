@@ -24,7 +24,7 @@
 .week-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-start;  /* links uitgelijnd desktop */
+  justify-content: center;  /* links uitgelijnd desktop */
   gap: 12px;
   margin-top: 12px; 
   margin-bottom: 12px;
@@ -34,7 +34,7 @@
 /* Gebruik je globale .btn uit base.css — niet opnieuw stijlen! */
 .btn-icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
 
-.week-picker { position: relative; }
+.week-picker { position: relative; display: inline-block;}
 .week-picker-btn {
   display: flex; align-items: center; gap: 8px;
   min-width: 260px; justify-content: center;
@@ -79,10 +79,18 @@
 .week-option.is-active { border: 1px solid var(--accent); }
 .week-option small { color: var(--muted); }
 
-.availability-daterange { margin: 4px 0 16px; color: var(--muted); font-weight: 500; font-size: 1.1rem;}
+.availability-daterange { color: var(--muted); font-weight: 500; font-size: 1.1rem; text-align: center;}
 
 @media (max-width: 640px) {
   .weekday-title { flex-direction: column; gap: 0; }
   .week-picker-btn { min-width: 220px; }
   .week-controls { justify-content: center; }
+}
+
+.form h3 {
+  text-align: center;
+}
+
+*:focus-visible {
+  outline: none !important;
 }

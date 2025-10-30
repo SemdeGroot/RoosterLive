@@ -1,99 +1,142 @@
 {% extends "base.html" %}
+{% load static i18n %}
 
 {% block title %}Teamdashboard{% endblock %}
 {% block header_title %}Teamdashboard{% endblock %}
 
 {% block head %}
 <style>
+  /* --- Beschikbaarheid-stijl (overgenomen) --- */
+  .availability-wrap { overflow-x: auto; }
+  .availability-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  .availability-table colgroup col:first-child { width: 44%; }
+  .availability-table colgroup col:nth-child(2),
+  .availability-table colgroup col:nth-child(3) { width: 28%; }
+  .availability-table thead th { padding: 12px 14px; text-align: center; font-weight: 700; }
+  .availability-table thead th:first-child { text-align: left; }
+  .availability-table tbody td { padding: 12px 14px; vertical-align: middle; }
+  .availability-table tbody td:nth-child(2),
+  .availability-table tbody td:nth-child(3) { text-align: center; }
+  .availability-table tbody tr { border-bottom: 1px solid var(--border); }
+  .availability-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
+  .weekday-title { display: flex; gap: .6rem; align-items: baseline; }
+  .weekday-title small { color: var(--muted); font-weight: 500; }
+  .availability-table input[type="checkbox"]{
+    width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);
+  }
+
+  /* --- Week picker (exacte look & feel van beschikbaarheid) --- */
+  .week-wrap{
+    width: 100%;
+    overflow-x: auto;              /* horizontaal scrollen op smalle schermen */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    text-align: center;            /* centreert de inline-flex rail op desktop */
+    padding-bottom: 2px;
+  }
+  .week-controls {
+    display: inline-flex;          /* inline-flex om te centreren via parent */
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap;             /* niet wrappen; laat liever scroll toe */
+    white-space: nowrap;
+  }
+  .btn-icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
+
+  .week-picker { position: relative; display: inline-block; }
+  .week-picker-btn {
+    display: flex; align-items: center; gap: 8px;
+    min-width: 260px; justify-content: center;
+  }
+  .week-picker-btn[aria-expanded="true"] .wp-caret { transform: rotate(180deg); }
+  .wp-caret { display: flex; align-items: center; justify-content: center; line-height: 0; transition: transform .15s ease; }
+  .wp-caret svg { display: block; }
+
+  /* --- Dropdown menu: PORTAL + FIXED (onafhankelijk van tabel/overflow) --- */
+  .week-menu {
+    position: fixed;               /* los van layout, niet geclipt door tabel */
+    top: 0; left: 0;
+    transform: translate(-50%, 0); /* exacte positie wordt in JS gezet */
+    width: auto;
+    min-width: 340px;
+    max-width: calc(100vw - 16px);
+    max-height: 280px;
+    overflow: auto;
+    background: #0f1620;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    padding: 6px;
+    z-index: 9999;                 /* boven alles */
+    outline: none !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  .week-option {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  }
+  .week-option:hover, .week-option:focus {
+    background: #1a2432; outline: none !important; box-shadow: none; border: none;
+  }
+  .week-option.is-active { border: 1px solid var(--accent); }
+  .week-option small { color: var(--muted); }
+
+  .availability-daterange {
+    margin: 4px 0 16px; color: var(--muted); font-weight: 500; font-size: 1.1rem; text-align: center;
+  }
+  .form h3 { text-align: center; }
+
+  @media (max-width: 640px) {
+    .weekday-title { flex-direction: column; gap: 0; }
+    .week-picker-btn { min-width: 220px; }
+    .week-menu { min-width: 280px; max-height: 60vh; }
+  }
+
+  /* --- Matrix: niet comprimeren + horizontaal scrollen --- */
   .matrix-wrap {
     width: 100%;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* soepel scrollen op iOS */
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
-
-  /* Grid-tabel */
   table.matrix {
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-    min-width: 900px;  /* voorkomt wrappen op kleine schermen */
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 1100px; /* forceer horizontale scroll op small screens */
   }
-  table.matrix th, table.matrix td {
-    border:1px solid var(--border);
-    text-align:center;
-    padding:8px;
-  }
-  table.matrix thead th {
-    background:#121a23;
-    font-weight:700;
-  }
-  table.matrix tbody tr:nth-child(odd){
-    background:rgba(255,255,255,0.02);
-  }
-  /* Kolombreedtes: Groep, Voornaam, dan 10 subkolommen (5 dagen x 2) */
-  table.matrix colgroup col.col-group { width:20%; }
-  table.matrix colgroup col.col-name  { width:16%; }
+  table.matrix th, table.matrix td { border:1px solid var(--border); text-align:center; padding:8px; }
+  table.matrix thead th { background:#121a23; font-weight:700; }
+  table.matrix tbody tr:nth-child(odd){ background:rgba(255,255,255,0.02); }
 
-  /* Beschikbaarheidscel */
-  .avail-pill {
-    height:26px; border-radius:8px;
-    background:transparent;
-  }
-  .avail-pill.available {
-    background:#0b3a21;           /* donkergroen */
-    border:1px solid #178a3a;
+  /* Eerste 2 kolommen gecentreerd + niet wrappen */
+  table.matrix thead th:nth-child(1),
+  table.matrix tbody td:nth-child(1),
+  table.matrix thead th:nth-child(2),
+  table.matrix tbody td:nth-child(2) {
+    text-align: center;
+    white-space: nowrap;
+    min-width: 160px;
   }
 
-  /* Klikbare pill-badges in de subheader (hover-lijn blauw) */
+  .avail-pill { height:26px; border-radius:8px; background:transparent; }
+  .avail-pill.available { background:#0b3a21; border:1px solid #178a3a; }
+
   .slot-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:.4rem;
-    padding:6px 10px;
-    border-radius:999px;
-    background:#17212b;
-    border:1px solid var(--border);
-    color:var(--text);
-    transition:background .2s ease, border-color .2s ease;
+    display:inline-flex; align-items:center; gap:.4rem; padding:6px 10px;
+    border-radius:999px; background:#17212b; border:1px solid var(--border);
+    color:var(--text); transition:background .2s ease, border-color .2s ease; user-select:none;
   }
-  .slot-badge:hover{
-    background:#1f2d3d;
-    border-color:var(--accent);    /* zelfde blauwe omlijning als btn */
-  }
-  .slot-badge.active{
-    outline:1px solid var(--accent);
-  }
+  .slot-badge:hover{ background:#1f2d3d; border-color:var(--accent); }
+  .slot-badge.active{ border-color:var(--accent); }
 
-  /* Controls */
-  .week-controls {
-    display:flex; flex-wrap:wrap; gap:12px;
-    align-items:center; justify-content:space-between; margin-bottom:10px;
-  }
-  .week-nav { display:flex; align-items:center; gap:10px; }
-
-  .btn{
-    background:#17212b;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:10px;
-    cursor:pointer;
-    transition:background .2s ease, border-color .2s ease;
-  }
-  .btn:hover{ background:#1f2d3d; border-color:var(--accent); }
-
-  select.btn{
-    appearance:none;
-    background:#17212b;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:10px;
-    min-width:260px;
-    transition:background .2s ease, border-color .2s ease;
-  }
-  select.btn:hover{ background:#1f2d3d; border-color:var(--accent); }
-
+  /* Verwijder generieke focusring (blauwe outline) op deze UI-onderdelen */
+  *:focus-visible { outline: none !important; }
 </style>
 {% endblock %}
 
@@ -102,57 +145,80 @@
   <div class="form">
     <h3 style="margin:0 0 8px 0;">Overzicht beschikbaarheden voor:</h3>
 
-    <div class="week-controls">
-      <div class="week-nav">
-        <form method="get" action="">
-          {% if has_prev %}
-            <input type="hidden" name="monday" value="{{ prev_monday|date:'Y-m-d' }}">
-            <button class="btn" type="submit" aria-label="Vorige week">←</button>
-          {% else %}
-            <button class="btn" type="button" disabled aria-disabled="true">←</button>
-          {% endif %}
-        </form>
+    <!-- Weeknavigatie: zelfde markup/uiterlijk als beschikbaarheid + eigen scroller -->
+    <div class="week-wrap">
+      <div class="week-controls">
+        <button id="prevWeekBtn"
+                class="btn btn-icon"
+                {% if not has_prev %}disabled aria-disabled="true"{% endif %}
+                data-target="{{ prev_monday|date:'Y-m-d' }}"
+                aria-label="Vorige week">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               class="lucide lucide-arrow-left">
+            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+          </svg>
+        </button>
 
-        <h2 style="margin:0;">{{ header_title }}</h2>
+        <div class="week-picker">
+          <button id="weekPickerBtn"
+                  class="btn week-picker-btn"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="weekMenu">
+            <span class="wp-label">{{ header_title }}</span>
+            <span class="wp-caret" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   class="lucide lucide-chevron-down">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </button>
 
-        <form method="get" action="">
-          {% if has_next %}
-            <input type="hidden" name="monday" value="{{ next_monday|date:'Y-m-d' }}">
-            <button class="btn" type="submit" aria-label="Volgende week">→</button>
-          {% else %}
-            <button class="btn" type="button" disabled aria-disabled="true">→</button>
-          {% endif %}
-        </form>
-      </div>
+          <!-- Wordt bij openen naar <body> geportaled -->
+          <div id="weekMenu" class="week-menu" role="listbox" tabindex="-1" hidden>
+            {% for opt in week_options %}
+              <div role="option"
+                   class="week-option{% if opt.value == monday|date:'Y-m-d' %} is-active{% endif %}"
+                   data-value="{{ opt.value }}"
+                   aria-selected="{% if opt.value == monday|date:'Y-m-d' %}true{% else %}false{% endif %}">
+                <strong>Week {{ opt.iso_week }} – {{ opt.iso_year }}</strong>
+                <small>({{ opt.start|date:"d-m" }} – {{ opt.end|date:"d-m" }})</small>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
 
-      <div>
-        <label for="weekSelect" style="display:block;margin-bottom:4px;font-weight:700;">Ga naar week:</label>
-        <select id="weekSelect" class="btn">
-          {% for opt in week_options %}
-            <option value="{{ opt.value }}" {% if opt.value == monday|date:'Y-m-d' %}selected{% endif %}>
-              Week {{ opt.iso_week }} – {{ opt.iso_year }} ({{ opt.start|date:"d-m" }} – {{ opt.end|date:"d-m" }})
-            </option>
-          {% endfor %}
-        </select>
+        <button id="nextWeekBtn"
+                class="btn btn-icon"
+                {% if not has_next %}disabled aria-disabled="true"{% endif %}
+                data-target="{{ next_monday|date:'Y-m-d' }}"
+                aria-label="Volgende week">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               class="lucide lucide-arrow-right">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div style="margin:4px 0 16px;color:var(--muted);font-weight:500;">
+    <div class="availability-daterange">
       {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
     </div>
 
+    <!-- Scrollbare matrix -->
     <div class="matrix-wrap">
       <table class="matrix" id="matrixTable" aria-label="Beschikbaarheid per medewerker en dagdeel">
         <colgroup>
-          <col class="col-group"/>
-          <col class="col-name"/>
-          {% for d in days_ctx %}
-            <col/><col/>
-          {% endfor %}
+          <col /><col />
+          {% for d in days_ctx %}<col /><col />{% endfor %}
         </colgroup>
-
         <thead>
-          <!-- Hoofdheaders -->
           <tr>
             <th>Groep</th>
             <th>Voornaam</th>
@@ -160,30 +226,19 @@
               <th colspan="2">{{ day.weekday_label }}</th>
             {% endfor %}
           </tr>
-          <!-- Subheaders met badge die hovert en klikbaar is -->
           <tr>
-            <th></th>
-            <th></th>
+            <th></th><th></th>
             {% for day in days_ctx %}
-              <th>
-                <span class="slot-badge" data-slot="{{ day.iso }}|morning">
-                  Ochtend ({{ day.morning_count }})
-                </span>
-              </th>
-              <th>
-                <span class="slot-badge" data-slot="{{ day.iso }}|afternoon">
-                  Middag ({{ day.afternoon_count }})
-                </span>
-              </th>
+              <th><span class="slot-badge" data-slot="{{ day.iso }}|morning">Ochtend ({{ day.morning_count }})</span></th>
+              <th><span class="slot-badge" data-slot="{{ day.iso }}|afternoon">Middag ({{ day.afternoon_count }})</span></th>
             {% endfor %}
           </tr>
         </thead>
-
         <tbody id="matrixBody">
           {% for r in rows %}
             <tr class="matrix-row" data-group="{{ r.group }}" data-firstname="{{ r.firstname }}" {{ r.data_attrs|safe }}>
-              <td style="text-align:left;">{{ r.group }}</td>
-              <td style="text-align:left;">{{ r.firstname }}</td>
+              <td>{{ r.group }}</td>
+              <td>{{ r.firstname }}</td>
               {% for c in r.cells %}
                 <td><div class="avail-pill {% if c.morning %}available{% endif %}"></div></td>
                 <td><div class="avail-pill {% if c.afternoon %}available{% endif %}"></div></td>
@@ -195,35 +250,157 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-(function(){
-  // Week dropdown nav
-  const sel = document.getElementById('weekSelect');
-  if (sel){
-    sel.addEventListener('change', () => {
-      const url = new URL(window.location.href);
-      url.searchParams.set('monday', sel.value);
-      window.location.href = url.toString();
-    });
+(() => {
+  /* ---------- URL helper ---------- */
+  function goToMonday(targetISO){
+    const url = new URL(window.location.href);
+    if (targetISO) url.searchParams.set('monday', targetISO);
+    else url.searchParams.delete('monday');
+    window.location.href = url.toString();
   }
 
+  /* ---------- Arrows ---------- */
+  const btnPrev = document.getElementById('prevWeekBtn');
+  const btnNext = document.getElementById('nextWeekBtn');
+  function bindArrow(btn){
+    if (!btn || btn.disabled) return;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.dataset.target;
+      if (target) goToMonday(target);
+    });
+  }
+  bindArrow(btnPrev);
+  bindArrow(btnNext);
+
+  /* ---------- Dropdown: portal + fixed positioning (los van tabel) ---------- */
+  const pickerBtn = document.getElementById('weekPickerBtn');
+  const originalMenu = document.getElementById('weekMenu');
+  let menu = originalMenu;
+  let isPortaled = false;
+
+  function portalMenuToBody(){
+    if (!isPortaled) {
+      document.body.appendChild(menu);
+      isPortaled = true;
+    }
+  }
+  function restoreMenu(){
+    if (isPortaled) {
+      document.querySelector('.week-picker')?.appendChild(menu);
+      isPortaled = false;
+    }
+  }
+
+  function positionMenu(){
+    if (!pickerBtn || !menu) return;
+    const gap = 6;
+    const rect = pickerBtn.getBoundingClientRect();
+
+    let top  = rect.bottom + gap;
+    let left = rect.left + rect.width / 2;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // menu zichtbaar maken om maten te krijgen
+    const mw = Math.max(menu.offsetWidth || 340, 340);
+    const mh = Math.min(menu.offsetHeight || 0, 280);
+    const half = mw / 2;
+
+    // horizontaal clampen
+    if (left - half < 8) left = 8 + half;
+    if (left + half > vw - 8) left = vw - 8 - half;
+
+    // flippen naar boven indien nodig
+    if (top + mh > vh - 8) top = Math.max(8, rect.top - gap - mh);
+
+    menu.style.top = `${top}px`;
+    menu.style.left = `${left}px`;
+  }
+
+  function openMenu(){
+    if (!menu) return;
+    portalMenuToBody();
+    menu.hidden = false;
+    pickerBtn?.setAttribute('aria-expanded', 'true');
+    positionMenu();
+    menu.setAttribute('tabindex', '-1');
+    menu.focus({ preventScroll: true });
+
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', positionMenu, { passive: true });
+  }
+
+  function closeMenu(){
+    if (!menu) return;
+    menu.hidden = true;
+    pickerBtn?.setAttribute('aria-expanded', 'false');
+
+    window.removeEventListener('resize', positionMenu);
+    window.removeEventListener('scroll', positionMenu);
+    restoreMenu();
+  }
+
+  pickerBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const isOpen = pickerBtn.getAttribute('aria-expanded') === 'true';
+    isOpen ? closeMenu() : openMenu();
+  });
+
+  // klik op optie
+  menu?.addEventListener('click', (e) => {
+    const opt = e.target.closest('.week-option');
+    if (!opt) return;
+    goToMonday(opt.dataset.value);
+    closeMenu();
+  });
+
+  // keyboard-navigatie
+  menu?.addEventListener('keydown', (e) => {
+    const opts = Array.from(menu.querySelectorAll('.week-option'));
+    const idx = opts.indexOf(document.activeElement);
+    if (e.key === 'Escape'){ e.preventDefault(); closeMenu(); pickerBtn?.focus(); }
+    else if (e.key === 'ArrowDown'){ e.preventDefault(); (opts[idx+1] || opts[0])?.focus(); }
+    else if (e.key === 'ArrowUp'){ e.preventDefault(); (opts[idx-1] || opts[opts.length-1])?.focus(); }
+    else if (e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      const opt = document.activeElement;
+      if (opt?.classList.contains('week-option')) {
+        goToMonday(opt.dataset.value);
+        closeMenu();
+      }
+    }
+  });
+
+  menu?.querySelectorAll('.week-option').forEach(el => el.setAttribute('tabindex','-1'));
+
+  // klik buiten menu sluit
+  document.addEventListener('click', (e) => {
+    if (!menu || menu.hidden) return;
+    if (e.target === pickerBtn || pickerBtn?.contains(e.target)) return;
+    if (menu.contains(e.target)) return;
+    closeMenu();
+  });
+
+  /* ---------- Sorteren via badges (ongewijzigd) ---------- */
   const body = document.getElementById('matrixBody');
   const badges = document.querySelectorAll('.slot-badge');
 
   function setActiveBadge(slotId){
     badges.forEach(b => b.classList.toggle('active', b.dataset.slot === slotId));
   }
-
   function sortBySlot(slotId){
-    // slotId: "YYYY-MM-DD|morning" of "|afternoon"
     const [d, part] = slotId.split('|');
     const rows = Array.from(body.querySelectorAll('.matrix-row'));
-
     rows.sort((a, b) => {
       const aAvail = Number(a.getAttribute(`data-${d}-${part}`));
       const bAvail = Number(b.getAttribute(`data-${d}-${part}`));
-      if (bAvail !== aAvail) return bAvail - aAvail; // beschikbaar eerst
+      if (bAvail !== aAvail) return bAvail - aAvail;
       const ag = (a.getAttribute('data-group') || '').toLowerCase();
       const bg = (b.getAttribute('data-group') || '').toLowerCase();
       if (ag !== bg) return ag.localeCompare(bg);
@@ -231,17 +408,10 @@
       const bf = (b.getAttribute('data-firstname') || '').toLowerCase();
       return af.localeCompare(bf);
     });
-
     rows.forEach(r => body.appendChild(r));
     setActiveBadge(slotId);
   }
-
-  // Click handlers: sorteren op die badge
-  badges.forEach(b => {
-    b.addEventListener('click', () => sortBySlot(b.dataset.slot));
-  });
-
-  // Standaard sorteer op maandagochtend
+  badges.forEach(b => b.addEventListener('click', () => sortBySlot(b.dataset.slot)));
   sortBySlot("{{ default_sort_slot }}");
 })();
 </script>

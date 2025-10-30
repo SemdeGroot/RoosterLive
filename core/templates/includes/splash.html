@@ -8,7 +8,7 @@
     z-index:2147483647;
     transition:opacity .28s ease, visibility .28s ease;
   }
-  #app-splash img{ width:min(180px,40vw); opacity:.9; -webkit-user-drag:none; user-select:none; }
+  #app-splash img{ width:min(196px,40vw); opacity:.9; -webkit-user-drag:none; user-select:none; }
   .splash--hide{ opacity:0; visibility:hidden; pointer-events:none; }
   body{ background:var(--bg, #0d131b); } /* Safari/iOS anti-flash */
 </style>
@@ -19,7 +19,7 @@
 
 <script>
   document.documentElement.classList.add('splash-lock');
-  const MIN_MS = 1000; // minimaal 1s tonen (pas aan naar smaak)
+  const MIN_MS = 1000; // minimaal 1s tonen
   const t0 = performance.now();
 
   function hideSplash(){
