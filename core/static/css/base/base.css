@@ -6,8 +6,9 @@
     --muted:     #9fb2c8;
     --border:    #223144;   /* subtiel blauwgrijs, niet te fel */
     --shadow:    rgba(0,0,0,.52);
-    --tile:      #64696d;
     --accent:    #072a72;   /* blijft jouw hoofdkleur */
+    --button-color: #17212b;
+    --button-hover: #1f2d3d;
     --header-gap:18px; /* desktop header spacing */
 }
 
@@ -47,12 +48,12 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
     display:none; gap:10px; flex-wrap:wrap;
 }
 .nav a, .nav .nav-btn{
-    color:var(--text); background:#17212b; border:1px solid var(--border);
+    color:var(--text); background:var(--button-color); border:1px solid var(--border);
     padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer;
     font:inherit; line-height:1.2; display:inline-flex; align-items:center; justify-content:center;
     transition:background .2s ease, border-color .2s ease;
 }
-.nav a:hover, .nav .nav-btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+.nav a:hover, .nav .nav-btn:hover{ background:var(--button-hover); border-color:var(--accent); }
 .nav a.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
 
 /* Hamburger (mobile) */
@@ -179,7 +180,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 /* Alleen .btn (en je .nav .nav-btn) worden gestyled; niets generieks meer */
 .btn {
   color: var(--text);
-  background: #17212b;                 /* zelfde basiskleur als nav-knoppen */
+  background: var(--button-color);                 /* zelfde basiskleur als nav-knoppen */
   border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 10px;
@@ -195,7 +196,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 
 /* Hover-effect gelijk aan nav */
 .btn:hover {
-  background: #1f2d3d;
+  background: var(--button-hover);
   border-color: var(--accent);
 }
 
@@ -253,7 +254,7 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
 
 .tile-box{
     /* exact zelfde basis als .nav a/.nav .nav-btn */
-    background:#17212b;
+    background: var(--button-color);
     border:1px solid var(--border);
     border-radius:14px;
     box-shadow:0 6px 20px var(--shadow);
@@ -269,7 +270,7 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
 
 .tile-box:hover{
     /* zelfde hover als desktop nav */
-    background:#1f2d3d;
+    background:var(--button-hover);
     border-color:var(--accent);
     box-shadow:0 10px 28px var(--shadow);
     /* geen transform, geen brightness filter */
