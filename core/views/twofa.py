@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib import messages
 
 
 class CustomSetupView(SetupView):
@@ -43,19 +44,32 @@ class CustomQRGeneratorView(QRGeneratorView):
         return super().get_username()
     
 class CustomLoginView(TwoFALoginView):
-    """
-    Two-factor login met eigen auth-form die ook first_name en e-mail ondersteunt.
-    """
-    # Gebruik dezelfde stapnamen als parent:
-    # AUTH_STEP = "auth"; TOKEN_STEP = "token"; BACKUP_STEP = "backup"
     form_list = (
         (TwoFALoginView.AUTH_STEP, IdentifierAuthenticationForm),
         (TwoFALoginView.TOKEN_STEP, AuthenticationTokenForm),
         (TwoFALoginView.BACKUP_STEP, BackupTokenForm),
     )
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # 1) GET
+        is_get = (self.request.method == "GET")
+        # 2) eerste stap van de wizard
+        on_first_step = (self.steps.current == self.AUTH_STEP)
+        # 3) geen form-errors
+        has_errors = False
+        form = ctx.get('form')
+        if form is not None and hasattr(form, 'errors'):
+            has_errors = bool(form.errors)
+        # 4) geen messages (zoals na logout)
+        has_messages = any(messages.get_messages(self.request))
+
+        ctx["show_splash"] = (is_get and on_first_step and not has_errors and not has_messages)
+        return ctx
+
 @login_required
 @require_POST
 def logout_view(request):
     logout(request)
+    messages.info(request, "Je bent uitgelogd.")
     return redirect(reverse("two_factor:login"))
