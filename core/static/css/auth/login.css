@@ -8,7 +8,7 @@
   --shadow:    rgba(0,0,0,.52);
   --tile:      #64696d;
   --accent:    #072a72;   /* knopkleur */
-  --danger:    #cc3b3b;
+  --danger:    #a01f1f;
 }
 
 *{ box-sizing:border-box }
@@ -128,18 +128,18 @@ button{
   width:100%;
   background:var(--accent);      /* #072a72 */
   color:#fff;
-  border:1px solid var(--border);
+  border:solid var(--accent);
   padding:12px;
   border-radius:10px;
   font-size:16px;
   font-weight:600;
   cursor:pointer;
   transition:box-shadow .2s ease, transform .1s ease;
-  margin:0;                      /* spacing via stackregels */
+  margin:0 0 -5px;                      /* spacing via stackregels */
 }
 button:hover{
   /* zelfde achtergrond/tekst houden; alléén extra omlijning erbij */
-  box-shadow:0 0 0 2px var(--border);
+  border:solid var(--border);
 }
 button:active{ transform:scale(0.99) }
 button:focus-visible{
@@ -189,15 +189,15 @@ input, select, textarea, button {
   line-height:1.35;
 }
 
-/* 2FA header met 40px blokmarge (consistent met logo) */
+/* 2FA header met 20px blokmarge (consistent met logo) */
 .twofa-image-wrap{
   display:flex; justify-content:center;
-  margin:30px 0;
+  margin:20px 0;
 }
 .login-box .twofa-image-wrap + *{ margin-top:30px !important; }
 
 .twofa-image{
-  width: 80px; height:auto;
+  width: 60px; height:auto;
   border:none!important; background:none!important; box-shadow:none!important; border-radius:0!important;
 }
 
@@ -263,8 +263,8 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 .login-box form > * + * { margin-top:15px; }
 
 /* Field-groep “geplakt”: kleine verticale afstand in het formulier */
-.login-box form label + *             { margin-top:8px !important; }  /* label → input */
-.login-box form input + label         { margin-top:8px !important; }  /* input → volgend label */
-.login-box form input + input         { margin-top:8px !important; }  /* input → volgende input */
+.login-box form label + *             { margin-top:6px !important; }  /* label → input */
+.login-box form input + label         { margin-top:12px !important; }  /* input → volgend label */
+.login-box form input + input         { margin-top:15px !important; }  /* input → volgende input */
 .login-box form input[type="password"] + button,
 .login-box form input[type="text"] + button { margin-top:15px !important; } /* input → button terug naar standaard */
