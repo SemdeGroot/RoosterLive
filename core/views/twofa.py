@@ -26,32 +26,31 @@ class CustomSetupView(SetupView):
     def get_success_url(self):
         return reverse("home")
 
-    # --- belangrijk: vervang de 'generator' form door onze eigen ---
+    # >>> Belangrijk: zet in de SETUP-wizard de 'generator' stap op jouw form
     def get_form_list(self):
         form_list = super().get_form_list()
-        # Als de generator-stap aanwezig is, overschrijf hem:
         if 'generator' in form_list:
             form_list['generator'] = MyTOTPDeviceForm
         return form_list
 
-    # (optioneel) dezelfde flash-only error handling als bij login:
-    def _flash_form_errors(self, form):
+    # Toon maximaal 1 flash en maak inline errors stil
+    def _flash_one_error(self, form):
         if not (form and form.is_bound and not form.is_valid()):
             return
-        for msg in form.non_field_errors():
-            messages.error(self.request, msg)
-        # Eventuele field errors willen we ook als flash (maar we genereren die niet meer):
-        for field, errors in getattr(form, 'errors', {}).items():
-            if field == "__all__":
-                continue
-            for e in errors:
-                messages.error(self.request, e)
-        # inline errors uitschakelen:
+        # Pak eerst non-field errors (onze form produceert alleen non-field)
+        nf = list(form.non_field_errors())
+        if nf:
+            messages.error(self.request, nf[0])
+        else:
+            # Fallback: eerste field error (zou normaliter niet gebeuren met onze form)
+            for _f, errs in getattr(form, 'errors', {}).items():
+                if errs:
+                    messages.error(self.request, errs[0])
+                    break
         form._errors = ErrorDict()
 
     def render(self, form=None, **kwargs):
-        self._flash_form_errors(form)
-        # setup-wizard roept zelf generate_challenge() in render_next_step
+        self._flash_one_error(form)
         return super().render(form=form, **kwargs)
 
 

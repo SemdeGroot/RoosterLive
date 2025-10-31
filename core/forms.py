@@ -280,14 +280,16 @@ class MyAuthenticationTokenForm(AuthenticationTokenForm):
 
 class MyTOTPDeviceForm(TOTPDeviceForm):
     """
-    Setup-stap (generator): toon maar 2 meldingen.
-    - 'Voer 6 cijfers in.' (leeg/te kort/lang/niet numeriek)
-    - 'De code klopt niet. Probeer het nog een keer.' (6 cijfers maar OTP fout)
+    Setup 'generator' stap: maximaal 1 melding.
+    - 'Voer 6 cijfers in.' als niet exact 6 cijfers
+    - 'De code klopt niet. Probeer het nog een keer.' als 6 cijfers maar onjuist
+    Géén field-level errors: alles via clean() als non-field error.
     """
-    # Vervang het veld door een kale CharField zonder validators
+    # Vervang Integer/Regex field door kale CharField en zet required=False (voorkomt
+    # automatische velderrors). We doen alles in clean().
     token = forms.CharField(
         label=_("Token"),
-        required=True,
+        required=False,
         widget=forms.TextInput(attrs={
             'autofocus': 'autofocus',
             'inputmode': 'numeric',
@@ -302,26 +304,22 @@ class MyTOTPDeviceForm(TOTPDeviceForm):
     }
 
     def clean(self):
-        """
-        1) Zelf 6-cijfer check
-        2) Daarna OTP-valideren met dezelfde logica als parent (clean_token),
-           maar map elke fout naar 1 uniforme melding.
-        """
-        # Sla field-level validators van parent over:
+        # Sla parent clean() over (die zou velderrors kunnen aanmaken)
         cleaned = super(forms.Form, self).clean()
 
         raw = (self.data.get(self.add_prefix('token')) or "").strip()
+        # 1) Exact 6 cijfers?
         if not (raw.isdigit() and len(raw) == 6):
             raise ValidationError(self.error_messages["invalid_length"], code="invalid_length")
 
-        # Zet token in cleaned_data zodat parent clean_token 'm pakt
+        # 2) Voor parent clean_token() een int in cleaned_data zetten
         self.cleaned_data = cleaned
         self.cleaned_data['token'] = int(raw)
 
-        # Gebruik de bestaande OTP-logica van TOTPDeviceForm.clean_token(),
-        # maar map elke fout op onze ene boodschap:
+        # 3) OTP-validatie met parentlogica, maar alle fouten mappen naar één melding
         try:
-            self.clean_token()  # roept de TOTP-check aan; zet evt. drift/metadata
+            # gebruikt TOTPDeviceForm.clean_token() → zet drift/metadata
+            self.clean_token()
         except ValidationError:
             raise ValidationError(self.error_messages["invalid_token"], code="invalid_token")
 
