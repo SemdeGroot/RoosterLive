@@ -2,11 +2,15 @@ from django import forms
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model, authenticate
 from django.core.validators import FileExtensionValidator
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
+
+from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
 UserModel = get_user_model()
 
@@ -154,49 +158,171 @@ class RosterUploadForm(forms.Form):
     )
 
 class IdentifierAuthenticationForm(AuthenticationForm):
-    # Houd de veldnaam 'username' intact (two_factor verwacht dat),
-    # maar verander het label en behandel de input als "identifier".
+    """
+    Login met gebruikersnaam, e-mailadres of unieke voornaam.
+    Form zelf pusht GEEN messages; dat doet de view. Dit voorkomt dubbele meldingen.
+    """
+
     username = forms.CharField(
         label=_("Gebruikersnaam, e-mailadres of voornaam"),
         widget=forms.TextInput(attrs={"autofocus": True}),
     )
 
+    error_messages = {
+        "invalid_login": _(
+            "Combinatie niet gevonden. Controleer je gegevens en probeer het opnieuw."
+        ),
+        "inactive": _(
+            "Dit account is (nog) niet actief. Neem contact op met een beheerder."
+        ),
+        "multiple_firstname": _(
+            "Er zijn meerdere gebruikers met deze voornaam. Log in met je e-mailadres."
+        ),
+        "password_required": _("Voer je wachtwoord in."),
+    }
+
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
+
     def clean(self):
-        # Pak de ruwe invoer en password
         identifier = (self.cleaned_data.get("username") or "").strip().lower()
         password   = self.cleaned_data.get("password")
 
-        # Bepaal de echte username waarmee we authenticeren
-        resolved_username = None
+        if not password:
+            raise forms.ValidationError(self.error_messages["password_required"], code="password_required")
 
+        resolved_username = None
         if "@" in identifier:
-            # Inloggen met e-mail
-            u = UserModel.objects.filter(email__iexact=identifier).first()
+            u = UserModel.objects.filter(email__iexact=identifier).only("username").first()
             if u:
                 resolved_username = u.username
         else:
-            # Probeer eerst username (== email bij jou)
-            u = UserModel.objects.filter(username__iexact=identifier).first()
+            u = UserModel.objects.filter(username__iexact=identifier).only("username").first()
             if u:
                 resolved_username = u.username
             else:
-                # Probeer unieke first_name
-                qs = UserModel.objects.filter(first_name__iexact=identifier)
+                qs = UserModel.objects.filter(first_name__iexact=identifier).only("username")
                 cnt = qs.count()
                 if cnt == 1:
                     resolved_username = qs.first().username
                 elif cnt > 1:
-                    raise forms.ValidationError(
-                        _("Er zijn meerdere gebruikers met deze voornaam. "
-                          "Log in met je e-mailadres."),
-                        code="multiple-firstname",
-                    )
+                    raise forms.ValidationError(self.error_messages["multiple_firstname"], code="multiple_firstname")
 
-        user = authenticate(self.request, username=resolved_username or identifier, password=password)
+        user = authenticate(
+            self.request,
+            username=resolved_username or identifier,
+            password=password,
+        )
         if user is None:
-            # Gebruik dezelfde foutafhandeling als Django
+            # Laat Django/two_factor flow lopen, maar met jouw NL tekst
             raise self.get_invalid_login_error()
 
         self.confirm_login_allowed(user)
         self.user_cache = user
+        return self.cleaned_data
+
+    def get_invalid_login_error(self):
+        return forms.ValidationError(self.error_messages["invalid_login"], code="invalid_login")
+
+class MyAuthenticationTokenForm(AuthenticationTokenForm):
+    """
+    Toon slechts 2 meldingen:
+    - 'Voer 6 cijfers in.' (als niet exact 6 cijfers)
+    - 'De code klopt niet. Probeer het nog een keer.' (als 6 cijfers maar onjuist)
+    We gebruiken géén veldvalidatie; alles in clean() als non-field error.
+    """
+
+    # Gebruik een "platte" CharField zonder validators, zodat het veld zelf géén meldingen maakt.
+    otp_token = forms.CharField(
+        label=_("Token"),
+        required=True,
+        widget=forms.TextInput(attrs={
+            'autofocus': 'autofocus',
+            'inputmode': 'numeric',
+            'pattern': '[0-9]*',
+            'autocomplete': 'one-time-code',
+        }),
+    )
+
+    # Alleen voor consistentie; we gebruiken de dict zelf niet meer, omdat we eigen clean() doen.
+    error_messages = {
+        "invalid_token": _("De code klopt niet. Probeer het nog een keer."),
+        "invalid_length": _("Voer 6 cijfers in."),
+    }
+
+    def clean(self):
+        """
+        1) Zelf checken op exact 6 cijfers → zo niet: één non-field error.
+        2) Als wel 6 cijfers: OTP valideren via mixin → bij fout: één non-field error.
+        """
+
+        cleaned_data = super(forms.Form, self).clean()  # sla ouders over die velderrors toevoegen
+        token = (self.data.get(self.add_prefix('otp_token')) or "").strip()
+
+        # 1) Lengte + numeriek (samengevoegd tot één simpele melding)
+        if not (token and token.isdigit() and len(token) == 6):
+            raise ValidationError(self.error_messages["invalid_length"], code="invalid_length")
+
+        # Zet het veld in cleaned_data (anders kan mixin klagen)
+        cleaned_data['otp_token'] = token
+        self.cleaned_data = cleaned_data
+
+        # 2) OTP-check: als onjuist, vervang elke onderliggende boodschap door onze NL-melding
+        try:
+            # Dit komt uit OTPAuthenticationFormMixin
+            self.clean_otp(self.user)
+        except ValidationError:
+            # Altijd dezelfde simpele boodschap teruggeven
+            raise ValidationError(self.error_messages["invalid_token"], code="invalid_token")
+
+        return self.cleaned_data
+
+class MyTOTPDeviceForm(TOTPDeviceForm):
+    """
+    Setup-stap (generator): toon maar 2 meldingen.
+    - 'Voer 6 cijfers in.' (leeg/te kort/lang/niet numeriek)
+    - 'De code klopt niet. Probeer het nog een keer.' (6 cijfers maar OTP fout)
+    """
+    # Vervang het veld door een kale CharField zonder validators
+    token = forms.CharField(
+        label=_("Token"),
+        required=True,
+        widget=forms.TextInput(attrs={
+            'autofocus': 'autofocus',
+            'inputmode': 'numeric',
+            'pattern': '[0-9]*',
+            'autocomplete': 'one-time-code',
+        }),
+    )
+
+    error_messages = {
+        "invalid_length": _("Voer 6 cijfers in."),
+        "invalid_token":  _("De code klopt niet. Probeer het nog een keer."),
+    }
+
+    def clean(self):
+        """
+        1) Zelf 6-cijfer check
+        2) Daarna OTP-valideren met dezelfde logica als parent (clean_token),
+           maar map elke fout naar 1 uniforme melding.
+        """
+        # Sla field-level validators van parent over:
+        cleaned = super(forms.Form, self).clean()
+
+        raw = (self.data.get(self.add_prefix('token')) or "").strip()
+        if not (raw.isdigit() and len(raw) == 6):
+            raise ValidationError(self.error_messages["invalid_length"], code="invalid_length")
+
+        # Zet token in cleaned_data zodat parent clean_token 'm pakt
+        self.cleaned_data = cleaned
+        self.cleaned_data['token'] = int(raw)
+
+        # Gebruik de bestaande OTP-logica van TOTPDeviceForm.clean_token(),
+        # maar map elke fout op onze ene boodschap:
+        try:
+            self.clean_token()  # roept de TOTP-check aan; zet evt. drift/metadata
+        except ValidationError:
+            raise ValidationError(self.error_messages["invalid_token"], code="invalid_token")
+
         return self.cleaned_data

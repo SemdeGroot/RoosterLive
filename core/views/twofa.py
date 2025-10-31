@@ -2,14 +2,14 @@
 from two_factor.views import SetupView, QRGeneratorView
 from django.urls import reverse
 from two_factor.views.core import LoginView as TwoFALoginView
-from two_factor.forms import AuthenticationTokenForm, BackupTokenForm# jouw bestaande classes
-from core.forms import IdentifierAuthenticationForm
+from core.forms import IdentifierAuthenticationForm, MyAuthenticationTokenForm, MyTOTPDeviceForm 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.contrib import messages
-
+from django.utils.translation import gettext as _
+from django.forms.utils import ErrorDict
 
 class CustomSetupView(SetupView):
     condition_dict = {"welcome": False, "method": False}
@@ -25,6 +25,34 @@ class CustomSetupView(SetupView):
 
     def get_success_url(self):
         return reverse("home")
+
+    # --- belangrijk: vervang de 'generator' form door onze eigen ---
+    def get_form_list(self):
+        form_list = super().get_form_list()
+        # Als de generator-stap aanwezig is, overschrijf hem:
+        if 'generator' in form_list:
+            form_list['generator'] = MyTOTPDeviceForm
+        return form_list
+
+    # (optioneel) dezelfde flash-only error handling als bij login:
+    def _flash_form_errors(self, form):
+        if not (form and form.is_bound and not form.is_valid()):
+            return
+        for msg in form.non_field_errors():
+            messages.error(self.request, msg)
+        # Eventuele field errors willen we ook als flash (maar we genereren die niet meer):
+        for field, errors in getattr(form, 'errors', {}).items():
+            if field == "__all__":
+                continue
+            for e in errors:
+                messages.error(self.request, e)
+        # inline errors uitschakelen:
+        form._errors = ErrorDict()
+
+    def render(self, form=None, **kwargs):
+        self._flash_form_errors(form)
+        # setup-wizard roept zelf generate_challenge() in render_next_step
+        return super().render(form=form, **kwargs)
 
 
 class CustomQRGeneratorView(QRGeneratorView):
@@ -46,27 +74,45 @@ class CustomQRGeneratorView(QRGeneratorView):
 class CustomLoginView(TwoFALoginView):
     form_list = (
         (TwoFALoginView.AUTH_STEP, IdentifierAuthenticationForm),
-        (TwoFALoginView.TOKEN_STEP, AuthenticationTokenForm),
-        (TwoFALoginView.BACKUP_STEP, BackupTokenForm),
+        (TwoFALoginView.TOKEN_STEP, MyAuthenticationTokenForm),
     )
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        # 1) GET
-        is_get = (self.request.method == "GET")
-        # 2) eerste stap van de wizard
-        on_first_step = (self.steps.current == self.AUTH_STEP)
-        # 3) geen form-errors
-        has_errors = False
-        form = ctx.get('form')
-        if form is not None and hasattr(form, 'errors'):
-            has_errors = bool(form.errors)
-        # 4) geen messages (zoals na logout)
-        has_messages = any(messages.get_messages(self.request))
+    def has_backup_step(self):
+        return False
 
-        ctx["show_splash"] = (is_get and on_first_step and not has_errors and not has_messages)
-        return ctx
+    def get_form(self, step=None, **kwargs):
+        current = step or self.steps.current
+        if current == self.TOKEN_STEP:
+            self.form_list[self.TOKEN_STEP] = MyAuthenticationTokenForm
 
+        # Belangrijk: direct de wizard-form ophalen (zorgt voor binden), niet de override die je form vervangt
+        from two_factor.views.utils import IdempotentSessionWizardView
+        form = IdempotentSessionWizardView.get_form(self, step=step, **kwargs)
+
+        if getattr(self, "show_timeout_error", False):
+            messages.error(self.request, _("Je sessie is verlopen. Log opnieuw in."))
+            self.show_timeout_error = False
+            form._errors = ErrorDict()
+        return form
+
+    def _flash_form_errors(self, form):
+        if not (form and form.is_bound and not form.is_valid()):
+            return
+        # Alleen non-field errors fl itsen (onze MyAuthenticationTokenForm geeft enkel non-field)
+        for msg in form.non_field_errors():
+            messages.error(self.request, msg)
+        form._errors = ErrorDict()
+
+    def render(self, form=None, **kwargs):
+        self._flash_form_errors(form)
+
+        if self.steps.current == self.TOKEN_STEP:
+            form_with_errors = form and form.is_bound and bool(form.errors)
+            if not form_with_errors:
+                self.get_device().generate_challenge()
+
+        return super().render(form=form, **kwargs)
+    
 @login_required
 @require_POST
 def logout_view(request):
