@@ -9,6 +9,7 @@
   --tile:      #64696d;
   --accent:    #072a72;   /* knopkleur */
   --danger:    #a01f1f;
+  --button-hover: #0a317f;
 }
 
 *{ box-sizing:border-box }
@@ -139,7 +140,7 @@ button{
 }
 button:hover{
   /* zelfde achtergrond/tekst houden; alléén extra omlijning erbij */
-  border:solid var(--border);
+  border:solid var(--border); background:var(--button-hover);
 }
 button:active{ transform:scale(0.99) }
 button:focus-visible{
