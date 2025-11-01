@@ -179,7 +179,7 @@ input[type="password"]::-webkit-password-toggle-button{
 @media (max-width: 768px) {
   .login-app {
     align-items: flex-start;
-    padding-top: 10vh; /* afstand van bovenkant scherm */
+    padding-top: 2vh; /* afstand van bovenkant scherm */
   }
 }
 
