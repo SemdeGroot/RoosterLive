@@ -26,8 +26,8 @@ table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:120px;o
 .user-table .actions-wrap{ gap:6px }
 
 /* Edit-rij */
-tr.edit-row td{background:#0f141a}
-.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+tr.edit-row td{background:var(--panel-2)}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px; margin-top: 6px; margin-bottom: 10px;}
 @media (max-width:720px){.edit-grid{grid-template-columns:1fr}}
 
 .admin-input,.admin-select{
@@ -48,18 +48,18 @@ tr.edit-row td{background:#0f141a}
   cursor:pointer;
   transition:background .2s ease, border-color .2s ease;
 }
-.btn:hover{ background:#1f2d3d; border-color:var(--accent); }
+.btn:hover{ background:var(--button-hover); border-color:var(--accent); }
 
 /* Kleinere small-knop (beetje compacter) */
 .btn.small{ padding:5px 9px; font-size:.82em }
 
 /* Danger donker + rode focus */
 .danger{
-  background:#8d1b13;
-  border-color:#a1261d;
+  background:var(--danger);
+  border-color:var(--border);
   color:#fff
 }
-.danger:hover{ background:#9e231a; border-color:#b7352b }
+.danger:hover{ background:var(--danger-hover); border-color:var(--danger-border) }
 .danger:focus-visible{
   outline:2px solid #e1584f;
   outline-offset:2px;

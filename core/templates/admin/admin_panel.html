@@ -15,7 +15,7 @@
     <!-- Groepen -->
     <div class="card">
       <div class="card-inner">
-        <h3 style="margin-top:0;">{% if editing_group %}Groep bewerken{% else %}Nieuwe groep{% endif %}</h3>
+        <h3 style="margin-top:0;">{% if editing_group %}Groep bewerken{% else %}Groep toevoegen{% endif %}</h3>
 
         <form method="post">
           {% csrf_token %}
@@ -25,7 +25,7 @@
           {{ group_form.non_field_errors }}
           {{ group_form.errors }}
 
-          <div class="form form-sticky-actions" style="padding-top:0;">
+          <div class="form form-sticky-actions" style="padding:0;">
             Groepsnaam: {{ group_form.name }}
 
             <strong style="font-size:1.1rem; display:block; margin-top:0px;">Permissies</strong>
@@ -158,16 +158,16 @@
                 {% csrf_token %}
                 <div class="edit-grid">
                   <div>
-                    <label>Voornaam</label>
-                    <input class="admin-input" type="text" name="first_name" value="{{ u.first_name|default:u.username }}">
+                    <label>Voornaam:</label>
+                    <input class="admin-input" type="text" name="first_name" value="{{ u.first_name|default:u.username }}" style="margin-top: 6px;">
                   </div>
                   <div>
-                    <label>E-mail</label>
-                    <input class="admin-input" type="email" name="email" value="{{ u.email }}">
+                    <label>E-mail:</label>
+                    <input class="admin-input" type="email" name="email" value="{{ u.email }}" style="margin-top: 6px;">
                   </div>
                   <div>
-                    <label>Groep</label>
-                    <select name="group" class="admin-select narrow">
+                    <label>Groep:</label>
+                    <select name="group" class="admin-select narrow" style="margin-left: 4px;">
                       {% with g=u.groups.all|first %}
                         {% for grp in groups %}
                           <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>{{ grp.name }}</option>
@@ -176,7 +176,7 @@
                     </select>
                   </div>
                 </div>
-                <div class="edit-actions" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                <div class="edit-actions" style="margin-bottom: 4px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
                   <button class="btn" type="submit">Opslaan</button>
                   <button type="button" class="btn" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
                 </div>
