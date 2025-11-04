@@ -19,7 +19,7 @@
         <img src="{% url 'two_factor:qr' %}" alt="2FA QR-code" class="qr-image">
       </div>
 
-      {% firstof secret_key otp_secret_key form.secret_key device.key as secret %}
+      {% firstof secret_key otp_secret_key as secret %}
       {% if secret %}
         <div class="manual-secret muted">
           <div>Geheime sleutel:</div>
@@ -37,12 +37,8 @@
       {{ wizard.management_form }}
 
       {# MyTOTPDeviceForm gebruikt het veld 'token' (niet otp_token) #}
-      {% if form.token %}
-        <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
-        {{ form.token }}
-      {% else %}
-        {# Geen fallback die inline errors kan genereren #}
-      {% endif %}
+    <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
+    {{ form.token }}
 
       <button type="submit">{% trans "Bevestigen" %}</button>
     </form>

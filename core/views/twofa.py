@@ -14,35 +14,40 @@ from django.forms.utils import ErrorDict
 class CustomSetupView(SetupView):
     condition_dict = {"welcome": False, "method": False}
 
-    def get(self, request, *args, **kwargs):
-        self.storage.current_step = "generator"
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        if self.storage.current_step in (None, "welcome", "method"):
-            self.storage.current_step = "generator"
-        return super().post(request, *args, **kwargs)
-
     def get_success_url(self):
         return reverse("home")
 
-    # >>> Belangrijk: zet in de SETUP-wizard de 'generator' stap op jouw form
-    def get_form_list(self):
-        form_list = super().get_form_list()
-        if 'generator' in form_list:
-            form_list['generator'] = MyTOTPDeviceForm
-        return form_list
+    def get_form(self, step=None, **kwargs):
+        form = super().get_form(step=step, **kwargs)
 
-    # Toon maximaal 1 flash en maak inline errors stil
+        # Alleen in de generator-stap: NL label/attrs + NL foutmelding, verder GEEN logica aanpassen
+        if (step or self.steps.current) == "generator":
+            field = form.fields.get("token")
+            if field:
+                field.label = _("6-cijferige code")
+                field.widget.attrs.update({
+                    "autofocus": "autofocus",
+                    "inputmode": "numeric",
+                    "autocomplete": "one-time-code",
+                })
+
+                field.error_messages.update({
+                "required": _("Voer 6 cijfers in."),
+            })
+            # 1 NL foutmelding i.p.v. Engels
+            if hasattr(form, "error_messages"):
+                form.error_messages["invalid_token"] = _("De code klopt niet. Probeer het nog een keer.")
+
+        return form
+
+    # Flash de (enige) error i.p.v. inline — verandert validatielogica niet
     def _flash_one_error(self, form):
         if not (form and form.is_bound and not form.is_valid()):
             return
-        # Pak eerst non-field errors (onze form produceert alleen non-field)
         nf = list(form.non_field_errors())
         if nf:
             messages.error(self.request, nf[0])
         else:
-            # Fallback: eerste field error (zou normaliter niet gebeuren met onze form)
             for _f, errs in getattr(form, 'errors', {}).items():
                 if errs:
                     messages.error(self.request, errs[0])
@@ -55,20 +60,14 @@ class CustomSetupView(SetupView):
 
 
 class CustomQRGeneratorView(QRGeneratorView):
-    """Gebruik 'Jansen App' als issuer en de voornaam als accountnaam."""
+    setup_view = CustomSetupView        # ← ESSENTIEEL: dezelfde wizard-state!
 
     def get_issuer(self):
-        # Non-breaking space zodat Google Auth geen '+' toont
         return "Jansen\u00A0App"
-
     def get_username(self):
         user = getattr(self.request, "user", None)
-        # Gebruik voornaam (gecapitaliseerd) als die er is
         first = (getattr(user, "first_name", "") or "").strip()
-        if first:
-            return first.capitalize()
-        # Fallback: standaard gedrag (username/e-mail)
-        return super().get_username()
+        return first.capitalize() if first else super().get_username()
     
 class CustomLoginView(TwoFALoginView):
     form_list = (

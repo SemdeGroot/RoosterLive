@@ -279,48 +279,18 @@ class MyAuthenticationTokenForm(AuthenticationTokenForm):
         return self.cleaned_data
 
 class MyTOTPDeviceForm(TOTPDeviceForm):
-    """
-    Setup 'generator' stap: maximaal 1 melding.
-    - 'Voer 6 cijfers in.' als niet exact 6 cijfers
-    - 'De code klopt niet. Probeer het nog een keer.' als 6 cijfers maar onjuist
-    Géén field-level errors: alles via clean() als non-field error.
-    """
-    # Vervang Integer/Regex field door kale CharField en zet required=False (voorkomt
-    # automatische velderrors). We doen alles in clean().
-    token = forms.CharField(
-        label=_("Token"),
-        required=False,
-        widget=forms.TextInput(attrs={
-            'autofocus': 'autofocus',
-            'inputmode': 'numeric',
-            'pattern': '[0-9]*',
-            'autocomplete': 'one-time-code',
-        }),
-    )
-
+    # Alleen de boodschap aanpassen; verder 100% package-gedrag
     error_messages = {
-        "invalid_length": _("Voer 6 cijfers in."),
-        "invalid_token":  _("De code klopt niet. Probeer het nog een keer."),
+        **TOTPDeviceForm.error_messages,
+        "invalid_token": _("De code klopt niet. Probeer het nog een keer."),
     }
 
-    def clean(self):
-        # Sla parent clean() over (die zou velderrors kunnen aanmaken)
-        cleaned = super(forms.Form, self).clean()
-
-        raw = (self.data.get(self.add_prefix('token')) or "").strip()
-        # 1) Exact 6 cijfers?
-        if not (raw.isdigit() and len(raw) == 6):
-            raise ValidationError(self.error_messages["invalid_length"], code="invalid_length")
-
-        # 2) Voor parent clean_token() een int in cleaned_data zetten
-        self.cleaned_data = cleaned
-        self.cleaned_data['token'] = int(raw)
-
-        # 3) OTP-validatie met parentlogica, maar alle fouten mappen naar één melding
-        try:
-            # gebruikt TOTPDeviceForm.clean_token() → zet drift/metadata
-            self.clean_token()
-        except ValidationError:
-            raise ValidationError(self.error_messages["invalid_token"], code="invalid_token")
-
-        return self.cleaned_data
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Je mag labels/attrs tweaken zonder de type/validatie te wijzigen
+        self.fields["token"].label = _("Token")
+        self.fields["token"].widget.attrs.update({
+            "autofocus": "autofocus",
+            "inputmode": "numeric",
+            "autocomplete": "one-time-code",
+        })
