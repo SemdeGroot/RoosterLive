@@ -28,7 +28,7 @@ class CustomPasswordConfirmView(PasswordResetConfirmView):
             f1 = form.fields["new_password1"]
             f1.label = _("Nieuw wachtwoord")
             f1.widget.attrs.update({
-                "autocomplete": "new-password",
+                "autocomplete": "off",
                 "autofocus": "autofocus",
             })
             f1.error_messages.update({
@@ -39,7 +39,7 @@ class CustomPasswordConfirmView(PasswordResetConfirmView):
         if "new_password2" in form.fields:
             f2 = form.fields["new_password2"]
             f2.label = _("Herhaal nieuw wachtwoord")
-            f2.widget.attrs.update({"autocomplete": "new-password"})
+            f2.widget.attrs.update({"autocomplete": "off"})
             f2.error_messages.update({
                 "required": _("Herhaal je wachtwoord."),
                 "invalid":  _("Ongeldige invoer."),

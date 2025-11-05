@@ -45,8 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function labelForScore(n) {
     switch (n) {
       case 1: return "Zwak";
-      case 2: return "Redelijk";
-      case 3: return "Goed";
+      case 2: return "Matig";
+      case 3: return "Redelijk";
       case 4: return "Sterk";
       default: return "—";
     }
