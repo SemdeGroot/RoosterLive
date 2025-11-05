@@ -34,7 +34,7 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px;
+  padding:20px;
   padding-left:calc(env(safe-area-inset-left) + 16px);
   padding-right:calc(env(safe-area-inset-right) + 16px);
   padding-top:calc(env(safe-area-inset-top) + 16px);
@@ -135,7 +135,7 @@ button{
   font-size:16px;
   font-weight:600;
   cursor:pointer;
-  margin:0;                      /* spacing via stackregels */
+  margin-top:0px;                      /* spacing via stackregels */
   transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
 button:hover{
@@ -148,15 +148,33 @@ button:focus-visible{
   box-shadow:0 0 0 2px var(--border);
 }
 
-/* Flash */
-.flash{
-  background:rgba(204,59,59,.1);
-  border-left:4px solid var(--danger);
-  color:#ffb3b3;
-  padding:10px 14px;
-  border-radius:8px;
-  margin:0; /* spacing via stackregels */
-  text-align:left;
+/* Flash-overlay boven content */
+.flash {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(204, 59, 59, 0.15);
+  border-left: 4px solid var(--danger);
+  color: #ffb3b3;
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  text-align: left;
+  z-index: 9999;
+  opacity: 0;
+  animation: flash-show 0.3s ease-out forwards,
+             flash-hide 0.3s ease-in 4.5s forwards;
+}
+
+/* Animaties */
+@keyframes flash-show {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes flash-hide {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to   { opacity: 0; transform: translate(-50%, -10px); }
 }
 
 /* Icon visibility tweaks bij wachtwoordvelden */
@@ -205,7 +223,7 @@ input, select, textarea, button {
 /* Compacte stap-stack */
 .twofa-stack{
   display:flex; flex-direction:column; align-items:center;
-  gap:14px; margin:6px 0 6px;
+  gap:14px;
 }
 
 /* QR */
@@ -217,8 +235,9 @@ input, select, textarea, button {
   border:1px solid var(--border);
   border-radius:10px;
   box-shadow:0 3px 10px var(--shadow);
+  margin-top: 10px;
 }
-.qr-image{ display:block; width:180px; height:180px; }
+.qr-image{ display:block; width:200px; height:200px; }
 .qr-caption{ font-size:.95rem; color:var(--muted); }
 
 /* Secret key */
@@ -266,7 +285,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 
 /* ---------- VERTICALE RHYTHM (onderaan zodat niets het overschrijft) ---------- */
 /* Standaard: 15px tussen ALLE directe kinderen in .login-box */
-.login-box form > button { margin-top: 0; }
+.login-box form > button { margin-top: 20px; }
 
 /* Standaard: 15px tussen ALLE directe kinderen binnen het form */
 .login-box form > * + * { margin-top:20px; }
