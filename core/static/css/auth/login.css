@@ -18,13 +18,14 @@
 html, body{ height:100%; }
 html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
-body{
+body {
   margin:0;
   min-height:100%;
   background:var(--bg);
   color:var(--text);
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
-  overflow:hidden; /* voorkomt verschuiving door scroll */
+  overflow-x: hidden;   /* blokkeer horizontale scroll */
+  overflow-y: auto;     /* sta verticale scroll toe */
 }
 
 /* Center + safe areas voor PWA */
@@ -55,15 +56,12 @@ body{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
-  padding: 16px 16px; /* iets meer ademruimte */
+  padding: 20px;
   box-shadow:0 8px 24px var(--shadow);
   text-align:center;
 }
-@media (min-width:480px){
-  .login-box{ padding:20px 26px; }
-}
 @media (min-width:900px){
-  .login-box{ padding:20px 40px; }
+  .login-box{ padding:20px 26px; }
 }
 
 .welcome-text{
@@ -84,7 +82,7 @@ body{
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
-  margin: 40px auto; /* 40px boven/onder */
+  margin: 30px auto; /* 40px boven/onder */
 }
 /* 40px naar het volgende element */
 .login-box .logo-wrap + *{ margin-top:40px !important; }
@@ -137,8 +135,8 @@ button{
   font-size:16px;
   font-weight:600;
   cursor:pointer;
-  transition:box-shadow .2s ease, transform .1s ease;
-  margin:0 0 -5px;                      /* spacing via stackregels */
+  margin:0;                      /* spacing via stackregels */
+  transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
 button:hover{
   /* zelfde achtergrond/tekst houden; alléén extra omlijning erbij */
@@ -268,14 +266,14 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 
 /* ---------- VERTICALE RHYTHM (onderaan zodat niets het overschrijft) ---------- */
 /* Standaard: 15px tussen ALLE directe kinderen in .login-box */
-.login-box > * + * { margin-top:15px; }
+.login-box form > button { margin-top: 0; }
 
 /* Standaard: 15px tussen ALLE directe kinderen binnen het form */
-.login-box form > * + * { margin-top:15px; }
+.login-box form > * + * { margin-top:20px; }
 
 /* Field-groep “geplakt”: kleine verticale afstand in het formulier */
 .login-box form label + *             { margin-top:6px !important; }  /* label → input */
-.login-box form input + label         { margin-top:12px !important; }  /* input → volgend label */
-.login-box form input + input         { margin-top:15px !important; }  /* input → volgende input */
+.login-box form input + label         { margin-top:20px !important; }  /* input → volgend label */
+.login-box form input + input         { margin-top:20px !important; }  /* input → volgende input */
 .login-box form input[type="password"] + button,
-.login-box form input[type="text"] + button { margin-top:15px !important; } /* input → button terug naar standaard */
+.login-box form input[type="text"] + button { margin-top:20px !important; } /* input → button terug naar standaard */
