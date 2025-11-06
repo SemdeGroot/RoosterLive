@@ -77,6 +77,23 @@ DATABASES = {
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1")
+
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_CACHE_ALIAS = "default"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -118,7 +135,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 SECURE_SSL_REDIRECT = False  # in dev via ngrok
 
 # 24 uur sessie
-SESSION_COOKIE_AGE = 60 * 60 * 24           # 1 dag
+SESSION_COOKIE_AGE = 60 * 60 * 8           # 8 uur
 # Niet-persistente sessiecookie (logout bij sluiten browser/app*)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # (Optioneel) elke request verlengt de sessie → rolling window
