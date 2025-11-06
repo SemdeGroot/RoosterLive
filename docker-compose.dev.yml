@@ -1,3 +1,4 @@
+version: "3.9"
 services:
   redis:
     image: redis:7
@@ -13,66 +14,3 @@ services:
       interval: 5s
       timeout: 2s
       retries: 20
-
-  worker:
-    image: python:3.11-slim
-    container_name: celery-worker
-    depends_on:
-      redis:
-        condition: service_healthy
-    working_dir: /app
-    # Maak 1x een venv in /opt/venv en hergebruik 'm; pip cache persistent
-    command: >
-      bash -lc "
-      if [ ! -d /opt/venv ]; then python -m venv /opt/venv; fi &&
-      . /opt/venv/bin/activate &&
-      pip install --no-input -r requirements.txt &&
-      celery -A rooster_site worker -l info -Q default,mail,push,maintenance
-        --concurrency=1 --max-tasks-per-child=100 --max-memory-per-child=180000
-      "
-    env_file: [.env]
-    environment:
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://redis:6379/3
-      - PYTHONUNBUFFERED=1
-      - PIP_CACHE_DIR=/root/.cache/pip
-    volumes:
-      - .:/app
-      - venv_cache:/opt/venv
-      - pip_cache:/root/.cache/pip
-      # SQLite delen met Django lokaal (zodat worker dezelfde DB ziet):
-      - ./db.sqlite3:/app/db.sqlite3
-    mem_limit: "256m"
-
-  beat:
-    image: python:3.11-slim
-    container_name: celery-beat
-    depends_on:
-      redis:
-        condition: service_healthy
-    working_dir: /app
-    command: >
-      bash -lc "
-      if [ ! -d /opt/venv ]; then python -m venv /opt/venv; fi &&
-      . /opt/venv/bin/activate &&
-      pip install --no-input -r requirements.txt &&
-      celery -A rooster_site beat -l info
-      "
-    env_file: [.env]
-    environment:
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://redis:6379/3
-      - PYTHONUNBUFFERED=1
-      - PIP_CACHE_DIR=/root/.cache/pip
-    volumes:
-      - .:/app
-      - venv_cache:/opt/venv
-      - pip_cache:/root/.cache/pip
-      - ./db.sqlite3:/app/db.sqlite3
-    mem_limit: "128m"
-
-volumes:
-  venv_cache:
-  pip_cache:
