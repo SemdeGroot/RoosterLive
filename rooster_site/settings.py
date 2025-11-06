@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -77,8 +79,9 @@ DATABASES = {
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1")
+# === Redis and sessions ===
 
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
@@ -93,6 +96,31 @@ CACHES = {
     }
 }
 
+# === Celery ===
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/2")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/3")
+
+CELERY_TASK_ALWAYS_EAGER = False           # True voor sync testen (development-only)
+CELERY_TASK_TIME_LIMIT = 60
+CELERY_TASK_SOFT_TIME_LIMIT = 50
+CELERY_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_DEFAULT_QUEUE = "default"
+CELERY_TASK_ROUTES = {
+    "core.tasks.send_invite_email_task": {"queue": "mail"},
+    "core.tasks.send_roster_updated_push_task": {"queue": "push"},
+    "core.tasks.clear_db_sessions_task": {"queue": "maintenance"},
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "clear-db-sessions-daily": {
+        "task": "core.tasks.clear_db_sessions_task",
+        "schedule": timedelta(days=1),
+    },
+}
+
+# == Password validation ==
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -113,6 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Static (serve icons from data/)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media (uploads)
 MEDIA_URL = "/media/"

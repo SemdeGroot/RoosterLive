@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
-from ._helpers import can, NAZENDINGEN_DIR, CACHE_NAZENDINGEN_DIR, render_pdf_to_cache, clear_dir
+from ._helpers import NAZENDINGEN_DIR, CACHE_NAZENDINGEN_DIR, render_pdf_to_cache, clear_dir
+from core.permissions import can
 
 @login_required
 def nazendingen_view(request):

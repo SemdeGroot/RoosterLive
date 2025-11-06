@@ -3,5 +3,81 @@ services:
     image: redis:7
     container_name: redis
     restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./deploy/redis.conf:/usr/local/etc/redis/redis.conf:ro
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+  web:
+    build: .
+    container_name: django
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: [.env]
+    environment:
+      # Sessies (in-compose hostnaam is 'redis')
+      - REDIS_URL=redis://redis:6379/1
+      # Celery broker/result (gescheiden DB's)
+      - CELERY_BROKER_URL=redis://redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis:6379/3
+      - PYTHONUNBUFFERED=1
+      - DEBUG=False
+    # Migrations bij start; daarna Gunicorn
+    command: >
+      sh -c "
+      python manage.py migrate && gunicorn rooster_site.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 60
+      "
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - .:/app
+
+  worker:
+    build: .
+    container_name: celery-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: [.env]
+    environment:
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis:6379/3
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "
+      celery -A rooster_site worker -l info -Q default,mail,push,maintenance --concurrency=1 --max-tasks-per-child=100 --max-memory-per-child=180000
+      "
+    mem_limit: "256m"
+
+    volumes:
+    - .:/app
+
+  beat:
+    build: .
+    container_name: celery-beat
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: [.env]
+    environment:
+      - REDIS_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis:6379/3
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "
+      celery -A rooster_site beat -l info
+      "
+    mem_limit: "128m"
+
+    volumes:
+    - .:/app

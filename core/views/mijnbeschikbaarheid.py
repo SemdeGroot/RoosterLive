@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from ._helpers import can
+from core.permissions import can
 from core.models import Availability
 
 

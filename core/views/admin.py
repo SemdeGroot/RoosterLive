@@ -7,10 +7,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.db import transaction
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
-from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
-from core.utils.invite import send_invite_email
+from ._helpers import PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
+from core.tasks import send_invite_email_task
+from core.permissions import can
 
 User = get_user_model()
 
@@ -77,10 +79,17 @@ def admin_panel(request):
                         pass
 
             try:
-                send_invite_email(user)
-                messages.success(request, f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden naar {email}.")
+                # Zet de taak pas in de queue na succesvolle DB-commit
+                transaction.on_commit(lambda: send_invite_email_task.delay(user.id))
+                messages.success(
+                    request,
+                    f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden naar {email}."
+                )
             except Exception as e:
-                messages.warning(request, f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}")
+                messages.warning(
+                    request,
+                    f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}"
+                )
 
             return redirect("admin_panel")
         else:

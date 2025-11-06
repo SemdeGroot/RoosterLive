@@ -10,10 +10,11 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 
 from ._helpers import (
-    can,
     POL_DIR, CACHE_POLICIES_DIR,
     render_pdf_to_cache, hash_from_img_url
 )
+
+from core.permissions import can
 
 def _delete_policies_by_hash(hash_str: str) -> int:
     removed = 0

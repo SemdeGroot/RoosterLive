@@ -6,7 +6,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils import timezone, translation
 from django.utils.formats import date_format
-from ._helpers import can
+from core.permissions import can
 from core.models import Availability
 from core.views.mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
 

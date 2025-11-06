@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from ..forms import AvailabilityUploadForm
-from ._helpers import can, VOORRAAD_DIR, read_table
+from ._helpers import VOORRAAD_DIR, read_table
+from core.permissions import can
 
 @login_required
 def medications_view(request):
