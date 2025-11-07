@@ -118,4 +118,45 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  (function () {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isAndroid = /android/i.test(ua);
+    const isIOS =
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.userAgentData && navigator.userAgentData.platform === "iOS");
+
+    // Alleen uitvoeren op mobiel
+    if (!(isAndroid || isIOS)) return;
+
+    const span = document.getElementById("gaStoreLink");
+    if (!span) return;
+
+    // Maak van de tekst een link met juiste store-URL
+    const a = document.createElement("a");
+    a.textContent = span.textContent; // blijft "Google Authenticator"
+    a.style.textDecoration = "underline";
+    a.style.color = "#4fa3ff";
+    a.rel = "noopener";
+
+    a.href = isAndroid
+      ? "https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
+      : "https://apps.apple.com/app/google-authenticator/id388497605";
+
+    // Vervang de span door de link
+    span.replaceWith(a);
+
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isMobile) {
+      const el = document.getElementById("manualAddText");
+      if (el) {
+        el.innerHTML = `
+          Kun je niet scannen?
+          <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
+            Klik hier om je authenticator-app te openen</a> of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
+        `;
+      }
+    }
+
+  })();
 });
