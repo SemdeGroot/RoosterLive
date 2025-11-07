@@ -275,6 +275,18 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   line-height: 1.4;
 }
 
+.muted {
+  color: var(--muted);
+  text-align:center;
+  line-height: 1.4;
+}
+
+.not-muted {
+  color: var(--text);
+  text-align:center;
+  line-height: 1.4;
+}
+
 .twofa-logintext{
   text-align:center;
   color:var(--muted);

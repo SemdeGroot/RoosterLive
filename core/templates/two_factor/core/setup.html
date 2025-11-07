@@ -9,7 +9,7 @@
 
 {% block content %}
   <h1 style="text-align:center;">{% trans "2FA instellen" %}</h1>
-  <p class="muted" style="text-align:center;">
+  <p class="muted">
     Scan deze QR-code met een authenticator app (bijv. Google Authenticator) en vul daarna de 6-cijferige code in.
   </p>
 
@@ -28,8 +28,12 @@
       {% endif %}
     </div>
 
-    <p class="muted" style="text-align:center;margin:0 auto;">
-      Kun je niet scannen? klik op deze link of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
+    <p class="not-muted" style="text-align:center;margin:0 auto;">
+      Kun je niet scannen?
+      <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
+        Klik hier om je authenticator-app te openen
+      </a>
+      of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
     </p>
 
     <form method="post" novalidate autocomplete="one-time-code" class="twofa-form">

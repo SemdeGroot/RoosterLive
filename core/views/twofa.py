@@ -2,6 +2,7 @@
 from two_factor.views import SetupView, QRGeneratorView
 from django.urls import reverse
 from two_factor.views.core import LoginView as TwoFALoginView
+from two_factor.utils import get_otpauth_url, totp_digits
 from core.forms import IdentifierAuthenticationForm, MyAuthenticationTokenForm, MyTOTPDeviceForm 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -10,6 +11,12 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.forms.utils import ErrorDict
+from base64 import b32encode
+from binascii import unhexlify
+from base64 import b32encode
+from binascii import unhexlify
+from two_factor.utils import get_otpauth_url, totp_digits
+from urllib.parse import quote, urlencode
 
 class CustomSetupView(SetupView):
     condition_dict = {"welcome": False, "method": False}
@@ -19,8 +26,6 @@ class CustomSetupView(SetupView):
 
     def get_form(self, step=None, **kwargs):
         form = super().get_form(step=step, **kwargs)
-
-        # Alleen in de generator-stap: NL label/attrs + NL foutmelding, verder GEEN logica aanpassen
         if (step or self.steps.current) == "generator":
             field = form.fields.get("token")
             if field:
@@ -30,15 +35,48 @@ class CustomSetupView(SetupView):
                     "inputmode": "numeric",
                     "autocomplete": "one-time-code",
                 })
-
-                field.error_messages.update({
-                "required": _("Voer 6 cijfers in."),
-            })
-            # 1 NL foutmelding i.p.v. Engels
+                field.error_messages.update({"required": _("Voer 6 cijfers in.")})
             if hasattr(form, "error_messages"):
                 form.error_messages["invalid_token"] = _("De code klopt niet. Probeer het nog een keer.")
-
         return form
+
+    def get_context_data(self, form=None, **kwargs):
+        ctx = super().get_context_data(form=form, **kwargs)
+
+        if self.steps.current == "generator":
+            # 1) Secret uit context; reconstrueer als hij ontbreekt
+            b32key = ctx.get("secret_key")
+            if not b32key:
+                key_hex = self.get_key("generator")
+                rawkey = unhexlify(key_hex.encode("ascii"))
+                b32key = b32encode(rawkey).decode("utf-8")
+
+            # 2) Issuer + account (gewone spatie gebruiken)
+            issuer  = "Jansen App"
+            user    = getattr(self.request, "user", None)
+            first   = ((getattr(user, "first_name", "") or "").strip())
+            try:
+                fallback = user.get_username()
+            except Exception:
+                fallback = getattr(user, "username", "")
+            account = (first.capitalize() or fallback)
+
+            # 3) Bouw otpauth-URI volgens de officiële TOTP-standaard (RFC 6238)
+            label_enc = quote(f"{issuer}:{account}", safe=":")  # Dubbelpunt behouden
+            query = urlencode(
+                {
+                    "secret": b32key,
+                    "issuer": issuer,
+                    "digits": totp_digits(),
+                    "algorithm": "SHA1",
+                    "period": 30,
+                },
+                quote_via=quote,  # gebruik %20 i.p.v. +
+            )
+
+            ctx["otpauth_url"] = f"otpauth://totp/{label_enc}?{query}"
+
+        return ctx
 
     # Flash de (enige) error i.p.v. inline — verandert validatielogica niet
     def _flash_one_error(self, form):
@@ -60,10 +98,11 @@ class CustomSetupView(SetupView):
 
 
 class CustomQRGeneratorView(QRGeneratorView):
-    setup_view = CustomSetupView        # ← ESSENTIEEL: dezelfde wizard-state!
+    setup_view = CustomSetupView
 
     def get_issuer(self):
         return "Jansen\u00A0App"
+
     def get_username(self):
         user = getattr(self.request, "user", None)
         first = (getattr(user, "first_name", "") or "").strip()
