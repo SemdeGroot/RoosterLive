@@ -34,7 +34,7 @@ env.setdefault("PYTHONUNBUFFERED", "1")
 
 print("🔧 Starting Redis via docker compose...")
 subprocess.run(
-    ["docker", "compose", "-f", "docker-compose.dev.yml", "up", "-d", "--remove-orphans", "redis"],
+    ["docker", "compose", "-f", "deploy/docker-compose.dev.yml", "up", "-d", "--remove-orphans", "redis"],
     check=True,
 )
 
@@ -72,7 +72,7 @@ def shutdown(*_):
         except Exception:
             pass
     # stop alleen redis; andere services draaien we niet in deze compose
-    subprocess.run(["docker", "compose", "-f", "docker-compose.dev.yml", "down"], check=False)
+    subprocess.run(["docker", "compose", "-f", "deploy/docker-compose.dev.yml", "down"], check=False)
     sys.exit(0)
 
 signal.signal(signal.SIGINT, shutdown)

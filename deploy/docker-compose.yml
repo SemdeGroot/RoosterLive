@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     volumes:
-      - ./deploy/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     ports:
       - "6379:6379"
     healthcheck:
@@ -15,7 +15,9 @@ services:
       retries: 20
 
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: Dockerfile
     container_name: django
     depends_on:
       redis:
@@ -41,7 +43,9 @@ services:
       - .:/app
 
   worker:
-    build: .
+    build:
+      context: ..
+      dockerfile: Dockerfile
     container_name: celery-worker
     depends_on:
       redis:
@@ -63,7 +67,9 @@ services:
 
     clearsessions:
     # Draait 1 keer per dag om de sessions uit de db te clearen. Zo houden we de DB schoon.
-      build: .
+      build:
+        context: ..
+        dockerfile: Dockerfile
       container_name: clearsessions
       depends_on:
         redis:
