@@ -110,14 +110,6 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_ROUTES = {
     "core.tasks.send_invite_email_task": {"queue": "mail"},
     "core.tasks.send_roster_updated_push_task": {"queue": "push"},
-    "core.tasks.clear_db_sessions_task": {"queue": "maintenance"},
-}
-
-CELERY_BEAT_SCHEDULE = {
-    "clear-db-sessions-daily": {
-        "task": "core.tasks.clear_db_sessions_task",
-        "schedule": timedelta(days=1),
-    },
 }
 
 # == Password validation ==
@@ -177,7 +169,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "testwachtwoordreset@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "app-password-hier")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Link-opbouw in mails

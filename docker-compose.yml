@@ -54,30 +54,32 @@ services:
       - PYTHONUNBUFFERED=1
     command: >
       sh -c "
-      celery -A rooster_site worker -l info -Q default,mail,push,maintenance --concurrency=1 --max-tasks-per-child=100 --max-memory-per-child=180000
+      celery -A rooster_site worker -l info -Q default,mail,push --concurrency=1 --max-tasks-per-child=100 --max-memory-per-child=180000
       "
     mem_limit: "256m"
 
     volumes:
     - .:/app
 
-  beat:
-    build: .
-    container_name: celery-beat
-    depends_on:
-      redis:
-        condition: service_healthy
-    env_file: [.env]
-    environment:
-      - REDIS_URL=redis://redis:6379/1
-      - CELERY_BROKER_URL=redis://redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://redis:6379/3
-      - PYTHONUNBUFFERED=1
-    command: >
-      sh -c "
-      celery -A rooster_site beat -l info
-      "
-    mem_limit: "128m"
-
-    volumes:
-    - .:/app
+    clearsessions:
+    # Draait 1 keer per dag om de sessions uit de db te clearen. Zo houden we de DB schoon.
+      build: .
+      container_name: clearsessions
+      depends_on:
+        redis:
+          condition: service_healthy
+      env_file: [.env]
+      environment:
+        - REDIS_URL=redis://redis:6379/1
+        - PYTHONUNBUFFERED=1
+        # evt. DB-vars als geen sqlite meer
+      command: >
+        sh -c "
+        while true; do
+          python manage.py clearsessions || true;
+          sleep 86400;
+        done
+        "
+      restart: unless-stopped
+      volumes:
+        - .:/app

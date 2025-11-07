@@ -41,18 +41,6 @@ subprocess.run(
 # Wacht even tot Redis gezond is
 time.sleep(3)
 
-# Opruimactie: oude/kapotte beat-schedule verwijderen als het een gdbm-bestand is
-for fname in ("celerybeat-schedule", "celerybeat-schedule.db", "beat-schedule", "beat-schedule.db"):
-    legacy = PROJECT_ROOT / fname
-    if legacy.exists():
-        try:
-            legacy.unlink()
-            print(f"🧹 Removed legacy beat schedule file: {legacy.name}")
-        except Exception:
-            pass
-
-BEAT_SCHEDULE_FILE = CELERY_DIR / "beat-schedule.db"
-
 print("🚀 Starting Django development server...")
 django_proc = subprocess.Popen(
     [PY, "manage.py", "runserver", "0.0.0.0:8000"],
@@ -61,14 +49,14 @@ django_proc = subprocess.Popen(
 )
 
 # Op Windows prefork geeft ellende -> solo pool + 1 concurrency
-print("⚙️ Starting Celery worker (Windows: --pool=solo)...")
+print("⚙️ Starting Celery worker...")
 worker_proc = subprocess.Popen(
     CELERY_CMD
     + [
         "-A", "rooster_site",
         "worker",
         "-l", "info",
-        "-Q", "default,mail,push,maintenance",
+        "-Q", "default,mail,push",
         "--concurrency=1",
         "--pool=solo",
     ],
@@ -76,22 +64,9 @@ worker_proc = subprocess.Popen(
     env=env,
 )
 
-print("⏰ Starting Celery beat (schedule in ./.celery)...")
-beat_proc = subprocess.Popen(
-    CELERY_CMD
-    + [
-        "-A", "rooster_site",
-        "beat",
-        "-l", "info",
-        "--schedule", str(BEAT_SCHEDULE_FILE),
-    ],
-    cwd=str(PROJECT_ROOT),
-    env=env,
-)
-
 def shutdown(*_):
     print("\n🛑 Stopping dev processes...")
-    for p in (beat_proc, worker_proc, django_proc):
+    for p in (worker_proc, django_proc):
         try:
             p.terminate()
         except Exception:
@@ -106,7 +81,7 @@ signal.signal(signal.SIGTERM, shutdown)
 print("\n✅ Dev environment running:")
 print("   - Django: http://127.0.0.1:8000")
 print("   - Redis:  redis://127.0.0.1:6379")
-print("   - Celery: worker + beat (solo)\n")
+print("   - Celery: worker + \n")
 print("Press Ctrl+C to stop.\n")
 
 # Houdt script in leven

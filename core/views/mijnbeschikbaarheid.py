@@ -6,8 +6,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from core.permissions import can
 from core.models import Availability
+from ._helpers import can
 
 
 def _monday_of_iso_week(some_date: date) -> date:

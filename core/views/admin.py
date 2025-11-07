@@ -10,9 +10,8 @@ from django.contrib import messages
 from django.db import transaction
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
-from ._helpers import PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
+from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.permissions import can
 
 User = get_user_model()
 

@@ -10,13 +10,12 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 
 from ._helpers import (
+    can,
     pdf_hash,
     render_pdf_to_cache,
     hash_from_img_url,
     CACHE_DIR,  # in jouw helpers gedefinieerd als settings.CACHE_DIR
 )
-
-from core.permissions import can
 
 # Directories (gescheiden van policies)
 NEWS_DIR = Path(settings.MEDIA_ROOT) / "news"
