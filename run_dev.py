@@ -7,8 +7,6 @@ from pathlib import Path
 import shutil
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-CELERY_DIR = PROJECT_ROOT / ".celery"
-CELERY_DIR.mkdir(exist_ok=True)
 
 # Gebruik exact dezelfde Python/venv waarmee je dit script start
 PY = sys.executable
