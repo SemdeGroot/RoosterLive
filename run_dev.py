@@ -79,7 +79,7 @@ signal.signal(signal.SIGTERM, shutdown)
 print("\n✅ Dev environment running:")
 print("   - Django: http://127.0.0.1:8000")
 print("   - Redis:  redis://127.0.0.1:6379")
-print("   - Celery: worker + \n")
+print("   - Celery: worker \n")
 print("Press Ctrl+C to stop.\n")
 
 # Houdt script in leven

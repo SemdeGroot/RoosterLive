@@ -59,6 +59,7 @@ body {
   padding: 20px;
   box-shadow:0 8px 24px var(--shadow);
   text-align:center;
+  position: relative;
 }
 @media (min-width:900px){
   .login-box{ padding:20px 26px; }
@@ -149,11 +150,13 @@ button:focus-visible{
 }
 
 /* Flash-overlay boven content */
-.flash {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+.flash{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: 12px;
+
   background: rgba(204, 59, 59, 0.15);
   border-left: 4px solid var(--danger);
   color: #ffb3b3;
@@ -161,20 +164,27 @@ button:focus-visible{
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   text-align: left;
-  z-index: 9999;
+  z-index: 2;
+
+  /* Tekstinstellingen */
+  white-space: normal;        /* laat tekst afbreken op nieuwe regel */
+  overflow-wrap: break-word;  /* breek lange woorden indien nodig */
+  word-break: break-word;
+
   opacity: 0;
   animation: flash-show 0.3s ease-out forwards,
              flash-hide 0.3s ease-in 4.5s forwards;
 }
 
+
 /* Animaties */
 @keyframes flash-show {
-  from { opacity: 0; transform: translate(-50%, -10px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes flash-hide {
-  from { opacity: 1; transform: translate(-50%, 0); }
-  to   { opacity: 0; transform: translate(-50%, -10px); }
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
 }
 
 /* Icon visibility tweaks bij wachtwoordvelden */
@@ -198,7 +208,7 @@ input[type="password"]::-webkit-password-toggle-button{
 @media (max-width: 768px) {
   .login-app {
     align-items: flex-start;
-    padding-top: 2vh; /* afstand van bovenkant scherm */
+    padding-top: 10vh; /* afstand van bovenkant scherm */
   }
 }
 

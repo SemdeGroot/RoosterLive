@@ -149,39 +149,65 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 }
 
 /* ---------- Flash messages ---------- */
-.flash {
-  padding: 12px 16px;
-  border-left: 3px solid var(--border); /* neutrale default */
+/* Flash als overlay binnen de content, zonder layout shift */
+.content > .flash {
+  position: absolute;              /* overlay, telt niet mee in layout */
+  top: 4px;                       /* net onder de header */
+  left: 18px;
+  right: 18px;                     /* marge rechts */
+  z-index: 900;                    /* boven de cards, onder de header */
+  margin: 0;
+  width: auto;                     /* laat left/right marges bepalen */
+  
+  border-left: 3px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 10px;
   background: #0f141a;
   color: var(--text);
-  border-radius: 8px;
-  margin: 0 0 12px 0;
-  max-width: 100%;
+
+  /* tekst veilig afbreken indien lang */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  /* animatie */
+  opacity: 0;
+  animation: flash-show 0.3s ease-out forwards,
+             flash-hide 0.3s ease-in 4.5s forwards;
+}
+
+@keyframes flash-show {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes flash-hide {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
 }
 
 /* Succes (groen) */
-.flash-success {
+.content > .flash-success {
   border-left-color: #1f7a3e;
   background: #0f1a12;
   color: #bfe4c8;
 }
 
 /* Foutmelding (rood) */
-.flash-error {
+.content > .flash-error {
   border-left-color: #a01f1f;
   background: #1a0f0f;
   color: #f2c7c7;
 }
 
 /* Waarschuwing (geel/oranje) */
-.flash-warning {
+.content > .flash-warning {
   border-left-color: #b38900;
   background: #1a1608;
   color: #f3e2b2;
 }
 
 /* Informatief (blauw) */
-.flash-info {
+.content > .flash-info {
   border-left-color: var(--accent);
   background: rgba(31, 75, 160, 0.12);
   color: #d5e0f7;
