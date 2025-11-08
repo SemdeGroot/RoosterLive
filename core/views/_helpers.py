@@ -72,15 +72,15 @@ PERM_LABELS = {
 }
 
 PERM_SECTIONS = [
-    ("Beheer",        ["can_access_admin", "can_manage_users"]),
     ("Agenda",        ["can_view_agenda", "can_upload_agenda"]),
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
-    ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
-    ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
+    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"]),
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
     ("Nieuws",        ["can_view_news", "can_upload_news"]),
-    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"]),
-    ("Medicatiebeoordeling", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"])
+    ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
+    ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
+    ("Medicatiebeoordeling", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
+    ("Beheer",        ["can_access_admin", "can_manage_users"]),
 ]
 
 def sync_custom_permissions():
