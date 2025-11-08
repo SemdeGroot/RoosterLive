@@ -1,11 +1,13 @@
 # core/utils/invite.py
 import os
 from email.mime.image import MIMEImage
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import EmailMultiAlternatives
+
 from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 token_generator = PasswordResetTokenGenerator()
 
@@ -28,17 +30,15 @@ def build_set_password_link(user) -> str:
 def send_invite_email(user):
     link = build_set_password_link(user)
     display_name = (user.first_name or user.username or "").strip().title()
-
     subject = "Welkom bij de Jansen App – stel je wachtwoord in"
 
     # Pad naar je logo in de static map
-    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "logo_transparant.png")
+    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "app_icon_trans-512x512.png")
 
-    # ---------- Plaintext ----------
+    # ---------- Plaintext (inhoud blijft 1-op-1) ----------
     text_content = (
         f"Hoi {display_name},\n\n"
-        "Welkom bij de Jansen App! Met deze app bekijk je het meest actuele rooster, "
-        "geef je je beschikbaarheid door en kunnen klanten de voorraad bekijken.\n"
+        "Welkom bij de Apotheek Jansen App! Met deze (web)app bekijk je het actuele rooster, geef je je beschikbaarheid door, kunnen klanten de voorraad inzien en apothekers medicatiebeoordelingen uitvoeren. \n"
         "Stel hieronder je wachtwoord in. Omdat de app persoonlijke informatie bevat, "
         "vragen we je daarna 2-factor authenticatie te activeren.\n\n"
         f"Wachtwoord instellen: {link}\n\n"
@@ -48,19 +48,12 @@ def send_invite_email(user):
         "(dit is een no-reply e-mail)"
     )
 
-        # ---------- HTML ----------
-    html_content = f"""\
-<!doctype html>
-<html lang="nl">
-  <body style="margin:0;padding:24px;background:#ffffff;
-               font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;">
-    <div style="max-width:740px;margin:0;">
-
+    # ---------- HTML (alleen layout generiek via mail_base.html) ----------
+    html_content_raw = f"""
       <p style="margin:0 0 18px 0;">Hoi <strong>{display_name}</strong>,</p>
 
       <p style="margin:0 0 12px 0;">
-        Welkom bij de <strong>Jansen App</strong>! Met deze app bekijk je onder andere het meest actuele rooster,
-        geef je je beschikbaarheid door en kunnen klanten de voorraad bekijken.
+        Welkom bij de <strong>Apotheek Jansen App</strong>! Met deze (web)app bekijk je het actuele rooster, geef je je beschikbaarheid door, kunnen klanten de voorraad inzien en apothekers medicatiebeoordelingen uitvoeren.
       </p>
 
       <p style="margin:0 0 12px 0;">
@@ -84,31 +77,21 @@ def send_invite_email(user):
         Groetjes,<br>
         Het Apotheek Jansen Team
       </p>
-      
-      <p style="margin:0 0 12px 0;">
-        <img src="cid:logo" alt="Apotheek Jansen"
-             width="192"
-             style="display:block;border:0;outline:none;text-decoration:none;height:auto;">
-      </p>
+    """
 
-      <p style="margin:0 0 12px 0;font-size:12px;color:#666;">
-        (dit is een no-reply e-mail)
-      </p>
+    # Render de generieke layout met jouw eigen content
+    html_content = render_to_string("includes/mail_base.html", {"content": html_content_raw})
 
-    </div>
-  </body>
-</html>
-"""
-
+    # ---------- Mail opbouwen ----------
     msg = EmailMultiAlternatives(
-        subject,
-        text_content,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
+        subject=subject,
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
     )
     msg.attach_alternative(html_content, "text/html")
 
-    # Logo inline meesturen als image/attachment
+    # Logo inline meesturen als image/attachment (CID: logo)
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as f:
             logo_data = f.read()

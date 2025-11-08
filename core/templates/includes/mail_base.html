@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="nl">
+  <body style="margin:0;padding:0;background:#ffffff;
+               font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;">
+    <div style="width:740px;margin:0;padding:24px;text-align:left;">
+
+      <!-- Logo gecentreerd -->
+      <div style="text-align:center;margin-bottom:0px;">
+        <img src="cid:logo" alt="Apotheek Jansen"
+            width="64"
+            style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;height:auto;">
+      </div>
+
+      <!-- Scheidingslijn -->
+      <hr style="border:0;border-top:1px solid #e2e2e2;margin:16px 0;">
+
+      <!-- Inhoud -->
+      <div>
+        {% if content %}
+          {{ content|safe }}
+        {% else %}
+          <p style="color:#666;">(Geen inhoud)</p>
+        {% endif %}
+      </div>
+
+      <!-- Scheidingslijn -->
+      <hr style="border:0;border-top:1px solid #e2e2e2;margin:16px 0;">
+
+      <!-- Footer -->
+      <p style="margin:0;font-size:12px;color:#666;text-align:center;">
+        Dit is een automatisch gegenereerde e-mail: antwoorden op dit bericht worden niet gelezen.
+      </p>
+    </div>
+  </body>
+</html>
