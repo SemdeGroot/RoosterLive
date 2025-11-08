@@ -151,13 +151,13 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 /* ---------- Flash messages ---------- */
 /* Flash als overlay binnen de content, zonder layout shift */
 .content > .flash {
-  position: absolute;              /* overlay, telt niet mee in layout */
+  position: absolute;           
   top: 4px;                       /* net onder de header */
   left: 18px;
   right: 18px;                     /* marge rechts */
   z-index: 900;                    /* boven de cards, onder de header */
   margin: 0;
-  width: auto;                     /* laat left/right marges bepalen */
+  width: auto;              
   
   border-left: 3px solid var(--border);
   padding: 10px 16px;
