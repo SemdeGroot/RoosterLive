@@ -79,7 +79,7 @@ PERM_SECTIONS = [
     ("Nieuws",        ["can_view_news", "can_upload_news"]),
     ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
     ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
-    ("Medicatiebeoordeling", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
+    ("Medicatiereview", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
     ("Beheer",        ["can_access_admin", "can_manage_users"]),
 ]
 
