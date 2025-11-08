@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Medicatiebeoordeling{% endblock %}
+{% block header_title %}Medicatiebeoordeling{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:16px;">
+  <p style="color:var(--muted);">
+    De module <strong>Medicatiebeoordeling</strong> is nog in ontwikkeling.
+  </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling.js' %}" defer></script>
+{% endblock %}

@@ -51,26 +51,3 @@ def rooster(request):
         f"{settings.MEDIA_URL}cache/rooster/{h}/page_{i:03d}.png" for i in range(1, n + 1)
     ]
     return render(request, "rooster/index.html", context)
-
-@login_required
-def upload_roster(request):
-    if not can(request.user, "can_upload_roster"):
-        return HttpResponseForbidden("Geen uploadrechten.")
-    if request.method == "POST":
-        f = request.FILES.get("file")
-        if not f or not f.name.lower().endswith(".pdf"):
-            messages.error(request, "Upload een PDF-bestand.")
-            return redirect("upload_roster")
-
-        clear_dir(ROSTER_DIR)
-        clear_dir(CACHE_ROSTER_DIR)
-
-        ROSTER_DIR.mkdir(parents=True, exist_ok=True)
-        with open(ROSTER_FILE, "wb") as fh:
-            for chunk in f.chunks():
-                fh.write(chunk)
-
-        messages.success(request, "Rooster geüpload.")
-        send_roster_updated_push_task.delay()   
-        return redirect("rooster")
-    return render(request, "rooster/upload.html")

@@ -17,6 +17,9 @@ MEDIA_URL = settings.MEDIA_URL
 CACHE_DIR = settings.CACHE_DIR
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+CACHE_AGENDA_DIR = CACHE_DIR / "agenda"
+CACHE_AGENDA_DIR.mkdir(parents=True, exist_ok=True)
+
 CACHE_ROSTER_DIR = CACHE_DIR / "rooster"
 CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -32,6 +35,10 @@ POL_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_POLICIES_DIR = CACHE_DIR / "policies"
 CACHE_POLICIES_DIR.mkdir(parents=True, exist_ok=True)
 
+AGENDA_DIR = MEDIA_ROOT / "agenda"
+AGENDA_DIR.mkdir(parents=True, exist_ok=True)
+AGENDA_FILE = AGENDA_DIR / "agenda.pdf"
+
 ROSTER_DIR = MEDIA_ROOT / "rooster"
 ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 ROSTER_FILE = ROSTER_DIR / "rooster.pdf"
@@ -46,6 +53,8 @@ NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
 PERM_LABELS = {
     "can_access_admin":        "Mag beheer openen",
     "can_manage_users":        "Mag gebruikers beheren",
+    "can_view_agenda":         "Mag agenda bekijken",
+    "can_upload_agenda":       "Mag agenda uploaden",
     "can_view_roster":         "Mag rooster bekijken",
     "can_upload_roster":       "Mag roosters uploaden",
     "can_view_av_medications": "Mag Voorraad zien",
@@ -57,17 +66,21 @@ PERM_LABELS = {
     "can_view_policies":       "Mag Werkafspraken bekijken",
     "can_upload_werkafspraken":"Mag Werkafspraken uploaden",
     "can_send_beschikbaarheid":  "Mag Beschikbaarheid doorgeven",
-    "can_view_beschikbaarheidsdashboard": "Mag Beschikbaarheid Personeel bekijken"
+    "can_view_beschikbaarheidsdashboard": "Mag Beschikbaarheid Personeel bekijken",
+    "can_view_medicatiebeoordeling": "Mag Medicatiebeoordeling bekijken",
+    "can_perform_medicatiebeoordeling": "Mag Medicatiebeoordeling uitvoeren",
 }
 
 PERM_SECTIONS = [
     ("Beheer",        ["can_access_admin", "can_manage_users"]),
+    ("Agenda",        ["can_view_agenda", "can_upload_agenda"]),
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
     ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
     ("Nieuws",        ["can_view_news", "can_upload_news"]),
-    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"])
+    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"]),
+    ("Medicatiebeoordeling", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"])
 ]
 
 def sync_custom_permissions():

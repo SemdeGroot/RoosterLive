@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Agenda{% endblock %}
+{% block header_title %}Agenda{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:16px;">
+  {% if perms.core.can_upload_agenda %}
+    <form method="post" enctype="multipart/form-data" class="uploader" id="agendaForm">
+      {% csrf_token %}
+      <input type="file" id="agendaFile" name="file" accept="application/pdf" hidden required>
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('agendaFile').click()">
+        <div class="dz-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6"/>
+            <path d="M12 12v6"/>
+            <path d="M9 15h6"/>
+          </svg>
+        </div>
+        <div class="dz-text">
+          <div class="dz-title">Sleep je PDF van de agenda hierheen of klik om te kiezen.</div>
+          <div class="dz-hint">Alleen .pdf — De nieuwe agenda vervangt automatisch de oude <strong>zodra je op Uploaden klikt.</strong></div>
+        </div>
+      </div>
+
+      <div class="file-meta" id="fileMeta" style="display:none;">
+        Geselecteerd: <span class="file-name" id="fileName"></span>
+      </div>
+
+      <div class="u-actions">
+        <button class="btn" type="submit" id="uploadBtn" disabled>Uploaden</button>
+        <button type="button" class="btn" id="clearBtn" style="display:none;">Wissen</button>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if no_agenda %}
+    <p style="color:var(--muted); margin-top:6px;">Nog geen agenda geüpload.</p>
+  {% else %}
+    <div class="pages">
+      {% for url in page_urls %}
+        <div class="page">
+          <img src="{{ url }}" alt="Pagina {{ forloop.counter }}">
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/agenda/agenda.js' %}" defer></script>
+{% endblock %}

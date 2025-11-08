@@ -6,7 +6,7 @@ from django.contrib.staticfiles import finders
 from django.templatetags.static import static
 
 from core.views.home import home
-from core.views.roster import rooster, upload_roster
+from core.views.roster import rooster
 from core.views.medications import medications_view
 from core.views.nazendingen import nazendingen_view
 from core.views.news import news
@@ -17,6 +17,9 @@ from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView
+
+from core.views import agenda as agenda_views
+from core.views import medicatiebeoordeling as medicatiebeoordeling_views
 
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
@@ -38,8 +41,9 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password",),
 
+    path("agenda/", agenda_views.agenda, name="agenda"),
+
     path("rooster/", rooster, name="rooster"),
-    path("rooster/upload/", upload_roster, name="upload_roster"),
 
     path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
     path("teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
@@ -49,6 +53,8 @@ urlpatterns = [
 
     path("nieuws/", news, name="news"),
     path("werkafspraken/", policies, name="policies"),
+
+    path("medicatiebeoordeling/", medicatiebeoordeling_views.medicatiebeoordeling, name="medicatiebeoordeling"),
 
     path("beheer/", admin_panel, name="admin_panel"),
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),

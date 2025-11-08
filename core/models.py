@@ -11,6 +11,8 @@ class Roster(models.Model):
         permissions = [
             ("can_access_admin",          "Mag beheer openen"),
             ("can_manage_users",          "Mag gebruikers beheren"),
+            ("can_view_agenda",           "Mag agenda bekijken"),
+            ("can_upload_agenda",         "Mag agenda uploaden"),
             ("can_view_roster",           "Mag rooster bekijken"),
             ("can_upload_roster",         "Mag roosters uploaden"),
             ("can_access_availability",   "Mag Beschikbaarheid openen"),
@@ -23,7 +25,9 @@ class Roster(models.Model):
             ("can_view_policies",         "Mag Werkafspraken bekijken"),
             ("can_upload_werkafspraken",  "Mag Werkafspraken uploaden"),
             ("can_send_beschikbaarheid",  "Mag Beschikbaarheid doorgeven"),
-            ("can_view_beschikbaarheidsdashboard", "Mag Beschikbaarheid Personeel bekijken")
+            ("can_view_beschikbaarheidsdashboard", "Mag Beschikbaarheid Personeel bekijken"),
+            ("can_view_medicatiebeoordeling",           "Mag Medicatiebeoordeling bekijken"),
+            ("can_perform_medicatiebeoordeling",         "Mag Medicatiebeoordeling uitvoeren"),
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"
