@@ -84,9 +84,8 @@ body {
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
   margin: 30px auto; /* 40px boven/onder */
+  margin-bottom: 40px;
 }
-/* 40px naar het volgende element */
-.login-box .logo-wrap + *{ margin-top:40px !important; }
 
 .logo{
   display:block;
@@ -222,8 +221,8 @@ input, select, textarea, button {
 .twofa-image-wrap{
   display:flex; justify-content:center;
   margin:20px 0;
+  margin-bottom: 30px;
 }
-.login-box .twofa-image-wrap + *{ margin-top:30px !important; }
 
 .twofa-image{
   width: 60px; height:auto;
@@ -310,7 +309,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 .login-box form > button { margin-top: 20px; }
 
 /* Standaard: 15px tussen ALLE directe kinderen binnen het form */
-.login-box form > * + * { margin-top:20px; }
+.login-box form > :not(.flash) + :not(.flash) { margin-top: 20px; }
 
 /* Field-groep “geplakt”: kleine verticale afstand in het formulier */
 .login-box form label + *             { margin-top:6px !important; }  /* label → input */
