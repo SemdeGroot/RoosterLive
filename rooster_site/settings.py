@@ -16,12 +16,11 @@ USE_X_FORWARDED_HOST = True
 # ---- Hosts & CSRF (wildcards) ----
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
-    '.ngrok-free.dev', '.ngrok-free.app', '.ngrok.app',
+    '.ngrok-free.dev',
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.dev',
-    'https://*.ngrok-free.app',
-    'https://*.ngrok.app',
+    'https://*.apotheekjansen.com'
 ]
 
 VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ="

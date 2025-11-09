@@ -63,7 +63,7 @@ worker_proc = subprocess.Popen(
 )
 
 def shutdown(*_):
-    print("\n🛑 Stopping dev processes...")
+    print("\n🛑 Stopping development processes...")
     for p in (worker_proc, django_proc):
         try:
             p.terminate()
@@ -76,7 +76,7 @@ def shutdown(*_):
 signal.signal(signal.SIGINT, shutdown)
 signal.signal(signal.SIGTERM, shutdown)
 
-print("\n✅ Dev environment running:")
+print("\n✅ Development environment running:")
 print("   - Django: http://127.0.0.1:8000")
 print("   - Redis:  redis://127.0.0.1:6379")
 print("   - Celery: worker \n")
