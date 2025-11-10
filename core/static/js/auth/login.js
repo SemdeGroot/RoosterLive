@@ -160,3 +160,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   })();
 });
+
+window.openContactModal = function(action) {
+  const modal = document.getElementById('contactModal');
+  const body  = document.getElementById('contactModalBody');
+  if (!modal || !body) return;
+
+  const key  = String(action || '').toLowerCase();
+  const term = key === 'email' ? 'E-mail' : '2FA';
+
+  body.innerHTML =
+    `Om veiligheidsredenen kun je dit niet zelf opnieuw instellen. ` +
+    `Neem contact op met de beheerder om je <b>${term}</b> te laten aanpassen.`;
+
+  modal.classList.add('show');
+};
+
+window.closeContactModal = function() {
+  const modal = document.getElementById('contactModal');
+  if (modal) modal.classList.remove('show');
+};
+
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('contactModal');
+  if (modal && modal.classList.contains('show') && e.target === modal) {
+    modal.classList.remove('show');
+  }
+});

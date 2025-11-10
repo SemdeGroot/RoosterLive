@@ -3,13 +3,13 @@
 
 {% block login_header_image %}
   <div class="twofa-image-wrap">
-    <img src="{% static 'img/2FA.png' %}" alt="2FA" class="twofa-image">
+    <img src="{% static 'img/2FA.png' %}" alt="2FA" class="twofa-image" style="margin-top: -10px; margin-bottom: -10px;">
   </div>
 {% endblock %}
 
 {% block content %}
-  <h1 style="text-align:center;">{% trans "2FA instellen" %}</h1>
-    <p class="muted">
+  <h1 style="text-align:center; font-size: 30px;">{% trans "2FA instellen" %}</h1>
+    <p class="muted" style="font-size: 15.5px; margin-top: -5px;">
       Scan deze QR-code met een authenticator-app (bijv. <span id="gaStoreLink" class="muted">Google Authenticator</span>) en vul daarna de 6-cijferige code in.
     </p>
 
@@ -28,7 +28,7 @@
       {% endif %}
     </div>
 
-<p class="not-muted" id="manualAddText" style="text-align:center;margin:0 auto;">
+<p class="not-muted" id="manualAddText" style="text-align:center;margin:0 auto; font-size: 15px; margin-bottom: -20px; margin-top: -5px; color: var(--muted)">
   Kun je niet scannen? Voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
 </p>
 

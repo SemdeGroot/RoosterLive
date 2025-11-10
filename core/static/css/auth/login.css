@@ -246,7 +246,7 @@ input, select, textarea, button {
   box-shadow:0 3px 10px var(--shadow);
   margin-top: 10px;
 }
-.qr-image{ display:block; width:200px; height:200px; }
+.qr-image{ display:block; width:185px; height:185px; }
 .qr-caption{ font-size:.95rem; color:var(--muted); }
 
 /* Secret key */
@@ -303,6 +303,97 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   font-size: 1.0rem;
   line-height: 1.4;
 }
+
+/* Wachtwoord vergeten link onder de cardbox */
+/* Zorg dat de wrapper niet kliks vangt, alleen de link zelf */
+.forgot-password {
+  position: absolute;
+  bottom: -48px;
+  pointer-events: none;         /* <— wrapper vangt geen clicks */
+  z-index: 3;
+}
+
+/* Alleen de anchor is klikbaar */
+.forgot-password a {
+  pointer-events: auto;         /* <— link blijft klikbaar */
+  color: var(--muted);
+  text-decoration: underline;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Posities zodat ze niet over elkaar heen klikken */
+.forgot-password--left  { left: 0px;  right: auto;  text-align: left; }
+.forgot-password--right { right: 0px; left:  auto;  text-align: right; }
+.forgot-password--center{
+  left: 50%; right: auto; transform: translateX(-50%);
+  text-align: center;
+}
+
+
+/* Popup-venster voor beheercontact */
+/* Popup-venster voor beheercontact */
+.contact-modal {
+  display: none;                 /* standaard verborgen */
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* overlay */
+  justify-content: center;
+  align-items: center;
+}
+
+/* ▼ Dit maakt de modal zichtbaar wanneer JS .show toevoegt */
+.contact-modal.show {
+  display: flex; /* gebruik desnoods: display: flex !important; als je inline style gebruikt */
+}
+
+.contact-modal-content {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 26px;
+  width: 90%;
+  max-width: 366px;
+  color: var(--text);
+  text-align: left;
+  box-shadow: 0 4px 16px var(--shadow);
+  animation: fadeIn 0.3s ease;
+}
+
+.contact-header {
+  display: flex;
+  align-items: center;           /* centreren op dezelfde hoogte */
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.contact-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.contact-close {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--muted);
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.contact-close:hover {
+  color: var(--text);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 
 /* ---------- VERTICALE RHYTHM (onderaan zodat niets het overschrijft) ---------- */
 /* Standaard: 15px tussen ALLE directe kinderen in .login-box */

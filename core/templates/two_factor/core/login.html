@@ -39,9 +39,14 @@
 
       <button type="submit">{% trans "Inloggen" %}</button>
 
-      <p class="twofa-logintext muted" style="text-align:left; margin-top:10px;">
-        <a href="{% url 'password_reset' %}" class="muted" style="color:#888; text-decoration:none;">
-          Wachtwoord vergeten?
+      <p class="forgot-password forgot-password--left">
+        <a href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>
+      </p>
+
+      <p class="forgot-password forgot-password--right">
+        <a href="#" data-action="email"
+          onclick="openContactModal(this.dataset.action); return false;">
+          E-mail opnieuw instellen?
         </a>
       </p>
 
@@ -62,7 +67,24 @@
 
       <button type="submit">{% trans "Bevestigen" %}</button>
 
+      <p class="forgot-password forgot-password--center">
+        <a href="#" data-action="2fa"
+          onclick="openContactModal(this.dataset.action); return false;">
+          2FA opnieuw instellen?
+        </a>
+      </p>
+
     {% endif %}
+
+    <div id="contactModal" class="contact-modal">
+      <div class="contact-modal-content">
+        <div class="contact-header">
+          <h3>Contacteer beheer</h3>
+          <span class="contact-close" onclick="closeContactModal()">&times;</span>
+        </div>
+        <p id="contactModalBody"></p>
+      </div>
+    </div>
   </form>
 
 {% endblock %}
