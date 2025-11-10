@@ -80,7 +80,11 @@
       <div class="contact-modal-content">
         <div class="contact-header">
           <h3>Contacteer beheer</h3>
-          <span class="contact-close" onclick="closeContactModal()">&times;</span>
+          <span class="contact-close" onclick="closeContactModal()" aria-label="Sluiten">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </span>
         </div>
         <p id="contactModalBody"></p>
       </div>

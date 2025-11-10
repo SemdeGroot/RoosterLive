@@ -105,7 +105,8 @@ label{
 
 /* Fields */
 input[type="text"],
-input[type="password"]{
+input[type="password"],
+input[type="email"]{
   width:100%;
   background:#0f141a;
   color:var(--text);
@@ -175,6 +176,19 @@ button:focus-visible{
              flash-hide 0.3s ease-in 4.5s forwards;
 }
 
+/* Succes (groen) */
+.flash-success {
+  border-left-color: #1f7a3e;
+  background: #0f1a12;
+  color: #bfe4c8;
+}
+
+/* Foutmelding (rood) */
+.flash-error {
+  border-left-color: #a01f1f;
+  background: #1a0f0f;
+  color: #f2c7c7;
+}
 
 /* Animaties */
 @keyframes flash-show {
@@ -364,30 +378,48 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 
 .contact-header {
   display: flex;
-  align-items: center;           /* centreren op dezelfde hoogte */
+  align-items: center;          /* verticaal centreren van titel & kruisje */
   justify-content: space-between;
   margin-bottom: 12px;
 }
 
 .contact-header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text);
 }
 
+/* Het kruisje */
 .contact-close {
-  font-size: 24px;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;        /* vierkante klikbox */
+  border-radius: 8px;
   cursor: pointer;
+  transition: all .1s;
+  border: var(--button-hovermain);
   color: var(--muted);
-  line-height: 1;
-  transition: color 0.2s;
+}
+
+.contact-close svg {
+  width: 18px; height: 18px;        /* icoon-grootte */
+  display: block;                   /* geen inline whitespace */
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
 }
 
 .contact-close:hover {
   color: var(--text);
+  background-color: var(--button-hovermain);
+  border: 1px solid var(--border);
 }
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }

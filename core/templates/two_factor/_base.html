@@ -38,9 +38,11 @@
     </div>
     {% endblock %}
 
-      {% for m in messages %}
-        <div class="flash">{{ m }}</div>
-      {% endfor %}
+    {% for m in messages %}
+      <div class="flash {% if m.tags %}flash-{{ m.tags }}{% endif %}">
+        {{ m }}
+      </div>
+    {% endfor %}
 
       {% block content %}{% endblock %}
 

@@ -170,8 +170,8 @@ window.openContactModal = function(action) {
   const term = key === 'email' ? 'E-mail' : '2FA';
 
   body.innerHTML =
-    `Om veiligheidsredenen kun je dit niet zelf opnieuw instellen. ` +
-    `Neem contact op met de beheerder om je <b>${term}</b> te laten aanpassen.`;
+    `Om veiligheidsredenen kun je dit niet zelf aanpassen. ` +
+    `Neem contact op met de beheerder om je <b>${term}</b> opnieuw in te stellen.`;
 
   modal.classList.add('show');
 };
