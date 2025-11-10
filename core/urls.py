@@ -16,7 +16,7 @@ from core.views.twofa import logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
-from core.views.account import CustomPasswordConfirmView
+from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as medicatiebeoordeling_views
@@ -39,7 +39,9 @@ class ServiceWorkerView(View):
 urlpatterns = [
     path("", home, name="home"),
     path("logout/", logout_view, name="logout"),
-    path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password",),
+    path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
+    path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),
+
 
     path("agenda/", agenda_views.agenda, name="agenda"),
 

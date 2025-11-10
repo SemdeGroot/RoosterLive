@@ -39,6 +39,12 @@
 
       <button type="submit">{% trans "Inloggen" %}</button>
 
+      <p class="twofa-logintext muted" style="text-align:left; margin-top:10px;">
+        <a href="{% url 'password_reset' %}" class="muted" style="color:#888; text-decoration:none;">
+          Wachtwoord vergeten?
+        </a>
+      </p>
+
     {# STAP 2: TOTP code (veldnaam kan otp_token of token heten) #}
     {% elif form.otp_token or form.token %}
       <h1 style="text-align:center;">{% trans "Voer je 2FA-code in" %}</h1>
