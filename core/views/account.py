@@ -51,12 +51,15 @@ class CustomPasswordConfirmView(PasswordResetConfirmView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        if not getattr(self, "validlink", False):
-            messages.error(request, _("Deze link is ongeldig of al gebruikt. Log in om verder te gaan."))
+    def render_to_response(self, context, **response_kwargs):
+        # Django geeft bij ongeldige/gebruikte link validlink=False mee in de context
+        if not context.get("validlink", True):
+            messages.error(
+                self.request,
+                _("Deze link is ongeldig of al gebruikt. Log in of vraag een nieuwe link aan bij de beheerder.")
+            )
             return redirect(reverse("two_factor:login"))
-        return response
+        return super().render_to_response(context, **response_kwargs)
 
     def form_invalid(self, form):
         def msg_from_error(err) -> str:
