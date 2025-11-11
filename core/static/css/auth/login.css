@@ -156,7 +156,6 @@ button:focus-visible{
   right: 0;
   bottom: 100%;
   margin-bottom: 12px;
-
   background: rgba(204, 59, 59, 0.15);
   border-left: 4px solid var(--danger);
   color: #ffb3b3;
@@ -179,14 +178,13 @@ button:focus-visible{
 /* Succes (groen) */
 .flash-success {
   border-left-color: #1f7a3e;
-  background: #0f1a12;
+  background: rgba(59, 204, 89, 0.15);
   color: #bfe4c8;
 }
 
 /* Foutmelding (rood) */
 .flash-error {
   border-left-color: #a01f1f;
-  background: #1a0f0f;
   color: #f2c7c7;
 }
 
