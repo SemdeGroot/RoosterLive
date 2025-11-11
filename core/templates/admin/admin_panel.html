@@ -26,7 +26,8 @@
           {{ group_form.errors }}
 
           <div class="form form-sticky-actions" style="padding:0;">
-            Groepsnaam: {{ group_form.name }}
+            <label for="{{ group_form.name.id_for_label }}">Groepsnaam:</label>
+            {{ group_form.name }}
 
             <strong style="font-size:1.1rem; display:block; margin-top:0px;">Permissies</strong>
             {% for section_title, fields in perm_sections %}

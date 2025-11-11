@@ -205,3 +205,8 @@ input:focus, textarea:focus, select:focus,
     white-space:nowrap;
   }
 }
+
+.form-sticky-actions input[name="name"] {
+  display: block;
+  margin-bottom: 4px; /* <— hier bepaal je je spacing */
+}

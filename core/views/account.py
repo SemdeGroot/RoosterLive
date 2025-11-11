@@ -140,7 +140,7 @@ class CustomPasswordResetView(PasswordResetView):
 
         messages.success(
             self.request,
-            _("Als dit e-mailadres bekend is, wordt een e-mail met instructies verstuurd.")
+            _("Als dit e-mailadres bij ons bekend is, wordt een e-mail met instructies verstuurd.")
         )
         # NIET super().form_valid(form) aanroepen (anders gaat Django zelf nog mailen)
         return redirect(self.get_success_url())

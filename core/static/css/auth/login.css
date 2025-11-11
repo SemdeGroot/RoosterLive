@@ -221,6 +221,9 @@ input[type="password"]::-webkit-password-toggle-button{
     align-items: flex-start;
     padding-top: 10vh; /* afstand van bovenkant scherm */
   }
+  .contact-modal-content {
+    margin-top: -15vh;
+  }
 }
 
 /* Universele safeguard tegen zoom bij focus */
@@ -367,7 +370,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   border-radius: 12px;
   padding: 20px 26px;
   width: 90%;
-  max-width: 366px;
+  max-width: 420px;
   color: var(--text);
   text-align: left;
   box-shadow: 0 4px 16px var(--shadow);
