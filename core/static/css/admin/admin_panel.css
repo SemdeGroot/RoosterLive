@@ -159,19 +159,6 @@ input:focus, textarea:focus, select:focus,
   padding:6px 8px;
 }
 
-/* 6) Opslaan-knop netjes gecentreerd en weinig ondermarge */
-.group-save {
-  display: flex;
-  justify-content: center;       /* centreert de knop horizontaal */
-  width: 100%;                   /* vult de volledige breedte van het formulier */
-  margin-top: 4px;
-  margin-bottom: -8px;
-}
-.group-save .btn {
-  width: 100%;                   /* knop zelf vult ook horizontaal */
-  max-width: 240px;              /* maar niet té breed op grote schermen */
-}
-
 /* ---------- Groepen kolombreedtes ---------- */
 /* 1: Groep | 2: Permissies (breder) | 3: Leden (smaller) | 4: Acties */
 #groupTable th:nth-child(1), #groupTable td:nth-child(1){ width:180px }
@@ -209,4 +196,23 @@ input:focus, textarea:focus, select:focus,
 .form-sticky-actions input[name="name"] {
   display: block;
   margin-bottom: 4px; /* <— hier bepaal je je spacing */
+}
+
+/* Eenduidige verticale spacing tussen alle kinderen in het formulier */
+.card-inner > form .form > * { margin: 0; }           /* reset */
+.card-inner > form .form > * + * { margin-top: 12px; }/* kies je vaste afstand: 12px */
+
+/* Beide knoppen gelijk trekken (centreren + zelfde marge) */
+.btn.group-save,
+.btn.user-create {
+  display: block;
+  width: 100%;
+  margin-top: 9px !important;
+  margin-bottom: 3px !important;  /* top 12px, onder 0; horizontaal gecentreerd */
+}
+
+.card-inner hr {
+  border: 0;
+  border-top: 2px solid var(--border);
+  margin: 16px 0;
 }
