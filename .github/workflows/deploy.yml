@@ -17,7 +17,7 @@ jobs:
       - name: Configure AWS creds (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::495236579960:role/github-actions-rooster-deploy
+          role-to-assume: arn:aws:iam::495236579960:role/Github-deploy
           aws-region: eu-central-1
 
       # (Optioneel maar handig) sync je .env naar SSM
