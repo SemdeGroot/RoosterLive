@@ -13,49 +13,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # OIDC: laat Actions AWS gebruiken zonder static keys
+      # AWS OIDC
       - name: Configure AWS creds (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::495236579960:role/Github-deploy
           aws-region: eu-central-1
 
-      # (Optioneel maar handig) sync je .env naar SSM
-      # Zet je .env-prod in deploy/.env.prod of bouw hem uit GitHub Secrets
-      # - name: Upload .env to SSM Parameter Store
-      #   run: |
-      #     aws ssm put-parameter \
-      #       --name "/rooster/prod/.env" \
-      #       --type "SecureString" \
-      #       --overwrite \
-      #       --region eu-central-1 \
-      #       --value "$(cat deploy/.env.prod)"
-
+      # Login ECR
       - name: Login to ECR
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Buildx + QEMU
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
-
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & Push (ARM64)
+      # Build & Push (alleen SHA-tag), met GHA cache voor layers
+      - name: Build & Push (ARM64, cached)
         env:
           REG: ${{ steps.ecr.outputs.registry }}
           REPO: roosterlive/django
           TAG:  ${{ github.sha }}
         run: |
-          docker buildx build --platform linux/arm64 \
+          docker buildx build \
+            --platform linux/arm64 \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
             -t $REG/$REPO:$TAG \
-            -t $REG/$REPO:latest \
             --push .
 
+      # Deploy via SSM (blue/green)
       - name: Deploy via SSM (blue/green)
         run: |
           aws ssm send-command \
             --instance-ids "i-03368036882d6565f" \
             --document-name "AWS-RunShellScript" \
             --parameters commands=["/opt/rooster/app/deploy_bluegreen_repo.sh ${{ github.sha }} https://github.com/SemdeGroot/RoosterLive.git"] \
-            --comment "Blue/green deploy ${GITHUB_SHA}"
+            --comment "Blue/green deploy ${{ github.sha }}"
