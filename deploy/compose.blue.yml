@@ -1,0 +1,21 @@
+services:
+  web:
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    env_file: /opt/rooster/app/.env
+    environment:
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on: [redis]
+    restart: unless-stopped
+
+  celery:
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    command: celery -A rooster_site worker -l INFO -Q default,mail,push
+    env_file: /opt/rooster/app/.env
+    depends_on: [redis]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped

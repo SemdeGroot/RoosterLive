@@ -21,6 +21,8 @@ from core.views.account import CustomPasswordConfirmView, CustomPasswordResetVie
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as medicatiebeoordeling_views
 
+from core.views import health
+
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
         # zoekt: core/static/pwa/service-worker.js (via staticfiles)
@@ -42,6 +44,7 @@ urlpatterns = [
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),
 
+    path("health/", health),
 
     path("agenda/", agenda_views.agenda, name="agenda"),
 
