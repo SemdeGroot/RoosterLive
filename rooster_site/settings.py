@@ -132,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Static (serve icons from data/)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 # Media (uploads)
 MEDIA_URL = "/media/"
