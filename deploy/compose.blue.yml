@@ -1,21 +1,32 @@
 services:
   web:
+    container_name: deploy-web-8000
     image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
     env_file: /opt/rooster/app/.env
     environment:
       - PORT=8000
+      - WORKERS=1
+      - THREADS=2
+      - TIMEOUT=90
     ports:
       - "8000:8000"
-    depends_on: [redis]
+    networks: [deploy_default]
     restart: unless-stopped
 
   celery:
+    container_name: deploy-celery
     image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
     command: celery -A rooster_site worker -l INFO -Q default,mail,push
     env_file: /opt/rooster/app/.env
-    depends_on: [redis]
+    networks: [deploy_default]
     restart: unless-stopped
 
   redis:
+    container_name: deploy-redis
     image: redis:7-alpine
+    networks: [deploy_default]
     restart: unless-stopped
+
+networks:
+  deploy_default:
+    external: true
