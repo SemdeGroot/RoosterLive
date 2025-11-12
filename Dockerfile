@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-# verzamel statics (werkt ook als je later S3 gebruikt)
+# verzamel statics (werkt ook als je later S3 gebruikt)..
 RUN python manage.py collectstatic --noinput || true
 
 CMD ["sh","-c","gunicorn rooster_site.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WORKERS:-3} --timeout ${TIMEOUT:-60}"]
