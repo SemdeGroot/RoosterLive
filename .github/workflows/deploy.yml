@@ -31,7 +31,6 @@ jobs:
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Build & Push (alleen SHA-tag), met GHA cache voor layers
       - name: Build & Push (ARM64, cached)
         env:
           REG: ${{ steps.ecr.outputs.registry }}
@@ -44,6 +43,7 @@ jobs:
             --cache-to=type=gha,mode=max \
             -t $REG/$REPO:$TAG \
             --push .
+
 
       # Deploy via SSM (blue/green)
       - name: Deploy via SSM (blue/green)
