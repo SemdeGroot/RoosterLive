@@ -13,6 +13,8 @@ services:
       - "8000"
     depends_on:
       - redis
+    volumes:
+      - media_data:/app/media
     restart: unless-stopped
 
   celery:
@@ -25,6 +27,8 @@ services:
       - redis
     healthcheck:
       disable: true
+    volumes:
+      - media_data:/app/media
     restart: unless-stopped
 
   redis:
@@ -45,3 +49,6 @@ services:
     depends_on:
       - web
     restart: unless-stopped
+
+volumes:
+  media_data:
