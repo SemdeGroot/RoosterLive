@@ -190,6 +190,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 CACHE_DIR = MEDIA_ROOT / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+# Media: voorlopig lokaal serveren (via Django), later S3/CDN
+SERVE_MEDIA_LOCALLY = os.getenv(
+    "SERVE_MEDIA_LOCALLY",
+    "True" if DEBUG else "True"  # nu overal aan, later in prod False zetten
+) == "True"
+
 # === Sessies ===
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 uur
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
