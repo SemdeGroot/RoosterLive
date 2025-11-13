@@ -1,0 +1,46 @@
+services:
+  web:
+    container_name: rooster-web
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    env_file:
+      - /opt/rooster/app/.env
+    environment:
+      - PORT=8000
+      - WORKERS=3
+      - THREADS=2
+      - TIMEOUT=60
+    expose:
+      - "8000"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  celery:
+    container_name: rooster-celery
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    command: celery -A rooster_site worker -l INFO -Q default,mail,push
+    env_file:
+      - /opt/rooster/app/.env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    container_name: rooster-redis
+    image: redis:7-alpine
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./core/deploy/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    restart: unless-stopped
+
+  nginx:
+    container_name: rooster-nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./core/deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /opt/rooster/staticfiles:/opt/rooster/staticfiles:ro
+    depends_on:
+      - web
+    restart: unless-stopped
