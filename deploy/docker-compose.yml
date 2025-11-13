@@ -23,6 +23,8 @@ services:
       - /opt/rooster/app/.env
     depends_on:
       - redis
+    healthcheck:
+      disable: true
     restart: unless-stopped
 
   redis:
