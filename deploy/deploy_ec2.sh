@@ -43,11 +43,11 @@ fi
 export IMAGE_TAG
 
 echo "===> Pulling images for tag: ${IMAGE_TAG}"
-docker compose -f core/deploy/docker-compose.yml pull
+docker compose -f deploy/docker-compose.yml pull
 
 echo "===> Starting updated stack"
 set +e
-docker compose -f core/deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml up -d
 UP_EXIT=$?
 set -e
 
@@ -56,8 +56,8 @@ if [[ ${UP_EXIT} -ne 0 ]]; then
   if [[ -n "${PREV_IMAGE_TAG}" ]]; then
     echo "===> Rolling back to previous image: ${PREV_IMAGE_TAG}"
     export IMAGE_TAG="${PREV_IMAGE_TAG}"
-    docker compose -f core/deploy/docker-compose.yml pull
-    docker compose -f core/deploy/docker-compose.yml up -d || true
+    docker compose -f deploy/docker-compose.yml pull
+    docker compose -f deploy/docker-compose.yml up -d || true
   fi
   exit 1
 fi
@@ -94,8 +94,8 @@ if [[ "${FAILED}" -ne 0 ]]; then
   echo "===> Rolling back because new deployment is not healthy"
   if [[ -n "${PREV_IMAGE_TAG}" ]]; then
     export IMAGE_TAG="${PREV_IMAGE_TAG}"
-    docker compose -f core/deploy/docker-compose.yml pull
-    docker compose -f core/deploy/docker-compose.yml up -d || true
+    docker compose -f deploy/docker-compose.yml pull
+    docker compose -f deploy/docker-compose.yml up -d || true
   else
     echo "!!! No previous successful image found, cannot rollback"
   fi

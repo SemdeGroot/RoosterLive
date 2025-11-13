@@ -60,6 +60,6 @@ jobs:
               \"cd app\",
               \"git fetch origin\",
               \"git checkout ${{ github.sha }}\",
-              \"chmod +x core/deploy/deploy_ec2.sh\",
-              \"./core/deploy/deploy_ec2.sh ${{ github.sha }}\"
+              \"chmod +x deploy/deploy_ec2.sh\",
+              \"./deploy/deploy_ec2.sh ${{ github.sha }}\"
             ]"
