@@ -103,8 +103,8 @@
   });
 
   // -------- Uploader --------
-  const dz        = root.querySelector('#dropZone');
-  const input     = root.querySelector('#pdfInput');
+  const dz        = root.querySelector('#dropzone');
+  const input     = root.querySelector('#rosterFile');
   const nameSpan  = root.querySelector('#fileName');
   const meta      = root.querySelector('#fileMeta');
   const uploadBtn = root.querySelector('#uploadBtn');

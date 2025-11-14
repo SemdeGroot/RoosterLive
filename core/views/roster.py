@@ -16,6 +16,7 @@ from ._helpers import (
     CACHE_ROSTER_DIR,      # bijv. MEDIA_ROOT / "cache" / "rooster"
     clear_dir,
     render_pdf_to_cache,   # (pdf_bytes, dpi, cache_root) -> (hash_id, n_pages)
+    save_pdf_upload_with_hash,
 )
 
 # Belangrijk: helpers importeren uit je bestaande beschikbaarheid-view
@@ -33,7 +34,20 @@ def _week_pdf_dir(monday: date) -> Path:
     return (ROSTER_DIR / _week_slug_from_monday(monday)).resolve()
 
 def _week_pdf_path(monday: date) -> Path:
-    return _week_pdf_dir(monday) / "rooster.pdf"
+    """
+    Zoek de PDF voor deze week:
+
+    - eerst: rooster.<hash>.pdf in de weekmap
+    - anders: fallback naar legacy rooster.pdf
+    """
+    d = _week_pdf_dir(monday)
+    if d.exists():
+        candidates = sorted(d.glob("rooster.*.pdf"))
+        if candidates:
+            return candidates[-1]
+
+    # legacy fallback
+    return d / "rooster.pdf"
 
 def _week_cache_dir(monday: date) -> Path:
     return (CACHE_ROSTER_DIR / _week_slug_from_monday(monday)).resolve()
@@ -138,7 +152,7 @@ def rooster(request):
     # Paden
     week_slug = _week_slug_from_monday(monday)   # 'weekNN'
     week_pdf_dir = _week_pdf_dir(monday)         # /media/rooster/weekNN/
-    week_pdf_path = _week_pdf_path(monday)       # /media/rooster/weekNN/rooster.pdf
+    week_pdf_path = _week_pdf_path(monday)       # zoekt rooster.<hash>.pdf of legacy rooster.pdf
     week_cache_dir = _week_cache_dir(monday)     # /media/cache/rooster/weekNN/
 
     # --- upload ---
@@ -169,14 +183,28 @@ def rooster(request):
         # Cache-week map leegmaken zodat oude hash-subfolders weg zijn
         clear_dir(post_week_cache_dir)
 
-        # PDF schrijven
-        with open(post_week_pdf_path, "wb") as fh:
-            for chunk in f.chunks():
-                fh.write(chunk)
+        # PDF schrijven als rooster.<hash>.pdf in de weekmap (max 1 per week)
+        save_pdf_upload_with_hash(
+            uploaded_file=f,
+            target_dir=post_week_pdf_dir,
+            base_name="rooster",
+            clear_existing=True,
+        )
 
-        iso_week_post = post_monday.isocalendar()[1]
+        # Weekinfo voor notificatie
+        iso_year_post, iso_week_post, _ = post_monday.isocalendar()
+        week_end_post = post_monday + timedelta(days=4)
+
         messages.success(request, f"Rooster voor week {iso_week_post} geüpload.")
-        send_roster_updated_push_task.delay()
+
+        # Celery-push met weeknummer + datums
+        send_roster_updated_push_task.delay(
+            iso_year_post,
+            iso_week_post,
+            post_monday.isoformat(),   # maandag
+            week_end_post.isoformat(), # vrijdag
+        )
+
         return HttpResponseRedirect(f"{reverse('rooster')}?monday={post_monday.isoformat()}")
 
     # --- weergave ---
@@ -206,7 +234,7 @@ def rooster(request):
             "start": cur,
             "end": cur + timedelta(days=4),
             "iso_week": cur.isocalendar()[1],
-            "iso_year": cur.isocalendar()[0],
+            "iso_year": cur.isocalendar()[0],   # <--- hier was de typo, nu goed
         })
         cur += timedelta(weeks=1)
 
@@ -224,3 +252,4 @@ def rooster(request):
     ]
 
     return render(request, "rooster/index.html", context)
+

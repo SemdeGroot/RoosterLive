@@ -5,7 +5,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
-from ._helpers import can, NAZENDINGEN_DIR, CACHE_NAZENDINGEN_DIR, render_pdf_to_cache, clear_dir
+from ._helpers import (
+    can,
+    NAZENDINGEN_DIR,
+    CACHE_NAZENDINGEN_DIR,
+    render_pdf_to_cache,
+    clear_dir,
+    save_pdf_upload_with_hash,
+)
 
 @login_required
 def nazendingen_view(request):
@@ -25,15 +32,30 @@ def nazendingen_view(request):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect(request.path)
 
-        with pdf_path.open("wb") as fh:
-            for chunk in f.chunks():
-                fh.write(chunk)
+        # Nieuwe PDF opslaan als nazendingen.<hash>.pdf (max 1 actief bestand)
+        save_pdf_upload_with_hash(
+            uploaded_file=f,
+            target_dir=NAZENDINGEN_DIR,
+            base_name=key,
+            clear_existing=True,
+        )
 
+        # Cache leegmaken zodat PNG's opnieuw gerenderd worden
         clear_dir(cache_root)
         messages.success(request, f"PDF geüpload: {f.name}")
         return redirect(request.path)
 
-    if not pdf_path.exists():
+    # Zoek nazendingen.<hash>.pdf, anders legacy nazendingen.pdf
+    pdf_path = None
+    candidates = sorted(NAZENDINGEN_DIR.glob(f"{key}.*.pdf"))
+    if candidates:
+        pdf_path = candidates[-1]
+    else:
+        legacy = NAZENDINGEN_DIR / f"{key}.pdf"
+        if legacy.exists():
+            pdf_path = legacy
+
+    if not pdf_path or not pdf_path.exists():
         return render(request, "nazendingen/index.html", {
             "title": "Nazendingen",
             "no_nazending": True,

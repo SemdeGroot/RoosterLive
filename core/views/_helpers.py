@@ -184,3 +184,30 @@ def hash_from_img_url(img_url: str) -> str | None:
         # parts[1] = hash
         return parts[1]
     return None
+
+def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True) -> Path:
+    """
+    Slaat een geüploade PDF op als <base_name>.<hash>.pdf in target_dir.
+
+    - uploaded_file: Django UploadedFile (request.FILES["file"])
+    - target_dir: map waarin de PDF moet komen (bijv. AGENDA_DIR, weekmap voor rooster)
+    - base_name: prefix van de naam (bijv. "rooster", "agenda", "nazendingen", "news", "policy")
+    - clear_existing: als True → eerst hele target_dir leegmaken
+
+    Retourneert: Path naar het opgeslagen PDF-bestand.
+    """
+    # PDF in memory lezen (is nodig om te hashen)
+    if hasattr(uploaded_file, "chunks"):
+        pdf_bytes = b"".join(uploaded_file.chunks())
+    else:
+        pdf_bytes = uploaded_file.read()
+
+    h = pdf_hash(pdf_bytes)
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    if clear_existing:
+        clear_dir(target_dir)
+
+    dest = target_dir / f"{base_name}.{h}.pdf"
+    dest.write_bytes(pdf_bytes)
+    return dest

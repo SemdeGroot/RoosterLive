@@ -15,6 +15,7 @@ from ._helpers import (
     render_pdf_to_cache,
     hash_from_img_url,
     CACHE_DIR,  # in jouw helpers gedefinieerd als settings.CACHE_DIR
+    save_pdf_upload_with_hash, 
 )
 
 # Directories (gescheiden van policies)
@@ -97,12 +98,13 @@ def news(request):
         if not f or not str(f.name).lower().endswith(".pdf"):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect("news")
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        safe_name = Path(str(f.name)).name.replace(" ", "_")
-        dest = NEWS_DIR / f"{ts}__{safe_name}"
-        with dest.open("wb") as fh:
-            for chunk in f.chunks():
-                fh.write(chunk)
+        # Bewaar nieuws als news.<hash>.pdf (meerdere naast elkaar)
+        save_pdf_upload_with_hash(
+            uploaded_file=f,
+            target_dir=NEWS_DIR,
+            base_name="news",
+            clear_existing=False,   # meerdere nieuwsberichten
+        )
         messages.success(request, f"PDF geüpload: {f.name}")
         return redirect("news")
 

@@ -12,7 +12,8 @@ from django.shortcuts import render, redirect
 from ._helpers import (
     can,
     POL_DIR, CACHE_POLICIES_DIR,
-    render_pdf_to_cache, hash_from_img_url
+    render_pdf_to_cache, hash_from_img_url,
+    save_pdf_upload_with_hash,
 )
 
 def _delete_policies_by_hash(hash_str: str) -> int:
@@ -60,12 +61,13 @@ def policies(request):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect("policies")
 
-        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        safe_name = Path(str(f.name)).name.replace(" ", "_")
-        dest = POL_DIR / f"{ts}__{safe_name}"
-        with dest.open("wb") as fh:
-            for chunk in f.chunks():
-                fh.write(chunk)
+        # Bewaar werkafspraak als policy.<hash>.pdf (meerdere naast elkaar)
+        save_pdf_upload_with_hash(
+            uploaded_file=f,
+            target_dir=POL_DIR,
+            base_name="policy",
+            clear_existing=False,   # meerdere werkafspraken
+        )
         messages.success(request, f"PDF geüpload: {f.name}")
         return redirect("policies")
 

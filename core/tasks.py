@@ -10,9 +10,10 @@ def send_invite_email_task(self, user_id: int):
     send_invite_email(user)
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
-def send_roster_updated_push_task(self):
+def send_roster_updated_push_task(self, iso_year: int, iso_week: int,
+                                  monday_str: str, friday_str: str):
     from core.utils.push import send_roster_updated_push
-    send_roster_updated_push()
+    send_roster_updated_push(iso_year, iso_week, monday_str, friday_str)
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_password_reset_email_task(self, user_id: int):
