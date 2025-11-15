@@ -30,9 +30,20 @@ env.setdefault("CELERY_BROKER_URL", "redis://127.0.0.1:6379/2")
 env.setdefault("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/3")
 env.setdefault("PYTHONUNBUFFERED", "1")
 
-print("🔧 Starting Redis via docker compose...")
+print("🔧 Starting Redis, Postgres and Pgbouncer via docker compose...")
 subprocess.run(
-    ["docker", "compose", "-f", "deploy/docker-compose.dev.yml", "up", "-d", "--remove-orphans", "redis"],
+    [
+        "docker",
+        "compose",
+        "-f",
+        "deploy/docker-compose.dev.yml",
+        "up",
+        "-d",
+        "--remove-orphans",
+        "redis",
+        "db",
+        "pgbouncer",
+    ],
     check=True,
 )
 

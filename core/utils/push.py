@@ -23,7 +23,7 @@ def send_roster_updated_push(iso_year: int, iso_week: int,
 
     payload = {
         "title": f"Nieuw rooster – week {iso_week}",
-        "body": f"Er is een nieuw rooster voor week {iso_week} ({monday_nl} – {friday_nl}) beschikbaar!",
+        "body": f"Er is een nieuw rooster voor week {iso_week} ({monday_nl}–{friday_nl}) beschikbaar!",
         # URL blijft ISO zodat view 'm goed kan parsen
         "url": f"/rooster/?monday={monday_str}",
         "tag": f"rooster-update-{iso_year}-{iso_week}",

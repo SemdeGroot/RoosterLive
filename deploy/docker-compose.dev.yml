@@ -13,3 +13,58 @@ services:
       interval: 5s
       timeout: 2s
       retries: 20
+
+  db:
+    image: postgres:16-alpine
+    container_name: rooster_db_dev
+    environment:
+      POSTGRES_DB: rooster_dev
+      POSTGRES_USER: rooster
+      POSTGRES_PASSWORD: rooster_password
+      # Belangrijk: zorg dat Postgres md5-auth gebruikt (verwacht door PgBouncer)
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: --auth=md5
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # handig voor DBeaver/pgAdmin
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rooster -d rooster_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: rooster_pgbouncer_dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Waar PgBouncer naartoe connect
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: rooster
+      DB_PASSWORD: rooster_password
+      DB_NAME: rooster_dev
+
+      # PgBouncer settings
+      LISTEN_PORT: 6432
+      AUTH_TYPE: md5
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+
+    ports:
+      - "6432:6432"   # hierop gaat Django inloggen
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U rooster -d rooster_dev || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres_data_dev:
