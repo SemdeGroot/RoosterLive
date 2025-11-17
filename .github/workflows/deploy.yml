@@ -59,7 +59,7 @@ jobs:
               \"if [ ! -d app/.git ]; then sudo rm -rf app && git clone https://github.com/SemdeGroot/RoosterLive.git app; fi\",
               \"cd app\",
               \"git fetch origin\",
-              \"git checkout ${{ github.sha }}\",
+              \"git reset --hard ${{ github.sha }}\",
               \"chmod +x deploy/deploy_ec2.sh\",
               \"./deploy/deploy_ec2.sh ${{ github.sha }}\"
             ]"
