@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   web:
     container_name: rooster-web
@@ -49,7 +47,7 @@ services:
     environment:
       # Alleen PgBouncer settings, DB_* komt uit env_file, auth md5.
       LISTEN_PORT: 6432
-      AUTH_TYPE: md5
+      AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 200
       DEFAULT_POOL_SIZE: 20
