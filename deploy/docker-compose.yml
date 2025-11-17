@@ -47,7 +47,7 @@ services:
     env_file:
       - /opt/rooster/app/.env
     environment:
-      # Alleen PgBouncer settings, DB_* komt uit env_file
+      # Alleen PgBouncer settings, DB_* komt uit env_file, auth md5
       LISTEN_PORT: 6432
       AUTH_TYPE: md5
       POOL_MODE: transaction
