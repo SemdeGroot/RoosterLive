@@ -47,14 +47,7 @@ services:
     env_file:
       - /opt/rooster/app/.env
     environment:
-      # RDS connectie
-      DB_HOST: ${RDS_DB_HOST}
-      DB_PORT: ${RDS_DB_PORT}
-      DB_USER: ${RDS_DB_USER}
-      DB_PASSWORD: ${RDS_DB_PASSWORD}
-      DB_NAME: ${RDS_DB_NAME}
-
-      # PgBouncer settings
+      # Alleen PgBouncer settings, DB_* komt uit env_file
       LISTEN_PORT: 6432
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 200
