@@ -49,6 +49,7 @@ services:
     environment:
       # Alleen PgBouncer settings, DB_* komt uit env_file
       LISTEN_PORT: 6432
+      AUTH_TYPE: md5
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 200
       DEFAULT_POOL_SIZE: 20
