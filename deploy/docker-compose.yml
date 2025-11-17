@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   web:
     container_name: rooster-web
@@ -13,6 +15,7 @@ services:
       - "8000"
     depends_on:
       - redis
+      - pgbouncer
     volumes:
       - media_data:/app/media
     restart: unless-stopped
@@ -25,8 +28,7 @@ services:
       - /opt/rooster/app/.env
     depends_on:
       - redis
-    healthcheck:
-      disable: true
+      - pgbouncer
     volumes:
       - media_data:/app/media
     restart: unless-stopped
@@ -39,6 +41,28 @@ services:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     restart: unless-stopped
 
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: rooster-pgbouncer
+    env_file:
+      - /opt/rooster/app/.env
+    environment:
+      # RDS connectie
+      DB_HOST: ${RDS_DB_HOST}
+      DB_PORT: ${RDS_DB_PORT}
+      DB_USER: ${RDS_DB_USER}
+      DB_PASSWORD: ${RDS_DB_PASSWORD}
+      DB_NAME: ${RDS_DB_NAME}
+
+      # PgBouncer settings
+      LISTEN_PORT: 6432
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 20
+    expose:
+      - "6432"
+    restart: unless-stopped
+
   nginx:
     container_name: rooster-nginx
     image: nginx:alpine
@@ -48,6 +72,26 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - web
+    restart: unless-stopped
+
+  maintenance:
+    container_name: rooster-maintenance
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    env_file:
+      - /opt/rooster/app/.env
+    depends_on:
+      - pgbouncer
+      - redis
+    command: >
+      sh -c "
+        echo 'Starting maintenance loop';
+        while true; do
+          echo 'Running clearsessions...';
+          python manage.py clearsessions;
+          echo 'Done, sleeping for 24h...';
+          sleep 86400;
+        done
+      "
     restart: unless-stopped
 
 volumes:

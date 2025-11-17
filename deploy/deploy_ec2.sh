@@ -40,10 +40,17 @@ if [[ -f "${LAST_OK_FILE}" ]]; then
   echo "Previous successful image: ${PREV_IMAGE_TAG}"
 fi
 
-export IMAGE_TAG
+# Zorg dat IMAGE_TAG als env var beschikbaar is voor docker compose
+export IMAGE_TAG="${IMAGE_TAG}"
 
 echo "===> Pulling images for tag: ${IMAGE_TAG}"
 docker compose -f deploy/docker-compose.yml pull
+
+echo "===> Running database migrations on new image"
+if ! docker compose -f deploy/docker-compose.yml run --rm web python manage.py migrate; then
+  echo "!!! Migrations failed, aborting deploy. Old containers blijven draaien."
+  exit 1
+fi
 
 echo "===> Starting updated stack"
 set +e
@@ -83,7 +90,7 @@ for i in $(seq 1 "${MAX_RETRIES}"); do
   fi
 
   sleep "${SLEEP_SECONDS}"
-done
+end
 
 if [[ "${HEALTH_STATUS}" != "healthy" ]]; then
   echo "!!! Health check did not reach healthy state (status: ${HEALTH_STATUS})"
