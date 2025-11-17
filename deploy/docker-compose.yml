@@ -45,7 +45,7 @@ services:
     env_file:
       - /opt/rooster/app/.env
     environment:
-      # Alleen PgBouncer settings, DB_* komt uit env_file, auth scram-sha256.
+      # Alleen PgBouncer settings, DB_* komt uit env_file, auth scram-sha256..
       LISTEN_PORT: 6432
       AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction
