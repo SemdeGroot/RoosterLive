@@ -211,3 +211,42 @@ def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, c
     dest = target_dir / f"{base_name}.{h}.pdf"
     dest.write_bytes(pdf_bytes)
     return dest
+
+def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True) -> Path:
+    """
+    Slaat een geüploade CSV/Excel op als <base_name>.<hash><ext> in target_dir.
+
+    - uploaded_file: Django UploadedFile (request.FILES["file"])
+    - target_dir: map waarin het bestand moet komen (bijv. VOORRAAD_DIR)
+    - base_name: prefix van de naam (bijv. "medications")
+    - clear_existing: als True → bestaande CSV/Excel-bestanden in target_dir verwijderen
+
+    Retourneert: Path naar het opgeslagen bestand.
+    """
+    # Bestand in memory lezen (voor hashing)
+    if hasattr(uploaded_file, "chunks"):
+        file_bytes = b"".join(uploaded_file.chunks())
+    else:
+        file_bytes = uploaded_file.read()
+
+    ext = (Path(uploaded_file.name).suffix or "").lower()
+    if ext not in (".csv", ".xlsx", ".xls"):
+        raise ValueError("Unsupported table extension")
+
+    # Zelfde hash-functie als voor PDF
+    h = pdf_hash(file_bytes)
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    if clear_existing:
+        # Alleen bestaande CSV/Excel-bestanden weghalen
+        for p in target_dir.iterdir():
+            if p.is_file() and p.suffix.lower() in (".csv", ".xlsx", ".xls"):
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+
+    dest = target_dir / f"{base_name}.{h}{ext}"
+    dest.write_bytes(file_bytes)
+    return dest

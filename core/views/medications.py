@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from ..forms import AvailabilityUploadForm
-from ._helpers import can, VOORRAAD_DIR, read_table
+from ._helpers import can, VOORRAAD_DIR, read_table, save_table_upload_with_hash
 
 @login_required
 def medications_view(request):
@@ -16,9 +16,16 @@ def medications_view(request):
     key = "medications"
     existing_path = None
     for ext in (".xlsx", ".xls", ".csv"):
-        c = VOORRAAD_DIR / f"{key}{ext}"
-        if c.exists():
-            existing_path = c
+        # Nieuwe naamgeving: medications.<hash>.ext
+        matches = sorted(VOORRAAD_DIR.glob(f"{key}.*{ext}"))
+        if matches:
+            existing_path = matches[0]
+            break
+
+        # Backwards compatible: oude naam zonder hash (medications.csv/xlsx/xls)
+        legacy = VOORRAAD_DIR / f"{key}{ext}"
+        if legacy.exists():
+            existing_path = legacy
             break
 
     form = AvailabilityUploadForm()
@@ -29,20 +36,18 @@ def medications_view(request):
         form = AvailabilityUploadForm(request.POST, request.FILES)
         if form.is_valid():
             f = form.cleaned_data["file"]
+
             ext = (Path(f.name).suffix or "").lower()
             if ext not in (".xlsx", ".xls", ".csv"):
                 messages.error(request, "Alleen CSV of Excel toegestaan.")
                 return redirect(request.path)
 
-            for oldext in (".xlsx", ".xls", ".csv"):
-                p = VOORRAAD_DIR / f"{key}{oldext}"
-                if p.exists():
-                    p.unlink()
-
-            dest = VOORRAAD_DIR / f"{key}{ext}"
-            with dest.open("wb") as fh:
-                for chunk in f.chunks():
-                    fh.write(chunk)
+            # Slaat bestand op als medications.<hash><ext>
+            try:
+                dest = save_table_upload_with_hash(f, VOORRAAD_DIR, key, clear_existing=True)
+            except ValueError:
+                messages.error(request, "Alleen CSV of Excel toegestaan.")
+                return redirect(request.path)
 
             messages.success(request, f"Bestand geüpload: {f.name}")
             return redirect(request.path)
