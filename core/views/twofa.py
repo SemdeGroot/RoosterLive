@@ -11,18 +11,35 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.forms.utils import ErrorDict
+from django.conf import settings
 from base64 import b32encode
 from binascii import unhexlify
 from base64 import b32encode
 from binascii import unhexlify
 from two_factor.utils import get_otpauth_url, totp_digits
 from urllib.parse import quote, urlencode
+from urllib.parse import quote as urlquote  # voor veilige next= urls
+from core.models import WebAuthnPasskey
 
 class CustomSetupView(SetupView):
     condition_dict = {"welcome": False, "method": False}
 
     def get_success_url(self):
-        return reverse("home")
+        """
+        Na succesvolle 2FA-setup:
+        - als user nog GEEN passkeys heeft → eerst naar passkey-setup
+        - anders direct naar home
+        """
+        user = self.request.user
+        next_url = reverse("home")
+
+        # LET OP: geen is_active meer, alleen op user filteren
+        has_passkey = WebAuthnPasskey.objects.filter(user=user).exists()
+        if not has_passkey:
+            setup_url = reverse("passkey_setup")
+            return f"{setup_url}?next={urlquote(next_url)}"
+
+        return next_url
 
     def get_form(self, step=None, **kwargs):
         form = super().get_form(step=step, **kwargs)
@@ -114,6 +131,19 @@ class CustomLoginView(TwoFALoginView):
         (TwoFALoginView.TOKEN_STEP, MyAuthenticationTokenForm),
     )
 
+    def get_success_url(self):
+        user = self.get_user()
+        base_url = super().get_success_url()
+
+        has_passkey = WebAuthnPasskey.objects.filter(user=user).exists()
+        skip_passkeys = self.request.session.get("webauthn_skip_devices")  # of een andere flag
+
+        if not has_passkey and not skip_passkeys:
+            setup_url = reverse("passkey_setup")
+            return f"{setup_url}?next={urlquote(base_url)}"
+
+        return base_url
+
     def has_backup_step(self):
         return False
 
@@ -122,7 +152,6 @@ class CustomLoginView(TwoFALoginView):
         if current == self.TOKEN_STEP:
             self.form_list[self.TOKEN_STEP] = MyAuthenticationTokenForm
 
-        # Belangrijk: direct de wizard-form ophalen (zorgt voor binden), niet de override die je form vervangt
         from two_factor.views.utils import IdempotentSessionWizardView
         form = IdempotentSessionWizardView.get_form(self, step=step, **kwargs)
 
@@ -135,7 +164,6 @@ class CustomLoginView(TwoFALoginView):
     def _flash_form_errors(self, form):
         if not (form and form.is_bound and not form.is_valid()):
             return
-        # Alleen non-field errors fl itsen (onze MyAuthenticationTokenForm geeft enkel non-field)
         for msg in form.non_field_errors():
             messages.error(self.request, msg)
         form._errors = ErrorDict()
@@ -144,6 +172,19 @@ class CustomLoginView(TwoFALoginView):
         self._flash_form_errors(form)
 
         if self.steps.current == self.TOKEN_STEP:
+            # Sla de user + next op voor de passkey flow
+            try:
+                user = self.get_user()
+            except Exception:
+                user = None
+
+            if user is not None:
+                self.request.session["passkey_login_user_id"] = user.pk
+
+            next_url = self.request.GET.get("next") or settings.LOGIN_REDIRECT_URL
+            self.request.session["passkey_next_url"] = next_url
+
+            # SMS / voice challenge voor TOTP
             form_with_errors = form and form.is_bound and bool(form.errors)
             if not form_with_errors:
                 self.get_device().generate_challenge()

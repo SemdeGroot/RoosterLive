@@ -1,0 +1,79 @@
+{% extends "two_factor/_base.html" %}
+{% load static i18n %}
+
+{% block login_header_image %}
+  <div class="twofa-image-wrap">
+    <img src="{% static 'img/biometric.png' %}" alt="Biometrisch inloggen" class="twofa-image">
+  </div>
+{% endblock %}
+
+{% block content %}
+  <section class="passkey-setup">
+    <h1 style="text-align:center;">Snel inloggen met een passkey</h1>
+    <p class="twofa-logintext muted">
+      Op dit apparaat kun je Face ID, Touch ID of een andere biometrische beveiliging gebruiken
+      om voortaan <strong>zonder 2FA-code</strong> in te loggen.
+    </p>
+    <p class="twofa-logintext">
+      We koppelen éénmalig een passkey aan dit specifieke apparaat. Daarna kun je met één tik inloggen.
+    </p>
+
+    <div class="passkey-actions" style="margin-top:1.5rem; text-align:center;">
+      <button type="button" id="passkeySetupBtn">
+        Instellen
+      </button>
+    <a href="{{ next_url }}" id="passkeySkipBtn" class="passkey-skip-btn">
+    Overslaan
+    </a>
+    </div>
+
+    <p id="passkeyMessage" class="twofa-logintext muted" style="margin-top:1rem;"></p>
+  </section>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const setupBtn = document.getElementById("passkeySetupBtn");
+    const skipBtn = document.getElementById("passkeySkipBtn");
+    const msgEl = document.getElementById("passkeyMessage");
+    const nextUrl = "{{ next_url|escapejs }}";
+
+    function getCSRF() {
+      const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : "";
+    }
+
+    // Passkey daadwerkelijk instellen (dit had je al)
+    if (setupBtn && window.setupPasskey) {
+      setupBtn.addEventListener("click", () => {
+        window.setupPasskey(nextUrl, msgEl);
+      });
+    }
+
+    // NIEUW: Overslaan → backend vertellen dat we dit device moeten "skippen"
+    if (skipBtn && window.getDeviceHash) {
+      skipBtn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+
+        try {
+          const device_hash = await window.getDeviceHash();
+          await fetch("/api/passkeys/skip/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRF(),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({ device_hash }),
+          });
+        } catch (e) {
+          console.error("Passkey skip mislukt", e);
+          // Als dit faalt, laten we de user alsnog gewoon door
+        }
+
+        window.location.href = nextUrl || "/";
+      });
+    }
+  });
+</script>
+{% endblock %}

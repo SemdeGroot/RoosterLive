@@ -152,8 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (el) {
         el.innerHTML = `
           Kun je niet scannen?
-          <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
-            Klik hier om je authenticator-app te openen</a> of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
+          Kopieer de geheime sleutel, voeg deze handmatig toe in je authenticator-app en kies voor tijdgebaseerde (TOTP) codes of <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">Klik hier om je authenticator-app te openen</a> 
         `;
       }
     }

@@ -441,3 +441,32 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 .login-box form input + input         { margin-top:20px !important; }  /* input → volgende input */
 .login-box form input[type="password"] + button,
 .login-box form input[type="text"] + button { margin-top:20px !important; } /* input → button terug naar standaard */
+
+.passkey-skip-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 10px;
+
+  /* Styling volgens jouw instructies */
+  background: var(--border);        /* lichtgrijs */
+  color: var(--text);                /* zwarte tekst */
+  border: 1px solid var(--border);
+
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+
+.passkey-skip-btn:hover { /* zelfde hoverkleur als primary */
+  border-color: var(--accent);         /* goed contrast wanneer accentkleur actief is */
+}
+
+.passkey-skip-btn:active {
+  transform: scale(0.99);
+}

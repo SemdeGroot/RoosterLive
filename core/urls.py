@@ -22,6 +22,16 @@ from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as medicatiebeoordeling_views
 
 from core.views.health import health
+from core.views.passkeys import (
+    PasskeySetupView,
+    passkey_registration_options,
+    passkey_register,
+    passkey_password_login,
+    passkey_authenticate,
+    passkey_should_offer,
+    passkey_skip,
+)
+
 
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
@@ -43,6 +53,51 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),
+
+    # Passkey setup pagina
+        path(
+        "account/passkeys/setup/",
+        PasskeySetupView.as_view(),
+        name="passkey_setup",
+    ),
+
+    # API: passkey registratie
+    path(
+        "api/passkeys/options/register/",
+        passkey_registration_options,
+        name="passkeys_options_register",
+    ),
+    path(
+        "api/passkeys/register/",
+        passkey_register,
+        name="passkeys_register",
+    ),
+
+    # API: passkey login — LET OP: paden laten matchen met JS
+    path(
+        "api/passkeys/password-login/",
+        passkey_password_login,
+        name="passkeys_password_login",
+    ),
+    path(
+        "api/passkeys/authenticate/",
+        passkey_authenticate,
+        name="passkeys_authenticate",
+    ),
+
+    # API: “eerste login op dit device, passkey aanbieden?”
+    path(
+        "api/passkeys/should-offer/",
+        passkey_should_offer,
+        name="passkeys_should_offer",
+    ),
+
+    # API: “Overslaan” op setup-pagina
+    path(
+        "api/passkeys/skip/",
+        passkey_skip,
+        name="passkeys_skip",
+    ),
 
     path("health/", health, name="health"),
 

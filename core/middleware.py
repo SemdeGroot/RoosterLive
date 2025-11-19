@@ -9,6 +9,7 @@ SAFE_URLNAMES = {
     "login",        # jouw redirect-view naar two_factor:login
     "logout",       # jouw logout POST
     "set_password", # eenmalige wachtwoord-zet pagina
+    "passkey_setup",
 }
 
 SAFE_PATH_PREFIXES = (

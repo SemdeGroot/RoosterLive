@@ -62,6 +62,53 @@ class PushSubscription(models.Model):
     def __str__(self):
         return f"{self.user} – {self.endpoint[:40]}…"
 
+class WebAuthnPasskey(models.Model):
+    """
+    Eén WebAuthn/passkey credential per gebruiker per device.
+    credential_id en public_key komen direct uit webauthn.verify_*_response().
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="passkeys",
+    )
+    # Base64url string van credential_id (zoals webauthn teruggeeft)
+    credential_id = models.CharField(max_length=255, unique=True, db_index=True)
+
+    # Ruwe public key bytes zoals webauthn ze teruggeeft
+    public_key = models.BinaryField()
+
+    # Sign count (wordt bij elke succesvolle auth geüpdatet en gecontroleerd)
+    sign_count = models.BigIntegerField(default=0)
+
+    # Optioneel: user handle (zoals door client teruggestuurd)
+    user_handle = models.CharField(max_length=255, blank=True)
+
+    # Optioneel: transports / backup info, enkel voor debugging/UX
+    transports = models.JSONField(default=list, blank=True)
+    backed_up = models.BooleanField(default=False)
+
+    # Per-device koppeling: zelfde concept als je WebPush device_hash
+    device_hash = models.CharField(max_length=64, blank=True, db_index=True)
+
+    nickname = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Bijvoorbeeld 'iPhone van Sem' of 'Werktelefoon'.",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Passkey"
+        verbose_name_plural = "Passkeys"
+
+    def __str__(self):
+        base = self.nickname or f"Passkey {self.pk}"
+        return f"{base} – {self.user}"
+
 # 2FA subscriptions verwijderen uit db om te testen:
 # python manage.py shell
 # from django.contrib.auth.models import User
