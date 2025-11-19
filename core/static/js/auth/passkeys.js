@@ -122,40 +122,26 @@
 
   window.setupPasskey = async function (nextUrl, msgEl) {
     const target = msgEl || document.getElementById("passkeyMessage");
-
-    const setMsg = (txt, type) => {
-      if (!target) return;
-      target.textContent = txt || "";
-
-      // basisclass
-      let cls = "passkey-message";
-      if (type === "ok") {
-        cls += " ok";
-      } else if (type === "error") {
-        cls += " error";
-      }
-      target.className = cls;
-
-      // alleen ruimte innemen als er tekst is
-      target.style.display = txt ? "block" : "none";
+    const setMsg = (txt) => {
+      if (target) target.textContent = txt;
     };
 
     if (!onHttps) {
-      setMsg("Passkeys werken alleen via HTTPS of op localhost.", "error");
+      setMsg("Passkeys werken alleen via HTTPS of op localhost.");
       return;
     }
     if (!isWebAuthnSupported()) {
-      setMsg("Dit apparaat ondersteunt geen passkeys.", "error");
+      setMsg("Dit apparaat ondersteunt geen passkeys.");
       return;
     }
 
     try {
-      setMsg("Passkey instellen, even wachten..."); // neutraal, muted
+      setMsg("Passkey instellen, even wachten...");
 
       const options = await prepareRegisterOptions();
       const cred = await navigator.credentials.create({ publicKey: options });
       if (!cred) {
-        setMsg("Passkey instellen is afgebroken.", "error");
+        setMsg("Passkey instellen is afgebroken.");
         return;
       }
 
@@ -171,13 +157,29 @@
       };
 
       await sendRegisterCredential(attResp);
-      setMsg("Passkey is ingesteld. Je wordt doorgestuurd...", "ok");
+      setMsg("Passkey is ingesteld. Je wordt doorgestuurd...");
       window.location.href = nextUrl || "/";
     } catch (e) {
       console.error(e);
-      setMsg("Passkey instellen is mislukt: " + e.message, "error");
+      setMsg("Passkey instellen is mislukt: " + e.message);
     }
   };
+
+  // ---------- LOGIN FLOW: PASSWORD → PASSKEY → SKIP 2FA ----------
+
+  async function passwordLoginWithPasskey(username, password) {
+    const device_hash = await getDeviceHash();
+    const next = getNextParam();
+
+    const resp = await fetch("/api/passkeys/password-login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRF(),
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({ username, password, device_hash, next }),
+    });
 
     const data = await resp.json();
     if (!resp.ok || !data.ok) {
@@ -217,6 +219,7 @@ async function tryPasskeyOnLoginForm() {
   const form = findLoginForm();
   if (!form) return;
 
+  // Django Form Wizard voegt vaak een prefix toe, zoals "auth-username"
   const usernameInput = form.querySelector(
     'input[name="username"], input[name$="-username"]'
   );
@@ -226,11 +229,6 @@ async function tryPasskeyOnLoginForm() {
 
   // Alleen op stap 1 (username + password), niet op 2FA-pagina
   if (!usernameInput || !passwordInput) return;
-
-  // ⬇️ HIER: alleen doorgaan op mobiel + HTTPS + WebAuthn
-  if (!onHttps || !isWebAuthnSupported() || !isMobile()) {
-    return; // desktop of geen WebAuthn → normale 2FA-flow
-  }
 
   const errorContainerId = "passkeyLoginError";
   let errorEl = document.getElementById(errorContainerId);
@@ -246,6 +244,10 @@ async function tryPasskeyOnLoginForm() {
   const setError = (txt) => {
     errorEl.textContent = txt || "";
   };
+
+  if (!onHttps || !isWebAuthnSupported() /* || !isMobile() als je dat terug wilt */) {
+    return;
+  }
 
   form.addEventListener("submit", async (ev) => {
     const username = (usernameInput.value || "").trim();
@@ -349,4 +351,4 @@ async function tryPasskeyOnLoginForm() {
     // login-pagina
     tryPasskeyOnLoginForm();
   });
-});
+})();
