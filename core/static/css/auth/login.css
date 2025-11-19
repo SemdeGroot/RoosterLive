@@ -453,12 +453,12 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   text-decoration: none;
   cursor: pointer;
   margin-top: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 
   /* Styling volgens jouw instructies */
   background: var(--border);        /* lichtgrijs */
   color: var(--text);                /* zwarte tekst */
-  border: 1px solid var(--border);
+  border: 3px solid var(--border);
 
   transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
@@ -469,4 +469,24 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 
 .passkey-skip-btn:active {
   transform: scale(0.99);
+}
+
+.passkey-message {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-top: 1rem;
+  margin-bottom: 0;
+  display: none;       
+}
+
+/* Succesvariant */
+.passkey-message.ok {
+  color: #9fe6b8;
+  display: block;
+}
+
+/* Foutvariant */
+.passkey-message.error {
+  color: #ffb3b3;
+  display: block;
 }

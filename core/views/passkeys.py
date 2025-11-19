@@ -12,6 +12,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from core.forms import IdentifierAuthenticationForm 
+from ._helpers import is_mobile_request
+from django.shortcuts import redirect
 
 from webauthn import (
     generate_registration_options,
@@ -104,6 +106,13 @@ def _is_passkey_skip_for_device(request: HttpRequest, device_hash: str) -> bool:
 
 class PasskeySetupView(TemplateView):
     template_name = "accounts/passkey_setup.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Geen passkey-setup op desktop
+        if not is_mobile_request(request):
+            next_url = request.GET.get("next") or reverse("home")
+            return redirect(next_url)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

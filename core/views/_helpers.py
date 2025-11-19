@@ -250,3 +250,8 @@ def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str,
     dest = target_dir / f"{base_name}.{h}{ext}"
     dest.write_bytes(file_bytes)
     return dest
+
+def is_mobile_request(request) -> bool:
+    ua = (request.META.get("HTTP_USER_AGENT") or "").lower()
+    # Simpele maar effectieve check, gelijk aan je JS isMobile()
+    return any(s in ua for s in ["android", "iphone", "ipad", "ipod"])

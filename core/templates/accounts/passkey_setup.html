@@ -8,7 +8,10 @@
 {% endblock %}
 
 {% block content %}
-  <section class="passkey-setup">
+
+  <section id="passkeySetupSection"
+           class="passkey-setup"
+           style="display:none;">
     <h1 style="text-align:center;">Snel inloggen met een passkey</h1>
     <p class="twofa-logintext muted">
       Op dit apparaat kun je Face ID, Touch ID of een andere biometrische beveiliging gebruiken
@@ -22,58 +25,62 @@
       <button type="button" id="passkeySetupBtn">
         Instellen
       </button>
-    <a href="{{ next_url }}" id="passkeySkipBtn" class="passkey-skip-btn">
-    Overslaan
-    </a>
+      <a href="{{ next_url }}" id="passkeySkipBtn" class="passkey-skip-btn" style="margin-left:1rem;">
+        Overslaan
+      </a>
     </div>
 
-    <p id="passkeyMessage" class="twofa-logintext muted" style="margin-top:1rem;"></p>
+    <p id="passkeyMessage" class="passkey-message" aria-live="polite"></p>
   </section>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const section = document.getElementById("passkeySetupSection");
+      const btn     = document.getElementById("passkeySetupBtn");
+      const msgEl   = document.getElementById("passkeyMessage");
+      const nextUrl = "{{ next_url|escapejs }}";
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const setupBtn = document.getElementById("passkeySetupBtn");
-    const skipBtn = document.getElementById("passkeySkipBtn");
-    const msgEl = document.getElementById("passkeyMessage");
-    const nextUrl = "{{ next_url|escapejs }}";
+      const onHttps = location.protocol === "https:" || location.hostname === "localhost";
 
-    function getCSRF() {
-      const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-      return m ? decodeURIComponent(m[1]) : "";
-    }
+      function isMobile() {
+        const ua = navigator.userAgent || "";
+        return /Android|iPhone|iPad|iPod/i.test(ua);
+      }
 
-    // Passkey daadwerkelijk instellen (dit had je al)
-    if (setupBtn && window.setupPasskey) {
-      setupBtn.addEventListener("click", () => {
-        window.setupPasskey(nextUrl, msgEl);
-      });
-    }
+      function isWebAuthnSupported() {
+        return (
+          typeof window.PublicKeyCredential !== "undefined" &&
+          typeof window.navigator.credentials !== "undefined" &&
+          typeof window.navigator.credentials.get === "function"
+        );
+      }
 
-    // NIEUW: Overslaan → backend vertellen dat we dit device moeten "skippen"
-    if (skipBtn && window.getDeviceHash) {
-      skipBtn.addEventListener("click", async (ev) => {
-        ev.preventDefault();
-
-        try {
-          const device_hash = await window.getDeviceHash();
-          await fetch("/api/passkeys/skip/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCSRF(),
-            },
-            credentials: "same-origin",
-            body: JSON.stringify({ device_hash }),
-          });
-        } catch (e) {
-          console.error("Passkey skip mislukt", e);
-          // Als dit faalt, laten we de user alsnog gewoon door
-        }
-
+      // Als geen HTTPS, geen WebAuthn of geen mobiel → direct terug
+      if (!onHttps || !isMobile() || !isWebAuthnSupported()) {
         window.location.href = nextUrl || "/";
-      });
-    }
-  });
-</script>
+        return;
+      }
+
+      // Alleen hier: sectie zichtbaar maken
+      if (section) {
+        section.style.display = "";
+      }
+
+      // Koppeling met jouw bestaande setupPasskey() uit passkeys.js
+      if (btn && window.setupPasskey) {
+        btn.addEventListener("click", () => {
+          window.setupPasskey(nextUrl, msgEl);
+        });
+      }
+
+      // Optioneel: "Overslaan" laten werken zonder layout glitches (JS niet strikt nodig)
+      const skipBtn = document.getElementById("passkeySkipBtn");
+      if (skipBtn) {
+        skipBtn.addEventListener("click", (ev) => {
+          // je kunt hier desgewenst nog /api/passkeys/skip/ aanroepen met device_hash
+          // maar standaard mag de link gewoon navigeren
+        });
+      }
+    });
+  </script>
 {% endblock %}

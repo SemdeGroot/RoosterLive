@@ -20,20 +20,19 @@ from two_factor.utils import get_otpauth_url, totp_digits
 from urllib.parse import quote, urlencode
 from urllib.parse import quote as urlquote  # voor veilige next= urls
 from core.models import WebAuthnPasskey
+from core.views._helpers import is_mobile_request
 
 class CustomSetupView(SetupView):
     condition_dict = {"welcome": False, "method": False}
 
     def get_success_url(self):
-        """
-        Na succesvolle 2FA-setup:
-        - als user nog GEEN passkeys heeft → eerst naar passkey-setup
-        - anders direct naar home
-        """
         user = self.request.user
         next_url = reverse("home")
 
-        # LET OP: geen is_active meer, alleen op user filteren
+        # Geen passkey prompt na 2FA-setup op desktop
+        if not is_mobile_request(self.request):
+            return next_url
+
         has_passkey = WebAuthnPasskey.objects.filter(user=user).exists()
         if not has_passkey:
             setup_url = reverse("passkey_setup")
@@ -135,8 +134,12 @@ class CustomLoginView(TwoFALoginView):
         user = self.get_user()
         base_url = super().get_success_url()
 
+        # Desktop / niet-mobiel → nooit naar passkey_setup
+        if not is_mobile_request(self.request):
+            return base_url
+
         has_passkey = WebAuthnPasskey.objects.filter(user=user).exists()
-        skip_passkeys = self.request.session.get("webauthn_skip_devices")  # of een andere flag
+        skip_passkeys = self.request.session.get("webauthn_skip_devices")  # dict met device_hash -> True
 
         if not has_passkey and not skip_passkeys:
             setup_url = reverse("passkey_setup")
