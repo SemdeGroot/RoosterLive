@@ -39,6 +39,12 @@
 
       <button type="submit">{% trans "Inloggen" %}</button>
 
+      <!-- Passkey status message (geen ruimte totdat JS 'm toont) -->
+      <p id="passkeyStatus"
+         class="passkey-message"
+         aria-live="polite"
+         aria-atomic="true"></p>
+
       <p class="forgot-password forgot-password--left">
         <a href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>
       </p>

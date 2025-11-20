@@ -130,19 +130,20 @@ button{
   width:100%;
   background:var(--accent);      /* #072a72 */
   color:#fff;
-  border:solid var(--accent);
+  border: 1px solid var(--border);   /* zelfde als inputs */
   padding:12px;
   border-radius:10px;
   font-size:16px;
   font-weight:600;
   cursor:pointer;
-  margin-top:0px;                      /* spacing via stackregels */
   transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
+
 button:hover{
-  /* zelfde achtergrond/tekst houden; alléén extra omlijning erbij */
-  border:solid var(--border); background:var(--button-hover);
+  background: var(--button-hover);
+  border: 1px solid var(--accent);   /* border hetzelfde houden */
 }
+
 button:active{ transform:scale(0.99) }
 button:focus-visible{
   outline:none;
@@ -433,14 +434,17 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 .login-box form > button { margin-top: 20px; }
 
 /* Standaard: 15px tussen ALLE directe kinderen binnen het form */
-.login-box form > :not(.flash) + :not(.flash) { margin-top: 20px; }
+.login-box form > :not(.flash):not(.passkey-message)
+  + :not(.flash):not(.passkey-message) {
+  margin-top: 20px;
+}
 
 /* Field-groep “geplakt”: kleine verticale afstand in het formulier */
 .login-box form label + *             { margin-top:6px !important; }  /* label → input */
 .login-box form input + label         { margin-top:20px !important; }  /* input → volgend label */
 .login-box form input + input         { margin-top:20px !important; }  /* input → volgende input */
 .login-box form input[type="password"] + button,
-.login-box form input[type="text"] + button { margin-top:20px !important; } /* input → button terug naar standaard */
+.login-box form input[type="text"] + button { margin-top:22px !important; } /* input → button terug naar standaard */
 
 .passkey-skip-btn {
   display: inline-block;
@@ -458,7 +462,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   /* Styling volgens jouw instructies */
   background: var(--border);        /* lichtgrijs */
   color: var(--text);                /* zwarte tekst */
-  border: 3px solid var(--border);
+  border: 1px solid var(--border);
 
   transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
@@ -472,21 +476,27 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 }
 
 .passkey-message {
+  display: none;          /* standaard NIET zichtbaar */
+  margin: 0;              /* ook geen marge als hij verborgen is */
   font-size: 0.95rem;
   color: var(--muted);
-  margin-top: 1rem;
-  margin-bottom: 0;
-  display: none;       
+  text-align: left;
 }
 
-/* Succesvariant */
-.passkey-message.ok {
-  color: #9fe6b8;
-  display: block;
-}
-
-/* Foutvariant */
+/* Alleen wanneer er een echte status is, komt er ruimte + kleur */
+.passkey-message.waiting,
+.passkey-message.ok,
 .passkey-message.error {
-  color: #ffb3b3;
   display: block;
+  margin-top: 20px;
+}
+
+/* Groen voor succes */
+.passkey-message.ok {
+  color: #4caf50;
+}
+
+/* Rood voor fouten */
+.passkey-message.error {
+  color: #f44336;
 }

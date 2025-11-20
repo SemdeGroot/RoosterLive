@@ -24,8 +24,7 @@ def send_password_reset_email(user):
         "Er is een verzoek ontvangen om je wachtwoord opnieuw in te stellen.\n"
         "Gebruik onderstaande link om een nieuw wachtwoord te kiezen.\n\n"
         f"Wachtwoord opnieuw instellen: {reset_link}\n\n"
-        "Na het instellen log je in met je nieuwe wachtwoord.\n"
-        "Als je 2-factor authenticatie hebt ingesteld, vul je daarna je 2FA-code in.\n\n"
+        "Na het instellen log je in met je nieuwe wachtwoord.\n\n"
         "Heb je dit verzoek niet zelf gedaan? Negeer dan deze e-mail.\n\n"
         "Groetjes,\n"
         "Het Apotheek Jansen Team"
@@ -38,12 +37,12 @@ def send_password_reset_email(user):
       <p>
         Klik hieronder om een nieuw wachtwoord te kiezen. 
         Na het instellen log je in met je nieuwe wachtwoord.
-        Als je 2-factor authenticatie hebt ingesteld, vragen we daarna om je 2FA-code.
       </p>
       <p>
         <a href="{reset_link}"
            style="background:#072a72;color:#ffffff;text-decoration:none;font-weight:700;
-                  padding:12px 20px;border-radius:6px;display:inline-block;">
+                  padding:12px 20px;border-radius:6px;display:inline-block;
+                  font-size:14px;line-height:18px;min-width:220px;text-align:center;">
           Wachtwoord opnieuw instellen
         </a>
       </p>

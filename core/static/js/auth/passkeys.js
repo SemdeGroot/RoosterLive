@@ -1,7 +1,27 @@
 // static/js/auth/passkeys.js
 (function () {
-  const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+  const onHttps = location.protocol === "https:" || location.hostname === "localhost";
 
+  // ---------- PASSKEY STATUS UI (NIEUW) ----------
+  const passkeyStatusEl =
+    document.getElementById("passkeyStatus") ||
+    document.getElementById("passkeyMessage");
+
+  function setPasskeyStatus(text, variant) {
+    if (!passkeyStatusEl) return;
+    const base = "passkey-message";
+    const extra = variant ? " " + variant : "";
+    passkeyStatusEl.className = base + extra;
+    passkeyStatusEl.textContent = text || "";
+  }
+
+  function clearPasskeyStatus() {
+    if (!passkeyStatusEl) return;
+    passkeyStatusEl.className = "passkey-message";
+    passkeyStatusEl.textContent = "";
+  }
+
+  // ---------- DEVICE DETECTIE ----------
   function isMobile() {
     const ua = navigator.userAgent || "";
     return /Android|iPhone|iPad|iPod/i.test(ua);
@@ -15,7 +35,7 @@
     );
   }
 
-  // ---------- device_hash (gekopieerd uit base.js) ----------
+  // ---------- device_hash ----------
   async function getDeviceHash() {
     const ua = navigator.userAgent || "";
     const platform = navigator.platform || "";
@@ -36,12 +56,11 @@
     return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  // Globaal beschikbaar maken
   if (!window.getDeviceHash) {
     window.getDeviceHash = getDeviceHash;
   }
 
-  // ---------- helpers ----------
+  // ---------- HELPERS ----------
   function getCSRF() {
     const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : "";
@@ -74,7 +93,6 @@
   }
 
   // ---------- PASSKEY REGISTRATIE ----------
-
   async function prepareRegisterOptions() {
     const device_hash = await getDeviceHash();
     const resp = await fetch("/api/passkeys/options/register/", {
@@ -87,7 +105,7 @@
       body: JSON.stringify({ device_hash }),
     });
     if (!resp.ok) {
-      throw new Error("Kan registratie-opties niet ophalen");
+      throw new Error("Kon registratie-opties niet ophalen.");
     }
     const options = await resp.json();
     options.challenge = b64uToArrayBuffer(options.challenge);
@@ -115,33 +133,29 @@
     });
     const data = await resp.json();
     if (!resp.ok || !data.ok) {
-      throw new Error(data.error || "Passkey registratie mislukt");
+      throw new Error(data.error || "Passkey registratie mislukt.");
     }
     return data;
   }
 
   window.setupPasskey = async function (nextUrl, msgEl) {
-    const target = msgEl || document.getElementById("passkeyMessage");
-    const setMsg = (txt) => {
-      if (target) target.textContent = txt;
-    };
-
+    // geen emoji’s, alleen kleuren via CSS classes
     if (!onHttps) {
-      setMsg("Passkeys werken alleen via HTTPS of op localhost.");
+      setPasskeyStatus("Passkeys werken alleen via HTTPS of op localhost.", "error");
       return;
     }
     if (!isWebAuthnSupported()) {
-      setMsg("Dit apparaat ondersteunt geen passkeys.");
+      setPasskeyStatus("Dit apparaat ondersteunt geen passkeys.", "error");
       return;
     }
 
     try {
-      setMsg("Passkey instellen, even wachten...");
+      setPasskeyStatus("Passkey wordt ingesteld. Even geduld...", "waiting");
 
       const options = await prepareRegisterOptions();
       const cred = await navigator.credentials.create({ publicKey: options });
       if (!cred) {
-        setMsg("Passkey instellen is afgebroken.");
+        setPasskeyStatus("Instellen van passkey is afgebroken.", "error");
         return;
       }
 
@@ -157,16 +171,25 @@
       };
 
       await sendRegisterCredential(attResp);
-      setMsg("Passkey is ingesteld. Je wordt doorgestuurd...");
+      setPasskeyStatus("Passkey succesvol ingesteld. Je wordt doorgestuurd…", "ok");
+
       window.location.href = nextUrl || "/";
     } catch (e) {
       console.error(e);
-      setMsg("Passkey instellen is mislukt: " + e.message);
+
+      // Speciaal afvangen als de gebruiker de passkey-actie annuleert
+      if (e && (e.name === "AbortError" || e.name === "NotAllowedError")) {
+        setPasskeyStatus("Passkey instellen geannuleerd.", "error");
+      } else {
+        setPasskeyStatus(
+          "Passkey instellen mislukt: " + (e.message || ""),
+          "error"
+        );
+      }
     }
   };
 
-  // ---------- LOGIN FLOW: PASSWORD → PASSKEY → SKIP 2FA ----------
-
+  // ---------- LOGIN FLOW ----------
   async function passwordLoginWithPasskey(username, password) {
     const device_hash = await getDeviceHash();
     const next = getNextParam();
@@ -183,7 +206,7 @@
 
     const data = await resp.json();
     if (!resp.ok || !data.ok) {
-      const err = (data && data.error) || "Login mislukt";
+      const err = (data && data.error) || "Login mislukt.";
       throw new Error(err);
     }
     return data;
@@ -201,125 +224,146 @@
     });
     const data = await resp.json();
     if (!resp.ok || !data.ok) {
-      throw new Error(data.error || "Authenticatie mislukt");
+      throw new Error(data.error || "Authenticatie mislukt.");
     }
     return data;
   }
 
   function findLoginForm() {
-  // Eerst proberen de "mooie" variant, daarna fallbacks
-  return (
-    document.querySelector("main.login-app form") || // als je die hebt
-    document.querySelector("main form") ||
-    document.querySelector("form")
-  );
-}
-
-async function tryPasskeyOnLoginForm() {
-  const form = findLoginForm();
-  if (!form) return;
-
-  // Django Form Wizard voegt vaak een prefix toe, zoals "auth-username"
-  const usernameInput = form.querySelector(
-    'input[name="username"], input[name$="-username"]'
-  );
-  const passwordInput = form.querySelector(
-    'input[name="password"], input[name$="-password"]'
-  );
-
-  // Alleen op stap 1 (username + password), niet op 2FA-pagina
-  if (!usernameInput || !passwordInput) return;
-
-  const errorContainerId = "passkeyLoginError";
-  let errorEl = document.getElementById(errorContainerId);
-  if (!errorEl) {
-    errorEl = document.createElement("p");
-    errorEl.id = errorContainerId;
-    errorEl.className = "twofa-logintext muted";
-    errorEl.style.color = "#ff7f7f";
-    errorEl.style.marginTop = "0.5rem";
-    passwordInput.parentNode.insertAdjacentElement("afterend", errorEl);
+    return (
+      document.querySelector("main.login-app form") ||
+      document.querySelector("main form") ||
+      document.querySelector("form")
+    );
   }
 
-  const setError = (txt) => {
-    errorEl.textContent = txt || "";
-  };
+  async function tryPasskeyOnLoginForm() {
+    const form = findLoginForm();
+    if (!form) return;
 
-  if (!onHttps || !isWebAuthnSupported() /* || !isMobile() als je dat terug wilt */) {
-    return;
-  }
+    const usernameInput = form.querySelector(
+      'input[name="username"], input[name$="-username"]'
+    );
+    const passwordInput = form.querySelector(
+      'input[name="password"], input[name$="-password"]'
+    );
 
-  form.addEventListener("submit", async (ev) => {
-    const username = (usernameInput.value || "").trim();
-    const password = passwordInput.value || "";
+    if (!usernameInput || !passwordInput) return;
 
-    if (!username || !password) {
+    // Foutmelding onder input, met display:none
+    const errorId = "passkeyLoginError";
+    let errorEl = document.getElementById(errorId);
+    if (!errorEl) {
+      errorEl = document.createElement("p");
+      errorEl.id = errorId;
+      errorEl.className = "passkey-message error"; // zelfde styling als waiting
+      errorEl.style.display = "none"; // mag blijven
+      passwordInput.parentNode.insertAdjacentElement("afterend", errorEl);
+    }
+
+    const setError = (txt) => {
+      if (!txt) {
+        errorEl.textContent = "";
+        errorEl.style.display = "none";
+      } else {
+        errorEl.textContent = txt;
+        errorEl.style.display = "block";
+      }
+    };
+
+    if (!onHttps || !isWebAuthnSupported()) return;
+
+    form.addEventListener("submit", async (ev) => {
+      const username = (usernameInput.value || "").trim();
+      const password = passwordInput.value || "";
+
+      if (!username || !password) {
+        setError("");
+        return; // normale submit, Django regelt de foutmelding
+      }
+
+      ev.preventDefault();
       setError("");
-      return; // normale submit, Django regelt het
-    }
+      clearPasskeyStatus(); // zorg dat er niks zichtbaar is bij start
 
-    ev.preventDefault();
-    setError("");
+      try {
+        const data = await passwordLoginWithPasskey(username, password);
 
-    try {
-      const data = await passwordLoginWithPasskey(username, password);
+        // ✅ GEEN PASSKEYS INGESTELD → GEEN MELDING, GEWOON DOOR NAAR 2FA / normale flow
+        if (!data.has_passkey) {
+          form.submit();
+          return;
+        }
 
-      if (!data.has_passkey) {
-        // user/device heeft geen passkey -> normale 2FA-flow
+        // ✅ PAS HIER: device heeft passkeys én user heeft een passkey → nu wachten-melding tonen
+        setPasskeyStatus(
+          "Wachten op bevestiging via passkey...",
+          "waiting"
+        );
+
+        const options = data.options;
+        options.challenge = b64uToArrayBuffer(options.challenge);
+        if (options.allowCredentials) {
+          options.allowCredentials = options.allowCredentials.map((c) => ({
+            ...c,
+            id: b64uToArrayBuffer(c.id),
+          }));
+        }
+
+        const assertion = await navigator.credentials.get({ publicKey: options });
+        if (!assertion) {
+          clearPasskeyStatus();
+          form.submit();
+          return;
+        }
+
+        const authResp = {
+          id: assertion.id,
+          rawId: arrayBufferToB64u(assertion.rawId),
+          type: assertion.type,
+          clientExtensionResults: assertion.getClientExtensionResults(),
+          response: {
+            authenticatorData: arrayBufferToB64u(assertion.response.authenticatorData),
+            clientDataJSON: arrayBufferToB64u(assertion.response.clientDataJSON),
+            signature: arrayBufferToB64u(assertion.response.signature),
+            userHandle: assertion.response.userHandle
+              ? arrayBufferToB64u(assertion.response.userHandle)
+              : null,
+          },
+        };
+
+        const result = await sendAuthCredential(authResp);
+
+        setPasskeyStatus(
+          "Passkey-login geslaagd. Je wordt doorgestuurd…",
+          "ok"
+        );
+
+        const redirectUrl = result.redirect_url || "/";
+        window.location.href = redirectUrl;
+      } catch (e) {
+        console.error(e);
+        clearPasskeyStatus();
+
+        let msg;
+        if (e && (e.name === "AbortError" || e.name === "NotAllowedError")) {
+          // Gebruiker heeft de passkey-prompt zelf geannuleerd
+          msg = "Inloggen via passkey geannuleerd.";
+        } else {
+          msg =
+            e.message ||
+            "Inloggen via passkey is mislukt. Probeer het opnieuw of gebruik je 2FA-code.";
+        }
+
+        setError(msg);
         form.submit();
-        return;
       }
+    });
+  }
 
-      const options = data.options;
-      options.challenge = b64uToArrayBuffer(options.challenge);
-      if (options.allowCredentials) {
-        options.allowCredentials = options.allowCredentials.map((c) => ({
-          ...c,
-          id: b64uToArrayBuffer(c.id),
-        }));
-      }
-
-      const assertion = await navigator.credentials.get({ publicKey: options });
-      if (!assertion) {
-        form.submit();
-        return;
-      }
-
-      const authResp = {
-        id: assertion.id,
-        rawId: arrayBufferToB64u(assertion.rawId),
-        type: assertion.type,
-        clientExtensionResults: assertion.getClientExtensionResults(),
-        response: {
-          authenticatorData: arrayBufferToB64u(assertion.response.authenticatorData),
-          clientDataJSON: arrayBufferToB64u(assertion.response.clientDataJSON),
-          signature: arrayBufferToB64u(assertion.response.signature),
-          userHandle: assertion.response.userHandle
-            ? arrayBufferToB64u(assertion.response.userHandle)
-            : null,
-        },
-      };
-
-      const result = await sendAuthCredential(authResp);
-      const redirectUrl = result.redirect_url || "/";
-      window.location.href = redirectUrl;
-    } catch (e) {
-      console.error(e);
-      setError(
-        e.message ||
-          "Biometrisch inloggen is niet gelukt. Probeer het opnieuw of gebruik je 2FA-code."
-      );
-      form.submit();
-    }
-  });
-}
-
-  // ---------- EERSTE LOGIN → PASSKEY-SETUP ----------
-
+  // ---------- OFFER PASSKEY ----------
   async function checkOfferPasskey() {
-    if (!onHttps || !isWebAuthnSupported() || !isMobile()) {
-      return;
-    }
+    if (!onHttps || !isWebAuthnSupported() || !isMobile()) return;
     if (!window.getDeviceHash) return;
 
     const device_hash = await window.getDeviceHash();
@@ -342,13 +386,12 @@ async function tryPasskeyOnLoginForm() {
     }
   }
 
-  // Publieke hooks
+  // ---------- PUBLIC API ----------
   window._passkeys = window._passkeys || {};
   window._passkeys.tryPasskeyOnLoginForm = tryPasskeyOnLoginForm;
   window._passkeys.checkOfferPasskey = checkOfferPasskey;
 
   document.addEventListener("DOMContentLoaded", () => {
-    // login-pagina
     tryPasskeyOnLoginForm();
   });
 })();

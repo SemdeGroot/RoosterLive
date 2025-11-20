@@ -53,18 +53,18 @@ def send_invite_email(user):
       <p style="margin:0 0 18px 0;">Hoi <strong>{display_name}</strong>,</p>
 
       <p style="margin:0 0 12px 0;">
-        Welkom bij de <strong>Apotheek Jansen App</strong>! Met deze (web)app bekijk je het actuele rooster, geef je je beschikbaarheid door, kunnen klanten de voorraad inzien en apothekers medicatiebeoordelingen uitvoeren.
+        Welkom bij de <strong>Apotheek Jansen App</strong>! Met deze (web)app bekijk je onder andere het actuele rooster, geef je je beschikbaarheid door, kunnen klanten de voorraad inzien en apothekers medicatiebeoordelingen uitvoeren.
       </p>
 
       <p style="margin:0 0 12px 0;">
-        Stel hieronder je wachtwoord in. Omdat de app persoonlijke informatie bevat,
-        vragen we je daarna 2-factor authenticatie te activeren.
+        Stel hieronder je wachtwoord in. Omdat de app persoonlijke informatie bevat, vragen we je daarna om 2-factorauthenticatie te activeren. Op sommige apparaten (zoals de meeste telefoons) kun je Face ID of Touch ID gebruiken en de Jansen App op je startscherm plaatsen. De app begeleidt je daar stap voor stap bij.
       </p>
 
       <p style="margin:0 0 12px 0;">
         <a href="{link}"
            style="background:#072a72;color:#ffffff;text-decoration:none;font-weight:700;
-                  padding:12px 20px;border-radius:6px;display:inline-block;">
+                  padding:12px 20px;border-radius:6px;display:inline-block;
+                  font-size:14px;line-height:18px;min-width:220px;text-align:center;">
           Wachtwoord instellen
         </a>
       </p>
