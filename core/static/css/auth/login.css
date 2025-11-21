@@ -456,7 +456,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 22px;
   margin-bottom: 0;
 
   /* Styling volgens jouw instructies */
@@ -499,4 +499,15 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 /* Rood voor fouten */
 .passkey-message.error {
   color: #f44336;
+}
+
+.mobile-only-deeplink {
+  display: none;
+}
+
+/* Alleen tonen op relatief kleine schermen (mobiel / tablet) */
+@media (max-width: 900px) {
+  .mobile-only-deeplink {
+    display: inline;
+  }
 }

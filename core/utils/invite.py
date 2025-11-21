@@ -57,7 +57,7 @@ def send_invite_email(user):
       </p>
 
       <p style="margin:0 0 12px 0;">
-        Stel hieronder je wachtwoord in. Omdat de app persoonlijke informatie bevat, vragen we je daarna om 2-factorauthenticatie te activeren. Op sommige apparaten (zoals de meeste telefoons) kun je Face ID of Touch ID gebruiken en de Jansen App op je startscherm plaatsen. De app begeleidt je daar stap voor stap bij.
+        Stel hieronder je wachtwoord in. Omdat de app persoonlijke informatie bevat, vragen we je daarna om 2-factor authenticatie te activeren. Op sommige apparaten (zoals de meeste telefoons) kun je Face ID of Touch ID gebruiken en de Jansen App op je startscherm plaatsen. De app begeleidt je daar stap voor stap bij.
       </p>
 
       <p style="margin:0 0 12px 0;">

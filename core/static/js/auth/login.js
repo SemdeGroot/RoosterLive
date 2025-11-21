@@ -146,17 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Vervang de span door de link
     span.replaceWith(a);
 
-    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-    if (isMobile) {
-      const el = document.getElementById("manualAddText");
-      if (el) {
-        el.innerHTML = `
-          Kun je niet scannen?
-          Kopieer de geheime sleutel, voeg deze handmatig toe in je authenticator-app en kies voor tijdgebaseerde (TOTP) codes of <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">Klik hier om je authenticator-app te openen</a> 
-        `;
-      }
-    }
-
   })();
 });
 

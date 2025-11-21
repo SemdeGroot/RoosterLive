@@ -28,8 +28,22 @@
       {% endif %}
     </div>
 
-<p class="not-muted" id="manualAddText" style="text-align:center;margin:0 auto; font-size: 15px; margin-bottom: -20px; margin-top: -5px; color: var(--muted)">
-  Kun je niet scannen? Voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes.
+<p
+  class="not-muted"
+  id="manualAddText"
+  style="text-align:center;margin:0 auto; font-size: 15px; margin-bottom: -20px; margin-top: -5px; color: var(--muted)"
+>
+  Kun je niet scannen?
+  {% if otpauth_url %}
+    <span class="mobile-only-deeplink">
+      <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
+        Klik hier om je authenticator-app te openen</a>
+      of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes
+    </span>
+  {% else %}
+    Voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes
+  {% endif %}
+
 </p>
 
     <form method="post" novalidate autocomplete="one-time-code" class="twofa-form">
