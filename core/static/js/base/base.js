@@ -191,8 +191,13 @@ const VAPID =
   async function subscribeFlow() {
     if (!VAPID) { alert('VAPID sleutel ontbreekt.'); return; }
     if (!onHttps) { alert('Notificaties vereisen HTTPS.'); return; }
-    const reg = await registerSW();
-    if (!reg) return;
+    let reg;
+    try {
+      reg = await navigator.serviceWorker.ready;
+    } catch (e) {
+      console.warn('[push] SW niet ready:', e);
+      return;
+    }
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
@@ -270,3 +275,16 @@ const VAPID =
     try { localStorage.setItem('onboardingPushDone', '1'); } catch {}
   })();
 })();
+
+// ---------- BASIS SERVICE WORKER REGISTRATIE ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => {
+        console.log('[sw] Geregistreerd met scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('[sw] Registratie mislukt:', err);
+      });
+  });
+}

@@ -1,0 +1,127 @@
+/* iOS install prompt – Progressier look */
+
+.ios-install-card {
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px var(--shadow);
+  padding: 20px 20px 18px;
+}
+
+.ios-install-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ios-install-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* app row: icoon + naam + domein */
+.ios-app-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--button-color);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.ios-app-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.ios-app-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ios-app-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ios-app-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.ios-app-domain {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* steps */
+.ios-steps.ios-install-steps {
+  text-align: left;
+  margin: 10px 0 4px;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}
+
+.ios-steps.ios-install-steps li {
+  margin: 6px 0 10px;
+  line-height: 1.4;
+}
+
+/* chips voor share + add-to-home-screen */
+.ios-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--button-color);
+  color: var(--ios-accent);
+  vertical-align: middle;
+}
+
+.ios-chip-button {
+  padding-right: 10px;
+}
+
+.ios-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ios-chip-icon svg {
+  display: block;
+}
+
+.ios-chip-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* kruisje van de modal iets subtieler */
+.ios-install-card .push-close {
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 22px;
+}
+
+.ios-install-card .push-close:hover {
+  color: var(--text);
+}

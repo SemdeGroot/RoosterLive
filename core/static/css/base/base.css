@@ -1,12 +1,13 @@
 :root {
-    --bg:        #0d131b;   /* was #0b0f14 → donker marinegrijs */
-    --panel:     #131a24;   /* was #10161d → iets lichter, koel blauwgrijs */
-    --panel-2:   #101720;   /* was #0f141a → iets meer blauw erin */
+    --bg:        #0d131b;   
+    --panel:     #131a24;   
+    --panel-2:   #101720; 
     --text:      #e6edf3;
     --muted:     #9fb2c8;
-    --border:    #223144;   /* subtiel blauwgrijs, niet te fel */
+    --border:    #223144;   
     --shadow:    rgba(0,0,0,.52);
-    --accent:    #072a72;   /* blijft jouw hoofdkleur */
+    --accent:    #072a72; 
+    --ios-accent: #007AFF;
     --button-color: #17212b;
     --button-hover: #1f2d3d;
     --logout-color: #ff6b6b;

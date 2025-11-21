@@ -175,3 +175,12 @@ document.addEventListener('click', (e) => {
     modal.classList.remove('show');
   }
 });
+
+// Globale PWA Service Worker registratie
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('[sw-login] geregistreerd:', reg.scope))
+      .catch((err) => console.warn('[sw-login] registratie mislukt:', err));
+  });
+}
