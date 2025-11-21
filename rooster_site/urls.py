@@ -2,6 +2,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve as static_serve
+from django.views.generic import TemplateView
 
 from core.views.twofa import CustomLoginView, CustomSetupView, CustomQRGeneratorView
 
@@ -14,6 +15,24 @@ two_factor_patterns = [
 urlpatterns = [
     path("", include("core.urls")),
     path("", include((two_factor_patterns, "two_factor"), namespace="two_factor")),
+
+        path(
+        "manifest.webmanifest",
+        TemplateView.as_view(
+            template_name="manifest.webmanifest",
+            content_type="application/manifest+json",
+        ),
+        name="manifest",
+    ),
+
+    path(
+    "service-worker.js",
+    TemplateView.as_view(
+        template_name="service-worker.js",
+        content_type="application/javascript"
+    ),
+    name="service-worker",
+)
 ]
 
 # Media: ook bij DEBUG=False via Django serveren (zolang SERVE_MEDIA_LOCALLY=True)

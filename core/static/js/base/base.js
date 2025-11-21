@@ -191,11 +191,11 @@ const VAPID =
   async function subscribeFlow() {
     if (!VAPID) { alert('VAPID sleutel ontbreekt.'); return; }
     if (!onHttps) { alert('Notificaties vereisen HTTPS.'); return; }
-    let reg;
-    try {
-      reg = await navigator.serviceWorker.ready;
-    } catch (e) {
-      console.warn('[push] SW niet ready:', e);
+
+    // Zorg dat de SW écht geregistreerd is
+    const reg = await registerSW();
+    if (!reg) {
+      alert('Service worker kon niet worden geregistreerd. Probeer het later opnieuw.');
       return;
     }
 

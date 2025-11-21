@@ -115,7 +115,7 @@
 
 /* kruisje van de modal iets subtieler */
 .ios-install-card .push-close {
-  top: 10px;
+  top: 15px;
   right: 10px;
   background: transparent;
   color: var(--muted);
