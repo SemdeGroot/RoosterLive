@@ -17,21 +17,21 @@ urlpatterns = [
     path("", include((two_factor_patterns, "two_factor"), namespace="two_factor")),
 
         path(
-        "manifest.webmanifest",
+        "manifest.v2.webmanifest",
         TemplateView.as_view(
-            template_name="manifest.webmanifest",
+            template_name="manifest.v2.webmanifest",
             content_type="application/manifest+json",
         ),
-        name="manifest",
+        name="manifest.v2",
     ),
 
     path(
-    "service-worker.js",
+    "service_worker.v2.js",
     TemplateView.as_view(
-        template_name="service-worker.js",
+        template_name="service_worker.v2.js",
         content_type="application/javascript"
     ),
-    name="service-worker",
+    name="service_worker.v2",
 )
 ]
 

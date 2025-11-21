@@ -116,7 +116,7 @@ const VAPID =
 
   async function registerSW() {
     try {
-      const reg = await navigator.serviceWorker.register('/service-worker.js');
+      const reg = await navigator.serviceWorker.register('/service_worker.v2.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
       console.warn('[push] SW registratie faalde:', e);
@@ -279,7 +279,7 @@ const VAPID =
 // ---------- BASIS SERVICE WORKER REGISTRATIE ----------
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('/service_worker.v2.js')
       .then((reg) => {
         console.log('[sw] Geregistreerd met scope:', reg.scope);
       })

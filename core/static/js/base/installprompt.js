@@ -41,25 +41,17 @@
   // ANDROID: INSTALL PROMPT VIA EIGEN MODAL + "INSTALLEER APP" KNOP
   // ---------------------------------------------------------------------------
 
-  function setupAndroidInstallPrompt() {
-    if (!('BeforeInstallPromptEvent' in window)) return;
-
+    function setupAndroidInstallPrompt() {
     let deferredPrompt = null;
     const SESSION_KEY = 'pwa_android_install_prompt_shown_v1';
 
     window.addEventListener('beforeinstallprompt', (event) => {
-      // Browser mini-infobar onderdrukken
-      event.preventDefault();
+        event.preventDefault();
 
-      // Als we in deze sessie al een Android installprompt hebben getoond, doe niks
-      if (sessionStorage.getItem(SESSION_KEY) === '1') {
-        return;
-      }
+        if (sessionStorage.getItem(SESSION_KEY) === '1') return;
 
-      deferredPrompt = event;
-      sessionStorage.setItem(SESSION_KEY, '1');
-
-      openAndroidInstallModal(() => deferredPrompt);
+        deferredPrompt = event;
+        showAndroidInstallModal(deferredPrompt);
     });
 
     // Helper om modal te bouwen en de knop aan deferredPrompt te koppelen
@@ -101,11 +93,11 @@
           </section>
 
           <p class="android-install-text">
-            Installeer deze app op je apparaat voor snelle toegang, net als een normale app.
+            Installeer de Apo Jansen app op je apparaat voor snelle toegang, zo werkt het net als een normale app.
           </p>
 
           <div class="android-install-actions">
-            <button type="button" class="btn-primary android-install-cta">
+            <button type="button" class="android-install-cta">
               Installeer app
             </button>
           </div>
@@ -164,7 +156,7 @@
 
     setTimeout(() => {
       openIosInstallModal();
-    }, 2000);
+    }, 500);
   }
 
   function openIosInstallModal() {

@@ -125,3 +125,32 @@
 .ios-install-card .push-close:hover {
   color: var(--text);
 }
+
+.android-install-actions .android-install-cta {
+  width: 100%;
+  background: var(--accent);        /* #072a72 */
+  color: #fff;
+  border: 1px solid var(--border);  /* zelfde als inputs */
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.android-install-actions .android-install-cta:hover {
+  background: var(--button-hover);
+  border-color: var(--accent);      /* border hetzelfde houden */
+}
+
+.android-install-actions .android-install-cta:active {
+  transform: scale(0.99);
+}
+
+.android-install-actions .android-install-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--border);
+}

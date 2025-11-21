@@ -179,7 +179,7 @@ document.addEventListener('click', (e) => {
 // Globale PWA Service Worker registratie
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('/service_worker.v2.js')
       .then((reg) => console.log('[sw-login] geregistreerd:', reg.scope))
       .catch((err) => console.warn('[sw-login] registratie mislukt:', err));
   });
