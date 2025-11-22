@@ -17,7 +17,7 @@
       <div class="card-inner">
         <h3 style="margin-top:0;">{% if editing_group %}Groep bewerken{% else %}Groep toevoegen{% endif %}</h3>
 
-        <form method="post">
+        <form method="post" autocomplete="off">
           {% csrf_token %}
           <input type="hidden" name="form_kind" value="group">
           {% if editing_group_id %}<input type="hidden" name="group_id" value="{{ editing_group_id }}">{% endif %}
@@ -102,7 +102,7 @@
     <div class="card">
       <div class="card-inner">
         <h3 style="margin-top:0;">Gebruiker toevoegen</h3>
-        <form method="post">
+        <form method="post" autocomplete="off">
           {% csrf_token %}
           <input type="hidden" name="form_kind" value="user_create">
 

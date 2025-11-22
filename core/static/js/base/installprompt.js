@@ -230,10 +230,11 @@
           <li>
             Kies
             <span class="ios-chip ios-chip-button">
+              <span class="ios-chip-label">Zet op beginscherm</span>
               <span class="ios-chip-icon">
                 <!-- Add to Home Screen icon -->
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                     xmlns="http://www.w3.org/2000/svg">
+                    xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 12H12M15 12H12M12 12V9M12 12V15"
                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                         stroke-linejoin="round"></path>
@@ -242,13 +243,15 @@
                         stroke-linejoin="round"></path>
                 </svg>
               </span>
-              <span class="ios-chip-label">Zet op beginscherm</span>
             </span>
           </li>
 
           <!-- Stap 3 -->
           <li>
-            Klik rechtsboven op <strong>‘Voeg toe’</strong>.
+            Klik rechtsboven op 
+            <span class="ios-chip ios-chip-button">
+              <span class="ios-chip-label">Voeg toe</span>
+            </span>.
           </li>
 
           <!-- Stap 4 -->
