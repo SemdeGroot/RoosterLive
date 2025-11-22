@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve as static_serve
 from django.views.generic import TemplateView
+from django.views.decorators.cache import never_cache
 
 from core.views.twofa import CustomLoginView, CustomSetupView, CustomQRGeneratorView
 
@@ -17,22 +18,25 @@ urlpatterns = [
     path("", include((two_factor_patterns, "two_factor"), namespace="two_factor")),
 
         path(
-        "manifest.v2.webmanifest",
-        TemplateView.as_view(
-            template_name="manifest.v2.webmanifest",
+        "manifest.json",
+        never_cache(TemplateView.as_view(
+            template_name="manifest.json",
             content_type="application/manifest+json",
-        ),
-        name="manifest.v2",
+        )),
+        name="manifest.json",
     ),
 
-    path(
+
+path(
     "service_worker.v2.js",
-    TemplateView.as_view(
-        template_name="service_worker.v2.js",
-        content_type="application/javascript"
+    never_cache(
+        TemplateView.as_view(
+            template_name="service_worker.v2.js",
+            content_type="application/javascript",
+        )
     ),
     name="service_worker.v2",
-)
+),
 ]
 
 # Media: ook bij DEBUG=False via Django serveren (zolang SERVE_MEDIA_LOCALLY=True)

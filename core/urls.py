@@ -32,22 +32,6 @@ from core.views.passkeys import (
     passkey_skip,
 )
 
-
-class ServiceWorkerView(View):
-    def get(self, request, *args, **kwargs):
-        # zoekt: core/static/pwa/service-worker.js (via staticfiles)
-        sw_path = finders.find('pwa/service-worker.js')
-        if not sw_path:
-            return HttpResponseNotFound('/* service-worker.js not found */')
-        with open(sw_path, 'rb') as f:
-            content = f.read()
-        resp = HttpResponse(content, content_type='application/javascript')
-        # laat de SW root-scope claimen
-        resp['Service-Worker-Allowed'] = '/'
-        # kleine cache-buster zodat updates snel door komen
-        resp['Cache-Control'] = 'no-cache'
-        return resp
-
 urlpatterns = [
     path("", home, name="home"),
     path("logout/", logout_view, name="logout"),

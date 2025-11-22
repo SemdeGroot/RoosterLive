@@ -1,6 +1,5 @@
-{% load static %}
 {
-    "name": "Apotheek Jansen",
+  "name": "Apotheek Jansen",
   "short_name": "Apo Jansen",
   "start_url": "/?source=pwa",
   "scope": "/",
@@ -10,13 +9,13 @@
 
   "icons": [
     {
-      "src": "{% static 'pwa/icons/android-chrome-192x192.png' %}",
+      "src": "/static/pwa/icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "{% static 'img/app_icon_trans-512x512.png' %}",
+      "src": "/static/img/app_icon_trans-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -25,13 +24,13 @@
 
   "screenshots": [
     {
-      "src": "{% static 'img/screenshot1.png' %}",
+      "src": "/static/img/screenshot1.png",
       "sizes": "652x1412",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
-      "src": "{% static 'img/screenshot2.png' %}",
+      "src": "/static/img/screenshot2.png",
       "sizes": "652x1412",
       "type": "image/png",
       "form_factor": "narrow"

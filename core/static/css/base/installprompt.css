@@ -113,17 +113,44 @@
   color: var(--text);
 }
 
-/* kruisje van de modal iets subtieler */
-.ios-install-card .push-close {
-  top: 15px;
-  right: 10px;
-  background: transparent;
+/* --- Universeel kruisje voor iOS + Android (zelfde als contact-close) --- */
+
+.push-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .1s;
+  border: var(--button-hovermain);
   color: var(--muted);
-  font-size: 22px;
+  background: transparent;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20; /* boven alles */
 }
 
-.ios-install-card .push-close:hover {
+/* SVG binnen kruisje */
+.push-close svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
+}
+
+/* Hover-effect identiek aan login.css */
+.push-close:hover {
   color: var(--text);
+  background-color: var(--button-hovermain);
+  border: 1px solid var(--border);
 }
 
 .android-install-actions .android-install-cta {
@@ -136,8 +163,8 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
 

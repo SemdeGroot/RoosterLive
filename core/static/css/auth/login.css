@@ -397,7 +397,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px; height: 36px;        /* vierkante klikbox */
+  width: 44px; height: 44px;        /* vierkante klikbox */
   border-radius: 8px;
   cursor: pointer;
   transition: all .1s;
@@ -406,7 +406,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 }
 
 .contact-close svg {
-  width: 18px; height: 18px;        /* icoon-grootte */
+  width: 24px; height: 24px;        /* icoon-grootte */
   display: block;                   /* geen inline whitespace */
   stroke: currentColor;
   stroke-width: 2;

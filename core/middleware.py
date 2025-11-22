@@ -14,7 +14,7 @@ SAFE_URLNAMES = {
 
 SAFE_PATH_PREFIXES = (
     "/static/", "/media/", "/favicon.ico",
-    "/service-worker.js", "/__reload__/",
+    "/service_worker.v2.js", "/__reload__/",
 )
 
 class Enforce2FAMiddleware(MiddlewareMixin):

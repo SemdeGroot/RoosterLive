@@ -276,15 +276,35 @@ const VAPID =
   })();
 })();
 
-// ---------- BASIS SERVICE WORKER REGISTRATIE ----------
+// ---------- SERVICE WORKER REGISTRATIE + CLEANUP VIA ?cleanup=1 ----------
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service_worker.v2.js')
-      .then((reg) => {
+    (async () => {
+      try {
+        // 1) Normaal gewoon registreren
+        const reg = await navigator.serviceWorker.register('/service_worker.v2.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
-      })
-      .catch((err) => {
-        console.warn('[sw] Registratie mislukt:', err);
-      });
+
+        // 2) Optioneel: cleanup-truc via ?cleanup=1
+        const url = new URL(window.location.href);
+        const shouldCleanup = url.searchParams.get('sw_cleanup') === '1';
+
+        if (shouldCleanup) {
+          console.log('[sw] cleanup=1 in URL → FULL_SW_CLEANUP message sturen');
+
+          const readyReg = await navigator.serviceWorker.ready;
+          if (readyReg.active) {
+            readyReg.active.postMessage({ type: 'FULL_SW_CLEANUP' });
+          }
+
+          // query-param uit de URL halen en pagina opnieuw laden
+          url.searchParams.delete('sw_cleanup');
+          window.location.replace(url.toString());
+        }
+      } catch (err) {
+        console.warn('[sw] Fout bij registratie / cleanup flow:', err);
+      }
+    })();
   });
 }

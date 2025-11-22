@@ -42,104 +42,105 @@
   // ---------------------------------------------------------------------------
 
     function setupAndroidInstallPrompt() {
-    let deferredPrompt = null;
-    const SESSION_KEY = 'pwa_android_install_prompt_shown_v1';
+  let deferredPrompt = null;
+  const SESSION_KEY = 'pwa_android_install_prompt_shown_v1';
 
-    window.addEventListener('beforeinstallprompt', (event) => {
-        event.preventDefault();
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
 
-        if (sessionStorage.getItem(SESSION_KEY) === '1') return;
+    // Per sessie maar één keer
+    if (sessionStorage.getItem(SESSION_KEY) === '1') return;
 
-        deferredPrompt = event;
-        showAndroidInstallModal(deferredPrompt);
-    });
+    deferredPrompt = event;
+    openAndroidInstallModal();
+  });
 
-    // Helper om modal te bouwen en de knop aan deferredPrompt te koppelen
-    function openAndroidInstallModal(getDeferredPrompt) {
-      if (document.getElementById('androidInstallModal')) return;
+  function openAndroidInstallModal() {
+    if (document.getElementById('androidInstallModal')) return;
 
-      const appName =
-        document.querySelector('meta[name="application-name"]')?.content ||
-        document.title ||
-        'Mijn App';
+    const appName =
+      document.querySelector('meta[name="application-name"]')?.content ||
+      document.title ||
+      'Mijn App';
 
-      const iconHref = document.querySelector('link[rel="apple-touch-icon"]')?.href || '';
-      const appDomain = location.host;
+    const iconHref = document.querySelector('link[rel="apple-touch-icon"]')?.href || '';
+    const appDomain = location.host;
 
-      const modal = document.createElement('div');
-      modal.id = 'androidInstallModal';
-      modal.className = 'push-modal android-install-modal';
-      modal.setAttribute('role', 'dialog');
-      modal.setAttribute('aria-modal', 'true');
-      modal.setAttribute('aria-hidden', 'false');
+    const modal = document.createElement('div');
+    modal.id = 'androidInstallModal';
+    modal.className = 'push-modal android-install-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-hidden', 'false');
 
-      modal.innerHTML = `
-        <div class="push-backdrop"></div>
-        <div class="push-card ios-install-card android-install-card">
-          <button class="push-close" type="button" aria-label="Sluiten">&times;</button>
+    modal.innerHTML = `
+      <div class="push-backdrop"></div>
+      <div class="push-card ios-install-card android-install-card">
+        <button class="push-close" type="button" aria-label="Sluiten">&times;</button>
 
-          <header class="ios-install-header">
-            <h2 class="ios-install-title">Installeer de app</h2>
-          </header>
+        <header class="ios-install-header">
+          <h2 class="ios-install-title">Installeer de app</h2>
+        </header>
 
-          <section class="ios-app-row">
-            <div class="ios-app-icon">
-              ${iconHref ? `<img src="${iconHref}" alt="${appName} icoon" loading="lazy">` : ''}
-            </div>
-            <div class="ios-app-meta">
-              <div class="ios-app-name">${appName}</div>
-              <div class="ios-app-domain">${appDomain}</div>
-            </div>
-          </section>
-
-          <p class="android-install-text">
-            Installeer de Apo Jansen app op je apparaat voor snelle toegang, zo werkt het net als een normale app.
-          </p>
-
-          <div class="android-install-actions">
-            <button type="button" class="android-install-cta">
-              Installeer app
-            </button>
+        <section class="ios-app-row">
+          <div class="ios-app-icon">
+            ${iconHref ? `<img src="${iconHref}" alt="${appName} icoon" loading="lazy">` : ''}
           </div>
+          <div class="ios-app-meta">
+            <div class="ios-app-name">${appName}</div>
+            <div class="ios-app-domain">${appDomain}</div>
+          </div>
+        </section>
+
+        <p class="android-install-text">
+          Installeer de Apo Jansen app op je apparaat voor snelle toegang, zo werkt het net als een normale app.
+        </p>
+
+        <div class="android-install-actions">
+          <button type="button" class="android-install-cta">
+            Installeer app
+          </button>
         </div>
-      `;
+      </div>
+    `;
 
-      document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-      const backdrop = modal.querySelector('.push-backdrop');
-      const closeBtn = modal.querySelector('.push-close');
-      const ctaBtn = modal.querySelector('.android-install-cta');
+    const backdrop = modal.querySelector('.push-backdrop');
+    const closeBtn = modal.querySelector('.push-close');
+    const ctaBtn = modal.querySelector('.android-install-cta');
 
-      const close = () => {
-        modal.setAttribute('aria-hidden', 'true');
-        setTimeout(() => {
-          if (modal.parentNode) modal.parentNode.removeChild(modal);
-        }, 250);
-      };
+    const close = () => {
+      modal.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        if (modal.parentNode) modal.parentNode.removeChild(modal);
+      }, 250);
+    };
 
-      backdrop.addEventListener('click', close);
-      closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    closeBtn.addEventListener('click', close);
 
-      ctaBtn.addEventListener('click', async () => {
-        const promptEvent = getDeferredPrompt();
-        if (!promptEvent) {
-          console.warn('[pwa] Geen deferred install prompt beschikbaar voor Android.');
-          close();
-          return;
-        }
+    ctaBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        console.warn('[pwa] Geen deferred install prompt beschikbaar voor Android.');
+        close();
+        return;
+      }
 
-        try {
-          const result = await promptEvent.prompt(); // Richer UI met screenshots uit manifest
-          console.log('[pwa] Android install outcome:', result.outcome);
-        } catch (err) {
-          console.warn('[pwa] Android install error:', err);
-        } finally {
-          // In alle gevallen modal sluiten; Chrome regelt verder zelf de UI
-          close();
-        }
-      });
-    }
+      try {
+        const result = await deferredPrompt.prompt(); // Richer UI
+        console.log('[pwa] Android install outcome:', result.outcome);
+      } catch (err) {
+        console.warn('[pwa] Android install error:', err);
+      } finally {
+        // Markeer als getoond in deze sessie
+        sessionStorage.setItem(SESSION_KEY, '1');
+        deferredPrompt = null;
+        close();
+      }
+    });
   }
+}
 
   // ---------------------------------------------------------------------------
   // iOS: PROGRESSIER-STYLE INSTALL PROMPT (PER SESSIE)
@@ -184,7 +185,11 @@
     modal.innerHTML = `
       <div class="push-backdrop"></div>
       <div class="push-card ios-install-card">
-        <button class="push-close" type="button" aria-label="Sluiten">&times;</button>
+        <button class="push-close" type="button" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
 
         <header class="ios-install-header">
           <h2 class="ios-install-title">Installeer de app</h2>
