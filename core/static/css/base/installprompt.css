@@ -115,7 +115,7 @@
 
 /* --- Universeel kruisje voor iOS + Android (zelfde als contact-close) --- */
 
-.push-close {
+.installprompt-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,15 +128,15 @@
   color: var(--muted);
   background: transparent;
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   z-index: 20; /* boven alles */
 }
 
 /* SVG binnen kruisje */
-.push-close svg {
-  width: 24px;
-  height: 24px;
+.installprompt-close svg {
+  width: 24px !important;
+  height: 24px !important;
   display: block;
   stroke: currentColor;
   stroke-width: 2;
@@ -144,13 +144,6 @@
   stroke-linejoin: round;
   fill: none;
   pointer-events: none;
-}
-
-/* Hover-effect identiek aan login.css */
-.push-close:hover {
-  color: var(--text);
-  background-color: var(--button-hovermain);
-  border: 1px solid var(--border);
 }
 
 .android-install-actions .android-install-cta {

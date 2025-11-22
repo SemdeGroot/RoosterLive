@@ -107,7 +107,7 @@
     document.body.appendChild(modal);
 
     const backdrop = modal.querySelector('.push-backdrop');
-    const closeBtn = modal.querySelector('.push-close');
+    const closeBtn = modal.querySelector('.installprompt-close');
     const ctaBtn = modal.querySelector('.android-install-cta');
 
     const close = () => {
@@ -185,8 +185,8 @@
     modal.innerHTML = `
       <div class="push-backdrop"></div>
       <div class="push-card ios-install-card">
-        <button class="push-close" type="button" aria-label="Sluiten">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <button class="installprompt-close" type="button" aria-label="Sluiten">
+          <svg width="24px" height="24px" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
@@ -251,12 +251,12 @@
             Klik rechtsboven op 
             <span class="ios-chip ios-chip-button">
               <span class="ios-chip-label">Voeg toe</span>
-            </span>.
+            </span>
           </li>
 
           <!-- Stap 4 -->
           <li>
-            Zoek daarna het <strong>${appName}</strong> icoon op je beginscherm.
+            Zoek daarna het <strong>${appName}</strong> icoon op je beginscherm!
           </li>
 
         </ol>
@@ -266,7 +266,7 @@
     document.body.appendChild(modal);
 
     const backdrop = modal.querySelector('.push-backdrop');
-    const closeBtn = modal.querySelector('.push-close');
+    const closeBtn = modal.querySelector('.installprompt-close');
 
     const close = () => {
       modal.setAttribute('aria-hidden', 'true');
