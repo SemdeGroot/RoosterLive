@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
+from django.core.files.storage import default_storage
+
 from ..forms import AvailabilityUploadForm
 from ._helpers import can, VOORRAAD_DIR, read_table, save_table_upload_with_hash
 
@@ -15,18 +17,41 @@ def medications_view(request):
 
     key = "medications"
     existing_path = None
-    for ext in (".xlsx", ".xls", ".csv"):
-        # Nieuwe naamgeving: medications.<hash>.ext
-        matches = sorted(VOORRAAD_DIR.glob(f"{key}.*{ext}"))
-        if matches:
-            existing_path = matches[0]
-            break
 
-        # Backwards compatible: oude naam zonder hash (medications.csv/xlsx/xls)
-        legacy = VOORRAAD_DIR / f"{key}{ext}"
-        if legacy.exists():
-            existing_path = legacy
-            break
+    # Bestaand bestand zoeken
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        # DEV: lokaal
+        for ext in (".xlsx", ".xls", ".csv"):
+            matches = sorted(VOORRAAD_DIR.glob(f"{key}.*{ext}"))
+            if matches:
+                existing_path = matches[-1]
+                break
+
+            legacy = VOORRAAD_DIR / f"{key}{ext}"
+            if legacy.exists():
+                existing_path = legacy
+                break
+    else:
+        # PROD: S3
+        rel_dir = "voorraad"
+        try:
+            _dirs, files = default_storage.listdir(rel_dir)
+        except FileNotFoundError:
+            files = []
+
+        for ext in (".xlsx", ".xls", ".csv"):
+            hashed = sorted(
+                name for name in files
+                if name.startswith(f"{key}.") and name.endswith(ext)
+            )
+            if hashed:
+                existing_path = f"{rel_dir}/{hashed[-1]}"
+                break
+
+            legacy_name = f"{key}{ext}"
+            if legacy_name in files:
+                existing_path = f"{rel_dir}/{legacy_name}"
+                break
 
     form = AvailabilityUploadForm()
     if request.method == "POST":
@@ -42,9 +67,8 @@ def medications_view(request):
                 messages.error(request, "Alleen CSV of Excel toegestaan.")
                 return redirect(request.path)
 
-            # Slaat bestand op als medications.<hash><ext>
             try:
-                dest = save_table_upload_with_hash(f, VOORRAAD_DIR, key, clear_existing=True)
+                save_table_upload_with_hash(f, VOORRAAD_DIR, key, clear_existing=True)
             except ValueError:
                 messages.error(request, "Alleen CSV of Excel toegestaan.")
                 return redirect(request.path)
@@ -61,10 +85,14 @@ def medications_view(request):
         columns = [str(c) for c in df.columns]
         rows = df.values.tolist()
 
+    file_name = None
+    if existing_path:
+        file_name = Path(str(existing_path)).name  # Path of string → altijd .name
+
     ctx = {
         "form": form,
         "has_file": existing_path is not None,
-        "file_name": existing_path.name if existing_path else None,
+        "file_name": file_name,
         "columns": columns,
         "rows": rows,
         "title": "Voorraad",

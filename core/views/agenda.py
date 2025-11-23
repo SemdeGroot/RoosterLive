@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
+from django.core.files.storage import default_storage
 
 from ._helpers import (
     can,
@@ -42,20 +43,50 @@ def agenda(request):
 
     context = { "year": datetime.now().year }
 
-    # Zoek eerst een gehashte agenda.<hash>.pdf, anders fallback naar legacy agenda.pdf
-    pdf_path = None
-    candidates = sorted(AGENDA_DIR.glob("agenda.*.pdf"))
-    if candidates:
-        pdf_path = candidates[-1]  # nieuwste / enige
-    elif AGENDA_FILE.exists():
-        pdf_path = AGENDA_FILE
+    # Zoek en lees de agenda-PDF
+    pdf_bytes = None
 
-    if not pdf_path or not pdf_path.exists():
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        # DEV: lokaal filesystem
+        pdf_path = None
+        candidates = sorted(AGENDA_DIR.glob("agenda.*.pdf"))
+        if candidates:
+            pdf_path = candidates[-1]  # nieuwste / enige
+        elif AGENDA_FILE.exists():
+            pdf_path = AGENDA_FILE
+
+        if pdf_path and pdf_path.exists():
+            pdf_bytes = pdf_path.read_bytes()
+    else:
+        # PROD: S3 via default_storage
+        # bestanden staan onder "agenda/" in je 'media' locatie
+        rel_dir = "agenda"
+        try:
+            _dirs, files = default_storage.listdir(rel_dir)
+        except FileNotFoundError:
+            files = []
+
+        pdf_storage_path = None
+        # Eerst nieuwe naamgeving: agenda.<hash>.pdf
+        hashed = sorted(
+            name for name in files
+            if name.startswith("agenda.") and name.endswith(".pdf")
+        )
+        if hashed:
+            pdf_storage_path = f"{rel_dir}/{hashed[-1]}"
+        elif "agenda.pdf" in files:
+            # backwards compatible
+            pdf_storage_path = f"{rel_dir}/agenda.pdf"
+
+        if pdf_storage_path and default_storage.exists(pdf_storage_path):
+            with default_storage.open(pdf_storage_path, "rb") as f:
+                pdf_bytes = f.read()
+
+    if not pdf_bytes:
         context["page_urls"] = []
         context["no_agenda"] = True
         return render(request, "agenda/index.html", context)
 
-    pdf_bytes = pdf_path.read_bytes()
     h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_AGENDA_DIR)
     context["page_urls"] = [
         f"{settings.MEDIA_URL}cache/agenda/{h}/page_{i:03d}.png" for i in range(1, n + 1)

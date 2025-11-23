@@ -12,6 +12,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
+from fnmatch import fnmatch
+from io import BytesIO, StringIO
+
 # ===== PATHS =====
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 MEDIA_URL = settings.MEDIA_URL
@@ -123,19 +126,48 @@ def clear_dir(p: Path):
             except Exception:
                 pass
 
-def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300):
+def _media_relpath(target_dir: Path) -> str:
     """
-    Render PDF -> PNG's in media/cache/<hash>/page_XXX.png.
+    Geeft het pad van target_dir relatief t.o.v. MEDIA_ROOT, als 'subdir/subdir2'.
+    """
+    try:
+        rel = target_dir.relative_to(MEDIA_ROOT)
+    except ValueError:
+        raise ValueError("target_dir moet onder MEDIA_ROOT liggen")
+    return str(rel).replace("\\", "/").strip("/")
 
-    - In DEBUG: lokaal onder MEDIA_ROOT/cache (Path-based, zoals voorheen).
-    - In PROD: via default_storage (S3), zodat CloudFront/CDN ze kan serveren.
-    Return: (hash, n_pages)
+def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300, cache_root: Path | None = None):
+    """
+    Render PDF -> PNG's in media/cache/<subdir>/<hash>/page_XXX.png.
+
+    - In DEV (of als SERVE_MEDIA_LOCALLY=True): schrijf naar het lokale filesystem
+      onder settings.CACHE_DIR.
+    - In PROD: schrijf naar S3 via default_storage, zodat CloudFront/CDN ze kan serveren.
+
+    Parameters
+    ----------
+    pdf_bytes : bytes
+        De inhoud van de PDF.
+    dpi : int
+        Resolutie van gerenderde PNG's.
+    cache_root : Path | None
+        Lokale map onder CACHE_DIR voor deze cache:
+          bijv. CACHE_AGENDA_DIR (= CACHE_DIR / "agenda")
+                CACHE_NEWS_DIR   (= CACHE_DIR / "news")
+                week_cache_dir   (= CACHE_DIR / "rooster" / "weekNN")
+        In DEV gebruiken we dit als echte directory.
+        In PROD gebruiken we het alleen om de S3-prefix te bepalen
+        (relatief pad t.o.v. CACHE_DIR).
     """
     h = pdf_hash(pdf_bytes)
 
-    if settings.DEBUG:
-        # LOKAAL: gebruik filesystem
-        out_dir = CACHE_DIR / h
+    # Standaard: direct onder CACHE_DIR
+    if cache_root is None:
+        cache_root = CACHE_DIR
+
+    # === DEV / lokaal cache ===
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        out_dir = cache_root / h
         out_dir.mkdir(parents=True, exist_ok=True)
 
         if not any(out_dir.glob("page_*.png")):
@@ -147,10 +179,24 @@ def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300):
         n_pages = len(list(out_dir.glob("page_*.png")))
         return h, n_pages
 
-    # PROD: gebruik S3 via default_storage; paden zijn relatief t.o.v. 'media/'
-    base_dir = f"cache/{h}"
+    # === PROD / S3 cache ===
+    # Bepaal relatieve subdir t.o.v. CACHE_DIR, bijv.:
+    #   cache_root = CACHE_DIR / "agenda"        -> rel = "agenda"
+    #   cache_root = CACHE_DIR / "news"          -> rel = "news"
+    #   cache_root = CACHE_DIR / "rooster/week01"-> rel = "rooster/week01"
+    try:
+        rel = cache_root.relative_to(CACHE_DIR)
+        rel_str = str(rel).replace("\\", "/").strip("/")
+    except ValueError:
+        # fallback: als cache_root niet onder CACHE_DIR ligt
+        rel_str = ""
 
-    # Kijk of er al PNG's zijn
+    if rel_str:
+        base_dir = f"cache/{rel_str}/{h}"
+    else:
+        base_dir = f"cache/{h}"
+
+    # Kijk of er al PNG's zijn in S3
     try:
         _, files = default_storage.listdir(base_dir)
     except FileNotFoundError:
@@ -159,25 +205,47 @@ def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300):
     png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
 
     if not png_files:
-        # Nog niet gerenderd → nu renderen naar S3
+        # Nog niet gerenderd → render naar S3
         with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
             for i, page in enumerate(doc):
                 pix = page.get_pixmap(dpi=dpi, alpha=False)
                 file_path = f"{base_dir}/page_{i+1:03d}.png"
                 default_storage.save(file_path, ContentFile(pix.tobytes("png")))
-        # opnieuw ophalen
+
+        # opnieuw ophalen voor het aantal pagina's
         _, files = default_storage.listdir(base_dir)
         png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
 
     n_pages = len(png_files)
     return h, n_pages
 
-def read_table(fp: Path):
+def read_table(fp):
+    """
+    Leest een CSV/Excel:
+
+    - DEV: fp is meestal een Path op het filesystem.
+    - PROD: fp is een storage-pad (string) voor default_storage (S3).
+
+    Retourneert (df, error).
+    """
     try:
-        if fp.suffix.lower() in (".xlsx", ".xls"):
-            df = pd.read_excel(fp)
+        if isinstance(fp, Path):
+            suffix = fp.suffix.lower()
+            if suffix in (".xlsx", ".xls"):
+                df = pd.read_excel(fp)
+            else:
+                df = pd.read_csv(fp, sep=None, engine="python", encoding="utf-8-sig")
         else:
-            df = pd.read_csv(fp, sep=None, engine="python", encoding="utf-8-sig")
+            # String-pad voor storage (S3 of FileSystemStorage)
+            suffix = Path(str(fp)).suffix.lower()
+            with default_storage.open(fp, "rb") as f:
+                raw = f.read()
+
+            if suffix in (".xlsx", ".xls"):
+                df = pd.read_excel(BytesIO(raw))
+            else:
+                text = raw.decode("utf-8-sig", errors="replace")
+                df = pd.read_csv(StringIO(text), sep=None, engine="python")
         df.columns = [str(c) for c in df.columns]
         return df, None
     except Exception as e:
@@ -220,16 +288,18 @@ def hash_from_img_url(img_url: str) -> str | None:
         return parts[1]
     return None
 
-def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True) -> Path:
+def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True):
     """
-    Slaat een geüploade PDF op als <base_name>.<hash>.pdf in target_dir.
+    Slaat een geüploade PDF op als <base_name>.<hash>.pdf.
 
-    - uploaded_file: Django UploadedFile (request.FILES["file"])
-    - target_dir: map waarin de PDF moet komen (bijv. AGENDA_DIR, weekmap voor rooster)
-    - base_name: prefix van de naam (bijv. "rooster", "agenda", "nazendingen", "news", "policy")
-    - clear_existing: als True → eerst hele target_dir leegmaken
+    DEV (SERVE_MEDIA_LOCALLY=True of DEBUG=True):
+        - Schrijft direct naar filesystem onder target_dir (Path).
+    PROD:
+        - Schrijft naar S3 via default_storage, onder 'media/<subdir>/<base_name>.<hash>.pdf'.
 
-    Retourneert: Path naar het opgeslagen PDF-bestand.
+    Retourneert:
+        DEV: Path naar lokaal bestand
+        PROD: storage-pad (string) relatief t.o.v. 'media' locatie, bv. 'agenda/agenda.<hash>.pdf'
     """
     # PDF in memory lezen (is nodig om te hashen)
     if hasattr(uploaded_file, "chunks"):
@@ -239,24 +309,45 @@ def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, c
 
     h = pdf_hash(pdf_bytes)
 
-    target_dir.mkdir(parents=True, exist_ok=True)
+    # === DEV / lokaal ===
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        target_dir.mkdir(parents=True, exist_ok=True)
+        if clear_existing:
+            clear_dir(target_dir)
+
+        dest = target_dir / f"{base_name}.{h}.pdf"
+        dest.write_bytes(pdf_bytes)
+        return dest
+
+    # === PROD / S3 ===
+    rel_dir = _media_relpath(target_dir)  # bv. "agenda", "policies", "nazendingen"
+    # bestaande bestanden opruimen als clear_existing=True
     if clear_existing:
-        clear_dir(target_dir)
+        try:
+            _, files = default_storage.listdir(rel_dir)
+        except FileNotFoundError:
+            files = []
+        for name in files:
+            if name.startswith(f"{base_name}.") and name.endswith(".pdf"):
+                default_storage.delete(f"{rel_dir}/{name}")
 
-    dest = target_dir / f"{base_name}.{h}.pdf"
-    dest.write_bytes(pdf_bytes)
-    return dest
+    filename = f"{base_name}.{h}.pdf"
+    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
+    default_storage.save(storage_path, ContentFile(pdf_bytes))
+    return storage_path
 
-def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True) -> Path:
+def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True):
     """
     Slaat een geüploade CSV/Excel op als <base_name>.<hash><ext> in target_dir.
 
-    - uploaded_file: Django UploadedFile (request.FILES["file"])
-    - target_dir: map waarin het bestand moet komen (bijv. VOORRAAD_DIR)
-    - base_name: prefix van de naam (bijv. "medications")
-    - clear_existing: als True → bestaande CSV/Excel-bestanden in target_dir verwijderen
+    DEV:
+        - Lokaal filesystem.
+    PROD:
+        - S3 via default_storage onder 'media/<subdir>/<base_name>.<hash><ext>'.
 
-    Retourneert: Path naar het opgeslagen bestand.
+    Retourneert:
+        DEV: Path object
+        PROD: storage-pad (string) relatief t.o.v. 'media'.
     """
     # Bestand in memory lezen (voor hashing)
     if hasattr(uploaded_file, "chunks"):
@@ -268,23 +359,41 @@ def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str,
     if ext not in (".csv", ".xlsx", ".xls"):
         raise ValueError("Unsupported table extension")
 
-    # Zelfde hash-functie als voor PDF
     h = pdf_hash(file_bytes)
 
-    target_dir.mkdir(parents=True, exist_ok=True)
+    # === DEV / lokaal ===
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        if clear_existing:
+            # Alleen bestaande CSV/Excel-bestanden weghalen
+            for p in target_dir.iterdir():
+                if p.is_file() and p.suffix.lower() in (".csv", ".xlsx", ".xls"):
+                    try:
+                        p.unlink()
+                    except Exception:
+                        pass
+
+        dest = target_dir / f"{base_name}.{h}{ext}"
+        dest.write_bytes(file_bytes)
+        return dest
+
+    # === PROD / S3 ===
+    rel_dir = _media_relpath(target_dir)  # bv. "voorraad"
 
     if clear_existing:
-        # Alleen bestaande CSV/Excel-bestanden weghalen
-        for p in target_dir.iterdir():
-            if p.is_file() and p.suffix.lower() in (".csv", ".xlsx", ".xls"):
-                try:
-                    p.unlink()
-                except Exception:
-                    pass
+        try:
+            _, files = default_storage.listdir(rel_dir)
+        except FileNotFoundError:
+            files = []
+        for name in files:
+            if name.startswith(f"{base_name}.") and Path(name).suffix.lower() in (".csv", ".xlsx", ".xls"):
+                default_storage.delete(f"{rel_dir}/{name}")
 
-    dest = target_dir / f"{base_name}.{h}{ext}"
-    dest.write_bytes(file_bytes)
-    return dest
+    filename = f"{base_name}.{h}{ext}"
+    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
+    default_storage.save(storage_path, ContentFile(file_bytes))
+    return storage_path
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()

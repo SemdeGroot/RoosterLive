@@ -1,3 +1,4 @@
+# core/views/roster.py
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone, translation
+from django.core.files.storage import default_storage
 
 from core.tasks import send_roster_updated_push_task
 from ._helpers import (
@@ -17,9 +19,10 @@ from ._helpers import (
     clear_dir,
     render_pdf_to_cache,   # (pdf_bytes, dpi, cache_root) -> (hash_id, n_pages)
     save_pdf_upload_with_hash,
+    _media_relpath,
 )
 
-# Belangrijk: helpers importeren uit je bestaande beschikbaarheid-view
+# Helpers delen met beschikbaarheid
 from .mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
 
 
@@ -30,8 +33,11 @@ def _week_slug_from_monday(monday: date) -> str:
     _, iso_week, _ = monday.isocalendar()
     return f"week{iso_week:02d}"
 
+
 def _week_pdf_dir(monday: date) -> Path:
+    # /media/.../rooster/weekNN
     return (ROSTER_DIR / _week_slug_from_monday(monday)).resolve()
+
 
 def _week_pdf_path(monday: date) -> Path:
     """
@@ -49,7 +55,9 @@ def _week_pdf_path(monday: date) -> Path:
     # legacy fallback
     return d / "rooster.pdf"
 
+
 def _week_cache_dir(monday: date) -> Path:
+    # /media/.../cache/rooster/weekNN
     return (CACHE_ROSTER_DIR / _week_slug_from_monday(monday)).resolve()
 
 
@@ -68,34 +76,89 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
     Verwijder alle weekmappen (PDF + cache) die NIET in het venster
     [huidige week .. +weeks_ahead] vallen.
     Daardoor verdwijnt week x automatisch zodra week x+1 start.
+
+    - In DEV: opruimen op filesystem (zoals je al had).
+    - In PROD: opruimen in S3 onder:
+        media/rooster/weekNN/...
+        media/cache/rooster/weekNN/...
     """
     ROSTER_DIR.mkdir(parents=True, exist_ok=True)
     CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
     allowed = _allowed_week_slugs(min_monday, weeks_ahead)
 
-    # Rooster-weekmappen
-    for week_dir in ROSTER_DIR.glob("week*"):
-        if not week_dir.is_dir():
-            continue
-        if week_dir.name not in allowed:
-            try:
-                clear_dir(week_dir)
-                week_dir.rmdir()
-            except Exception:
-                pass
+    # === DEV: lokaal filesystem ===
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        # Rooster-weekmappen
+        for week_dir in ROSTER_DIR.glob("week*"):
+            if not week_dir.is_dir():
+                continue
+            if week_dir.name not in allowed:
+                try:
+                    clear_dir(week_dir)
+                    week_dir.rmdir()
+                except Exception:
+                    pass
 
-    # Cache-weekmappen
-    for cache_week_dir in CACHE_ROSTER_DIR.glob("week*"):
-        if not cache_week_dir.is_dir():
-            continue
-        if cache_week_dir.name not in allowed:
-            try:
-                clear_dir(cache_week_dir)
-                cache_week_dir.rmdir()
-            except Exception:
-                pass
+        # Cache-weekmappen
+        for cache_week_dir in CACHE_ROSTER_DIR.glob("week*"):
+            if not cache_week_dir.is_dir():
+                continue
+            if cache_week_dir.name not in allowed:
+                try:
+                    clear_dir(cache_week_dir)
+                    cache_week_dir.rmdir()
+                except Exception:
+                    pass
 
+        return
+
+    # === PROD: S3 ===
+    # Rooster-PDF's: media/rooster/weekNN/rooster*.pdf
+    roster_root = _media_relpath(ROSTER_DIR)  # "rooster"
+    try:
+        week_dirs, _files = default_storage.listdir(roster_root)
+    except FileNotFoundError:
+        week_dirs = []
+
+    for slug in list(week_dirs):
+        if slug not in allowed:
+            week_prefix = f"{roster_root}/{slug}"
+            try:
+                _subdirs, files = default_storage.listdir(week_prefix)
+            except FileNotFoundError:
+                files = []
+            for name in files:
+                if name.lower().endswith(".pdf"):
+                    default_storage.delete(f"{week_prefix}/{name}")
+
+    # Cache: cache/rooster/weekNN/<hash>/page_XXX.png
+    cache_root = "cache/rooster"
+    try:
+        cache_week_dirs, _ = default_storage.listdir(cache_root)
+    except FileNotFoundError:
+        cache_week_dirs = []
+
+    for slug in list(cache_week_dirs):
+        if slug not in allowed:
+            week_cache_prefix = f"{cache_root}/{slug}"
+            try:
+                hash_dirs, _files = default_storage.listdir(week_cache_prefix)
+            except FileNotFoundError:
+                hash_dirs = []
+            for h in hash_dirs:
+                hash_prefix = f"{week_cache_prefix}/{h}"
+                try:
+                    _d2, files = default_storage.listdir(hash_prefix)
+                except FileNotFoundError:
+                    files = []
+                for name in files:
+                    default_storage.delete(f"{hash_prefix}/{name}")
+
+
+# -----------------------------
+# View
+# -----------------------------
 
 @login_required
 def rooster(request):
@@ -177,13 +240,15 @@ def rooster(request):
             messages.error(request, "Upload een PDF-bestand (.pdf).")
             return redirect(f"{reverse('rooster')}?monday={post_monday.isoformat()}")
 
+        # Lokale dirs voor DEV; in PROD wordt er via S3 geschreven door helper
         post_week_pdf_dir.mkdir(parents=True, exist_ok=True)
         CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Cache-week map leegmaken zodat oude hash-subfolders weg zijn
+        # Cache-weekmap lokaal leegmaken (DEV); in PROD wordt cache in S3 gebruikt
         clear_dir(post_week_cache_dir)
 
         # PDF schrijven als rooster.<hash>.pdf in de weekmap (max 1 per week)
+        # In PROD gaat dit via default_storage naar S3 (via _helpers.py)
         save_pdf_upload_with_hash(
             uploaded_file=f,
             target_dir=post_week_pdf_dir,
@@ -234,16 +299,46 @@ def rooster(request):
             "start": cur,
             "end": cur + timedelta(days=4),
             "iso_week": cur.isocalendar()[1],
-            "iso_year": cur.isocalendar()[0],   # <--- hier was de typo, nu goed
+            "iso_year": cur.isocalendar()[0],
         })
         cur += timedelta(weeks=1)
 
-    if not week_pdf_path.exists():
-        context["no_roster"] = True
-        return render(request, "rooster/index.html", context)
+    # --- PDF ophalen (DEV vs PROD) ---
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        # DEV: lokale PDF in weekmap
+        if not week_pdf_path.exists():
+            context["no_roster"] = True
+            return render(request, "rooster/index.html", context)
+
+        pdf_bytes = week_pdf_path.read_bytes()
+    else:
+        # PROD: S3
+        week_rel_dir = _media_relpath(week_pdf_dir)  # bijv. "rooster/week48"
+        try:
+            _dirs, files = default_storage.listdir(week_rel_dir)
+        except FileNotFoundError:
+            files = []
+
+        pdf_name = None
+        hashed = sorted(
+            name for name in files
+            if name.startswith("rooster.") and name.endswith(".pdf")
+        )
+        if hashed:
+            pdf_name = hashed[-1]
+        elif "rooster.pdf" in files:
+            pdf_name = "rooster.pdf"
+
+        if not pdf_name:
+            context["no_roster"] = True
+            return render(request, "rooster/index.html", context)
+
+        storage_path = f"{week_rel_dir}/{pdf_name}"
+        with default_storage.open(storage_path, "rb") as f:
+            pdf_bytes = f.read()
 
     # PDF -> cache renderen; let op hash-subfolder
-    pdf_bytes = week_pdf_path.read_bytes()
+    # In DEV: naar filesystem; in PROD: naar S3 onder cache/rooster/weekNN/<hash>/...
     hash_id, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=week_cache_dir)
 
     context["page_urls"] = [
@@ -252,4 +347,3 @@ def rooster(request):
     ]
 
     return render(request, "rooster/index.html", context)
-
