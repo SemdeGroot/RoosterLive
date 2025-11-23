@@ -1,5 +1,7 @@
 # core/storage.py
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
+from storages.backends.s3boto3 import S3Boto3Storage
+
 
 class PartialManifestStaticFilesStorage(ManifestStaticFilesStorage):
     """
@@ -15,3 +17,26 @@ class PartialManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # Geen hash toepassen, gewoon de originele naam gebruiken
             return name
         return super().hashed_name(name, content=content, filename=filename)
+
+
+class StaticRootS3Boto3Storage(S3Boto3Storage):
+    """S3 storage onder de 'static/' prefix in de bucket."""
+    location = "static"
+    default_acl = "public-read"
+    file_overwrite = True
+
+
+class MediaRootS3Boto3Storage(S3Boto3Storage):
+    """S3 storage onder de 'media/' prefix in de bucket."""
+    location = "media"
+    default_acl = "public-read"
+    file_overwrite = False
+
+
+class PartialManifestStaticFilesS3Storage(PartialManifestStaticFilesStorage, StaticRootS3Boto3Storage):
+    """
+    Combineert partial-manifest hashing met S3 storage.
+    In DEBUG de lokale PartialManifestStaticFilesStorage,
+    in PROD deze S3-variant.
+    """
+    pass

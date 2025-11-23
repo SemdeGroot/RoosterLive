@@ -73,6 +73,9 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_otp.plugins.otp_static",
     "two_factor",
+
+    # S3 storage
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -181,21 +184,48 @@ LOGOUT_REDIRECT_URL = "/account/login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # === Static & Media ===
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesStorage"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+if DEBUG:
+    # LOKAAL: alles via filesystem + runserver
+    STATIC_URL = "/static/"
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesStorage"
 
-CACHE_DIR = MEDIA_ROOT / "cache"
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
-# Media: voorlopig lokaal serveren (via Django), later S3/CDN
-SERVE_MEDIA_LOCALLY = os.getenv(
-    "SERVE_MEDIA_LOCALLY",
-    "True" if DEBUG else "True"  # nu overal aan, later in prod False zetten
-) == "True"
+    CACHE_DIR = MEDIA_ROOT / "cache"
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # In debug: media via Django
+    SERVE_MEDIA_LOCALLY = True
+else:
+    # PROD: S3 via django-storages
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = "eu-central-1"
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
+    AWS_S3_ADDRESSING_STYLE = "virtual"
+
+    # Later kun je AWS_S3_CUSTOM_DOMAIN op je Cloudflare domein zetten.
+    AWS_S3_CUSTOM_DOMAIN = os.getenv(
+        "AWS_S3_CUSTOM_DOMAIN",
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com",
+    )
+
+    # Static & media komen via S3 (of straks via Cloudflare CNAME)
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+    STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesS3Storage"
+    DEFAULT_FILE_STORAGE = "core.storage.MediaRootS3Boto3Storage"
+
+    # Lange cache headers voor static assets
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=31536000, public",
+    }
+
+    # In prod: media NIET via Django urls serveren
+    SERVE_MEDIA_LOCALLY = False
 
 # === Sessies ===
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 uur
