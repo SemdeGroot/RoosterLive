@@ -19,9 +19,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # 3) daarna de rest van de code
 COPY . .
 
-# optional — niet laten falen in CI
-RUN python manage.py collectstatic --noinput || true
-
 # Healthcheck endpoint (/health/) in je Django
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f http://localhost:${PORT:-8000}/health/ || exit 1

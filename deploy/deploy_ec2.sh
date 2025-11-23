@@ -10,7 +10,6 @@ ECR_REPO="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/roosterlive/django"
 LAST_OK_FILE="${REPO_DIR}/.last_successful_image"
 ENV_FILE="${REPO_DIR}/.env"
 
-# Jouw Parameter Store pad
 SSM_ENV_PARAM="/rooster/prod/.env"
 
 echo "===> Deploying image tag: ${IMAGE_TAG}"
@@ -33,14 +32,12 @@ aws ecr get-login-password --region "${REGION}" \
       --username AWS \
       --password-stdin "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 
-# Vorige succesvolle tag (voor rollback)
 PREV_IMAGE_TAG=""
 if [[ -f "${LAST_OK_FILE}" ]]; then
   PREV_IMAGE_TAG="$(cat "${LAST_OK_FILE}")"
   echo "Previous successful image: ${PREV_IMAGE_TAG}"
 fi
 
-# Zorg dat IMAGE_TAG als env var beschikbaar is voor docker compose
 export IMAGE_TAG="${IMAGE_TAG}"
 
 echo "===> Pulling images for tag: ${IMAGE_TAG}"
@@ -52,27 +49,35 @@ docker compose -f deploy/docker-compose.yml up -d
 UP_EXIT=$?
 set -e
 
-if [[ ${UP_EXIT} -ne 0 ]]; then
-  echo "!!! docker compose up failed with exit code ${UP_EXIT}"
+rollback_to_prev() {
   if [[ -n "${PREV_IMAGE_TAG}" ]]; then
     echo "===> Rolling back to previous image: ${PREV_IMAGE_TAG}"
-    export IMAGE_TAG="${PREV_IMAGE_TAG}"
-    docker compose -f deploy/docker-compose.yml pull
-    docker compose -f deploy/docker-compose.yml up -d || true
-  fi
-  exit 1
-fi
-
-echo "===> Running database migrations in running web container"
-if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py migrate; then
-  echo "!!! Migrations failed, attempting rollback of containers"
-  if [[ -n "${PREV_IMAGE_TAG}" ]]; then
     export IMAGE_TAG="${PREV_IMAGE_TAG}"
     docker compose -f deploy/docker-compose.yml pull
     docker compose -f deploy/docker-compose.yml up -d || true
   else
     echo "!!! No previous successful image found, cannot rollback"
   fi
+}
+
+if [[ ${UP_EXIT} -ne 0 ]]; then
+  echo "!!! docker compose up failed with exit code ${UP_EXIT}"
+  rollback_to_prev
+  exit 1
+fi
+
+echo "===> Running database migrations in running web container"
+if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py migrate; then
+  echo "!!! Migrations failed, attempting rollback of containers"
+  rollback_to_prev
+  exit 1
+fi
+
+echo "===> Collecting static files to S3 (with cleanup)"
+# DEBUG=False + AWS_STORAGE_BUCKET_NAME in .env zorgen ervoor dat dit S3 gebruikt
+if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py collectstatic --noinput --clear; then
+  echo "!!! collectstatic failed, attempting rollback of containers"
+  rollback_to_prev
   exit 1
 fi
 
@@ -106,13 +111,7 @@ fi
 
 if [[ "${FAILED}" -ne 0 ]]; then
   echo "===> Rolling back because new deployment is not healthy"
-  if [[ -n "${PREV_IMAGE_TAG}" ]]; then
-    export IMAGE_TAG="${PREV_IMAGE_TAG}"
-    docker compose -f deploy/docker-compose.yml pull
-    docker compose -f deploy/docker-compose.yml up -d || true
-  else
-    echo "!!! No previous successful image found, cannot rollback"
-  fi
+  rollback_to_prev
   exit 1
 fi
 

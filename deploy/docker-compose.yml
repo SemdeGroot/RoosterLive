@@ -14,8 +14,6 @@ services:
     depends_on:
       - redis
       - pgbouncer
-    volumes:
-      - media_data:/app/media
     restart: unless-stopped
 
   celery:
@@ -27,8 +25,6 @@ services:
     depends_on:
       - redis
       - pgbouncer
-    volumes:
-      - media_data:/app/media
     restart: unless-stopped
 
   redis:
@@ -85,6 +81,3 @@ services:
         done
       "
     restart: unless-stopped
-
-volumes:
-  media_data:
