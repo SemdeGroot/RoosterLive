@@ -9,6 +9,8 @@ import pandas as pd
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 # ===== PATHS =====
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
@@ -121,20 +123,53 @@ def clear_dir(p: Path):
             except Exception:
                 pass
 
-def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300, cache_root: Path = Path("cache")):
+def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300):
     """
-    Render PDF -> PNG's in cache_root/<hash>/page_XXX.png met hoge kwaliteit.
-    Return (hash, n_pages).
+    Render PDF -> PNG's in media/cache/<hash>/page_XXX.png.
+
+    - In DEBUG: lokaal onder MEDIA_ROOT/cache (Path-based, zoals voorheen).
+    - In PROD: via default_storage (S3), zodat CloudFront/CDN ze kan serveren.
+    Return: (hash, n_pages)
     """
     h = pdf_hash(pdf_bytes)
-    out = cache_root / h
-    if not out.exists() or not any(out.glob("page_*.png")):
-        out.mkdir(parents=True, exist_ok=True)
+
+    if settings.DEBUG:
+        # LOKAAL: gebruik filesystem
+        out_dir = CACHE_DIR / h
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        if not any(out_dir.glob("page_*.png")):
+            with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
+                for i, page in enumerate(doc):
+                    pix = page.get_pixmap(dpi=dpi, alpha=False)
+                    (out_dir / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
+
+        n_pages = len(list(out_dir.glob("page_*.png")))
+        return h, n_pages
+
+    # PROD: gebruik S3 via default_storage; paden zijn relatief t.o.v. 'media/'
+    base_dir = f"cache/{h}"
+
+    # Kijk of er al PNG's zijn
+    try:
+        _, files = default_storage.listdir(base_dir)
+    except FileNotFoundError:
+        files = []
+
+    png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
+
+    if not png_files:
+        # Nog niet gerenderd → nu renderen naar S3
         with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
             for i, page in enumerate(doc):
                 pix = page.get_pixmap(dpi=dpi, alpha=False)
-                (out / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
-    n_pages = len(list(out.glob("page_*.png")))
+                file_path = f"{base_dir}/page_{i+1:03d}.png"
+                default_storage.save(file_path, ContentFile(pix.tobytes("png")))
+        # opnieuw ophalen
+        _, files = default_storage.listdir(base_dir)
+        png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
+
+    n_pages = len(png_files)
     return h, n_pages
 
 def read_table(fp: Path):

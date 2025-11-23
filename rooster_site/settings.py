@@ -186,7 +186,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # === Static & Media ===
 
 if DEBUG:
-    # LOKAAL: alles via filesystem + runserver
+    # LOKAAL
     STATIC_URL = "/static/"
     STATIC_ROOT = BASE_DIR / "staticfiles"
     STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesStorage"
@@ -194,37 +194,41 @@ if DEBUG:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
+    # Cache (dev) – lokaal
     CACHE_DIR = MEDIA_ROOT / "cache"
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    # In debug: media via Django
     SERVE_MEDIA_LOCALLY = True
 else:
-    # PROD: S3 via django-storages
+    # PROD: S3 voor media
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = "eu-central-1"
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_ADDRESSING_STYLE = "virtual"
 
-    # Later kun je AWS_S3_CUSTOM_DOMAIN op je Cloudflare domein zetten.
     AWS_S3_CUSTOM_DOMAIN = os.getenv(
         "AWS_S3_CUSTOM_DOMAIN",
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com",
     )
 
-    # Static & media komen via S3 (of straks via Cloudflare CNAME)
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
     STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesS3Storage"
     DEFAULT_FILE_STORAGE = "core.storage.MediaRootS3Boto3Storage"
 
-    # Lange cache headers voor static assets
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=31536000, public",
     }
 
-    # In prod: media NIET via Django urls serveren
+    # LET OP: dit is alleen een *lokale representatie* van dezelfde structuur,
+    # maar de echte media (inclusief cache) gaan in prod via S3-storage.
+    MEDIA_ROOT = BASE_DIR / "media"
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
+    CACHE_DIR = MEDIA_ROOT / "cache"
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
     SERVE_MEDIA_LOCALLY = False
 
 # === Sessies ===
