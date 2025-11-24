@@ -1,9 +1,7 @@
-from django.urls import path, include
+from django.urls import path
 from django.views import View
 from django.views.generic import RedirectView
-from django.http import HttpResponse, HttpResponseNotFound
-from django.contrib.staticfiles import finders
-from django.templatetags.static import static
+from django.conf import settings
 
 from core.views.home import home
 from core.views.roster import rooster
@@ -108,7 +106,25 @@ urlpatterns = [
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
     
-    path("favicon.ico", RedirectView.as_view(url=static("pwa/icons/favicon.ico"), permanent=False)),
-    path("apple-touch-icon.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.v4.png"), permanent=False)),
-    path("apple-touch-icon-precomposed.png", RedirectView.as_view(url=static("pwa/icons/apple-touch-icon.v4.png"), permanent=False)),
+    path(
+        "favicon.ico",
+        RedirectView.as_view(
+            url=f"{settings.STATIC_URL}pwa/icons/favicon.ico",
+            permanent=False,
+        ),
+    ),
+    path(
+        "apple-touch-icon.png",
+        RedirectView.as_view(
+            url=f"{settings.STATIC_URL}pwa/icons/apple-touch-icon.v4.png",
+            permanent=False,
+        ),
+    ),
+    path(
+        "apple-touch-icon-precomposed.png",
+        RedirectView.as_view(
+            url=f"{settings.STATIC_URL}pwa/icons/apple-touch-icon.v4.png",
+            permanent=False,
+        ),
+    ),
 ]
