@@ -1,1 +1,1 @@
-This repository contains the code for a webapp I am developing
+This repository contains the code for a webapp I am developing.
