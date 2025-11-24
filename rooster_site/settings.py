@@ -189,7 +189,6 @@ if DEBUG:
     # LOKAAL
     STATIC_URL = "/static/"
     STATIC_ROOT = BASE_DIR / "staticfiles"
-    STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesStorage"
 
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
@@ -199,8 +198,18 @@ if DEBUG:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     SERVE_MEDIA_LOCALLY = True
+
+    # Django 5: gebruik STORAGES i.p.v. DEFAULT_FILE_STORAGE/STATICFILES_STORAGE
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "core.storage.PartialManifestStaticFilesStorage",
+        },
+    }
 else:
-    # PROD: S3 voor media
+    # PROD: S3 voor static + media
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = "eu-central-1"
     AWS_S3_SIGNATURE_VERSION = "s3v4"
@@ -210,21 +219,17 @@ else:
         "AWS_S3_CUSTOM_DOMAIN",
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com",
     )
-    # Dit is eig voor de sier om django niet boos te maken
+
+    # Dummy STATIC_ROOT zodat Django niet klaagt
     STATIC_ROOT = BASE_DIR / "staticfiles"
 
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
-    STATICFILES_STORAGE = "core.storage.PartialManifestStaticFilesS3Storage"
-    DEFAULT_FILE_STORAGE = "core.storage.MediaRootS3Boto3Storage"
-
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=31536000, public",
     }
 
-    # LET OP: dit is alleen een *lokale representatie* van dezelfde structuur,
-    # maar de echte media (inclusief cache) gaan in prod via S3-storage.
     MEDIA_ROOT = BASE_DIR / "media"
     MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -232,6 +237,16 @@ else:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     SERVE_MEDIA_LOCALLY = False
+
+    # Django 5: hier S3 backends koppelen
+    STORAGES = {
+        "default": {
+            "BACKEND": "core.storage.MediaRootS3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "core.storage.PartialManifestStaticFilesS3Storage",
+        },
+    }
 
 # === Sessies ===
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 uur
