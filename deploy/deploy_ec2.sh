@@ -74,18 +74,8 @@ if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py mi
 fi
 
 echo "===> Collecting static files to S3"
-if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py collectstatic --noinput; then
+if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py collectstatic --noinput --clear; then
   echo "!!! collectstatic failed, attempting rollback of containers"
-  rollback_to_prev
-  exit 1
-fi
-
-echo "===> Cleaning old static files from S3 (based on manifest)"
-# Eerst eventueel een dry-run:
-# docker compose -f deploy/docker-compose.yml exec -T web python manage.py clean_static_s3 --dry-run
-
-if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py clean_static_s3; then
-  echo "!!! clean_static_s3 failed, attempting rollback of containers"
   rollback_to_prev
   exit 1
 fi
