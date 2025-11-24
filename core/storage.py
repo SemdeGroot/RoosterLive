@@ -1,5 +1,5 @@
 # core/storage.py
-from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage, ManifestFilesMixin
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
@@ -18,24 +18,30 @@ class PartialManifestStaticFilesStorage(ManifestStaticFilesStorage):
             return name
         return super().hashed_name(name, content=content, filename=filename)
 
+
 class StaticRootS3Boto3Storage(S3Boto3Storage):
     """S3 storage onder de 'static/' prefix in de bucket."""
     location = "static"
-    default_acl = None           # <— GEEN ACL meer
+    default_acl = None          # BELANGRIJK i.v.m. Bucket owner enforced
     file_overwrite = True
 
 
 class MediaRootS3Boto3Storage(S3Boto3Storage):
     """S3 storage onder de 'media/' prefix in de bucket."""
     location = "media"
-    default_acl = None           # <— GEEN ACL meer
+    default_acl = None          # idem
     file_overwrite = False
 
 
-class PartialManifestStaticFilesS3Storage(StaticRootS3Boto3Storage, PartialManifestStaticFilesStorage):
+class PartialManifestStaticFilesS3Storage(ManifestFilesMixin, StaticRootS3Boto3Storage):
     """
-    Combineert partial-manifest hashing met S3 storage.
-    In DEBUG de lokale PartialManifestStaticFilesStorage,
-    in PROD deze S3-variant.
+    Combineert ManifestFilesMixin (hashing) met S3 storage,
+    plus jouw uitzondering voor bepaalde prefixes.
     """
-    pass
+
+    EXCLUDED_PREFIXES = ("pwa/", "img/")
+
+    def hashed_name(self, name, content=None, filename=None):
+        if name.startswith(self.EXCLUDED_PREFIXES):
+            return name
+        return super().hashed_name(name, content=content, filename=filename)
