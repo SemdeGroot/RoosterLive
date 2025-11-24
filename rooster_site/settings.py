@@ -220,7 +220,7 @@ else:
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com",
     )
 
-    # Dummy STATIC_ROOT zodat Django niet klaagt
+    # Dummy STATIC_ROOT zodat Django niet klaagt.
     STATIC_ROOT = BASE_DIR / "staticfiles"
 
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
