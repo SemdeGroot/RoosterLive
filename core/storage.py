@@ -18,18 +18,17 @@ class PartialManifestStaticFilesStorage(ManifestStaticFilesStorage):
             return name
         return super().hashed_name(name, content=content, filename=filename)
 
-
 class StaticRootS3Boto3Storage(S3Boto3Storage):
     """S3 storage onder de 'static/' prefix in de bucket."""
     location = "static"
-    default_acl = "public-read"
+    default_acl = None           # <— GEEN ACL meer
     file_overwrite = True
 
 
 class MediaRootS3Boto3Storage(S3Boto3Storage):
     """S3 storage onder de 'media/' prefix in de bucket."""
     location = "media"
-    default_acl = "public-read"
+    default_acl = None           # <— GEEN ACL meer
     file_overwrite = False
 
 

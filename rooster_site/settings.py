@@ -226,6 +226,8 @@ else:
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
+    AWS_DEFAULT_ACL = None
+
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=31536000, public",
     }
@@ -238,7 +240,7 @@ else:
 
     SERVE_MEDIA_LOCALLY = False
 
-    # Django 5: hier S3 backends koppelen
+    # Hier S3 backends koppelen
     STORAGES = {
         "default": {
             "BACKEND": "core.storage.MediaRootS3Boto3Storage",
