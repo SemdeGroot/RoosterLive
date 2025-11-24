@@ -1,4 +1,3 @@
-# core/views/nazendingen.py
 from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
@@ -17,6 +16,7 @@ from ._helpers import (
     _media_relpath,
 )
 
+
 @login_required
 def nazendingen_view(request):
     if not can(request.user, "can_view_av_nazendingen"):
@@ -34,6 +34,11 @@ def nazendingen_view(request):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect(request.path)
 
+        # Lees bytes voor directe render
+        pdf_bytes = f.read()
+        f.seek(0)
+
+        # PDF opslaan als nazendingen.<hash>.pdf, max 1 actief
         save_pdf_upload_with_hash(
             uploaded_file=f,
             target_dir=NAZENDINGEN_DIR,
@@ -41,14 +46,25 @@ def nazendingen_view(request):
             clear_existing=True,
         )
 
+        # Cache leegmaken en opnieuw opbouwen uit upload
         clear_dir(cache_root)
-        messages.success(request, f"PDF geüpload: {f.name}")
-        return redirect(request.path)
+        h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=cache_root)
+        page_urls = [
+            f"{settings.MEDIA_URL}cache/{key}/{h}/page_{i:03d}.png"
+            for i in range(1, n + 1)
+        ]
 
+        messages.success(request, f"PDF geüpload: {f.name}")
+        return render(request, "nazendingen/index.html", {
+            "title": "Nazendingen",
+            "no_nazending": False,
+            "page_urls": page_urls,
+        })
+
+    # ==== GET / weergave bestaande PDF ====
     pdf_bytes = None
 
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # DEV: nazendingen.<hash>.pdf of legacy nazendingen.pdf lokaal
         pdf_path = None
         candidates = sorted(NAZENDINGEN_DIR.glob(f"{key}.*.pdf"))
         if candidates:
@@ -61,7 +77,6 @@ def nazendingen_view(request):
         if pdf_path and pdf_path.exists():
             pdf_bytes = pdf_path.read_bytes()
     else:
-        # PROD: S3
         rel_dir = _media_relpath(NAZENDINGEN_DIR)  # "nazendingen"
         try:
             _dirs, files = default_storage.listdir(rel_dir)

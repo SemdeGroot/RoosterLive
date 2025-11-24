@@ -1,4 +1,3 @@
-# core/views/medications.py
 from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
@@ -10,17 +9,43 @@ from django.core.files.storage import default_storage
 from ..forms import AvailabilityUploadForm
 from ._helpers import can, VOORRAAD_DIR, read_table, save_table_upload_with_hash
 
+
 @login_required
 def medications_view(request):
     if not can(request.user, "can_view_av_medications"):
         return HttpResponseForbidden("Geen toegang.")
 
     key = "medications"
+    form = AvailabilityUploadForm()
+
+    if request.method == "POST":
+        if not can(request.user, "can_upload_voorraad"):
+            return HttpResponseForbidden("Geen uploadrechten.")
+
+        form = AvailabilityUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            f = form.cleaned_data["file"]
+
+            ext = (Path(f.name).suffix or "").lower()
+            if ext not in (".xlsx", ".xls", ".csv"):
+                messages.error(request, "Alleen CSV of Excel toegestaan.")
+                # We vallen straks door naar de render met eventuele oude data
+            else:
+                try:
+                    # Slaat bestand op als medications.<hash>.<ext>, 1 actief bestand
+                    save_table_upload_with_hash(
+                        f, VOORRAAD_DIR, key, clear_existing=True
+                    )
+                    messages.success(request, f"Bestand geüpload: {f.name}")
+                except ValueError:
+                    messages.error(request, "Alleen CSV of Excel toegestaan.")
+        # Belangrijk: GEEN redirect, maar direct door naar weergave
+
+    # ==== Bestaand / nieuwste bestand zoeken (na evt. upload) ====
     existing_path = None
 
-    # Bestaand bestand zoeken
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # DEV: lokaal
+        # DEV: lokaal filesystem
         for ext in (".xlsx", ".xls", ".csv"):
             matches = sorted(VOORRAAD_DIR.glob(f"{key}.*{ext}"))
             if matches:
@@ -53,30 +78,7 @@ def medications_view(request):
                 existing_path = f"{rel_dir}/{legacy_name}"
                 break
 
-    form = AvailabilityUploadForm()
-    if request.method == "POST":
-        if not can(request.user, "can_upload_voorraad"):
-            return HttpResponseForbidden("Geen uploadrechten.")
-
-        form = AvailabilityUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            f = form.cleaned_data["file"]
-
-            ext = (Path(f.name).suffix or "").lower()
-            if ext not in (".xlsx", ".xls", ".csv"):
-                messages.error(request, "Alleen CSV of Excel toegestaan.")
-                return redirect(request.path)
-
-            try:
-                save_table_upload_with_hash(f, VOORRAAD_DIR, key, clear_existing=True)
-            except ValueError:
-                messages.error(request, "Alleen CSV of Excel toegestaan.")
-                return redirect(request.path)
-
-            messages.success(request, f"Bestand geüpload: {f.name}")
-            return redirect(request.path)
-
-    df, error = None, None
+    df, error = (None, None)
     if existing_path:
         df, error = read_table(existing_path)
 
@@ -87,7 +89,7 @@ def medications_view(request):
 
     file_name = None
     if existing_path:
-        file_name = Path(str(existing_path)).name  # Path of string → altijd .name
+        file_name = Path(str(existing_path)).name
 
     ctx = {
         "form": form,

@@ -149,14 +149,17 @@ def news(request):
     if not can(request.user, "can_view_news"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # AJAX delete (exacte flow als policies)
-    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+    # AJAX delete
+    if (
+        request.method == "POST"
+        and request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    ):
         if not can(request.user, "can_upload_news"):
             return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
         if request.POST.get("action") != "delete":
             return JsonResponse({"ok": False, "error": "Ongeldig verzoek."}, status=400)
         img_url = request.POST.get("img", "")
-        h = hash_from_img_url(img_url)  # generiek: pakt /cache/<subdir>/<hash>/...
+        h = hash_from_img_url(img_url)
         if not h:
             return JsonResponse({"ok": False, "error": "Ongeldige afbeelding."}, status=400)
         removed = _delete_news_by_hash(h)
@@ -164,6 +167,8 @@ def news(request):
             return JsonResponse({"ok": True, "hash": h, "removed": removed})
         else:
             return JsonResponse({"ok": False, "error": "PDF niet gevonden."}, status=404)
+
+    page_urls = []
 
     # Upload PDF
     if request.method == "POST" and "file" in request.FILES:
@@ -173,29 +178,104 @@ def news(request):
         if not f or not str(f.name).lower().endswith(".pdf"):
             messages.error(request, "Alleen PDF toegestaan.")
             return redirect("news")
+
+        # Lees bytes voor directe render
+        pdf_bytes_new = f.read()
+        f.seek(0)
+
         # Bewaar nieuws als news.<hash>.pdf (meerdere naast elkaar)
         save_pdf_upload_with_hash(
             uploaded_file=f,
             target_dir=NEWS_DIR,
             base_name="news",
-            clear_existing=False,   # meerdere nieuwsberichten
+            clear_existing=False,
         )
+
         messages.success(request, f"PDF geüpload: {f.name}")
-        return redirect("news")
 
-    # Opruimen verlopen nieuws vóór renderen
+        # Opruimen verlopen nieuws
+        _cleanup_expired_news(datetime.now())
+
+        # Eerst nieuw document renderen uit upload (zeker dat die er is)
+        h_new, n_new = render_pdf_to_cache(pdf_bytes_new, dpi=300, cache_root=CACHE_NEWS_DIR)
+        for i in range(1, n_new + 1):
+            page_urls.append(f"{settings.MEDIA_URL}cache/news/{h_new}/page_{i:03d}.png")
+
+        # Daarna overige nieuws-PDF's (nieuwste eerst), exclusief dezelfde hash
+        new_hash = pdf_hash(pdf_bytes_new)
+
+        if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+            pdf_files = sorted(
+                NEWS_DIR.glob("*.pdf"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            for pdf_fp in pdf_files:
+                try:
+                    raw = pdf_fp.read_bytes()
+                except Exception:
+                    continue
+                try:
+                    h = pdf_hash(raw)
+                except Exception:
+                    continue
+                if h == new_hash:
+                    # Die hebben we net al toegevoegd
+                    continue
+                h, n = render_pdf_to_cache(raw, dpi=300, cache_root=CACHE_NEWS_DIR)
+                for i in range(1, n + 1):
+                    page_urls.append(f"{settings.MEDIA_URL}cache/news/{h}/page_{i:03d}.png")
+        else:
+            rel_dir = _media_relpath(NEWS_DIR)  # "news"
+            try:
+                _dirs, files = default_storage.listdir(rel_dir)
+            except FileNotFoundError:
+                files = []
+
+            pdf_infos = []
+            for name in files:
+                if not name.lower().endswith(".pdf"):
+                    continue
+                storage_path = f"{rel_dir}/{name}"
+                try:
+                    mtime = default_storage.get_modified_time(storage_path)
+                except Exception:
+                    mtime = None
+                pdf_infos.append((name, mtime))
+
+            pdf_infos.sort(key=lambda t: (t[1] or datetime.min), reverse=True)
+
+            for name, _mtime in pdf_infos:
+                storage_path = f"{rel_dir}/{name}"
+                try:
+                    with default_storage.open(storage_path, "rb") as fobj:
+                        raw = fobj.read()
+                except Exception:
+                    continue
+                try:
+                    h = pdf_hash(raw)
+                except Exception:
+                    continue
+                if h == new_hash:
+                    continue
+                h, n = render_pdf_to_cache(raw, dpi=300, cache_root=CACHE_NEWS_DIR)
+                for i in range(1, n + 1):
+                    page_urls.append(f"{settings.MEDIA_URL}cache/news/{h}/page_{i:03d}.png")
+
+        return render(request, "news/index.html", {
+            "page_urls": page_urls,
+        })
+
+    # ==== GET: normale weergave ====
     _cleanup_expired_news(datetime.now())
-
     page_urls = []
 
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # Nieuwste eerst op basis van mtime
         pdf_files = sorted(
             NEWS_DIR.glob("*.pdf"),
             key=lambda p: p.stat().st_mtime,
             reverse=True,
         )
-
         for pdf_fp in pdf_files:
             try:
                 pdf_bytes = pdf_fp.read_bytes()
@@ -205,8 +285,7 @@ def news(request):
             for i in range(1, n + 1):
                 page_urls.append(f"{settings.MEDIA_URL}cache/news/{h}/page_{i:03d}.png")
     else:
-        # PROD: S3
-        rel_dir = _media_relpath(NEWS_DIR)  # "news"
+        rel_dir = _media_relpath(NEWS_DIR)
         try:
             _dirs, files = default_storage.listdir(rel_dir)
         except FileNotFoundError:
@@ -223,7 +302,6 @@ def news(request):
                 mtime = None
             pdf_infos.append((name, mtime))
 
-        # sorteer op mtime aflopend (onbekende tijden laatst)
         pdf_infos.sort(key=lambda t: (t[1] or datetime.min), reverse=True)
 
         for name, _mtime in pdf_infos:

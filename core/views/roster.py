@@ -168,14 +168,12 @@ def rooster(request):
     translation.activate("nl")
 
     today = timezone.localdate()
-    # Vanaf vrijdag standaard volgende week tonen
     base_date = today + timedelta(weeks=1) if today.weekday() >= 4 else today
 
     WEEKS_AHEAD = 12
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    # Housekeeping t.o.v. de huidige week
     _roster_housekeeping(min_monday=min_monday, weeks_ahead=WEEKS_AHEAD)
 
     # --- weekselectie ---
@@ -201,29 +199,12 @@ def rooster(request):
         monday = _monday_of_iso_week(base_date)
 
     monday = _clamp_week(monday, min_monday, max_monday)
-    week_end = monday + timedelta(days=4)
-    iso_year, iso_week, _ = monday.isocalendar()
-
-    # Navigatie
-    prev_raw = monday - timedelta(weeks=1)
-    next_raw = monday + timedelta(weeks=1)
-    has_prev = prev_raw >= min_monday
-    has_next = next_raw <= max_monday
-    prev_monday = prev_raw if has_prev else min_monday
-    next_monday = next_raw if has_next else max_monday
-
-    # Paden
-    week_slug = _week_slug_from_monday(monday)   # 'weekNN'
-    week_pdf_dir = _week_pdf_dir(monday)         # /media/rooster/weekNN/
-    week_pdf_path = _week_pdf_path(monday)       # zoekt rooster.<hash>.pdf of legacy rooster.pdf
-    week_cache_dir = _week_cache_dir(monday)     # /media/cache/rooster/weekNN/
 
     # --- upload ---
     if request.method == "POST":
         if not can(request.user, "can_upload_roster"):
             return HttpResponseForbidden("Geen uploadrechten.")
 
-        # Hidden field bepaalt doelweek voor upload (beheerder kan vooruit werken)
         form_monday = request.POST.get("monday") or monday.isoformat()
         try:
             y, m, d = map(int, form_monday.split("-"))
@@ -232,7 +213,6 @@ def rooster(request):
             post_monday = monday
 
         post_week_pdf_dir = _week_pdf_dir(post_monday)
-        post_week_pdf_path = _week_pdf_path(post_monday)
         post_week_cache_dir = _week_cache_dir(post_monday)
 
         f = request.FILES.get("file")
@@ -240,15 +220,18 @@ def rooster(request):
             messages.error(request, "Upload een PDF-bestand (.pdf).")
             return redirect(f"{reverse('rooster')}?monday={post_monday.isoformat()}")
 
-        # Lokale dirs voor DEV; in PROD wordt er via S3 geschreven door helper
+        # Lokale dirs voor DEV; in PROD schrijft helper naar S3
         post_week_pdf_dir.mkdir(parents=True, exist_ok=True)
         CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Cache-weekmap lokaal leegmaken (DEV); in PROD wordt cache in S3 gebruikt
+        # Lees bytes voor directe render
+        pdf_bytes = f.read()
+        f.seek(0)
+
+        # Cache voor deze week leegmaken
         clear_dir(post_week_cache_dir)
 
-        # PDF schrijven als rooster.<hash>.pdf in de weekmap (max 1 per week)
-        # In PROD gaat dit via default_storage naar S3 (via _helpers.py)
+        # PDF schrijven als rooster.<hash>.pdf (max 1 per week)
         save_pdf_upload_with_hash(
             uploaded_file=f,
             target_dir=post_week_pdf_dir,
@@ -262,21 +245,89 @@ def rooster(request):
 
         messages.success(request, f"Rooster voor week {iso_week_post} geüpload.")
 
-        # Celery-push met weeknummer + datums
         send_roster_updated_push_task.delay(
             iso_year_post,
             iso_week_post,
-            post_monday.isoformat(),   # maandag
-            week_end_post.isoformat(), # vrijdag
+            post_monday.isoformat(),
+            week_end_post.isoformat(),
         )
 
-        return HttpResponseRedirect(f"{reverse('rooster')}?monday={post_monday.isoformat()}")
+        # ==== Direct nieuwe roster tonen voor post_monday ====
+        monday_view = post_monday
+        week_end = week_end_post
+        iso_year, iso_week, _ = monday_view.isocalendar()
 
-    # --- weergave ---
+        # Navigatie opnieuw berekenen op basis van monday_view
+        prev_raw = monday_view - timedelta(weeks=1)
+        next_raw = monday_view + timedelta(weeks=1)
+        has_prev = prev_raw >= min_monday
+        has_next = next_raw <= max_monday
+        prev_monday = prev_raw if has_prev else min_monday
+        next_monday = next_raw if has_next else max_monday
+
+        week_slug = _week_slug_from_monday(monday_view)
+        week_cache_dir = _week_cache_dir(monday_view)
+
+        # PDF → cache
+        hash_id, n = render_pdf_to_cache(
+            pdf_bytes, dpi=300, cache_root=week_cache_dir
+        )
+
+        context = {
+            "year": datetime.now().year,
+            "monday": monday_view,
+            "week_end": week_end,
+            "has_prev": has_prev,
+            "has_next": has_next,
+            "prev_monday": prev_monday,
+            "next_monday": next_monday,
+            "week_slug": week_slug,
+            "no_roster": False,
+            "page_urls": [
+                f"{settings.MEDIA_URL}cache/rooster/{week_slug}/{hash_id}/page_{i:03d}.png"
+                for i in range(1, n + 1)
+            ],
+            "header_title": f"Week {iso_week} – {iso_year}",
+            "min_monday": min_monday,
+            "max_monday": max_monday,
+            "week_options": [],
+            "can_upload": can(request.user, "can_upload_roster"),
+        }
+
+        # Dropdown opnieuw opbouwen
+        cur = min_monday
+        while cur <= max_monday:
+            context["week_options"].append({
+                "value": cur.isoformat(),
+                "start": cur,
+                "end": cur + timedelta(days=4),
+                "iso_week": cur.isocalendar()[1],
+                "iso_year": cur.isocalendar()[0],
+            })
+            cur += timedelta(weeks=1)
+
+        return render(request, "rooster/index.html", context)
+
+    # ==== GET / normale weergave ====
+    week_end = monday + timedelta(days=4)
+    iso_year, iso_week, _ = monday.isocalendar()
+
+    prev_raw = monday - timedelta(weeks=1)
+    next_raw = monday + timedelta(weeks=1)
+    has_prev = prev_raw >= min_monday
+    has_next = next_raw <= max_monday
+    prev_monday = prev_raw if has_prev else min_monday
+    next_monday = next_raw if has_next else max_monday
+
+    week_slug = _week_slug_from_monday(monday)
+    week_pdf_dir = _week_pdf_dir(monday)
+    week_pdf_path = _week_pdf_path(monday)
+    week_cache_dir = _week_cache_dir(monday)
+
     context = {
         "year": datetime.now().year,
         "monday": monday,
-        "week_end": week_end,                             # voor daterange
+        "week_end": week_end,
         "has_prev": has_prev,
         "has_next": has_next,
         "prev_monday": prev_monday,
@@ -284,14 +335,13 @@ def rooster(request):
         "week_slug": week_slug,
         "no_roster": False,
         "page_urls": [],
-        "header_title": f"Week {iso_week} – {iso_year}",  # identiek aan beschikbaarheid
+        "header_title": f"Week {iso_week} – {iso_year}",
         "min_monday": min_monday,
         "max_monday": max_monday,
         "week_options": [],
         "can_upload": can(request.user, "can_upload_roster"),
     }
 
-    # Dropdown: huidige week → +12 weken (toon ook iso_year)
     cur = min_monday
     while cur <= max_monday:
         context["week_options"].append({
@@ -303,16 +353,14 @@ def rooster(request):
         })
         cur += timedelta(weeks=1)
 
-    # --- PDF ophalen (DEV vs PROD) ---
+    # PDF ophalen (DEV vs PROD)
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # DEV: lokale PDF in weekmap
         if not week_pdf_path.exists():
             context["no_roster"] = True
             return render(request, "rooster/index.html", context)
 
         pdf_bytes = week_pdf_path.read_bytes()
     else:
-        # PROD: S3
         week_rel_dir = _media_relpath(week_pdf_dir)  # bijv. "rooster/week48"
         try:
             _dirs, files = default_storage.listdir(week_rel_dir)
@@ -337,9 +385,9 @@ def rooster(request):
         with default_storage.open(storage_path, "rb") as f:
             pdf_bytes = f.read()
 
-    # PDF -> cache renderen; let op hash-subfolder
-    # In DEV: naar filesystem; in PROD: naar S3 onder cache/rooster/weekNN/<hash>/...
-    hash_id, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=week_cache_dir)
+    hash_id, n = render_pdf_to_cache(
+        pdf_bytes, dpi=300, cache_root=week_cache_dir
+    )
 
     context["page_urls"] = [
         f"{settings.MEDIA_URL}cache/rooster/{week_slug}/{hash_id}/page_{i:03d}.png"

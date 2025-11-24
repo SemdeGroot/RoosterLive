@@ -27,6 +27,11 @@ def agenda(request):
             messages.error(request, "Upload een PDF-bestand (.pdf).")
             return redirect("agenda")
 
+        # Lees bytes VOORDAT we hem opslaan, zodat we dezelfde inhoud gebruiken
+        pdf_bytes = f.read()
+        # Reset pointer zodat save_pdf_upload_with_hash de file ook goed kan lezen
+        f.seek(0)
+
         # Cache leegmaken (nieuwe images forceren)
         clear_dir(CACHE_AGENDA_DIR)
 
@@ -38,28 +43,38 @@ def agenda(request):
             clear_existing=True,
         )
 
+        # Direct nieuwe images renderen uit de zojuist geüploade PDF
+        h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_AGENDA_DIR)
+        page_urls = [
+            f"{settings.MEDIA_URL}cache/agenda/{h}/page_{i:03d}.png"
+            for i in range(1, n + 1)
+        ]
+
         messages.success(request, "Agenda geüpload.")
-        return redirect("agenda")
+        context = {
+            "year": datetime.now().year,
+            "page_urls": page_urls,
+            "no_agenda": False,
+        }
+        # Belangrijk: GEEN redirect, maar direct renderen
+        return render(request, "agenda/index.html", context)
 
-    context = { "year": datetime.now().year }
+    # ==== GET-logica blijft zoals hij was ====
+    context = {"year": datetime.now().year}
 
-    # Zoek en lees de agenda-PDF
     pdf_bytes = None
 
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # DEV: lokaal filesystem
         pdf_path = None
         candidates = sorted(AGENDA_DIR.glob("agenda.*.pdf"))
         if candidates:
-            pdf_path = candidates[-1]  # nieuwste / enige
+            pdf_path = candidates[-1]
         elif AGENDA_FILE.exists():
             pdf_path = AGENDA_FILE
 
         if pdf_path and pdf_path.exists():
             pdf_bytes = pdf_path.read_bytes()
     else:
-        # PROD: S3 via default_storage
-        # bestanden staan onder "agenda/" in je 'media' locatie
         rel_dir = "agenda"
         try:
             _dirs, files = default_storage.listdir(rel_dir)
@@ -67,7 +82,6 @@ def agenda(request):
             files = []
 
         pdf_storage_path = None
-        # Eerst nieuwe naamgeving: agenda.<hash>.pdf
         hashed = sorted(
             name for name in files
             if name.startswith("agenda.") and name.endswith(".pdf")
@@ -75,7 +89,6 @@ def agenda(request):
         if hashed:
             pdf_storage_path = f"{rel_dir}/{hashed[-1]}"
         elif "agenda.pdf" in files:
-            # backwards compatible
             pdf_storage_path = f"{rel_dir}/agenda.pdf"
 
         if pdf_storage_path and default_storage.exists(pdf_storage_path):
