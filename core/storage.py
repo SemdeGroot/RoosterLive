@@ -33,7 +33,7 @@ class MediaRootS3Boto3Storage(S3Boto3Storage):
     file_overwrite = False
 
 
-class PartialManifestStaticFilesS3Storage(PartialManifestStaticFilesStorage, StaticRootS3Boto3Storage):
+class PartialManifestStaticFilesS3Storage(StaticRootS3Boto3Storage, PartialManifestStaticFilesStorage):
     """
     Combineert partial-manifest hashing met S3 storage.
     In DEBUG de lokale PartialManifestStaticFilesStorage,
