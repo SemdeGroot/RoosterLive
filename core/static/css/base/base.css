@@ -330,7 +330,6 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
 .footer a.footer-linkedin {
     display: inline-flex;
     align-items: center;
-    margin-left: 4px;
     opacity: 0.8;
     transition: opacity .2s ease;
 }
