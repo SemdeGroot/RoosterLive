@@ -1,17 +1,18 @@
-// Eenvoudige cache-naam
-const CACHE_NAME = 'apo-jansen-v1';
+// Alleen voor optionele offline fallback
+const CACHE_NAME = 'apo-jansen-offline-v1';
+const OFFLINE_URL = '/static/pwa/offline.html';
 
-// Volledige cleanup van deze service worker + alle caches
+// (Optioneel) volledige cleanup van SW + alle caches via message
 async function fullServiceWorkerCleanup() {
-  // 1) Alle caches voor deze origin weggooien
+  // Alle caches voor deze origin weggooien
   const cacheKeys = await caches.keys();
   await Promise.all(cacheKeys.map((key) => caches.delete(key)));
 
-  // 2) Service worker zelf unregisteren
+  // Service worker zelf unregisteren
   const unregistered = await self.registration.unregister();
   console.log('[sw] unregister resultaat:', unregistered);
 
-  // 3) Alle open tabs opnieuw laden zodat de oude controller verdwijnt
+  // Alle open tabs opnieuw laden zodat de oude controller verdwijnt
   const clientList = await self.clients.matchAll({
     type: 'window',
     includeUncontrolled: true,
@@ -22,7 +23,7 @@ async function fullServiceWorkerCleanup() {
   }
 }
 
-// Luister naar message vanaf de pagina
+// Luister naar message vanaf de pagina (voor handmatige cleanup)
 self.addEventListener('message', (event) => {
   if (!event.data || !event.data.type) return;
   if (event.data.type === 'FULL_SW_CLEANUP') {
@@ -31,12 +32,24 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Install: direct activeren
+// INSTALL: direct activeren en alleen offline.html cachen (indien gewenst)
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.addAll([OFFLINE_URL]);
+        console.log('[sw] offline pagina gecachet');
+      } catch (e) {
+        // Als offline.html niet bestaat, is dat ook prima
+        console.warn('[sw] kon offline.html niet cachen, ga verder zonder offline fallback', e);
+      }
+      self.skipWaiting();
+    })()
+  );
 });
 
-// Activate: oude caches opruimen + clients claimen
+// ACTIVATE: oude caches opruimen + clients claimen
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
@@ -49,78 +62,42 @@ self.addEventListener('activate', (event) => {
         })
       );
       await self.clients.claim();
-      console.log('[sw] Geactiveerd met cache:', CACHE_NAME);
+      console.log('[sw] geactiveerd, oude caches verwijderd (alleen offline cache blijft)');
     })()
   );
 });
 
-// Fetch: simpel cache-first met network-fallback
+// FETCH: GEEN caching meer, alleen optionele offline fallback bij navigatie
 self.addEventListener('fetch', (event) => {
+  // Alleen GET-requests interessant
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
-
-  // SPECIAL: ?cleanup=1 in de URL → eerst cleanup, dan gewoon doorladen
-  if (url.searchParams.get('sw_cleanup') === '1') {
-    event.respondWith(
-      (async () => {
-        console.log('[sw] sw_cleanup=1 gedetecteerd, full cleanup uitvoeren');
-        await fullServiceWorkerCleanup();
-
-        // zelfde URL zonder cleanup=1 ophalen
-        url.searchParams.delete('sw_cleanup');
-        const cleanedRequest = new Request(url.toString(), {
-          method: event.request.method,
-          headers: event.request.headers,
-          mode: event.request.mode,
-          credentials: event.request.credentials,
-          cache: 'reload',
-          redirect: event.request.redirect,
-          referrer: event.request.referrer,
-          referrerPolicy: event.request.referrerPolicy,
-        });
-
-        return fetch(cleanedRequest);
-      })()
-    );
+  // Laat alle niet-navigatie requests gewoon door de browser afhandelen
+  if (event.request.mode !== 'navigate') {
     return;
   }
 
-  // Normale caching-strategie
+  // Voor navigaties: probeer netwerk, zo niet → offline.html als fallback
   event.respondWith(
     (async () => {
-      const cache = await caches.open(CACHE_NAME);
-
-      // Eerst kijken of hij al in de cache zit
-      const cached = await cache.match(event.request);
-      if (cached) {
-        // Optioneel: stilletjes op de achtergrond updaten
-        event.waitUntil(
-          fetch(event.request)
-            .then((response) => {
-              cache.put(event.request, response.clone());
-            })
-            .catch(() => {})
-        );
-        return cached;
-      }
-
-      // Niet in cache → netwerk proberen en dan cachen
       try {
-        const response = await fetch(event.request);
-        if (response && response.status === 200 && response.type === 'basic') {
-          cache.put(event.request, response.clone());
-        }
-        return response;
+        // Gewoon rechtstreeks netwerk, geen cache
+        return await fetch(event.request);
       } catch (e) {
-        // Geen netwerk en geen cache → browser fallback (offline error)
+        // Netwerk faalt (offline?): probeer offline.html
+        const cache = await caches.open(CACHE_NAME);
+        const offlineResponse = await cache.match(OFFLINE_URL);
+        if (offlineResponse) {
+          return offlineResponse;
+        }
+        // Als er geen offline.html is, gooi de originele fout door
         throw e;
       }
     })()
   );
 });
 
-// Push
+// PUSH
 self.addEventListener('push', (event) => {
   let data = {};
   try {
