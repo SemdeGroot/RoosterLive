@@ -327,6 +327,28 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
     color:var(--muted); font-size:11px; text-align:center; max-width:100vw;
 }
 
+.footer a.footer-linkedin {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    opacity: 0.8;
+    transition: opacity .2s ease;
+}
+
+.footer a.footer-linkedin svg {
+    display: block;        /* voorkomt baseline-shift van SVG */
+}
+
+.footer-content {
+    display: inline-flex;
+    align-items: center;  /* ⬅ centreert tekst en iconen op dezelfde middellijn */
+    gap: 4px;
+}
+
+.footer a.footer-linkedin:hover {
+    opacity: 1;
+}
+
 /* Focus styles */
 .nav-toggle:focus-visible, .nav-close:focus-visible, .nav a:focus-visible, .nav .nav-btn:focus-visible{
     outline:2px solid var(--accent); outline-offset:2px;
