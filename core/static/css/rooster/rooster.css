@@ -88,8 +88,19 @@
 }
 
 /* voorkom afknippen door wrappers: zet overflow zichtbaar op de directe ouders */
-#roosterRoot,
-.week-controls,
+/* Rooster: weekpicker mag buiten de card vallen */
+#roosterRoot {
+  overflow: visible;
+}
+
 .week-picker {
   overflow: visible;
+}
+
+/* Blauwe balk binnen de kaart houden voor deze card */
+#roosterRoot::before {
+  left: 9px;
+  right: 9px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
