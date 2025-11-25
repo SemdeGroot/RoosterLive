@@ -9,12 +9,12 @@
     return; // alleen in geïnstalleerde PWA
   }
 
-const ptr = document.getElementById('pull-to-refresh');
-if (!ptr) return;
+  const ptr = document.getElementById('pull-to-refresh');
+  if (!ptr) return;
 
-const dots = Array.from(ptr.querySelectorAll('.ptr-dot'));
-const app = document.querySelector('.app'); // <--- nieuw
-
+  const dots = Array.from(ptr.querySelectorAll('.ptr-dot'));
+  const app = document.querySelector('.app');
+  const body = document.body;
 
   let startY = 0;
   let pulling = false;
@@ -40,7 +40,10 @@ const app = document.querySelector('.app'); // <--- nieuw
 
     // verticale positie en zichtbaarheid
     ptr.style.setProperty('--ptr-translate', `${visual}px`);
-    ptr.style.setProperty('--ptr-opacity', Math.min(1, clamped / 40).toString());
+    ptr.style.setProperty(
+      '--ptr-opacity',
+      Math.min(1, clamped / 40).toString()
+    );
 
     // dots vullen per stap
     updateDotsByProgress(progress);
@@ -58,19 +61,22 @@ const app = document.querySelector('.app'); // <--- nieuw
   }
 
   function resetPTR() {
-  pulling = false;
-  maxPull = 0;
-  wasArmed = false;
-  ptr.classList.remove('refreshing');
-  ptr.style.setProperty('--ptr-translate', '0px');
-  ptr.style.setProperty('--ptr-opacity', '0');
-  dots.forEach((dot) => dot.classList.remove('active'));
+    pulling = false;
+    maxPull = 0;
+    wasArmed = false;
+    ptr.classList.remove('refreshing');
+    ptr.style.setProperty('--ptr-translate', '0px');
+    ptr.style.setProperty('--ptr-opacity', '0');
+    dots.forEach((dot) => dot.classList.remove('active'));
 
-  if (app) {
-    app.classList.remove('ptr-shift-down'); // <--- nieuw
+    if (app) {
+      app.classList.remove('ptr-shift-down');
+    }
+
+    if (body) {              
+      body.classList.remove('ptr-panel-bg');
+    }
   }
-}
-
 
   window.addEventListener(
     'touchstart',
@@ -114,24 +120,29 @@ const app = document.querySelector('.app'); // <--- nieuw
 
     ptr.style.transition = 'transform 0.18s ease-out, opacity 0.18s ease-out';
 
-if (maxPull >= PULL_THRESHOLD) {
-  // Drempel gehaald → dots worden spinner
-  ptr.classList.add('refreshing');
-  ptr.style.setProperty('--ptr-translate', `${REFRESH_OFFSET}px`);
-  ptr.style.setProperty('--ptr-opacity', '1');
-  dots.forEach((dot) => dot.classList.remove('active'));
+    if (maxPull >= PULL_THRESHOLD) {
+      // Drempel gehaald → dots worden spinner
+      ptr.classList.add('refreshing');
+      ptr.style.setProperty('--ptr-translate', `${REFRESH_OFFSET}px`);
+      ptr.style.setProperty('--ptr-opacity', '1');
+      dots.forEach((dot) => dot.classList.remove('active'));
 
-  // hele app (header + content) een beetje omlaag
-  if (app) {
-    app.classList.add('ptr-shift-down');
-  }
+      // hele app (header + content) een beetje omlaag
+      if (app) {
+        app.classList.add('ptr-shift-down');
+      }
 
-  // kleine delay zodat spinner + shift zichtbaar zijn
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000); // of 700–900ms als je 'm langer wil zien
-} else {
-  resetPTR();
-}
+      // body-top vlak in kleur var(--panel)
+      if (body) {
+        body.classList.add('ptr-panel-bg');
+      }
+
+      // kleine delay zodat spinner + shift zichtbaar zijn
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000); // tijd van animatie
+    } else {
+      resetPTR();
+    }
   });
 })();

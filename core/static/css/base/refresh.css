@@ -1,3 +1,10 @@
+:root {
+    --bg:        #0d131b;
+    --panel:     #131a24;   
+    --muted:     #9fb2c8;
+    --accent:    #072a72; 
+}
+
 /* Pull-to-refresh container */
 #pull-to-refresh {
   --ptr-translate: 0px;
@@ -19,7 +26,7 @@
   opacity: var(--ptr-opacity);
   transition: transform 0.18s ease-out, opacity 0.18s ease-out;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 1;
 }
 
 /* Cirkelhouder */
@@ -39,7 +46,7 @@
   margin-left: -2px;
   margin-top: -2px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--muted);
   opacity: 0.25;
 }
 
@@ -112,4 +119,12 @@
 @keyframes ptr-ring-rotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+/* Alleen tijdens refresh — body-topvlak wordt identiek aan de header */
+body.ptr-panel-bg {
+  background:var(--panel) !important;
+
+  /* Hoogte van de “header extension” */
+  background-size: 100% 40px, auto;
 }
