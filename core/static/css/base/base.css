@@ -590,4 +590,22 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
 .push-close:focus, .push-close:focus-visible {
   outline: none !important;
   box-shadow: none !important;
+}/* App-container mag meebewegen bij pull-to-refresh */
+.app {
+  transition: transform 0.18s ease-out;
+}
+
+/* Tijdens refresh schuift de hele app een beetje naar beneden */
+.app.ptr-shift-down {
+  transform: translateY(40px); /* tune naar smaak: 12–24px */
+}
+
+/* App-container mag meebewegen bij pull-to-refresh */
+.app {
+  transition: transform 0.18s ease-out;
+}
+
+/* Tijdens refresh schuift de hele app een beetje naar beneden */
+.app.ptr-shift-down {
+  transform: translateY(40px); /* tune naar smaak: 12–24px */
 }

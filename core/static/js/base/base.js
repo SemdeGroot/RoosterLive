@@ -116,7 +116,7 @@ const VAPID =
 
   async function registerSW() {
     try {
-      const reg = await navigator.serviceWorker.register('/service_worker.v4.js');
+      const reg = await navigator.serviceWorker.register('/service_worker.v5.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
       console.warn('[push] SW registratie faalde:', e);
@@ -283,7 +283,7 @@ if ('serviceWorker' in navigator) {
     (async () => {
       try {
         // 1) Normaal gewoon registreren
-        const reg = await navigator.serviceWorker.register('/service_worker.v4.js');
+        const reg = await navigator.serviceWorker.register('/service_worker.v5.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
 
         // 2) Optioneel: cleanup-truc via ?cleanup=1
@@ -308,61 +308,3 @@ if ('serviceWorker' in navigator) {
     })();
   });
 }
-
-// ---------- PULL TO REFRESH IN PWA STANDALONE ----------
-(function () {
-  const isStandalone =
-    (window.matchMedia &&
-      window.matchMedia('(display-mode: standalone)').matches) ||
-    window.navigator.standalone === true;
-
-  if (!isStandalone) {
-    return; // alleen in geïnstalleerde PWA
-  }
-
-  let startY = 0;
-  let pulling = false;
-  let maxPull = 0;
-  const PULL_THRESHOLD = 80; // pixels
-
-  window.addEventListener(
-    'touchstart',
-    (e) => {
-      if (e.touches.length !== 1) return;
-      // alleen als we bovenaan zitten
-      if (window.scrollY !== 0) return;
-
-      startY = e.touches[0].clientY;
-      pulling = true;
-      maxPull = 0;
-    },
-    { passive: true }
-  );
-
-  window.addEventListener(
-    'touchmove',
-    (e) => {
-      if (!pulling) return;
-      const dy = e.touches[0].clientY - startY;
-
-      if (dy <= 0) {
-        // omhoog of geen echte pull: stoppen
-        pulling = false;
-        maxPull = 0;
-        return;
-      }
-
-      maxPull = Math.max(maxPull, dy);
-    },
-    { passive: true }
-  );
-
-  window.addEventListener('touchend', () => {
-    if (pulling && maxPull > PULL_THRESHOLD) {
-      // Soft refresh van de huidige pagina
-      window.location.reload();
-    }
-    pulling = false;
-    maxPull = 0;
-  });
-})();

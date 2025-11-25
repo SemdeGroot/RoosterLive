@@ -2,6 +2,15 @@
 const CACHE_NAME = 'apo-jansen-static-v1';
 const OFFLINE_URL = '/static/pwa/useroffline.html'; // of: '/static/pwa/offline.html'
 
+// Niet static en media cachen in dev. irritant met development
+const DEV_HOSTNAMES = [
+  'localhost',
+  '127.0.0.1',
+  'treasonably-noncerebral-samir.ngrok-free.dev',
+];
+
+const IS_DEV = DEV_HOSTNAMES.includes(self.location.hostname);
+
 // (Optioneel) volledige cleanup van SW + alle caches via message
 async function fullServiceWorkerCleanup() {
   // Alle caches voor deze origin weggooien
@@ -87,25 +96,24 @@ function isCachableStaticOrMedia(request) {
   );
 }
 
-// Cache-first strategie voor /static en /media
-async function handleStaticOrMediaRequest(request) {
-  const cache = await caches.open(CACHE_NAME);
-
-  // 1. Kijk eerst in cache
-  const cached = await cache.match(request);
-  if (cached) {
-    return cached;
+// Helper: alleen /static en /media van EIGEN origin cachen (alleen in PROD)
+function isCachableStaticOrMedia(request) {
+  // In dev-omgevingen: nooit static/media cachen
+  if (IS_DEV) {
+    return false;
   }
 
-  // 2. Niet in cache → via netwerk ophalen
-  const response = await fetch(request);
+  const url = new URL(request.url);
 
-  // Alleen succesvolle responses (status 200, type 'basic') cachen
-  if (response && response.status === 200 && response.type === 'basic') {
-    cache.put(request, response.clone());
+  // Alleen zelfde origin (geen externe CDNs / 3rd-party)
+  if (url.origin !== self.location.origin) {
+    return false;
   }
 
-  return response;
+  // Alleen paden die met /static/ of /media/ beginnen
+  return (
+    url.pathname.startsWith('/static/') || url.pathname.startsWith('/media/')
+  );
 }
 
 // Network-first navigatie met offline fallback naar OFFLINE_URL

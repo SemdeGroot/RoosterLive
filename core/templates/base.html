@@ -25,6 +25,7 @@
 
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/installprompt.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
 
   <!-- Manifest + icons -->
    <link rel="manifest" href="{% url 'manifest.json' %}">
@@ -72,6 +73,22 @@
 </head>
 
 <body>
+<div id="pull-to-refresh">
+  <div class="ptr-ring">
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+  </div>
+</div>
     <div class="app">
         <header class="header">
             <a href="{% url 'home' %}" class="logo-wrap">
@@ -219,6 +236,7 @@
     <script src="{% static 'js/base/base.js' %}" defer></script>
     <script src="{% static 'js/auth/passkeys.js' %}" defer></script>
     <script src="{% static 'js/base/installprompt.js' %}"></script>
+    <script src="{% static 'js/base/refresh.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
 </body>
