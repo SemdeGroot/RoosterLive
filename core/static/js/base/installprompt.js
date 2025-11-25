@@ -76,7 +76,7 @@
     modal.innerHTML = `
       <div class="push-backdrop"></div>
       <div class="push-card ios-install-card android-install-card">
-        <button class="push-close" type="button" aria-label="Sluiten">&times;</button>
+        <button class="installprompt-close" type="button" aria-label="Sluiten">&times;</button>
 
         <header class="ios-install-header">
           <h2 class="ios-install-title">Installeer de app</h2>

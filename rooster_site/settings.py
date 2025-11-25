@@ -53,6 +53,7 @@ CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_FAILURE_VIEW = "core.views.errors.csrf_failure"
 
 # === Apps ===
 INSTALLED_APPS = [
@@ -252,8 +253,8 @@ else:
 
 # === Sessies ===
 SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 uur
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = False
 
 # === Email ===
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
