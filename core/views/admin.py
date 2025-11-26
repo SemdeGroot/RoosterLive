@@ -12,6 +12,7 @@ from django.db import transaction
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
+from core.models import UserProfile
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ def admin_panel(request):
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # ✨ Zorg dat permissies in DB overeenkomen met PERM_LABELS
+    # Zorg dat permissies in DB overeenkomen met PERM_LABELS
     sync_custom_permissions()
 
     # ---- Groepen (bewerken/opslaan) ----
@@ -48,6 +49,7 @@ def admin_panel(request):
         if user_form.is_valid():
             first_name = (user_form.cleaned_data.get("first_name") or "").strip().lower()
             email = (user_form.cleaned_data.get("email") or "").strip().lower()
+            birth_date = user_form.cleaned_data.get("birth_date")
             group = user_form.cleaned_data.get("group")
 
             if not email:
@@ -66,6 +68,13 @@ def admin_panel(request):
             )
             user.set_unusable_password()
             user.save(update_fields=["password"])
+
+            if birth_date:
+                from core.models import UserProfile
+                UserProfile.objects.update_or_create(
+                    user=user,
+                    defaults={"birth_date": birth_date},
+                )
 
             if group:
                 if isinstance(group, Group):
@@ -96,7 +105,7 @@ def admin_panel(request):
 
     # ---- Lijsten voor de tabel(len) ----
     groups = Group.objects.all().order_by("name")
-    users = User.objects.all().order_by("username")
+    users = User.objects.all().select_related("profile").order_by("username")
 
     group_rows = []
     for g in groups:

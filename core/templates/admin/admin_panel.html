@@ -4,8 +4,31 @@
 {% block header_title %}Beheer{% endblock %}
 
 {% block head %}
+<html lang="nl"></html>
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
+<script>
+    $(document).ready(function() {
+        // Activeer de datepicker voor alle inputvelden met de class 'datepicker'
+        $("input[data-provide='datepicker']").datepicker({
+            dateFormat: "dd-mm-yy", // Gebruik het juiste NL-formaat
+            changeMonth: true, // Maand selecteren in dropdown
+            changeYear: true,  // Jaar selecteren in dropdown
+            yearRange: "1900:2100", // Range van jaren
+            showButtonPanel: true, // Laat een knop voor de maandselectie zien
+            placeholder: "dd-mm-jjjj", // Placeholder in Nederlands formaat
+
+            // Forceer streepjes automatisch bij invoer
+            onClose: function(dateText, inst) {
+                var date = $(this).val();
+                if (date.length === 2 || date.length === 5) {
+                    // Voeg streepjes toe als de datum 2 of 5 tekens bevat
+                    $(this).val(date + " -");
+                }
+            },
+        });
+    });
+</script>
 {% endblock %}
 
 {% block content %}
@@ -112,6 +135,7 @@
           <div class="form form-sticky-actions" style="padding:0;">
             {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
             {{ user_form.email.label_tag }} {{ user_form.email }}
+            {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
             {{ user_form.group.label_tag }} {{ user_form.group }}
             <button class="btn block user-create" type="submit">Aanmaken</button>
           </div>
@@ -167,6 +191,12 @@
                     <input class="admin-input" type="email" name="email" value="{{ u.email }}" style="margin-top: 6px;">
                   </div>
                   <div>
+                    <label>Geboortedatum:</label>
+                    <input class="admin-input" type="text" name="birth_date"
+                          value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'Y-m-d' }}{% endif %}"
+                          style="margin-top: 6px;">
+                  </div>
+                  <div>
                     <label>Groep:</label>
                     <select name="group" class="admin-select narrow" style="margin-left: 4px;">
                       {% with g=u.groups.all|first %}
@@ -190,5 +220,5 @@
     </div>
 
   </div>
-</div>
+</div>{{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
 {% endblock %}

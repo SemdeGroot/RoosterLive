@@ -21,7 +21,7 @@
   let maxPull = 0;
   let wasArmed = false;
 
-  const PULL_THRESHOLD = 200;   // hoeveel je moet pullen
+  const PULL_THRESHOLD = 220;   // hoeveel je moet pullen
   const MAX_VISUAL_PULL = 90;   // hoe ver de indicator visueel naar beneden komt
   const REFRESH_OFFSET = 90;    // zelfde positie aanhouden tijdens refresh
 

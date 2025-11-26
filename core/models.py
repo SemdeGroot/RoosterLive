@@ -108,6 +108,23 @@ class WebAuthnPasskey(models.Model):
     def __str__(self):
         base = self.nickname or f"Passkey {self.pk}"
         return f"{base} – {self.user}"
+    
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    birth_date = models.DateField(
+        "Geboortedatum",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    def __str__(self):
+        return f"Profiel van {self.user}"
 
 # 2FA subscriptions verwijderen uit db om te testen:
 # python manage.py shell

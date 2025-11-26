@@ -7,10 +7,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.forms.widgets import DateInput
 
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
+
+from core.models import UserProfile
 
 UserModel = get_user_model()
 
@@ -63,6 +66,18 @@ class GroupWithPermsForm(forms.ModelForm):
 class SimpleUserCreateForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150)
     email = forms.EmailField(label="E-mail")
+    birth_date = forms.DateField(
+        label="Geboortedatum",
+        required=False,
+        input_formats=["%d-%m-%Y", "%Y-%m-%d"],  # Validatie in het Nederlandse formaat
+        widget=forms.TextInput(attrs={
+            'type': 'date',
+            'placeholder': 'dd-mm-jjjj',  # Placeholder in NL-formaat
+            'class': 'admin-input datepicker',  # De datepicker-klasse toevoegen
+            'data-provide': 'datepicker',  # Dit activeert de datepicker
+            'data-date-format': 'dd-mm-yyyy',  # Zorgt ervoor dat het de juiste format gebruikt
+        }),
+    )
     group = forms.ModelChoiceField(
         label="Groep",
         queryset=Group.objects.all(),
@@ -71,7 +86,6 @@ class SimpleUserCreateForm(forms.Form):
     )
 
     def clean_first_name(self):
-        # Consistent in lowercase opslaan
         first = (self.cleaned_data.get("first_name") or "").strip().lower()
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
@@ -81,7 +95,6 @@ class SimpleUserCreateForm(forms.Form):
         email = (self.cleaned_data.get("email") or "").strip().lower()
         if not email:
             raise forms.ValidationError("E-mail is verplicht.")
-        # Unieke e-mail afdwingen (case-insensitive)
         if UserModel.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("Er bestaat al een gebruiker met dit e-mailadres.")
         return email
@@ -90,6 +103,18 @@ class SimpleUserCreateForm(forms.Form):
 class SimpleUserEditForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150)
     email = forms.EmailField(label="E-mail")
+    birth_date = forms.DateField(
+        label="Geboortedatum",
+        required=False,
+        input_formats=["%d-%m-%Y", "%Y-%m-%d"],  # Validatie in het Nederlandse formaat
+        widget=forms.TextInput(attrs={
+            'type': 'date',
+            'placeholder': 'dd-mm-jjjj',  # Placeholder in NL-formaat
+            'class': 'admin-input datepicker',  # De datepicker-klasse toevoegen
+            'data-provide': 'datepicker',  # Dit activeert de datepicker
+            'data-date-format': 'dd-mm-yyyy',  # Zorgt ervoor dat het de juiste format gebruikt
+        }),
+    )
     group = forms.ModelChoiceField(
         label="Groep",
         queryset=Group.objects.all(),
@@ -98,7 +123,6 @@ class SimpleUserEditForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        # instance = een instance van het actieve user model
         self.instance = kwargs.pop("instance")
         super().__init__(*args, **kwargs)
 
@@ -108,8 +132,13 @@ class SimpleUserEditForm(forms.Form):
         if g:
             self.fields["group"].initial = g.id
 
+        # Profiel / geboortedatum inladen
+        profile = getattr(self.instance, "profile", None)
+        if profile and profile.birth_date:
+            # Geboortedatum in NL-formaat weergeven
+            self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
+
     def clean_first_name(self):
-        # Consistent in lowercase opslaan
         first = (self.cleaned_data.get("first_name") or "").strip().lower()
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
@@ -117,29 +146,31 @@ class SimpleUserEditForm(forms.Form):
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
-        # Unieke e-mail, behalve voor jezelf
         if UserModel.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Er bestaat al een gebruiker met dit e-mailadres.")
         return email
 
     def save(self):
         u = self.instance
-        first = self.cleaned_data["first_name"]          # al lowercase via clean_first_name
-        email = self.cleaned_data["email"]               # al lowercase via clean_email
+        first = self.cleaned_data["first_name"]
+        email = self.cleaned_data["email"]
         group = self.cleaned_data.get("group")
+        birth_date = self.cleaned_data.get("birth_date")
 
-        # Username blijft ALTIJD gelijk aan email (lowercase)
         u.username = email
         u.first_name = first
         u.email = email
         u.save(update_fields=["username", "first_name", "email"])
 
-        # Groep bijwerken (optioneel)
+        # Profiel updaten / aanmaken
+        profile, _ = UserProfile.objects.get_or_create(user=u)
+        profile.birth_date = birth_date
+        profile.save(update_fields=["birth_date"])
+
         u.groups.clear()
         if group:
             u.groups.add(group)
         return u
-
 
 class AvailabilityUploadForm(forms.Form):
     file = forms.FileField(label="Bestand (CSV of XLSX)", help_text="Upload een CSV of Excel-bestand.")
