@@ -1,6 +1,7 @@
 // Alleen voor optionele offline fallback + statische assets
-const CACHE_NAME = 'apo-jansen-static-v1';
+const CACHE_NAME = 'apo-jansen-static-v2';
 const OFFLINE_URL = '/static/pwa/offline.v2.html'; // of: '/static/pwa/offline.html'
+const APP_ICON = '/static/img/app_icon_trans-512x512.png';
 
 // Niet static en media cachen in dev. irritant met development
 const DEV_HOSTNAMES = [
@@ -47,7 +48,7 @@ self.addEventListener('install', (event) => {
     (async () => {
       try {
         const cache = await caches.open(CACHE_NAME);
-        await cache.addAll([OFFLINE_URL]);
+        await cache.addAll([OFFLINE_URL, APP_ICON]);
         console.log('[sw] offline pagina gecachet');
       } catch (e) {
         // Als offline.html niet bestaat, is dat ook prima
