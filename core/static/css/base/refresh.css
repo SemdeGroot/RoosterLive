@@ -102,16 +102,16 @@
 /* Wave: van donker → licht (accent) → weer terug */
 @keyframes ptr-dot-chase {
   0%, 20% {
-    opacity: 0.15;
-    background: rgba(0, 0, 0, 0.18);
+    opacity: 0.35;        
+    background: var(--muted);
   }
   40%, 60% {
-    opacity: 1;
+    opacity: 1;       
     background: var(--accent);
   }
   80%, 100% {
-    opacity: 0.25;
-    background: rgba(0, 0, 0, 0.18);
+    opacity: 0.45;         
+    background: var(--muted);
   }
 }
 
@@ -126,5 +126,5 @@ body.ptr-panel-bg {
   background:var(--panel) !important;
 
   /* Hoogte van de “header extension” */
-  background-size: 100% 40px, auto;
+  background-size: 40px !important;
 }

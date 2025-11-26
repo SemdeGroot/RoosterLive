@@ -1,6 +1,6 @@
 // Alleen voor optionele offline fallback + statische assets
 const CACHE_NAME = 'apo-jansen-static-v1';
-const OFFLINE_URL = '/static/pwa/useroffline.html'; // of: '/static/pwa/offline.html'
+const OFFLINE_URL = '/static/pwa/offline.v2.html'; // of: '/static/pwa/offline.html'
 
 // Niet static en media cachen in dev. irritant met development
 const DEV_HOSTNAMES = [

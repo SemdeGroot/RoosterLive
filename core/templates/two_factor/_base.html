@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
   <title>Login | Apo Jansen</title>
 
-    <meta name="description" content="Apo Jansen" />
+  <meta name="description" content="Apo Jansen" />
   <meta name="application-name" content="Apo Jansen" />
   <meta name="apple-mobile-web-app-title" content="Apo Jansen" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -19,6 +19,12 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
+  <style>
+    body.ptr-panel-bg {
+      background: var(--bg) !important;
+    }
+  </style>
 
   <!-- Manifest + icons -->
    <link rel="manifest" href="{% url 'manifest.json' %}">
@@ -66,6 +72,22 @@
   {% block head %}{% endblock %}
 </head>
 <body>
+  <div id="pull-to-refresh">
+  <div class="ptr-ring">
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+  </div>
+</div>
   {% block pre_body %}{% endblock %}
   <main class="login-app">
     <div class="login-box">
@@ -91,6 +113,7 @@
 
   <script src="{% static 'js/auth/login.js' %}"></script>
   <script src="{% static 'js/auth/passkeys.js' %}"></script>
+  <script src="{% static 'js/base/refresh.js' %}"></script>
   <script src="{% static 'js/base/base.js' %}" defer></script>
 </body>
 </html>

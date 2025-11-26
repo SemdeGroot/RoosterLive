@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/static/css/base/refresh.css">
   <title>Offline</title>
   <style>
     body {
@@ -47,9 +48,29 @@
       margin-top: 18px;
       margin-bottom: 0px;
     }
+
+    body.ptr-panel-bg {
+      background: var(--bg) !important;
+    }
   </style>
 </head>
 <body>
+  <div id="pull-to-refresh">
+  <div class="ptr-ring">
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span>
+  </div>
+</div>
   <div class="card">
     <img src="/static/img/app_icon_trans-512x512.png" alt="App icoon" class="app-icon">
 
@@ -60,55 +81,6 @@
 
     <p class="small">Deze pagina verschijnt automatisch bij offline gebruik van de app.</p>
   </div>
-  <script>
-    (function () {
-      const isStandalone =
-        (window.matchMedia &&
-          window.matchMedia('(display-mode: standalone)').matches) ||
-        window.navigator.standalone === true;
-
-      if (!isStandalone) return;
-
-      let startY = 0;
-      let pulling = false;
-      let maxPull = 0;
-      const PULL_THRESHOLD = 80;
-
-      window.addEventListener(
-        'touchstart',
-        (e) => {
-          if (e.touches.length !== 1) return;
-          if (window.scrollY !== 0) return;
-          startY = e.touches[0].clientY;
-          pulling = true;
-          maxPull = 0;
-        },
-        { passive: true }
-      );
-
-      window.addEventListener(
-        'touchmove',
-        (e) => {
-          if (!pulling) return;
-          const dy = e.touches[0].clientY - startY;
-          if (dy <= 0) {
-            pulling = false;
-            maxPull = 0;
-            return;
-          }
-          maxPull = Math.max(maxPull, dy);
-        },
-        { passive: true }
-      );
-
-      window.addEventListener('touchend', () => {
-        if (pulling && maxPull > PULL_THRESHOLD) {
-          window.location.reload();
-        }
-        pulling = false;
-        maxPull = 0;
-      });
-    })();
-  </script>
+  <script src="/static/js/base/refresh.js"></script>
 </body>
 </html>
