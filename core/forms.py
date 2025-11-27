@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile
+from core.models import UserProfile, Organization
 
 UserModel = get_user_model()
 
@@ -82,6 +82,12 @@ class SimpleUserCreateForm(forms.Form):
     group = forms.ModelChoiceField(
         label="Groep",
         queryset=Group.objects.all(),
+        required=True,
+        empty_label="----------",
+    )
+    organization = forms.ModelChoiceField(
+        label="Organisatie",
+        queryset=Organization.objects.all(),
         required=False,
         empty_label="----------",
     )
@@ -122,6 +128,12 @@ class SimpleUserEditForm(forms.Form):
         required=False,
         empty_label="----------",
     )
+    organization = forms.ModelChoiceField(
+        label="Organisatie",
+        queryset=Organization.objects.all(),
+        required=False,
+        empty_label="----------",
+    )
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance")
@@ -129,15 +141,16 @@ class SimpleUserEditForm(forms.Form):
 
         self.fields["first_name"].initial = self.instance.first_name or self.instance.username
         self.fields["email"].initial = self.instance.email
+
         g = self.instance.groups.first()
         if g:
             self.fields["group"].initial = g.id
 
-        # Profiel / geboortedatum inladen
         profile = getattr(self.instance, "profile", None)
         if profile and profile.birth_date:
-            # in hetzelfde formaat als de datepicker:
             self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
+        if profile and profile.organization:
+            self.fields["organization"].initial = profile.organization.id
 
     def clean_first_name(self):
         first = (self.cleaned_data.get("first_name") or "").strip().lower()
@@ -157,16 +170,17 @@ class SimpleUserEditForm(forms.Form):
         email = self.cleaned_data["email"]
         group = self.cleaned_data.get("group")
         birth_date = self.cleaned_data.get("birth_date")
+        organization = self.cleaned_data.get("organization")
 
         u.username = email
         u.first_name = first
         u.email = email
         u.save(update_fields=["username", "first_name", "email"])
 
-        # Profiel updaten / aanmaken
         profile, _ = UserProfile.objects.get_or_create(user=u)
         profile.birth_date = birth_date
-        profile.save(update_fields=["birth_date"])
+        profile.organization = organization
+        profile.save(update_fields=["birth_date", "organization"])
 
         u.groups.clear()
         if group:

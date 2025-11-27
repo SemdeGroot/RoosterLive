@@ -10,39 +10,37 @@
   <!-- IMask voor invoermask op dd-mm-jjjj -->
   <script src="https://unpkg.com/imask"></script>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".js-date").forEach(function (input) {
-      IMask(input, {
-        mask: 'd-m-Y',
-        lazy: true,       // of false als je altijd het patroon wilt zien
-        overwrite: true,
-        autofix: false,    // corrigeert naar dichtstbijzijnde geldige waarde
-
-        blocks: {
-          d: {
-            mask: IMask.MaskedRange,
-            from: 1,
-            to: 31,
-            maxLength: 2
-          },
-          m: {
-            mask: IMask.MaskedRange,
-            from: 1,
-            to: 12,
-            maxLength: 2
-          },
-          Y: {
-            mask: IMask.MaskedRange,
-            from: 1900,
-            to: 2100,
-            maxLength: 4
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Date mask voor alle .js-date velden
+      document.querySelectorAll(".js-date").forEach(function (input) {
+        IMask(input, {
+          mask: 'd-m-Y',
+          lazy: true,
+          overwrite: true,
+          autofix: false,
+          blocks: {
+            d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+            m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+            Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
           }
-        }
+        });
       });
+
+      // Toggle voor "nieuwe organisatie" paneel
+      var toggleBtn = document.getElementById("orgAddToggle");
+      var panel = document.getElementById("orgAddPanel");
+      if (toggleBtn && panel) {
+        toggleBtn.addEventListener("click", function () {
+          if (panel.style.display === "none" || !panel.style.display) {
+            panel.style.display = "block";
+          } else {
+            panel.style.display = "none";
+          }
+        });
+      }
     });
-  });
-</script>
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -151,9 +149,40 @@
             {{ user_form.email.label_tag }} {{ user_form.email }}
             {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
             {{ user_form.group.label_tag }} {{ user_form.group }}
+            {{ user_form.organization.label_tag }}
+            <div style="display:flex; gap:8px; align-items:flex-end; margin-top:0px">
+              <div style="flex:1;">
+                {{ user_form.organization }}
+              </div>
+              <button type="button"
+                      class="btn"
+                      id="orgAddToggle"
+                      style="white-space:nowrap; margin-top: 0px !important; padding: 5px 10px">
+                + nieuwe organisatie
+              </button>
+            </div>
+
             <button class="btn block user-create" type="submit">Aanmaken</button>
           </div>
         </form>
+
+        <!-- Klein formulier om een nieuwe organisatie toe te voegen (uitklapbaar) -->
+        <div id="orgAddPanel" style="display:none; margin-top:8px;">
+          <form method="post" autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="org_create">
+            <div class="form form-sticky-actions" style="padding:0;">
+              <label for="org_name">Nieuwe organisatie:</label>
+              <div style="display:flex; gap:8px; align-items:flex-end;">
+                <div style="flex:1;">
+                  <input class="admin-input" type="text" name="name" id="org_name"
+                        placeholder="Naam organisatie" required>
+                </div>
+                <button class="btn small" type="submit" style="padding: 5px 10px">Toevoegen</button>
+              </div>
+            </div>
+          </form>
+        </div>
 
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande gebruikers</h3>
@@ -198,26 +227,44 @@
                 <div class="edit-grid">
                   <div>
                     <label>Voornaam:</label>
-                    <input class="admin-input" type="text" name="first_name" value="{{ u.first_name|default:u.username }}" style="margin-top: 6px;">
+                    <input class="admin-input" type="text" name="first_name"
+                           value="{{ u.first_name|default:u.username }}" style="margin-top: 6px;">
                   </div>
                   <div>
                     <label>E-mail:</label>
-                    <input class="admin-input" type="email" name="email" value="{{ u.email }}" style="margin-top: 6px;">
+                    <input class="admin-input" type="email" name="email"
+                           value="{{ u.email }}" style="margin-top: 6px;">
                   </div>
                   <div>
                     <label>Geboortedatum:</label>
                     <input class="admin-input js-date" type="text" name="birth_date"
-                          value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
-                          placeholder="dd-mm-jjjj"
-                          autocomplete="off"
-                          style="margin-top: 6px;">
+                           value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
+                           placeholder="dd-mm-jjjj"
+                           autocomplete="off"
+                           style="margin-top: 6px;">
                   </div>
                   <div>
                     <label>Groep:</label>
                     <select name="group" class="admin-select narrow" style="margin-left: 4px;">
                       {% with g=u.groups.all|first %}
                         {% for grp in groups %}
-                          <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>{{ grp.name }}</option>
+                          <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
+                            {{ grp.name }}
+                          </option>
+                        {% endfor %}
+                      {% endwith %}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Organisatie:</label>
+                    <select name="organization" class="admin-select narrow" style="margin-left: 4px;">
+                      <option value="">----------</option>
+                      {% with profile=u.profile %}
+                        {% for org in organizations %}
+                          <option value="{{ org.id }}"
+                            {% if profile.organization and profile.organization.id == org.id %}selected{% endif %}>
+                            {{ org.name }}
+                          </option>
                         {% endfor %}
                       {% endwith %}
                     </select>
@@ -236,5 +283,5 @@
     </div>
 
   </div>
-</div>{{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
+</div>
 {% endblock %}

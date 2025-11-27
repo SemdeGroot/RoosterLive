@@ -35,3 +35,17 @@ if (groupSearch) {
     });
   });
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  var toggleBtn = document.getElementById("orgAddToggle");
+  var panel = document.getElementById("orgAddPanel");
+  if (toggleBtn && panel) {
+    toggleBtn.addEventListener("click", function () {
+      if (panel.style.display === "none" || !panel.style.display) {
+        panel.style.display = "block";
+      } else {
+        panel.style.display = "none";
+      }
+    });
+  }
+});

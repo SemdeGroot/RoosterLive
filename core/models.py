@@ -109,6 +109,19 @@ class WebAuthnPasskey(models.Model):
         base = self.nickname or f"Passkey {self.pk}"
         return f"{base} – {self.user}"
     
+class Organization(models.Model):
+    name = models.CharField(
+        "Organisatienaam",
+        max_length=255,
+        unique=True,
+        db_index=True,
+    )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
@@ -121,6 +134,14 @@ class UserProfile(models.Model):
         null=True,
         blank=True,
         db_index=True,
+    )
+    organization = models.ForeignKey(
+        Organization,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="users",
+        verbose_name="Organisatie",
     )
 
     def __str__(self):

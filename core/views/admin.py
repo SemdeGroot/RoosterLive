@@ -12,7 +12,7 @@ from django.db import transaction
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile
+from core.models import UserProfile, Organization
 
 User = get_user_model()
 
@@ -33,6 +33,20 @@ def admin_panel(request):
     group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
     user_form  = SimpleUserCreateForm(prefix="user")
 
+    # ---- Organisatie aanmaken ----
+    if request.method == "POST" and request.POST.get("form_kind") == "org_create":
+        name = (request.POST.get("name") or "").strip()
+        if not name:
+            messages.error(request, "Organisatienaam is verplicht.")
+            return redirect("admin_panel")
+
+        org, created = Organization.objects.get_or_create(name=name)
+        if created:
+            messages.success(request, f"Organisatie “{org.name}” aangemaakt.")
+        else:
+            messages.info(request, f"Organisatie “{org.name}” bestond al.")
+        return redirect("admin_panel")
+
     if request.method == "POST" and request.POST.get("form_kind") == "group":
         gid_post = request.POST.get("group_id")
         instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
@@ -51,6 +65,7 @@ def admin_panel(request):
             email = (user_form.cleaned_data.get("email") or "").strip().lower()
             birth_date = user_form.cleaned_data.get("birth_date")
             group = user_form.cleaned_data.get("group")
+            organization = user_form.cleaned_data.get("organization")
 
             if not email:
                 messages.error(request, "E-mail is verplicht.")
@@ -69,13 +84,14 @@ def admin_panel(request):
             user.set_unusable_password()
             user.save(update_fields=["password"])
 
-            if birth_date:
-                from core.models import UserProfile
+            if birth_date or organization:
                 UserProfile.objects.update_or_create(
                     user=user,
-                    defaults={"birth_date": birth_date},
+                    defaults={
+                        "birth_date": birth_date,
+                        "organization": organization,
+                    },
                 )
-
             if group:
                 if isinstance(group, Group):
                     user.groups.add(group)
@@ -106,6 +122,7 @@ def admin_panel(request):
     # ---- Lijsten voor de tabel(len) ----
     groups = Group.objects.all().order_by("name")
     users = User.objects.all().select_related("profile").order_by("username")
+    organizations = Organization.objects.all().order_by("name")
 
     group_rows = []
     for g in groups:
@@ -125,6 +142,7 @@ def admin_panel(request):
         "editing_group_id": editing_group.id if editing_group else "",
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
+        "organizations": organizations,
     })
 
 @login_required
