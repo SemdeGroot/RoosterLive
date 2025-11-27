@@ -15,6 +15,7 @@ SAFE_URLNAMES = {
 SAFE_PATH_PREFIXES = (
     "/static/", "/media/", "/favicon.ico",
     "/service_worker.v2.js", "/__reload__/",
+    "/manifest.json",
 )
 
 class Enforce2FAMiddleware(MiddlewareMixin):
@@ -46,6 +47,12 @@ class Enforce2FAMiddleware(MiddlewareMixin):
 
         # Statische assets en dev-tools toelaten
         if request.path_info.startswith(SAFE_PATH_PREFIXES):
+            return
+
+        # 🔍 Alleen HTML-paginaverzoeken dwingen naar 2FA-setup.
+        # JSON/XHR/PWA-manifest etc. gewoon doorlaten.
+        accept = request.META.get("HTTP_ACCEPT", "")
+        if "text/html" not in accept:
             return
 
         # Anders: dwing naar 2FA-setup (alleen op GET om POST-data te bewaren)

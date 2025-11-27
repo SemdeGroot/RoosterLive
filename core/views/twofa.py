@@ -23,6 +23,7 @@ from core.models import WebAuthnPasskey
 from core.views._helpers import is_mobile_request
 
 class CustomSetupView(SetupView):
+    # Geen welkomst- en methodestap
     condition_dict = {"welcome": False, "method": False}
 
     def get_success_url(self):
@@ -51,50 +52,16 @@ class CustomSetupView(SetupView):
                     "inputmode": "numeric",
                     "autocomplete": "one-time-code",
                 })
-                field.error_messages.update({"required": _("Voer 6 cijfers in.")})
+                field.error_messages.update(
+                    {"required": _("Voer 6 cijfers in.")}
+                )
             if hasattr(form, "error_messages"):
-                form.error_messages["invalid_token"] = _("De code klopt niet. Probeer het nog een keer.")
+                form.error_messages["invalid_token"] = _(
+                    "De code klopt niet. Probeer het nog een keer."
+                )
         return form
 
-    def get_context_data(self, form=None, **kwargs):
-        ctx = super().get_context_data(form=form, **kwargs)
-
-        if self.steps.current == "generator":
-            # 1) Secret uit context; reconstrueer als hij ontbreekt
-            b32key = ctx.get("secret_key")
-            if not b32key:
-                key_hex = self.get_key("generator")
-                rawkey = unhexlify(key_hex.encode("ascii"))
-                b32key = b32encode(rawkey).decode("utf-8")
-
-            # 2) Issuer + account (gewone spatie gebruiken)
-            issuer  = "Jansen App"
-            user    = getattr(self.request, "user", None)
-            first   = ((getattr(user, "first_name", "") or "").strip())
-            try:
-                fallback = user.get_username()
-            except Exception:
-                fallback = getattr(user, "username", "")
-            account = (first.capitalize() or fallback)
-
-            # 3) Bouw otpauth-URI volgens de officiële TOTP-standaard (RFC 6238)
-            label_enc = quote(f"{issuer}:{account}", safe=":")  # Dubbelpunt behouden
-            query = urlencode(
-                {
-                    "secret": b32key,
-                    "issuer": issuer,
-                    "digits": totp_digits(),
-                    "algorithm": "SHA1",
-                    "period": 30,
-                },
-                quote_via=quote,  # gebruik %20 i.p.v. +
-            )
-
-            ctx["otpauth_url"] = f"otpauth://totp/{label_enc}?{query}"
-
-        return ctx
-
-    # Flash de (enige) error i.p.v. inline — verandert validatielogica niet
+    # Eén foutmelding “flitsen”, validatie blijft package-default
     def _flash_one_error(self, form):
         if not (form and form.is_bound and not form.is_valid()):
             return
@@ -102,27 +69,54 @@ class CustomSetupView(SetupView):
         if nf:
             messages.error(self.request, nf[0])
         else:
-            for _f, errs in getattr(form, 'errors', {}).items():
+            for _f, errs in getattr(form, "errors", {}).items():
                 if errs:
                     messages.error(self.request, errs[0])
                     break
         form._errors = ErrorDict()
 
+    def get_context_data(self, form=None, **kwargs):
+        ctx = super().get_context_data(form=form, **kwargs)
+
+        if self.steps.current == "generator":
+            b32key = ctx.get("secret_key")
+
+            if b32key:
+                user = self.request.user
+                first = (getattr(user, "first_name", "") or "").strip()
+
+                # Issuer: altijd "Jansen/u8000/app"
+                issuer = "Jansen\u00A0App"
+                # Username: first_name van de gebruiker
+                username = first.capitalize() if first else "Unknown"
+
+                ctx["otpauth_url"] = get_otpauth_url(
+                    accountname=username,
+                    secret=b32key,
+                    issuer=issuer,
+                    digits=totp_digits(),
+                )
+                ctx["issuer"] = issuer
+                ctx["username"] = username
+
+        return ctx
+
     def render(self, form=None, **kwargs):
         self._flash_one_error(form)
         return super().render(form=form, **kwargs)
-
 
 class CustomQRGeneratorView(QRGeneratorView):
     setup_view = CustomSetupView
 
     def get_issuer(self):
+        # Issuer = Jansen/u8000/app (vast)
         return "Jansen\u00A0App"
 
     def get_username(self):
+        # Username = first_name van de gebruiker
         user = getattr(self.request, "user", None)
         first = (getattr(user, "first_name", "") or "").strip()
-        return first.capitalize() if first else super().get_username()
+        return first.capitalize() if first else "Unknown"
     
 class CustomLoginView(TwoFALoginView):
     form_list = (
