@@ -1,1 +1,1 @@
-This repository contains the code for a Progressive Webapp (PWA) I am developing.
+This repository contains the code for a progressive webapp (PWA) I am developing.
