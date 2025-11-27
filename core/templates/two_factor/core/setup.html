@@ -19,40 +19,34 @@
         <img src="{% url 'two_factor:qr' %}" alt="2FA QR-code" class="qr-image">
       </div>
 
-      {% firstof secret_key otp_secret_key as secret %}
-      {% if secret %}
+      {% if secret_key %}
         <div class="manual-secret muted">
           <div>Geheime sleutel:</div>
-          <code>{{ secret }}</code>
+          <code>{{ secret_key }}</code>
         </div>
       {% endif %}
     </div>
 
-<p
-  class="not-muted"
-  id="manualAddText"
-  style="text-align:center;margin:0 auto; font-size: 15px; margin-bottom: -20px; margin-top: -5px; color: var(--muted)"
->
-  Kun je niet scannen?
-  {% if otpauth_url %}
-    <span class="mobile-only-deeplink">
-      <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
-        Klik hier om je authenticator-app te openen</a>
-      of voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes
-    </span>
-  {% else %}
-    Voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes
-  {% endif %}
-
-</p>
+    <p
+      class="not-muted"
+      id="manualAddText"
+      style="text-align:center;margin:0 auto; font-size: 15px; margin-bottom: -20px; margin-top: -5px; color: var(--muted)"
+    >
+      Kun je niet scannen? Voeg de geheime sleutel handmatig toe in je app en kies tijdgebaseerde (TOTP) codes
+      {% if otpauth_url %}
+        <span class="mobile-only-deeplink">
+          <a href="{{ otpauth_url }}" style="text-decoration: underline; color: #4fa3ff;">
+            of klik hier om je authenticator-app te openen</a>
+        </span>
+      {% endif %}
+    </p>
 
     <form method="post" novalidate autocomplete="one-time-code" class="twofa-form">
       {% csrf_token %}
       {{ wizard.management_form }}
 
-      {# MyTOTPDeviceForm gebruikt het veld 'token' (niet otp_token) #}
-    <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
-    {{ form.token }}
+      <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
+      {{ form.token }}
 
       <button type="submit">{% trans "Bevestigen" %}</button>
     </form>
