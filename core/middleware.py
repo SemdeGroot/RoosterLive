@@ -49,7 +49,7 @@ class Enforce2FAMiddleware(MiddlewareMixin):
         if request.path_info.startswith(SAFE_PATH_PREFIXES):
             return
 
-        # 🔍 Alleen HTML-paginaverzoeken dwingen naar 2FA-setup.
+        # Alleen HTML-paginaverzoeken dwingen naar 2FA-setup.
         # JSON/XHR/PWA-manifest etc. gewoon doorlaten.
         accept = request.META.get("HTTP_ACCEPT", "")
         if "text/html" not in accept:

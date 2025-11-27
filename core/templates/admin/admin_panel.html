@@ -4,30 +4,44 @@
 {% block header_title %}Beheer{% endblock %}
 
 {% block head %}
-<html lang="nl"></html>
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
-<script>
-    $(document).ready(function() {
-        // Activeer de datepicker voor alle inputvelden met de class 'datepicker'
-        $("input[data-provide='datepicker']").datepicker({
-            dateFormat: "dd-mm-yy", // Gebruik het juiste NL-formaat
-            changeMonth: true, // Maand selecteren in dropdown
-            changeYear: true,  // Jaar selecteren in dropdown
-            yearRange: "1900:2100", // Range van jaren
-            showButtonPanel: true, // Laat een knop voor de maandselectie zien
-            placeholder: "dd-mm-jjjj", // Placeholder in Nederlands formaat
 
-            // Forceer streepjes automatisch bij invoer
-            onClose: function(dateText, inst) {
-                var date = $(this).val();
-                if (date.length === 2 || date.length === 5) {
-                    // Voeg streepjes toe als de datum 2 of 5 tekens bevat
-                    $(this).val(date + " -");
-                }
-            },
-        });
+  <!-- IMask voor invoermask op dd-mm-jjjj -->
+  <script src="https://unpkg.com/imask"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".js-date").forEach(function (input) {
+      IMask(input, {
+        mask: 'd-m-Y',
+        lazy: true,       // of false als je altijd het patroon wilt zien
+        overwrite: true,
+        autofix: false,    // corrigeert naar dichtstbijzijnde geldige waarde
+
+        blocks: {
+          d: {
+            mask: IMask.MaskedRange,
+            from: 1,
+            to: 31,
+            maxLength: 2
+          },
+          m: {
+            mask: IMask.MaskedRange,
+            from: 1,
+            to: 12,
+            maxLength: 2
+          },
+          Y: {
+            mask: IMask.MaskedRange,
+            from: 1900,
+            to: 2100,
+            maxLength: 4
+          }
+        }
+      });
     });
+  });
 </script>
 {% endblock %}
 
@@ -192,8 +206,10 @@
                   </div>
                   <div>
                     <label>Geboortedatum:</label>
-                    <input class="admin-input" type="text" name="birth_date"
-                          value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'Y-m-d' }}{% endif %}"
+                    <input class="admin-input js-date" type="text" name="birth_date"
+                          value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
+                          placeholder="dd-mm-jjjj"
+                          autocomplete="off"
                           style="margin-top: 6px;">
                   </div>
                   <div>

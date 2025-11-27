@@ -69,14 +69,15 @@ class SimpleUserCreateForm(forms.Form):
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
-        input_formats=["%d-%m-%Y", "%Y-%m-%d"],  # Validatie in het Nederlandse formaat
-        widget=forms.TextInput(attrs={
-            'type': 'date',
-            'placeholder': 'dd-mm-jjjj',  # Placeholder in NL-formaat
-            'class': 'admin-input datepicker',  # De datepicker-klasse toevoegen
-            'data-provide': 'datepicker',  # Dit activeert de datepicker
-            'data-date-format': 'dd-mm-yyyy',  # Zorgt ervoor dat het de juiste format gebruikt
-        }),
+        input_formats=["%d-%m-%Y"],  # we verwachten d-m-Y van de datepicker
+        widget=forms.DateInput(
+            attrs={
+                # GEEN type="date" meer → anders krijg je de native picker erbij
+                "placeholder": "dd-mm-jjjj",
+                "class": "admin-input js-date",  # class waarop we flatpickr hangen
+                "autocomplete": "off",
+            }
+        ),
     )
     group = forms.ModelChoiceField(
         label="Groep",
@@ -106,14 +107,14 @@ class SimpleUserEditForm(forms.Form):
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
-        input_formats=["%d-%m-%Y", "%Y-%m-%d"],  # Validatie in het Nederlandse formaat
-        widget=forms.TextInput(attrs={
-            'type': 'date',
-            'placeholder': 'dd-mm-jjjj',  # Placeholder in NL-formaat
-            'class': 'admin-input datepicker',  # De datepicker-klasse toevoegen
-            'data-provide': 'datepicker',  # Dit activeert de datepicker
-            'data-date-format': 'dd-mm-yyyy',  # Zorgt ervoor dat het de juiste format gebruikt
-        }),
+        input_formats=["%d-%m-%Y"],
+        widget=forms.DateInput(
+            attrs={
+                "placeholder": "dd-mm-jjjj",
+                "class": "admin-input js-date",
+                "autocomplete": "off",
+            }
+        ),
     )
     group = forms.ModelChoiceField(
         label="Groep",
@@ -135,7 +136,7 @@ class SimpleUserEditForm(forms.Form):
         # Profiel / geboortedatum inladen
         profile = getattr(self.instance, "profile", None)
         if profile and profile.birth_date:
-            # Geboortedatum in NL-formaat weergeven
+            # in hetzelfde formaat als de datepicker:
             self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
 
     def clean_first_name(self):
