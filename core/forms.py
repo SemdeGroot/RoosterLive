@@ -65,6 +65,7 @@ class GroupWithPermsForm(forms.ModelForm):
 
 class SimpleUserCreateForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150)
+    last_name = forms.CharField(label="Achternaam", max_length=150)
     email = forms.EmailField(label="E-mail")
     birth_date = forms.DateField(
         label="Geboortedatum",
@@ -97,6 +98,12 @@ class SimpleUserCreateForm(forms.Form):
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
         return first
+    
+    def clean_last_name(self):
+        last = (self.cleaned_data.get("last_name") or "").strip().lower()
+        if not last:
+            raise forms.ValidationError("Achternaam is verplicht.")
+        return last
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
@@ -109,6 +116,7 @@ class SimpleUserCreateForm(forms.Form):
 
 class SimpleUserEditForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150)
+    last_name = forms.CharField(label="Achternaam", max_length=150)
     email = forms.EmailField(label="E-mail")
     birth_date = forms.DateField(
         label="Geboortedatum",
@@ -140,6 +148,7 @@ class SimpleUserEditForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields["first_name"].initial = self.instance.first_name or self.instance.username
+        self.fields["last_name"].initial = self.instance.last_name
         self.fields["email"].initial = self.instance.email
 
         g = self.instance.groups.first()
@@ -157,6 +166,12 @@ class SimpleUserEditForm(forms.Form):
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
         return first
+    
+    def clean_last_name(self):
+        last = (self.cleaned_data.get("last_name") or "").strip().lower()
+        if not last:
+            raise forms.ValidationError("Achternaam is verplicht.")
+        return last
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
@@ -167,6 +182,7 @@ class SimpleUserEditForm(forms.Form):
     def save(self):
         u = self.instance
         first = self.cleaned_data["first_name"]
+        last = self.cleaned_data["last_name"]
         email = self.cleaned_data["email"]
         group = self.cleaned_data.get("group")
         birth_date = self.cleaned_data.get("birth_date")
@@ -174,8 +190,9 @@ class SimpleUserEditForm(forms.Form):
 
         u.username = email
         u.first_name = first
+        u.last_name = last
         u.email = email
-        u.save(update_fields=["username", "first_name", "email"])
+        u.save(update_fields=["username", "first_name", "last_name", "email"])
 
         profile, _ = UserProfile.objects.get_or_create(user=u)
         profile.birth_date = birth_date

@@ -62,6 +62,7 @@ def admin_panel(request):
         user_form = SimpleUserCreateForm(request.POST, prefix="user")
         if user_form.is_valid():
             first_name = (user_form.cleaned_data.get("first_name") or "").strip().lower()
+            last_name = (user_form.cleaned_data.get("last_name") or "").strip().lower()
             email = (user_form.cleaned_data.get("email") or "").strip().lower()
             birth_date = user_form.cleaned_data.get("birth_date")
             group = user_form.cleaned_data.get("group")
@@ -78,6 +79,7 @@ def admin_panel(request):
             user = User.objects.create(
                 username=email,          # username = email
                 first_name=first_name,   # opgeslagen in lowercase
+                last_name=last_name,     # opgeslagen in lowercase
                 email=email,             # opgeslagen in lowercase
                 is_active=True,
             )
