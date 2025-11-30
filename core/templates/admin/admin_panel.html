@@ -141,7 +141,7 @@
             {{ user_form.organization.label_tag }}
             {{ user_form.organization }}
 
-            <button class="btn block user-create" type="submit"> Gebruiker aanmaken</button>
+            <button class="btn block user-create" type="submit">Aanmaken</button>
           </div>
         </form>
 
@@ -155,7 +155,7 @@
         <table class="manage-table user-table" id="userTable">
           <tr>
             <th>Voornaam</th>
-            <th>E-mail</th>
+            <th>Organisatie</th>
             <th>Groep</th>
             <th>Acties</th>
           </tr>
@@ -163,7 +163,13 @@
           {% for u in users %}
           <tr class="user-row" id="user-row-{{ u.id }}">
             <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
-            <td title="{{ u.email }}">{{ u.email }}</td>
+            <td>
+            {% if u.profile and u.profile.organization %}
+              {{ u.profile.organization.name }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
             <td>
               {% with g=u.groups.all|first %}
                 {{ g.name|default:"-" }}
@@ -270,7 +276,6 @@
                 name="name"
                 id="org_name"
                 value="{% if editing_org_id %}{% for o in organizations %}{% if o.id == editing_org_id %}{{ o.name }}{% endif %}{% endfor %}{% endif %}"
-                placeholder="Naam organisatie"
                 required
               >
 
@@ -278,7 +283,7 @@
           </div>
         </form>
 
-        <hr style="border-color:var(--border); margin:16px 0;">
+        <hr style="border-color:var(--border); margin:22px 0;">
         <h3 style="margin-top:0;">Bestaande organisaties</h3>
 
         <div class="search-bar">

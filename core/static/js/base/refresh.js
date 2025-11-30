@@ -25,6 +25,76 @@
   const MAX_VISUAL_PULL = 90;   // hoe ver de indicator visueel naar beneden komt
   const REFRESH_OFFSET = 90;    // zelfde positie aanhouden tijdens refresh
 
+  // ============================
+  //  SENTINEL: "bovenaan" detectie
+  // ============================
+  let sentinelVisible = true; // fallback: liever wél PTR aan de top als er iets misgaat
+
+  (function setupSentinel() {
+    const content = document.querySelector('main.content');
+    if (!content) return; // fallback: dan doen we het zonder sentinel
+
+    // klein onzichtbaar element bovenaan de content
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('data-ptr-sentinel', 'true');
+    sentinel.style.position = 'relative';
+    sentinel.style.width = '1px';
+    sentinel.style.height = '1px';
+    sentinel.style.margin = '0';
+    sentinel.style.padding = '0';
+    sentinel.style.opacity = '0';
+    sentinel.style.pointerEvents = 'none';
+
+    // als eerste kind van .content
+    content.insertBefore(sentinel, content.firstChild);
+
+    // observer die bijhoudt of de sentinel in beeld is
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        sentinelVisible = !!entry.isIntersecting && entry.intersectionRatio > 0;
+      },
+      {
+        root: null,          // viewport
+        threshold: 0.01      // zodra hij maar een beetje in beeld is
+      }
+    );
+
+    observer.observe(sentinel);
+  })();
+
+  // Eén tikje haptic feedback (Android: vibrate, iOS: switch-hack)
+  function hapticTick() {
+    if (navigator.vibrate) {
+      // Android / sommige browsers
+      navigator.vibrate(40); // kort voelbaar tikje
+      return;
+    }
+
+    // iOS fallback: onzichtbare switch togglen voor haptics
+    const el = document.createElement('div');
+    const id = 'haptic-' + Math.random().toString(36).slice(2);
+
+    el.innerHTML =
+      '<input type="checkbox" id="' + id + '" switch />' +
+      '<label for="' + id + '"></label>';
+
+    el.style.cssText =
+      'position:fixed;left:-9999px;top:auto;width:1px;height:1px;' +
+      'overflow:hidden;opacity:0;pointer-events:none;';
+
+    document.body.appendChild(el);
+
+    const label = el.querySelector('label');
+    if (label) {
+      label.click(); // triggert de haptic
+    }
+
+    setTimeout(() => {
+      el.remove();
+    }, 500);
+  }
+
   function updateDotsByProgress(progress) {
     // progress: 0–1 → aantal actieve dots
     const count = Math.round(progress * dots.length);
@@ -51,9 +121,7 @@
     // "tikje" als de drempel voor het eerst wordt gehaald
     if (progress >= 1 && !wasArmed) {
       wasArmed = true;
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
+      hapticTick();
     }
     if (progress < 1) {
       wasArmed = false;
@@ -82,7 +150,9 @@
     'touchstart',
     (e) => {
       if (e.touches.length !== 1) return;
-      if (window.scrollY !== 0) return; // alleen bovenaan
+
+      // Alleen starten als de sentinel (bovenkant content) in beeld is
+      if (!sentinelVisible) return;
 
       startY = e.touches[0].clientY;
       pulling = true;
