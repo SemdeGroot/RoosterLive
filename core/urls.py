@@ -9,7 +9,7 @@ from core.views.medications import medications_view
 from core.views.nazendingen import nazendingen_view
 from core.views.news import news
 from core.views.policies import policies
-from core.views.admin import admin_panel, group_delete, user_update, user_delete
+from core.views.admin import admin_panel, group_delete, user_update, user_delete, org_delete
 from core.views.twofa import logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
@@ -102,6 +102,7 @@ urlpatterns = [
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
     path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
     path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete"),
+    path("admin/org/<int:org_id>/delete/", org_delete, name="org_delete"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),

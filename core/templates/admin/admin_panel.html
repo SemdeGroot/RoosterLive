@@ -10,37 +10,25 @@
   <!-- IMask voor invoermask op dd-mm-jjjj -->
   <script src="https://unpkg.com/imask"></script>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Date mask voor alle .js-date velden
-      document.querySelectorAll(".js-date").forEach(function (input) {
-        IMask(input, {
-          mask: 'd-m-Y',
-          lazy: true,
-          overwrite: true,
-          autofix: false,
-          blocks: {
-            d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
-            m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
-            Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
-          }
-        });
-      });
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
 
-      // Toggle voor "nieuwe organisatie" paneel
-      var toggleBtn = document.getElementById("orgAddToggle");
-      var panel = document.getElementById("orgAddPanel");
-      if (toggleBtn && panel) {
-        toggleBtn.addEventListener("click", function () {
-          if (panel.style.display === "none" || !panel.style.display) {
-            panel.style.display = "block";
-          } else {
-            panel.style.display = "none";
-          }
-        });
-      }
+    // Date mask voor alle .js-date velden
+    document.querySelectorAll(".js-date").forEach(function (input) {
+      IMask(input, {
+        mask: 'd-m-Y',
+        lazy: true,
+        overwrite: true,
+        autofix: false,
+        blocks: {
+          d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+          m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+          Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
+        }
+      });
     });
-  </script>
+  });
+</script>
 {% endblock %}
 
 {% block content %}
@@ -151,39 +139,11 @@
             {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
             {{ user_form.group.label_tag }} {{ user_form.group }}
             {{ user_form.organization.label_tag }}
-            <div style="display:flex; gap:8px; align-items:flex-end; margin-top:0px">
-              <div style="flex:1;">
-                {{ user_form.organization }}
-              </div>
-              <button type="button"
-                      class="btn"
-                      id="orgAddToggle"
-                      style="white-space:nowrap; margin-top: 0px !important; padding: 5px 10px">
-                + nieuwe organisatie
-              </button>
-            </div>
+            {{ user_form.organization }}
 
-            <button class="btn block user-create" type="submit">Aanmaken</button>
+            <button class="btn block user-create" type="submit"> Gebruiker aanmaken</button>
           </div>
         </form>
-
-        <!-- Klein formulier om een nieuwe organisatie toe te voegen (uitklapbaar) -->
-        <div id="orgAddPanel" style="display:none; margin-top:8px;">
-          <form method="post" autocomplete="off">
-            {% csrf_token %}
-            <input type="hidden" name="form_kind" value="org_create">
-            <div class="form form-sticky-actions" style="padding:0;">
-              <label for="org_name">Nieuwe organisatie:</label>
-              <div style="display:flex; gap:8px; align-items:flex-end;">
-                <div style="flex:1;">
-                  <input class="admin-input" type="text" name="name" id="org_name"
-                        placeholder="Naam organisatie" required>
-                </div>
-                <button class="btn small" type="submit" style="padding: 5px 10px">Toevoegen</button>
-              </div>
-            </div>
-          </form>
-        </div>
 
         <hr style="border-color:var(--border); margin:16px 0;">
         <h3 style="margin-top:0;">Bestaande gebruikers</h3>
@@ -284,6 +244,78 @@
             </td>
           </tr>
           {% endfor %}
+        </table>
+      </div>
+    </div>
+
+        <!-- Organisaties -->
+    <div class="card" id="org-card">
+      <div class="card-inner">
+        <h3 style="margin-top:0;">
+          {% if editing_org %}Organisatie bewerken{% else %}Organisatie toevoegen{% endif %}
+        </h3>
+
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          <input type="hidden" name="form_kind" value="org">
+          {% if editing_org_id %}
+            <input type="hidden" name="org_id" value="{{ editing_org_id }}">
+          {% endif %}
+
+          <div class="form form-sticky-actions" style="padding:0;">
+            <label for="org_name">Naam organisatie:</label>
+              <input
+                class="admin-input"
+                type="text"
+                name="name"
+                id="org_name"
+                value="{% if editing_org_id %}{% for o in organizations %}{% if o.id == editing_org_id %}{{ o.name }}{% endif %}{% endfor %}{% endif %}"
+                placeholder="Naam organisatie"
+                required
+              >
+
+            <button class="btn block org-save" type="submit">Opslaan</button>
+          </div>
+        </form>
+
+        <hr style="border-color:var(--border); margin:16px 0;">
+        <h3 style="margin-top:0;">Bestaande organisaties</h3>
+
+        <div class="search-bar">
+          <input type="text" id="orgSearch" placeholder="Typ om te zoeken…">
+        </div>
+
+        <table class="manage-table org-table" id="orgTable">
+          <thead>
+            <tr>
+              <th>Organisatie</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for org in organizations %}
+            <tr class="org-row">
+              <td>{{ org.name }}</td>
+              <td>
+                <div class="actions-wrap">
+                  <a href="?org_id={{ org.id }}#org-card" class="btn small block">Bewerken</a>
+
+                  <form method="post"
+                        action="{% url 'org_delete' org.id %}"
+                        style="display:inline;"
+                        onsubmit="return confirmOrgDelete('{{ org.name|escapejs }}');">
+                    {% csrf_token %}
+                    <button class="btn small danger block" type="submit">Verwijderen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2">Nog geen organisaties.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
       </div>
     </div>

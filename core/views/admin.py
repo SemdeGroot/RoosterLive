@@ -30,21 +30,50 @@ def admin_panel(request):
     if gid_get:
         editing_group = Group.objects.filter(pk=gid_get).first()
 
+    # ---- Organisaties (bewerken/opslaan) ----
+    editing_org = None
+    oid_get = request.GET.get("org_id")
+    if oid_get:
+        editing_org = Organization.objects.filter(pk=oid_get).first()
+
+
     group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
     user_form  = SimpleUserCreateForm(prefix="user")
 
-    # ---- Organisatie aanmaken ----
-    if request.method == "POST" and request.POST.get("form_kind") == "org_create":
+    # ---- Organisatie aanmaken/bewerken ----
+    if request.method == "POST" and request.POST.get("form_kind") == "org":
+        oid = request.POST.get("org_id")
         name = (request.POST.get("name") or "").strip()
+
         if not name:
             messages.error(request, "Organisatienaam is verplicht.")
             return redirect("admin_panel")
 
-        org, created = Organization.objects.get_or_create(name=name)
-        if created:
-            messages.success(request, f"Organisatie “{org.name}” aangemaakt.")
+        qs_existing = Organization.objects.filter(name__iexact=name)
+
+        if oid:
+            # Bewerken
+            org = Organization.objects.filter(pk=oid).first()
+            if not org:
+                messages.error(request, "Organisatie niet gevonden.")
+                return redirect("admin_panel")
+
+            if qs_existing.exclude(pk=org.pk).exists():
+                messages.error(request, "Er bestaat al een organisatie met deze naam.")
+                return redirect("admin_panel")
+
+            org.name = name
+            org.save(update_fields=["name"])
+            messages.success(request, f"Organisatie “{org.name}” opgeslagen.")
         else:
-            messages.info(request, f"Organisatie “{org.name}” bestond al.")
+            # Nieuw
+            if qs_existing.exists():
+                org = qs_existing.first()
+                messages.info(request, f"Organisatie “{org.name}” bestond al.")
+            else:
+                org = Organization.objects.create(name=name)
+                messages.success(request, f"Organisatie “{org.name}” aangemaakt.")
+
         return redirect("admin_panel")
 
     if request.method == "POST" and request.POST.get("form_kind") == "group":
@@ -145,6 +174,8 @@ def admin_panel(request):
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
         "organizations": organizations,
+        "editing_org": bool(editing_org),
+        "editing_org_id": editing_org.id if editing_org else "",
     })
 
 @login_required
@@ -188,4 +219,27 @@ def user_delete(request, user_id: int):
     username = u.first_name
     u.delete()
     messages.success(request, f"Gebruiker {username} verwijderd.")
+    return redirect("admin_panel")
+
+@login_required
+@require_POST
+def org_delete(request, org_id: int):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    org = get_object_or_404(Organization, pk=org_id)
+
+    # optioneel: voorkomen dat je een organisatie verwijdert die nog gekoppeld is
+    linked = UserProfile.objects.filter(organization=org).count()
+    if linked > 0:
+        messages.error(
+            request,
+            f"Kan organisatie “{org.name}” niet verwijderen: "
+            f"{linked} profiel(en) zijn nog gekoppeld. "
+            "Pas eerst deze gebruikers aan."
+        )
+        return redirect("admin_panel")
+
+    org.delete()
+    messages.success(request, "Organisatie verwijderd.")
     return redirect("admin_panel")

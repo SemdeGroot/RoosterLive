@@ -36,16 +36,22 @@ if (groupSearch) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  var toggleBtn = document.getElementById("orgAddToggle");
-  var panel = document.getElementById("orgAddPanel");
-  if (toggleBtn && panel) {
-    toggleBtn.addEventListener("click", function () {
-      if (panel.style.display === "none" || !panel.style.display) {
-        panel.style.display = "block";
-      } else {
-        panel.style.display = "none";
-      }
+window.confirmOrgDelete = function(name){
+  return confirm(
+    "Weet je zeker dat je de organisatie " +
+    (name || "deze organisatie") +
+    " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!"
+  );
+};
+
+/* Live organisaties-zoekfunctie */
+const orgSearch = document.getElementById('orgSearch');
+if (orgSearch) {
+  orgSearch.addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#orgTable .org-row').forEach(row => {
+      const txt = row.innerText.toLowerCase();
+      row.style.display = txt.includes(q) ? '' : 'none';
     });
-  }
-});
+  });
+}
