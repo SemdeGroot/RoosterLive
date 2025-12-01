@@ -55,3 +55,12 @@ if (orgSearch) {
     });
   });
 }
+
+window.toggleOrgEdit = function(id){
+  const row = document.getElementById("org-edit-row-" + id);
+  if (!row) return;
+  row.style.display =
+    (row.style.display === "none" || row.style.display === "")
+      ? "table-row"
+      : "none";
+};

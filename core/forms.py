@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem
+from core.models import UserProfile, Organization, AgendaItem, Organization
 
 UserModel = get_user_model()
 
@@ -203,6 +203,42 @@ class SimpleUserEditForm(forms.Form):
         if group:
             u.groups.add(group)
         return u
+    
+class OrganizationEditForm(forms.Form):
+    name = forms.CharField(label="Naam organisatie", max_length=255)
+    email = forms.EmailField(label="E-mailadres", required=False)
+    email2 = forms.EmailField(label="E-mailadres 2", required=False)
+    phone = forms.CharField(label="Telefoonnummer", max_length=50, required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance")
+        super().__init__(*args, **kwargs)
+
+        self.fields["name"].initial = self.instance.name
+        self.fields["email"].initial = self.instance.email
+        self.fields["email2"].initial = self.instance.email2
+        self.fields["phone"].initial = self.instance.phone
+
+    def clean_name(self):
+        name = (self.cleaned_data.get("name") or "").strip()
+        if not name:
+            raise forms.ValidationError("Organisatienaam is verplicht.")
+
+        # Unieke naam afdwingen (case-insensitive), behalve voor deze organisatie zelf
+        qs = Organization.objects.filter(name__iexact=name).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("Er bestaat al een organisatie met deze naam.")
+        return name
+
+    def save(self):
+        org = self.instance
+        org.name = self.cleaned_data["name"].strip()
+        org.email = (self.cleaned_data.get("email") or "").strip() or None
+        org.email2 = (self.cleaned_data.get("email2") or "").strip() or None
+        org.phone = (self.cleaned_data.get("phone") or "").strip() or None
+        org.save()
+        return org
+
 
 class AvailabilityUploadForm(forms.Form):
     file = forms.FileField(label="Bestand (CSV of XLSX)", help_text="Upload een CSV of Excel-bestand.")

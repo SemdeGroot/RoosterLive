@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.db import transaction
 
-from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm
+from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
 from core.models import UserProfile, Organization
@@ -30,50 +30,36 @@ def admin_panel(request):
     if gid_get:
         editing_group = Group.objects.filter(pk=gid_get).first()
 
-    # ---- Organisaties (bewerken/opslaan) ----
-    editing_org = None
-    oid_get = request.GET.get("org_id")
-    if oid_get:
-        editing_org = Organization.objects.filter(pk=oid_get).first()
-
-
     group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
     user_form  = SimpleUserCreateForm(prefix="user")
 
-    # ---- Organisatie aanmaken/bewerken ----
+    # ---- Organisatie aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "org":
-        oid = request.POST.get("org_id")
         name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        email2 = (request.POST.get("email2") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
 
         if not name:
             messages.error(request, "Organisatienaam is verplicht.")
             return redirect("admin_panel")
 
-        qs_existing = Organization.objects.filter(name__iexact=name)
+        if not email:
+            messages.error(request, "E-mailadres is verplicht.")
+            return redirect("admin_panel")
 
-        if oid:
-            # Bewerken
-            org = Organization.objects.filter(pk=oid).first()
-            if not org:
-                messages.error(request, "Organisatie niet gevonden.")
-                return redirect("admin_panel")
+        # naam uniek houden
+        if Organization.objects.filter(name__iexact=name).exists():
+            messages.error(request, "Er bestaat al een organisatie met deze naam.")
+            return redirect("admin_panel")
 
-            if qs_existing.exclude(pk=org.pk).exists():
-                messages.error(request, "Er bestaat al een organisatie met deze naam.")
-                return redirect("admin_panel")
-
-            org.name = name
-            org.save(update_fields=["name"])
-            messages.success(request, f"Organisatie “{org.name}” opgeslagen.")
-        else:
-            # Nieuw
-            if qs_existing.exists():
-                org = qs_existing.first()
-                messages.info(request, f"Organisatie “{org.name}” bestond al.")
-            else:
-                org = Organization.objects.create(name=name)
-                messages.success(request, f"Organisatie “{org.name}” aangemaakt.")
-
+        Organization.objects.create(
+            name=name,
+            email=email,              # verplicht
+            email2=email2 or None,    # optioneel
+            phone=phone or None,      # optioneel
+        )
+        messages.success(request, f"Organisatie “{name}” aangemaakt.")
         return redirect("admin_panel")
 
     if request.method == "POST" and request.POST.get("form_kind") == "group":
@@ -174,8 +160,6 @@ def admin_panel(request):
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
         "organizations": organizations,
-        "editing_org": bool(editing_org),
-        "editing_org_id": editing_org.id if editing_org else "",
     })
 
 @login_required
@@ -242,4 +226,19 @@ def org_delete(request, org_id: int):
 
     org.delete()
     messages.success(request, "Organisatie verwijderd.")
+    return redirect("admin_panel")
+
+@login_required
+@require_POST
+def org_update(request, org_id: int):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    org = get_object_or_404(Organization, pk=org_id)
+    form = OrganizationEditForm(request.POST, instance=org)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Organisatie opgeslagen.")
+    else:
+        messages.error(request, "Opslaan mislukt.")
     return redirect("admin_panel")

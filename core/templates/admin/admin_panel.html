@@ -255,76 +255,153 @@
       </div>
     </div>
 
-        <!-- Organisaties -->
-    <div class="card" id="org-card">
-      <div class="card-inner">
-        <h3 style="margin-top:0;">
-          {% if editing_org %}Organisatie bewerken{% else %}Organisatie toevoegen{% endif %}
-        </h3>
+    <!-- Organisaties -->
+<div class="card" id="org-card">
+  <div class="card-inner">
+    <h3 style="margin-top:0;">Organisatie toevoegen</h3>
 
-        <form method="post" autocomplete="off">
-          {% csrf_token %}
-          <input type="hidden" name="form_kind" value="org">
-          {% if editing_org_id %}
-            <input type="hidden" name="org_id" value="{{ editing_org_id }}">
-          {% endif %}
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="form_kind" value="org">
 
-          <div class="form form-sticky-actions" style="padding:0;">
-            <label for="org_name">Naam organisatie:</label>
-              <input
-                class="admin-input"
-                type="text"
-                name="name"
-                id="org_name"
-                value="{% if editing_org_id %}{% for o in organizations %}{% if o.id == editing_org_id %}{{ o.name }}{% endif %}{% endfor %}{% endif %}"
-                required
-              >
+      <div class="form form-sticky-actions" style="padding:0;">
+        <label for="org_name">Naam organisatie:</label>
+        <input
+          class="admin-input"
+          type="text"
+          name="name"
+          id="org_name"
+          required
+        >
 
-            <button class="btn block org-save" type="submit">Opslaan</button>
-          </div>
-        </form>
+        <label for="org_email">E-mailadres:</label>
+        <input
+          class="admin-input"
+          type="email"
+          name="email"
+          id="org_email"
+          required   <!-- E-mail 1 verplicht -->
+        >
 
-        <hr style="border-color:var(--border); margin:22px 0;">
-        <h3 style="margin-top:0;">Bestaande organisaties</h3>
+        <label for="org_email2">E-mailadres 2:</label>
+        <input
+          class="admin-input"
+          type="email"
+          name="email2"
+          id="org_email2"
+          <!-- niet required -->
+        >
 
-        <div class="search-bar">
-          <input type="text" id="orgSearch" placeholder="Typ om te zoeken…">
-        </div>
+        <label for="org_phone">Telefoonnummer:</label>
+        <input
+          class="admin-input"
+          type="text"
+          name="phone"
+          id="org_phone"
+          <!-- niet required -->
+        >
 
-        <table class="manage-table org-table" id="orgTable">
-          <thead>
-            <tr>
-              <th>Organisatie</th>
-              <th>Acties</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for org in organizations %}
-            <tr class="org-row">
-              <td>{{ org.name }}</td>
-              <td>
-                <div class="actions-wrap">
-                  <a href="?org_id={{ org.id }}#org-card" class="btn small block">Bewerken</a>
-
-                  <form method="post"
-                        action="{% url 'org_delete' org.id %}"
-                        style="display:inline;"
-                        onsubmit="return confirmOrgDelete('{{ org.name|escapejs }}');">
-                    {% csrf_token %}
-                    <button class="btn small danger block" type="submit">Verwijderen</button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="2">Nog geen organisaties.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <button class="btn block org-save" type="submit">Opslaan</button>
       </div>
+    </form>
+
+    <hr style="border-color:var(--border); margin:22px 0;">
+    <h3 style="margin-top:0;">Bestaande organisaties</h3>
+
+    <div class="search-bar">
+      <input type="text" id="orgSearch" placeholder="Typ om te zoeken…">
     </div>
+
+    <table class="manage-table org-table" id="orgTable">
+      <thead>
+        <tr>
+          <th>Organisatie</th>
+          <th>E-mail</th>
+          <th>Telefoon</th>
+          <th>Acties</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for org in organizations %}
+        <tr class="org-row" id="org-row-{{ org.id }}">
+          <td>{{ org.name }}</td>
+          <td>{{ org.email|default:"-" }}</td>
+          <td>{{ org.email2|default:"-" }}</td>
+          <td>{{ org.phone|default:"-" }}</td>
+          <td>
+            <div class="actions-wrap">
+              <button type="button"
+                      class="btn small block"
+                      onclick="toggleOrgEdit('{{ org.id }}')">
+                Bewerken
+              </button>
+
+              <form method="post"
+                    action="{% url 'org_delete' org.id %}"
+                    style="display:inline;"
+                    onsubmit="return confirmOrgDelete('{{ org.name|escapejs }}');">
+                {% csrf_token %}
+                <button class="btn small danger block" type="submit">Verwijderen</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        <tr id="org-edit-row-{{ org.id }}" class="edit-row" style="display:none;">
+          <td colspan="4">
+            <form method="post" action="{% url 'org_update' org.id %}">
+              {% csrf_token %}
+              <div class="edit-grid">
+                <div>
+                  <label>Naam organisatie:</label>
+                  <input class="admin-input"
+                         type="text"
+                         name="name"
+                         value="{{ org.name }}"
+                         style="margin-top:6px;">
+                </div>
+                <div>
+                  <label>E-mailadres:</label>
+                  <input class="admin-input"
+                         type="email"
+                         name="email"
+                         value="{{ org.email }}"
+                         style="margin-top:6px;">
+                </div>
+                <div>
+                  <label>E-mailadres 2:</label>
+                  <input class="admin-input"
+                         type="email"
+                         name="email2"
+                         value="{{ org.email2 }}"
+                         style="margin-top:6px;">
+                </div>
+                <div>
+                  <label>Telefoonnummer:</label>
+                  <input class="admin-input"
+                         type="text"
+                         name="phone"
+                         value="{{ org.phone }}"
+                         style="margin-top:6px;">
+                </div>
+              </div>
+
+              <div class="edit-actions" style="margin-bottom: 4px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn" type="submit">Opslaan</button>
+                <button type="button" class="btn" onclick="toggleOrgEdit('{{ org.id }}')">Annuleren</button>
+              </div>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Nog geen organisaties.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
   </div>
 </div>
