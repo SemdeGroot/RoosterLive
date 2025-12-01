@@ -56,8 +56,8 @@ def admin_panel(request):
         Organization.objects.create(
             name=name,
             email=email,              # verplicht
-            email2=email2 or None,    # optioneel
-            phone=phone or None,      # optioneel
+            email2=email2 or "",    # optioneel
+            phone=phone or "",      # optioneel
         )
         messages.success(request, f"Organisatie “{name}” aangemaakt.")
         return redirect("admin_panel")

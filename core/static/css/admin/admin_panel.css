@@ -26,6 +26,17 @@ table.user-table th:nth-child(5), table.user-table td:nth-child(5){width:115px;o
 .user-table th, .user-table td{ padding:6px 8px }
 .user-table .actions-wrap{ gap:6px }
 
+/* ---------- Users: actieskolom (5e kolom) netjes onder elkaar + zelfde breedte ---------- */
+.user-table td:nth-child(5) .actions-wrap{
+  flex-direction: column;      /* onder elkaar */
+  align-items: stretch;        /* knoppen vullen de kolom */
+}
+
+.user-table td:nth-child(5) .actions-wrap .btn{
+  width: 100%;                 /* beide knoppen even breed */
+  min-width: 0;                /* min-width overruled zodat tekst niet de breedte bepaalt */
+}
+
 /* Edit-rij */
 tr.edit-row td{background:var(--panel-2)}
 .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px; margin-top: 6px; margin-bottom: 10px;}
@@ -216,4 +227,60 @@ input:focus, textarea:focus, select:focus,
   border: 0;
   border-top: 2px solid var(--border);
   margin: 16px 0;
+}
+
+/* ---------- Organisaties kolombreedtes (net als user-table) ---------- */
+table.org-table th:nth-child(1),
+table.org-table td:nth-child(1){
+  width:150px;
+  overflow-wrap:anywhere;
+}
+table.org-table th:nth-child(2),
+table.org-table td:nth-child(2){
+  width:220px;
+  overflow-wrap:anywhere;
+}
+table.org-table th:nth-child(3),
+table.org-table td:nth-child(3){
+  width:120px;
+  overflow-wrap:anywhere;
+}
+table.org-table th:nth-child(4),
+table.org-table td:nth-child(4){
+  width:115px;
+  overflow-wrap:anywhere;
+}
+
+/* Compacte rijen zoals bij users */
+.org-table th,
+.org-table td{
+  padding:6px 8px;
+}
+
+/* Acties-kolom: knoppen onder elkaar, zelfde als users/groepen */
+.org-table td:nth-child(4) .actions-wrap{
+  flex-direction:column;
+  align-items:flex-start;
+}
+.org-table td:nth-child(4) .actions-wrap .btn{
+  width:auto;
+  min-width:96px;
+  max-width:100%;
+}
+
+/* Scrollbare container op mobiel (zelfde patroon als group-table) */
+@media (max-width:900px){
+  .org-table-wrap{
+    display:block;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    width:100%;
+  }
+  .org-table{
+    min-width:480px; /* of iets wat jij fijn vindt */
+  }
+  .org-table th,
+  .org-table td{
+    white-space:nowrap;
+  }
 }

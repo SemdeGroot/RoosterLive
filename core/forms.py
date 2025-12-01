@@ -206,7 +206,7 @@ class SimpleUserEditForm(forms.Form):
     
 class OrganizationEditForm(forms.Form):
     name = forms.CharField(label="Naam organisatie", max_length=255)
-    email = forms.EmailField(label="E-mailadres", required=False)
+    email = forms.EmailField(label="E-mailadres", required=True)
     email2 = forms.EmailField(label="E-mailadres 2", required=False)
     phone = forms.CharField(label="Telefoonnummer", max_length=50, required=False)
 
@@ -233,12 +233,11 @@ class OrganizationEditForm(forms.Form):
     def save(self):
         org = self.instance
         org.name = self.cleaned_data["name"].strip()
-        org.email = (self.cleaned_data.get("email") or "").strip() or None
-        org.email2 = (self.cleaned_data.get("email2") or "").strip() or None
-        org.phone = (self.cleaned_data.get("phone") or "").strip() or None
+        org.email = (self.cleaned_data.get("email") or "").strip() or ""
+        org.email2 = (self.cleaned_data.get("email2") or "").strip() or ""
+        org.phone = (self.cleaned_data.get("phone") or "").strip() or ""
         org.save()
         return org
-
 
 class AvailabilityUploadForm(forms.Form):
     file = forms.FileField(label="Bestand (CSV of XLSX)", help_text="Upload een CSV of Excel-bestand.")
