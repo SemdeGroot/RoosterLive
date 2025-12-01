@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "core",
+    "core.apps.CoreConfig", 
 
     # Dev tooling
     "django_browser_reload",
@@ -273,3 +273,6 @@ USE_HTTPS_IN_EMAIL_LINKS = not DEBUG
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
 VAPID_CLAIMS = {"sub": os.getenv("VAPID_SUB")}
+
+# === Custom constants ===
+APOTHEEK_JANSEN_ORG_ID = 1

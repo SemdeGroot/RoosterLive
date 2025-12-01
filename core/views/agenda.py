@@ -1,107 +1,131 @@
 # core/views/agenda.py
-from datetime import datetime
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
-from django.core.files.storage import default_storage
+from datetime import date, timedelta
 
-from ._helpers import (
-    can,
-    AGENDA_DIR, AGENDA_FILE, CACHE_AGENDA_DIR,
-    clear_dir, render_pdf_to_cache,
-    save_pdf_upload_with_hash
-)
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.http import HttpResponseForbidden
+from django.shortcuts import render
+from django.utils import timezone
+
+from core.models import UserProfile
+from ._helpers import can
+
+
+# Gebruik constante uit settings, fallback = 1
+ORG_ID_APOTHEEK_JANSEN = getattr(settings, "APOTHEEK_JANSEN_ORG_ID", 1)
+
+
+def format_dutch_name_from_user(user) -> str:
+    """
+    Bouw een naam op vanuit standaard Django User (first_name, last_name).
+
+    Regels:
+    - Voornaam: eerste letter hoofdletter, rest klein
+    - Achternaam: alleen het laatste woord kapitaliseren, tussenvoegsels klein
+      bv. first_name='sem', last_name='de groot' -> 'Sem de Groot'
+    """
+    first = (user.first_name or "").strip()
+    last = (user.last_name or "").strip()
+    username = (user.username or "").strip()
+
+    # fallback als alles leeg is
+    if not first and not last:
+        return username
+
+    # Voornaam
+    if first:
+        first_fmt = first.lower().capitalize()
+    else:
+        first_fmt = ""
+
+    # Achternaam
+    if last:
+        parts = last.lower().split()
+        if len(parts) == 1:
+            last_fmt = parts[0].capitalize()
+        else:
+            # tussenvoegsels klein
+            for i in range(len(parts) - 1):
+                parts[i] = parts[i].lower()
+            # laatste deel (echt achternaam) capitalizen
+            parts[-1] = parts[-1].capitalize()
+            last_fmt = " ".join(parts)
+    else:
+        last_fmt = ""
+
+    full = (first_fmt + " " + last_fmt).strip()
+    return full or username
+
 
 @login_required
 def agenda(request):
+    """
+    Verjaardagen van de komende twee weken voor organisatie met org_id = APOTHEEK_JANSEN_ORG_ID.
+    Resultaat wordt gecached per organisatie + dag.
+    """
     if not can(request.user, "can_view_agenda"):
         return HttpResponseForbidden("Geen toegang tot agenda.")
 
-    if request.method == "POST":
-        if not can(request.user, "can_upload_agenda"):
-            return HttpResponseForbidden("Geen uploadrechten.")
-        f = request.FILES.get("file")
-        if not f or not f.name.lower().endswith(".pdf"):
-            messages.error(request, "Upload een PDF-bestand (.pdf).")
-            return redirect("agenda")
+    today = timezone.localdate()
+    two_weeks_later = today + timedelta(days=14)
 
-        # Lees bytes VOORDAT we hem opslaan, zodat we dezelfde inhoud gebruiken
-        pdf_bytes = f.read()
-        # Reset pointer zodat save_pdf_upload_with_hash de file ook goed kan lezen
-        f.seek(0)
+    cache_key = f"agenda_birthdays:{ORG_ID_APOTHEEK_JANSEN}:{today.isoformat()}"
+    birthdays = cache.get(cache_key)
 
-        # Cache leegmaken (nieuwe images forceren)
-        clear_dir(CACHE_AGENDA_DIR)
-
-        # PDF opslaan als agenda.<hash>.pdf, in deze view altijd 1 actief bestand
-        save_pdf_upload_with_hash(
-            uploaded_file=f,
-            target_dir=AGENDA_DIR,
-            base_name="agenda",
-            clear_existing=True,
+    if birthdays is None:
+        profiles = (
+            UserProfile.objects
+            .select_related("user")
+            .filter(
+                birth_date__isnull=False,
+                organization_id=ORG_ID_APOTHEEK_JANSEN,
+            )
         )
 
-        # Direct nieuwe images renderen uit de zojuist geüploade PDF
-        h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_AGENDA_DIR)
-        page_urls = [
-            f"{settings.MEDIA_URL}cache/agenda/{h}/page_{i:03d}.png"
-            for i in range(1, n + 1)
-        ]
+        upcoming: list[dict] = []
 
-        messages.success(request, "Agenda geüpload.")
-        context = {
-            "year": datetime.now().year,
-            "page_urls": page_urls,
-            "no_agenda": False,
-        }
-        # Belangrijk: GEEN redirect, maar direct renderen
-        return render(request, "agenda/index.html", context)
+        for profile in profiles:
+            dob = profile.birth_date  # datetime.date
 
-    # ==== GET-logica blijft zoals hij was ====
-    context = {"year": datetime.now().year}
+            # Volgende verjaardag in huidig jaar
+            try:
+                next_bday = dob.replace(year=today.year)
+            except ValueError:
+                # 29 feb -> 28 feb op niet-schrikkeljaar
+                next_bday = date(today.year, 2, 28)
 
-    pdf_bytes = None
+            # Als die al geweest is: volgend jaar
+            if next_bday < today:
+                try:
+                    next_bday = dob.replace(year=today.year + 1)
+                except ValueError:
+                    next_bday = date(today.year + 1, 2, 28)
 
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        pdf_path = None
-        candidates = sorted(AGENDA_DIR.glob("agenda.*.pdf"))
-        if candidates:
-            pdf_path = candidates[-1]
-        elif AGENDA_FILE.exists():
-            pdf_path = AGENDA_FILE
+            if today <= next_bday <= two_weeks_later:
+                age = next_bday.year - dob.year
+                name = format_dutch_name_from_user(profile.user)
 
-        if pdf_path and pdf_path.exists():
-            pdf_bytes = pdf_path.read_bytes()
-    else:
-        rel_dir = "agenda"
-        try:
-            _dirs, files = default_storage.listdir(rel_dir)
-        except FileNotFoundError:
-            files = []
+                upcoming.append(
+                    {
+                        "name": name,
+                        "date": next_bday,
+                        "age": age,
+                        "is_today": next_bday == today,
+                        "is_tomorrow": next_bday == today + timedelta(days=1),
+                    }
+                )
 
-        pdf_storage_path = None
-        hashed = sorted(
-            name for name in files
-            if name.startswith("agenda.") and name.endswith(".pdf")
-        )
-        if hashed:
-            pdf_storage_path = f"{rel_dir}/{hashed[-1]}"
-        elif "agenda.pdf" in files:
-            pdf_storage_path = f"{rel_dir}/agenda.pdf"
+        upcoming.sort(key=lambda x: x["date"])
+        birthdays = upcoming
 
-        if pdf_storage_path and default_storage.exists(pdf_storage_path):
-            with default_storage.open(pdf_storage_path, "rb") as f:
-                pdf_bytes = f.read()
+        # cache bv. 1 uur
+        cache.set(cache_key, birthdays, 60 * 60)
 
-    if not pdf_bytes:
-        context["page_urls"] = []
-        context["no_agenda"] = True
-        return render(request, "agenda/index.html", context)
-
-    h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_AGENDA_DIR)
-    context["page_urls"] = [
-        f"{settings.MEDIA_URL}cache/agenda/{h}/page_{i:03d}.png" for i in range(1, n + 1)
-    ]
+    context = {
+        "year": today.year,
+        "today": today,
+        "two_weeks_later": two_weeks_later,
+        "birthdays": birthdays,
+    }
     return render(request, "agenda/index.html", context)

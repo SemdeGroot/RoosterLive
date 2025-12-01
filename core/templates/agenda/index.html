@@ -9,52 +9,61 @@
 {% endblock %}
 
 {% block content %}
-<div class="card" style="padding:16px;">
-  {% if perms.core.can_upload_agenda %}
-    <form method="post" enctype="multipart/form-data" class="uploader" id="agendaForm">
-      {% csrf_token %}
-      <input type="file" id="agendaFile" name="file" accept="application/pdf" hidden required>
-
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('agendaFile').click()">
-        <div class="dz-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <path d="M14 2v6h6"/>
-            <path d="M12 12v6"/>
-            <path d="M9 15h6"/>
-          </svg>
-        </div>
-        <div class="dz-text">
-          <div class="dz-title">Sleep je PDF van de agenda hierheen of klik om te kiezen.</div>
-          <div class="dz-hint">Alleen .pdf — De nieuwe agenda vervangt automatisch de oude <strong>zodra je op Uploaden klikt.</strong></div>
-        </div>
-      </div>
-
-      <div class="file-meta" id="fileMeta" style="display:none;">
-        Geselecteerd: <span class="file-name" id="fileName"></span>
-      </div>
-
-      <div class="u-actions">
-        <button class="btn" type="submit" id="uploadBtn" disabled>Uploaden</button>
-        <button type="button" class="btn" id="clearBtn" style="display:none;">Wissen</button>
-      </div>
-    </form>
-  {% endif %}
-
-  {% if no_agenda %}
-    <p style="color:var(--muted); margin-top:6px;">Nog geen agenda geüpload.</p>
-  {% else %}
-    <div class="pages">
-      {% for url in page_urls %}
-        <div class="page">
-          <img src="{{ url }}" alt="Pagina {{ forloop.counter }}">
-        </div>
-      {% endfor %}
+<div class="card birthdays-card">
+  <div class="birthday-header">
+    <img
+      src="{% static 'img/birthday-128x128.png' %}"
+      alt="Verjaardagen"
+      class="birthday-icon"
+    >
+    <div class="birthday-header-text">
+      <h2>Verjaardagen</h2>
+      <p>Vandaag t/m {{ two_weeks_later|date:"j F" }}</p>
     </div>
+  </div>
+
+  {% if birthdays %}
+    <ul class="birthday-list">
+      {% for b in birthdays %}
+        <li class="birthday-item {% if b.is_today %}birthday-today{% endif %}">
+          <div class="birthday-main">
+            <div class="birthday-left">
+              <span class="birthday-name">{{ b.name }}</span>
+              <div class="birthday-meta">
+                <span class="birthday-age">{{ b.age }} jaar</span>
+              </div>
+            </div>
+
+            <div class="birthday-right">
+              {% if b.is_today %}
+                <span class="birthday-today-chip">
+                  Jarig vandaag
+                  <span class="birthday-confetti">
+                    <img
+                      src="{% static 'img/confetti-64x64.png' %}"
+                      alt=""
+                      class="birthday-confetti-icon"
+                    >
+                  </span>
+                </span>
+              {% elif b.is_tomorrow %}
+                <span class="birthday-date">
+                  Morgen
+                </span>
+              {% else %}
+                <span class="birthday-date">
+                  {{ b.date|date:"d-m-Y" }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="birthday-empty">
+      Geen verjaardagen in de komende twee weken.
+    </p>
   {% endif %}
 </div>
-{% endblock %}
-
-{% block extra_js %}
-  <script src="{% static 'js/agenda/agenda.js' %}" defer></script>
 {% endblock %}
