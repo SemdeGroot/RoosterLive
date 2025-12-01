@@ -120,19 +120,16 @@ class Organization(models.Model):
         "E-mailadres",
         max_length=254,
         blank=True,
-        null=True,
     )
     email2 = models.EmailField(
         "E-mailadres 2",
         max_length=254,
         blank=True,
-        null=True,
     )
     phone = models.CharField(
         "Telefoonnummer",
         max_length=50,
         blank=True,
-        null=True,
     )
 
     class Meta:
