@@ -155,6 +155,7 @@
         <table class="manage-table user-table" id="userTable">
           <tr>
             <th>Voornaam</th>
+            <th>Achternaam</th>
             <th>Organisatie</th>
             <th>Groep</th>
             <th>Acties</th>
@@ -162,7 +163,7 @@
 
           {% for u in users %}
           <tr class="user-row" id="user-row-{{ u.id }}">
-            <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
+            <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td><td>{{ u.last_name }}</td>
             <td>
             {% if u.profile and u.profile.organization %}
               {{ u.profile.organization.name }}

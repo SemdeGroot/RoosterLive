@@ -16,10 +16,11 @@ table.manage-table th,table.manage-table td{
 }
 
 /* ---------- Users kolombreedtes ---------- */
-table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:120px;overflow-wrap:anywhere}
-table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:200px;overflow-wrap:anywhere}
+table.user-table th:nth-child(1), table.user-table td:nth-child(1){width:100px;overflow-wrap:anywhere}
+table.user-table th:nth-child(2), table.user-table td:nth-child(2){width:120px;overflow-wrap:anywhere}
 table.user-table th:nth-child(3), table.user-table td:nth-child(3){width:160px;overflow-wrap:anywhere}
 table.user-table th:nth-child(4), table.user-table td:nth-child(4){width:120px;overflow-wrap:anywhere}
+table.user-table th:nth-child(5), table.user-table td:nth-child(5){width:115px;overflow-wrap:anywhere}
 
 /* Rijen compacter in Bestaande gebruikers */
 .user-table th, .user-table td{ padding:6px 8px }
