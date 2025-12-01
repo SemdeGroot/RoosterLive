@@ -6,64 +6,322 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <script src="{% static 'js/agenda/agenda.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
 <div class="card birthdays-card">
-  <div class="birthday-header">
-    <img
-      src="{% static 'img/birthday-128x128.png' %}"
-      alt="Verjaardagen"
-      class="birthday-icon"
-    >
-    <div class="birthday-header-text">
-      <h2>Verjaardagen</h2>
-      <p>Vandaag t/m {{ two_weeks_later|date:"j F" }}</p>
-    </div>
-  </div>
 
-  {% if birthdays %}
-    <ul class="birthday-list">
-      {% for b in birthdays %}
-        <li class="birthday-item {% if b.is_today %}birthday-today{% endif %}">
-          <div class="birthday-main">
-            <div class="birthday-left">
-              <span class="birthday-name">{{ b.name }}</span>
-              <div class="birthday-meta">
-                <span class="birthday-age">{{ b.age }} jaar</span>
+  {# --------- ALGEMENE AGENDA --------- #}
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img
+        src="{% static 'img/general_schedule-128x128.png' %}"
+        alt="Algemene agenda"
+        class="birthday-icon"
+      >
+      <div class="birthday-header-text">
+        <h2>Algemeen</h2>
+        <p>Algemene agenda</p>
+      </div>
+      {% if perms.core.can_upload_agenda %}
+        <button
+          type="button"
+          class="btn agenda-plus-btn js-toggle-form"
+          data-target="#agenda-form-general"
+          aria-expanded="false"
+          aria-controls="agenda-form-general"
+          title="Agendapunt toevoegen"
+        >
+          +
+        </button>
+      {% endif %}
+    </div>
+
+    {% if perms.core.can_upload_agenda %}
+      <form
+        id="agenda-form-general"
+        class="form agenda-inline-form {% if not new_general_form.errors %}is-hidden{% endif %}"
+        method="post"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="add_category" value="general">
+        {{ new_general_form.non_field_errors }}
+
+        {{ new_general_form.title.errors }}
+        {{ new_general_form.title }}
+
+        {{ new_general_form.description.errors }}
+        {{ new_general_form.description }}
+
+        {{ new_general_form.date.errors }}
+        {{ new_general_form.date }}
+
+        <button type="submit" class="btn">
+          Opslaan
+        </button>
+      </form>
+    {% endif %}
+
+    {% if general_items %}
+      <ul class="birthday-list agenda-list">
+        {% for item in general_items %}
+          <li class="birthday-item">
+            {% if perms.core.can_upload_agenda %}
+              <form method="post" class="agenda-delete-form">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  name="delete_item"
+                  value="{{ item.id }}"
+                  class="btn btn-danger agenda-delete-btn"
+                  title="Verwijderen"
+                  aria-label="Verwijderen"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </form>
+            {% endif %}
+
+            <div class="birthday-main">
+              <div class="birthday-left">
+                <span class="birthday-name">{{ item.title }}</span>
+                <div class="birthday-meta">
+                  <span class="agenda-description">{{ item.description }}</span>
+                </div>
+              </div>
+
+              <div class="birthday-right">
+                <span class="birthday-date">
+                  {{ item.date|date:"d-m-Y" }}
+                </span>
               </div>
             </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="birthday-empty">
+        Geen algemene agendapunten.
+      </p>
+    {% endif %}
+  </div>
 
-            <div class="birthday-right">
-              {% if b.is_today %}
-                <span class="birthday-today-chip">
-                  Jarig vandaag
-                  <span class="birthday-confetti">
-                    <img
-                      src="{% static 'img/confetti-64x64.png' %}"
-                      alt=""
-                      class="birthday-confetti-icon"
-                    >
-                  </span>
-                </span>
-              {% elif b.is_tomorrow %}
+  {# --------- UITJES --------- #}
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img
+        src="{% static 'img/uitjes-128x128.png' %}"
+        alt="Uitjes"
+        class="birthday-icon"
+      >
+      <div class="birthday-header-text">
+        <h2>Uitjes</h2>
+        <p>Geplande uitjes</p>
+      </div>
+      {% if perms.core.can_upload_agenda %}
+        <button
+          type="button"
+          class="btn agenda-plus-btn js-toggle-form"
+          data-target="#agenda-form-outing"
+          aria-expanded="false"
+          aria-controls="agenda-form-outing"
+          title="Uitje toevoegen"
+        >
+          +
+        </button>
+      {% endif %}
+    </div>
+
+    {% if perms.core.can_upload_agenda %}
+      <form
+        id="agenda-form-outing"
+        class="form agenda-inline-form {% if not new_outing_form.errors %}is-hidden{% endif %}"
+        method="post"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="add_category" value="outing">
+        {{ new_outing_form.non_field_errors }}
+
+        {{ new_outing_form.title.errors }}
+        {{ new_outing_form.title }}
+
+        {{ new_outing_form.description.errors }}
+        {{ new_outing_form.description }}
+
+        {{ new_outing_form.date.errors }}
+        {{ new_outing_form.date }}
+
+        <button type="submit" class="btn">
+          Opslaan
+        </button>
+      </form>
+    {% endif %}
+
+    {% if outing_items %}
+      <ul class="birthday-list agenda-list">
+        {% for item in outing_items %}
+          <li class="birthday-item">
+            {% if perms.core.can_upload_agenda %}
+              <form method="post" class="agenda-delete-form">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  name="delete_item"
+                  value="{{ item.id }}"
+                  class="btn btn-danger agenda-delete-btn"
+                  title="Verwijderen"
+                  aria-label="Verwijderen"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </form>
+            {% endif %}
+
+            <div class="birthday-main">
+              <div class="birthday-left">
+                <span class="birthday-name">{{ item.title }}</span>
+                <div class="birthday-meta">
+                  <span class="agenda-description">{{ item.description }}</span>
+                </div>
+              </div>
+
+              <div class="birthday-right">
                 <span class="birthday-date">
-                  Morgen
+                  {{ item.date|date:"d-m-Y" }}
                 </span>
-              {% else %}
-                <span class="birthday-date">
-                  {{ b.date|date:"d-m-Y" }}
-                </span>
-              {% endif %}
+              </div>
             </div>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="birthday-empty">
-      Geen verjaardagen in de komende twee weken.
-    </p>
-  {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="birthday-empty">
+        Geen uitjes gepland.
+      </p>
+    {% endif %}
+  </div>
+
+  {# --------- VERJAARDAGEN --------- #}
+  <div class="agenda-section">
+    <div class="birthday-header">
+      <img
+        src="{% static 'img/birthday-128x128.png' %}"
+        alt="Verjaardagen"
+        class="birthday-icon"
+      >
+      <div class="birthday-header-text">
+        <h2>Verjaardagen</h2>
+        <p>Vandaag t/m {{ two_weeks_later|date:"j F"|lower }}</p>
+      </div>
+    </div>
+
+    {% if birthdays %}
+      <ul class="birthday-list">
+        {% for b in birthdays %}
+          <li class="birthday-item {% if b.is_today %}birthday-today{% endif %}">
+            <div class="birthday-main">
+              <div class="birthday-left">
+                <span class="birthday-name">{{ b.name }}</span>
+                <div class="birthday-meta">
+                  <span class="birthday-age">{{ b.age }} jaar</span>
+                </div>
+              </div>
+
+              <div class="birthday-right">
+                {% if b.is_today %}
+                  <span class="birthday-today-chip">
+                    Jarig vandaag
+                    <span class="birthday-confetti">
+                      <img
+                        src="{% static 'img/confetti-64x64.png' %}"
+                        alt=""
+                        class="birthday-confetti-icon"
+                      >
+                    </span>
+                  </span>
+                {% elif b.is_tomorrow %}
+                  <span class="birthday-date">
+                    Morgen
+                  </span>
+                {% else %}
+                  <span class="birthday-date">
+                    {{ b.date|date:"d-m-Y" }}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="birthday-empty">
+        Geen verjaardagen in de komende twee weken.
+      </p>
+    {% endif %}
+  </div>
 </div>
+
+{# IMask voor dd-mm-jjjj + toggle logica #}
+<script src="https://unpkg.com/imask"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Toggle inline forms via + knop
+    document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetSelector = btn.getAttribute("data-target");
+        if (!targetSelector) return;
+        var form = document.querySelector(targetSelector);
+        if (!form) return;
+
+        var isHidden = form.classList.toggle("is-hidden");
+        btn.setAttribute("aria-expanded", isHidden ? "false" : "true");
+
+        if (!isHidden) {
+          var firstField = form.querySelector("input, textarea");
+          if (firstField) firstField.focus();
+        }
+      });
+    });
+
+    // Date mask voor alle .js-date velden (dd-mm-jjjj)
+    document.querySelectorAll(".js-date").forEach(function (input) {
+      IMask(input, {
+        mask: 'd-m-Y',
+        lazy: true,
+        overwrite: true,
+        autofix: false,
+        blocks: {
+          d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+          m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+          Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
+        }
+      });
+    });
+  });
+</script> 
 {% endblock %}

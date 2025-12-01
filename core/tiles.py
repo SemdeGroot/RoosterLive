@@ -7,7 +7,7 @@ def build_tiles(user):
         return tiles
 
     if can(user, "can_view_agenda"):
-        tiles.append({"name": "Agenda", "img": "agenda.png", "url_name": "agenda"})
+        tiles.append({"name": "Agenda", "img": "agenda-256x256.png", "url_name": "agenda"})
     if can(user, "can_view_roster"):
         tiles.append({"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster"})
     if can(user, "can_send_beschikbaarheid"):

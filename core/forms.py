@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization
+from core.models import UserProfile, Organization, AgendaItem
 
 UserModel = get_user_model()
 
@@ -357,3 +357,29 @@ class MyTOTPDeviceForm(TOTPDeviceForm):
             "inputmode": "numeric",
             "autocomplete": "one-time-code",
         })
+
+
+class AgendaItemForm(forms.ModelForm):
+    date = forms.DateField(
+        input_formats=["%d-%m-%Y"],
+        widget=forms.TextInput(
+            attrs={
+                "class": "js-date",
+                "placeholder": "dd-mm-jjjj",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    class Meta:
+        model = AgendaItem
+        fields = ["title", "description", "date"]  # category NIET opnemen
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].widget.attrs.setdefault("placeholder", "Titel")
+        self.fields["description"].widget.attrs.setdefault(
+            "placeholder", "Korte beschrijving"
+        )
+        self.fields["description"].widget.attrs.setdefault("rows", 2)

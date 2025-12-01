@@ -5,11 +5,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
 from django.utils import timezone
+from django.shortcuts import render, redirect
 
-from core.models import UserProfile
 from ._helpers import can
+
+from core.models import UserProfile, AgendaItem
+from core.forms import AgendaItemForm
 
 
 # Gebruik constante uit settings, fallback = 1
@@ -60,14 +62,65 @@ def format_dutch_name_from_user(user) -> str:
 
 @login_required
 def agenda(request):
-    """
-    Verjaardagen van de komende twee weken voor organisatie met org_id = APOTHEEK_JANSEN_ORG_ID.
-    Resultaat wordt gecached per organisatie + dag.
-    """
     if not can(request.user, "can_view_agenda"):
         return HttpResponseForbidden("Geen toegang tot agenda.")
 
     today = timezone.localdate()
+
+    # Verwijder automatisch items in het verleden
+    AgendaItem.objects.filter(date__lt=today).delete()
+
+    # Standaard lege forms (GET) – worden bij POST overschreven indien nodig
+    new_general_form = AgendaItemForm(prefix="general")
+    new_outing_form = AgendaItemForm(prefix="outing")
+
+    # Verwijderen van items via kruisje
+    if request.method == "POST" and "delete_item" in request.POST:
+        if not can(request.user, "can_upload_agenda"):
+            return HttpResponseForbidden("Geen toegang.")
+
+        AgendaItem.objects.filter(
+            id=request.POST.get("delete_item")
+        ).delete()
+        return redirect("agenda")
+
+    # Toevoegen van items via inline forms
+    if request.method == "POST" and "add_category" in request.POST:
+        if not can(request.user, "can_upload_agenda"):
+            return HttpResponseForbidden("Geen toegang.")
+
+        category = request.POST.get("add_category")
+        if category == "general":
+            new_general_form = AgendaItemForm(request.POST, prefix="general")
+            form = new_general_form
+        elif category == "outing":
+            new_outing_form = AgendaItemForm(request.POST, prefix="outing")
+            form = new_outing_form
+        else:
+            form = None
+
+        if form is not None and form.is_valid():
+            item = form.save(commit=False)
+            item.category = category  # hier zetten we de categorie
+            item.created_by = request.user
+            item.save()
+            return redirect("agenda")
+        # Als form niet valid is: we laten de pagina vallen naar render(),
+        # met een gebonden form inclusief errors. Form blijft open (zie template).
+
+    # Querysets voor agenda-items
+    general_items = (
+        AgendaItem.objects
+        .filter(category="general", date__gte=today)
+        .order_by("date")
+    )
+    outing_items = (
+        AgendaItem.objects
+        .filter(category="outing", date__gte=today)
+        .order_by("date")
+    )
+
+    # Verjaardagen (zoals je al had, incl. caching)
     two_weeks_later = today + timedelta(days=14)
 
     cache_key = f"agenda_birthdays:{ORG_ID_APOTHEEK_JANSEN}:{today.isoformat()}"
@@ -84,7 +137,6 @@ def agenda(request):
         )
 
         upcoming: list[dict] = []
-
         for profile in profiles:
             dob = profile.birth_date  # datetime.date
 
@@ -119,13 +171,16 @@ def agenda(request):
         upcoming.sort(key=lambda x: x["date"])
         birthdays = upcoming
 
-        # cache bv. 1 uur
-        cache.set(cache_key, birthdays, 60 * 60)
+        cache.set(cache_key, birthdays, 60 * 60 * 8)  # 1 uur
 
     context = {
         "year": today.year,
         "today": today,
         "two_weeks_later": two_weeks_later,
         "birthdays": birthdays,
+        "general_items": general_items,
+        "outing_items": outing_items,
+        "new_general_form": new_general_form,
+        "new_outing_form": new_outing_form,
     }
     return render(request, "agenda/index.html", context)

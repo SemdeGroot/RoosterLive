@@ -10,6 +10,7 @@
     --ios-accent: #007AFF;
     --button-color: #17212b;
     --button-hover: #1f2d3d;
+    --button-hover-blue: #0a317f;
     --button-hovermain: #1f2d3d;
     --logout-color: #ff6b6b;
     --danger: #6a150e;
@@ -590,20 +591,27 @@ th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left;
   box-shadow: none !important;
 }/* App-container mag meebewegen bij pull-to-refresh */
 .app {
+  background: var(--bg);              /* ← eigen vaste achtergrond */
+  min-height: 100vh;                  /* zorgt dat app het hele scherm vult */
   transition: transform 0.18s ease-out;
 }
 
 /* Tijdens refresh schuift de hele app een beetje naar beneden */
 .app.ptr-shift-down {
-  transform: translateY(40px); /* tune naar smaak: 12–24px */
+  transform: translateY(40px);
 }
 
-/* App-container mag meebewegen bij pull-to-refresh */
-.app {
-  transition: transform 0.18s ease-out;
-}
-
-/* Tijdens refresh schuift de hele app een beetje naar beneden */
-.app.ptr-shift-down {
-  transform: translateY(40px); /* tune naar smaak: 12–24px */
+/* ---------- Focus: ALLE inputs enkele rand (geen dubbele) ---------- */
+input:focus,
+textarea:focus,
+select:focus,
+.admin-input:focus,
+.admin-select:focus,
+.form input:not([type="file"]):focus,
+.form select:focus,
+.form textarea:focus,
+.search-bar input:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--accent);
 }

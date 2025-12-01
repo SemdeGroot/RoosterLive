@@ -146,6 +146,45 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profiel van {self.user}"
+    
+class AgendaItem(models.Model):
+    class Category(models.TextChoices):
+        GENERAL = "general", "Algemeen"
+        OUTING = "outing", "Uitje"
+
+    title = models.CharField(
+        "Titel",
+        max_length=100,
+        help_text="Korte titel van het agendapunt (max. 100 tekens).",
+    )
+    description = models.CharField(
+        "Beschrijving",
+        max_length=500,
+        help_text="Korte beschrijving (max. 500 tekens).",
+    )
+    date = models.DateField("Datum", db_index=True)
+
+    category = models.CharField(
+        "Categorie",
+        max_length=10,
+        choices=Category.choices,
+        db_index=True,
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="agenda_items",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["date", "category", "title"]
+
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.title} op {self.date}"
 
 # 2FA subscriptions verwijderen uit db om te testen:
 # python manage.py shell
