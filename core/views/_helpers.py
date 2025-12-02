@@ -373,6 +373,64 @@ def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, c
     default_storage.save(storage_path, ContentFile(pdf_bytes))
     return storage_path
 
+def save_pdf_or_png_with_hash(uploaded_file, target_dir: Path, base_name: str):
+    """
+    Slaat een geüpload bestand (PDF of afbeelding) gehashed op als
+        '<base_name>.<hash><ext>'
+    in target_dir (onder MEDIA_ROOT).
+
+    Werkt in DEV (filesystem) en PROD (S3 via default_storage).
+
+    Parameters
+    ----------
+    uploaded_file : UploadedFile
+        Het bestand uit request.FILES.
+    target_dir : Path
+        Directory onder MEDIA_ROOT waar het bestand moet komen (bv. MEDIA_ROOT / "news").
+    base_name : str
+        Logische basename, bv. 'news', 'policy', 'avatar'.
+
+    Retourneert
+    ----------
+    (rel_path, h)
+        rel_path : str
+            Pad relatief t.o.v. MEDIA_ROOT, bv. 'news/news.<hash>.pdf'
+        h : str
+            Hash-string (eerste 16 chars van sha256).
+    """
+    # Bestand in memory lezen (voor hashing)
+    if hasattr(uploaded_file, "chunks"):
+        file_bytes = b"".join(uploaded_file.chunks())
+    else:
+        file_bytes = uploaded_file.read()
+
+    ext = (Path(uploaded_file.name).suffix or "").lower()
+    allowed_exts = (".pdf", ".png", ".jpg", ".jpeg", ".webp")
+    if ext not in allowed_exts:
+        raise ValueError(f"Unsupported file type '{ext}'. Toegestaan: {', '.join(allowed_exts)}")
+
+    # Zelfde hashfunctie als voor PDF's (maar generiek bruikbaar)
+    h = pdf_hash(file_bytes)
+
+    filename = f"{base_name}.{h}{ext}"
+
+    # === DEV / lokaal filesystem ===
+    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+        target_dir.mkdir(parents=True, exist_ok=True)
+        dest = target_dir / filename
+        dest.write_bytes(file_bytes)
+
+        rel_dir = _media_relpath(target_dir)  # bv. "news"
+        rel_path = f"{rel_dir}/{filename}" if rel_dir else filename
+        return rel_path, h
+
+    # === PROD / S3 ===
+    rel_dir = _media_relpath(target_dir)  # bv. "news"
+    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
+    default_storage.save(storage_path, ContentFile(file_bytes))
+    return storage_path, h
+
+
 def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True):
     """
     Slaat een geüploade CSV/Excel op als <base_name>.<hash><ext> in target_dir.

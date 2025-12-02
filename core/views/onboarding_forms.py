@@ -1,4 +1,4 @@
-# core/views/forms.py
+# core/views/onboarding_forms.py
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponseForbidden

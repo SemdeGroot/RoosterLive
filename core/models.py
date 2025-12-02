@@ -230,10 +230,34 @@ class AgendaItem(models.Model):
 
     def __str__(self):
         return f"{self.get_category_display()}: {self.title} op {self.date}"
+    
+class NewsItem(models.Model):
+    title = models.CharField(max_length=200)
+    short_description = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Korte beschrijving voor in de lijst (max 200 tekens).",
+    )
+    description = models.TextField(blank=True)
+    date = models.DateField(auto_now_add=True)
 
-# 2FA subscriptions verwijderen uit db om te testen:
-# python manage.py shell
-# from django.contrib.auth.models import User
-# from django_otp.plugins.otp_totp.models import TOTPDevice
-# user = User.objects.get(username="sem")
-# TOTPDevice.objects.filter(user=user).delete()
+    # Pad relatief t.o.v. MEDIA_ROOT, bv. "news/news.<hash>.pdf"
+    file_path = models.CharField(max_length=255)
+    file_hash = models.CharField(max_length=32, db_index=True, blank=True)
+    original_filename = models.CharField(max_length=255, blank=True)
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-uploaded_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def is_pdf(self) -> bool:
+        return self.file_path.lower().endswith(".pdf")
+
+    @property
+    def media_url(self) -> str:
+        return f"{settings.MEDIA_URL}{self.file_path}"

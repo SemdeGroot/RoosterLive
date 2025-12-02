@@ -1,3 +1,4 @@
+{# templates/news/index.html #}
 {% extends "base.html" %}
 {% load static %}
 
@@ -5,65 +6,178 @@
 {% block header_title %}Nieuws{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
   <link rel="stylesheet" href="{% static 'css/news/news.css' %}">
+  <script src="{% static 'js/news/news.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
-<div class="card" style="padding:16px;">
+<div class="card birthdays-card">
 
-  {% if perms.core.can_upload_news %}
-  <form method="post" enctype="multipart/form-data" class="uploader" id="newsForm">
-    {% csrf_token %}
-    <input type="file" id="newsFile" name="file" accept="application/pdf" hidden required>
-
-    <div class="dropzone" id="newsDrop" onclick="document.getElementById('newsFile').click()">
-      <div class="dz-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <path d="M14 2v6h6"/>
-          <path d="M12 12v6"/>
-          <path d="M9 15h6"/>
-        </svg>
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img
+        src="{% static 'img/nieuws-256x256.png' %}"
+        alt="Nieuws"
+        class="birthday-icon"
+      >
+      <div class="birthday-header-text">
+        <h2>Nieuws</h2>
+        <p>Klik op de items om te openen.</p>
       </div>
-      <div class="dz-text">
-        <div class="dz-title">Sleep je PDF met nieuws hierheen of klik om te kiezen.</div>
-        <div class="dz-hint">
-          Alleen .pdf — Nieuwe uploads worden toegevoegd (vorige blijven staan) <strong>zodra je op Uploaden klikt.</strong><br>
-          <em>Nieuws wordt automatisch verwijderd na 6 maanden.</em>
+      {% if perms.core.can_upload_news %}
+        <button
+          type="button"
+          class="btn agenda-plus-btn js-toggle-form"
+          data-target="#news-form"
+          aria-expanded="false"
+          aria-controls="news-form"
+          title="Nieuwsbericht toevoegen"
+        >
+          +
+        </button>
+      {% endif %}
+    </div>
+
+    {% if perms.core.can_upload_news %}
+      <form
+        id="news-form"
+        class="form agenda-inline-form {% if not form.errors %}is-hidden{% endif %}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        {{ form.title.errors }}
+        {{ form.title }}
+
+        {{ form.short_description.errors }}
+        {{ form.short_description }}
+
+        {{ form.description.errors }}
+        {{ form.description }}
+
+        {{ form.file.errors }}
+        <div class="news-file-wrapper">
+          {{ form.file }}
+          <label for="{{ form.file.id_for_label }}" class="btn">
+            Bestand kiezen
+          </label>
+          <span class="news-file-name" id="news-file-name"></span>
         </div>
-      </div>
-    </div>
 
-    <div class="file-meta" id="newsMeta" style="display:none;">
-      Geselecteerd: <span class="file-name" id="newsName"></span>
-    </div>
+        <p class="small-text" style="margin-top:4px;">
+          <em>Selecteer een PDF of afbeelding (PNG, JPEG of JPG) met een maximale bestandsgrootte van 25 MB. Nieuws wordt automatisch verwijderd na 6 maanden.</em>
+        </p>
 
-    <div class="u-actions">
-      <button class="btn" type="submit" id="newsUpload" disabled>Uploaden</button>
-      <button type="button" class="btn ghost" id="newsClear" style="display:none;">Wissen</button>
-    </div>
-  </form>
-  {% endif %}
+        <button type="submit" class="btn">
+          Opslaan
+        </button>
 
-  {% if not page_urls %}
-    <p style="color:var(--muted); margin-top:6px;">Nog geen nieuws geüpload.</p>
-  {% else %}
-    <div class="pages" id="newsPages">
-      {% for url in page_urls %}
-        <div class="page" data-img="{{ url }}">
-          {% if perms.core.can_upload_news %}
-            <button class="del-btn" type="button" title="Upload verwijderen" data-img="{{ url }}">✕</button>
-          {% endif %}
-          <img src="{{ url }}" alt="Nieuws pagina">
-        </div>
-      {% endfor %}
-    </div>
+      </form>
+    {% endif %}
 
-    <div class="pages-footer">
-      <button type="button" class="more-btn" id="newsMore" style="display:none;">Toon meer</button>
-    </div>
-  {% endif %}
+    {% if news_items %}
+      <ul class="birthday-list agenda-list news-list">
+        {% for item in news_items %}
+          <li class="birthday-item news-item">
+            {% if perms.core.can_upload_news %}
+              <form method="post" class="agenda-delete-form news-delete-form">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  name="delete_item"
+                  value="{{ item.id }}"
+                  class="btn btn-danger agenda-delete-btn"
+                  title="Verwijderen"
+                  aria-label="Verwijderen"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </form>
+            {% endif %}
+
+                        {# header (altijd zichtbaar): titel + datum #}
+            <div class="birthday-main">
+              <div class="birthday-left">
+                <span class="birthday-name">{{ item.title }}</span>
+                {% if item.short_description %}
+                  <div class="birthday-meta">
+                    <span class="agenda-description agenda-description--single-line">
+                      {{ item.short_description }}
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="birthday-right">
+                <span class="birthday-date">
+                  {{ item.date|date:"d-m-Y" }}
+                </span>
+              </div>
+            </div>
+
+            {# body (inklapbaar): volledige tekst + media #}
+            <div
+              id="news-body-{{ item.id }}"
+              class="news-body is-hidden"
+            >
+              {% if item.description %}
+                <div class="news-description">
+                  {{ item.description|linebreaks }}
+                </div>
+              {% endif %}
+
+              <div class="news-media">
+                {% if item.is_pdf %}
+                  {% for url in item.page_urls %}
+                    <img src="{{ url }}" alt="Nieuws PDF pagina">
+                  {% endfor %}
+                {% else %}
+                  <img src="{{ item.file_url }}" alt="Nieuws afbeelding">
+                {% endif %}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="birthday-empty">
+        Nog geen nieuwsberichten.
+      </p>
+    {% endif %}
+  </div>
 </div>
 
-<script src="{% static 'js/news/news.js' %}" defer></script>
+{# IMask voor dd-mm-jjjj (zelfde als agenda) #}
+<script src="https://unpkg.com/imask"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".js-date").forEach(function (input) {
+      IMask(input, {
+        mask: 'd-m-Y',
+        lazy: true,
+        overwrite: true,
+        autofix: false,
+        blocks: {
+          d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+          m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+          Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

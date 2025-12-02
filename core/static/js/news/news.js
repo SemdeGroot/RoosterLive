@@ -1,107 +1,90 @@
-(function(){
-  // --- Upload UI
-  const dz = document.getElementById('newsDrop'),
-        input = document.getElementById('newsFile'),
-        meta = document.getElementById('newsMeta'),
-        nameSpan = document.getElementById('newsName'),
-        uploadBtn = document.getElementById('newsUpload'),
-        clearBtn = document.getElementById('newsClear');
+// static/js/news/news.js
+document.addEventListener("DOMContentLoaded", function () {
+  // Toggle inline form via + knop (zelfde gedrag als agenda)
+  document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var targetSelector = btn.getAttribute("data-target");
+      if (!targetSelector) return;
 
-  if (dz && input) {
-    function setFile(file){
-      if(!file) return;
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      if(!isPdf){ alert('Kies een PDF (.pdf).'); return; }
-      const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
-      if(nameSpan) nameSpan.textContent = file.name;
-      if(meta) meta.style.display = '';
-      if(uploadBtn) uploadBtn.disabled = false;
-      if(clearBtn) clearBtn.style.display = '';
-    }
-    input.addEventListener('change', ()=> setFile(input.files[0]));
-    ['dragenter','dragover'].forEach(ev=> dz && dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('is-dragover');}));
-    ['dragleave','drop'].forEach(ev=> dz && dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('is-dragover');}));
-    dz && dz.addEventListener('drop', e=>{const f=e.dataTransfer.files?.[0]; if(f) setFile(f);});
-    clearBtn && clearBtn.addEventListener('click', ()=>{
-      input.value=''; if(nameSpan) nameSpan.textContent='';
-      if(meta) meta.style.display='none';
-      if(uploadBtn) uploadBtn.disabled=true;
-      clearBtn.style.display='none';
-    });
-  }
+      var form = document.querySelector(targetSelector);
+      if (!form) return;
 
-  // --- "Toon meer" voor PNG's
-  const pages = document.getElementById('newsPages');
-  const moreBtn = document.getElementById('newsMore');
-  const STEP = 10;
-  let currentLimit = STEP;
+      var isHidden = form.classList.toggle("is-hidden");
+      btn.setAttribute("aria-expanded", isHidden ? "false" : "true");
 
-  function applyLimit(){
-    if(!pages) return;
-    const cards = Array.from(pages.children);
-    const total = cards.length;
-
-    cards.forEach((el, idx) => {
-      el.style.display = (idx < currentLimit) ? '' : 'none';
-    });
-
-    if(moreBtn){
-      if(total > currentLimit){
-        moreBtn.style.display = '';
-        moreBtn.disabled = false;
-        moreBtn.textContent = 'Toon meer';
-      } else {
-        moreBtn.style.display = 'none';
+      if (!isHidden) {
+        var firstField = form.querySelector("input, textarea");
+        if (firstField) firstField.focus();
       }
-    }
-  }
-
-  if (pages) applyLimit();
-
-  moreBtn && moreBtn.addEventListener('click', () => {
-    currentLimit += STEP;
-    applyLimit();
+    });
   });
 
-  // --- Inline delete via fetch naar DEZELFDE URL
-  if(pages){
-    function getCSRF(){
-      const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:"";
-    }
-    pages.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('.del-btn');
-      if(!btn) return;
-      const img = btn.getAttribute('data-img');
-      if(!img) return;
-      if(!confirm('Weet je zeker dat je de PDF wilt verwijderen?')) return;
-      btn.disabled = true;
+  // === Inklappen/uitklappen van nieuwsitems ===
+  // De hele .news-item (li) is klikbaar,
+  // behalve:
+  //   - het delete-form (kruisje)
+  //   - de uitgeklapte .news-body (zodat je in de tekst/afbeeldingen kunt klikken zonder te togglen)
+  document.querySelectorAll(".news-item").forEach(function (item) {
+    var body = item.querySelector(".news-body");
+    if (!body) return;
 
-      try{
-        const resp = await fetch(window.location.href, {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": getCSRF(),
-            "X-Requested-With": "XMLHttpRequest",
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: "action=delete&img=" + encodeURIComponent(img)
-        });
-        const data = await resp.json();
-        if(data && data.ok){
-          const hash = data.hash;
-          document.querySelectorAll('.page').forEach(card=>{
-            const u = card.getAttribute('data-img') || '';
-            if(u.includes('/cache/news/'+hash+'/')) card.remove();
-          });
-          applyLimit();
-        }else{
-          alert(data && data.error ? data.error : "Verwijderen mislukt.");
-          btn.disabled = false;
-        }
-      }catch(err){
-        alert("Netwerkfout bij verwijderen.");
-        btn.disabled = false;
+    function toggleItem() {
+      var expanded = item.classList.toggle("news-item--expanded");
+      body.classList.toggle("is-hidden", !expanded);
+    }
+
+    item.addEventListener("click", function (event) {
+      // klik op delete-form of knop → niet togglen
+      if (event.target.closest(".agenda-delete-form")) return;
+
+      // klik in de body (uitgeklapt deel) → niet togglen
+      if (event.target.closest(".news-body")) return;
+
+      toggleItem();
+    });
+
+    // Toetsenbord: Enter/Spatie op de li
+    item.setAttribute("tabindex", "0");
+    item.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleItem();
       }
     });
+  });
+
+  // Bevestiging voor verwijderen van nieuwsitems (zelfde gedrag als agenda)
+  document.querySelectorAll(".news-delete-form").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      var title =
+        form
+          .closest(".news-item")
+          ?.querySelector(".birthday-name")
+          ?.innerText
+          ?.trim() || "";
+
+      var message =
+        "Weet je zeker dat je het nieuwsbericht " +
+        (title ? `"${title}"` : "dit nieuwsbericht") +
+        " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!";
+
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+
+  // Filename tonen naast de upload-knop
+  var fileInput = document.querySelector('input[type="file"][name="file"]');
+  var fileNameSpan = document.getElementById('news-file-name');
+
+  if (fileInput && fileNameSpan) {
+    fileInput.addEventListener('change', function () {
+      var name =
+        fileInput.files && fileInput.files[0]
+          ? fileInput.files[0].name
+          : '';
+      fileNameSpan.textContent = name;
+    });
   }
-})();
+});

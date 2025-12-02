@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, Organization
+from core.models import UserProfile, Organization, AgendaItem, Organization, NewsItem
 
 UserModel = get_user_model()
 
@@ -418,3 +418,51 @@ class AgendaItemForm(forms.ModelForm):
             "placeholder", "Korte beschrijving"
         )
         self.fields["description"].widget.attrs.setdefault("rows", 2)
+
+class NewsItemForm(forms.ModelForm):
+    MAX_FILE_SIZE_MB = 25  # zelfde limiet als nginx
+
+    file = forms.FileField(
+            label="Bestand (PDF of afbeelding)",
+            validators=[FileExtensionValidator(allowed_extensions=["pdf", "jpg", "jpeg", "png"])],
+        )
+
+    class Meta:
+        model = NewsItem
+        fields = ["title", "short_description", "description", "file"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["title"].widget.attrs.update({
+            "placeholder": "Titel",
+            "class": "form-input",
+        })
+
+        self.fields["short_description"].widget.attrs.update({
+            "placeholder": "Korte beschrijving (max 200 tekens)",
+            "class": "form-input",
+            "maxlength": "200",
+        })
+
+        self.fields["description"].widget.attrs.update({
+            "placeholder": "Beschrijving",
+            "class": "form-input",
+            "rows": 2,   # compacter
+        })
+
+        self.fields["file"].widget.attrs.update({
+            "accept": ".pdf,.jpg,.jpeg,.png",
+        })
+
+    def clean_file(self):
+        f = self.cleaned_data.get("file")
+        if not f:
+            return f
+
+        max_bytes = self.MAX_FILE_SIZE_MB * 1024 * 1024
+        if f.size > max_bytes:
+            raise forms.ValidationError(
+                f"Het bestand is te groot. Maximaal {self.MAX_FILE_SIZE_MB} MB toegestaan."
+            )
+        return f

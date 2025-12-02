@@ -20,7 +20,7 @@ from core.views import medicatiebeoordeling as medicatiebeoordeling_views
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
-from core.views.forms import forms
+from core.views.onboarding_forms import forms
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
 from core.views.omzettingslijst import omzettingslijst

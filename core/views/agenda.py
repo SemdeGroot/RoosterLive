@@ -121,7 +121,7 @@ def agenda(request):
     )
 
     # Verjaardagen (zoals je al had, incl. caching)
-    two_weeks_later = today + timedelta(days=14)
+    four_weeks_later = today + timedelta(days=28)
 
     cache_key = f"agenda_birthdays:{ORG_ID_APOTHEEK_JANSEN}:{today.isoformat()}"
     birthdays = cache.get(cache_key)
@@ -154,7 +154,7 @@ def agenda(request):
                 except ValueError:
                     next_bday = date(today.year + 1, 2, 28)
 
-            if today <= next_bday <= two_weeks_later:
+            if today <= next_bday <= four_weeks_later:
                 age = next_bday.year - dob.year
                 name = format_dutch_name_from_user(profile.user)
 
@@ -176,7 +176,7 @@ def agenda(request):
     context = {
         "year": today.year,
         "today": today,
-        "two_weeks_later": two_weeks_later,
+        "four_weeks_later": four_weeks_later,
         "birthdays": birthdays,
         "general_items": general_items,
         "outing_items": outing_items,

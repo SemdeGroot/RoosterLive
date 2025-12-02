@@ -615,3 +615,16 @@ select:focus,
   box-shadow: none;
   border-color: var(--accent);
 }
+
+/* Zorg dat input én textarea dezelfde font gebruiken */
+.form-input,
+textarea.form-input {
+  font-family: inherit;
+}
+
+/* Zelfde placeholder-styling voor beide */
+.form-input::placeholder,
+textarea.form-input::placeholder {
+  font-family: inherit;
+  color: var(--muted); /* of wat je nu voor inputs gebruikt */
+}
