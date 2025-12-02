@@ -199,13 +199,13 @@ class AgendaItem(models.Model):
 
     title = models.CharField(
         "Titel",
-        max_length=100,
-        help_text="Korte titel van het agendapunt (max. 100 tekens).",
+        max_length=50,
+        help_text="Korte titel van het agendapunt (max. 50 tekens).",
     )
     description = models.CharField(
         "Beschrijving",
-        max_length=500,
-        help_text="Korte beschrijving (max. 500 tekens).",
+        max_length=100,
+        help_text="Korte beschrijving (max. 100 tekens).",
     )
     date = models.DateField("Datum", db_index=True)
 
@@ -232,17 +232,17 @@ class AgendaItem(models.Model):
         return f"{self.get_category_display()}: {self.title} op {self.date}"
     
 class NewsItem(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=50)
     short_description = models.CharField(
-        max_length=200,
+        max_length=100,
         blank=True,
-        help_text="Korte beschrijving voor in de lijst (max 200 tekens).",
+        help_text="Korte beschrijving voor in de lijst (max 100 tekens).",
     )
     description = models.TextField(blank=True)
     date = models.DateField(auto_now_add=True)
 
     # Pad relatief t.o.v. MEDIA_ROOT, bv. "news/news.<hash>.pdf"
-    file_path = models.CharField(max_length=255)
+    file_path = models.CharField(max_length=255, blank=True, default="")
     file_hash = models.CharField(max_length=32, db_index=True, blank=True)
     original_filename = models.CharField(max_length=255, blank=True)
 
@@ -255,9 +255,21 @@ class NewsItem(models.Model):
         return self.title
 
     @property
+    def has_file(self) -> bool:
+        return bool(self.file_path)
+
+    @property
     def is_pdf(self) -> bool:
-        return self.file_path.lower().endswith(".pdf")
+        """
+        True als er een bestand is én het eindigt op .pdf
+        """
+        return bool(self.file_path) and self.file_path.lower().endswith(".pdf")
 
     @property
     def media_url(self) -> str:
+        """
+        Geeft de MEDIA URL terug, of een lege string als er geen bestand is.
+        """
+        if not self.file_path:
+            return ""
         return f"{settings.MEDIA_URL}{self.file_path}"

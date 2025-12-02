@@ -1,8 +1,12 @@
 // static/js/news/news.js
 document.addEventListener("DOMContentLoaded", function () {
-  // Toggle inline form via + knop (zelfde gedrag als agenda)
+  // === Toggle inline form via + knop ===
   document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", function (event) {
+      // Voorkom dat de klik "doorbubbelt" naar .news-item
+      event.preventDefault();
+      event.stopPropagation();
+
       var targetSelector = btn.getAttribute("data-target");
       if (!targetSelector) return;
 
@@ -24,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // behalve:
   //   - het delete-form (kruisje)
   //   - de uitgeklapte .news-body (zodat je in de tekst/afbeeldingen kunt klikken zonder te togglen)
+  //   - de + toevoeg-knop (.js-toggle-form)
   document.querySelectorAll(".news-item").forEach(function (item) {
     var body = item.querySelector(".news-body");
     if (!body) return;
@@ -34,10 +39,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     item.addEventListener("click", function (event) {
-      // klik op delete-form of knop → niet togglen
-      if (event.target.closest(".agenda-delete-form")) return;
+      // klik op + toevoeg-knop → NIET togglen
+      if (event.target.closest(".js-toggle-form")) return;
 
-      // klik in de body (uitgeklapt deel) → niet togglen
+      // klik op delete-form → NIET togglen
+      if (event.target.closest(".news-delete-form")) return;
+
+      // klik in de body (uitgeklapt deel) → NIET togglen
       if (event.target.closest(".news-body")) return;
 
       toggleItem();
@@ -53,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Bevestiging voor verwijderen van nieuwsitems (zelfde gedrag als agenda)
+  // === Bevestiging voor verwijderen van nieuwsitems ===
   document.querySelectorAll(".news-delete-form").forEach(function (form) {
     form.addEventListener("submit", function (event) {
       var title =
@@ -65,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var message =
         "Weet je zeker dat je het nieuwsbericht " +
-        (title ? `"${title}"` : "dit nieuwsbericht") +
+        (title ? "\"" + title + "\"" : "dit nieuwsbericht") +
         " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!";
 
       if (!confirm(message)) {
@@ -74,16 +82,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Filename tonen naast de upload-knop
+  // === Filename tonen naast de upload-knop ===
   var fileInput = document.querySelector('input[type="file"][name="file"]');
-  var fileNameSpan = document.getElementById('news-file-name');
+  var fileNameSpan = document.getElementById("news-file-name");
 
   if (fileInput && fileNameSpan) {
-    fileInput.addEventListener('change', function () {
+    fileInput.addEventListener("change", function () {
       var name =
         fileInput.files && fileInput.files[0]
           ? fileInput.files[0].name
-          : '';
+          : "";
       fileNameSpan.textContent = name;
     });
   }

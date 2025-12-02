@@ -38,6 +38,9 @@ def _delete_news_files_for_item(item: NewsItem) -> None:
     Verwijdert het fysieke nieuwsbestand (PDF/afbeelding) + bijbehorende cache (voor PDF).
     Werkt in DEV (filesystem) en PROD (S3 via default_storage).
     """
+
+    if not item.file_path:
+        return  # niets te verwijderen
     rel_path = item.file_path  # bv. "news/news.<hash>.pdf"
     ext = Path(rel_path).suffix.lower()
 
@@ -120,16 +123,22 @@ def news(request):
 
         form = NewsItemForm(request.POST, request.FILES)
         if form.is_valid():
-            uploaded_file = form.cleaned_data["file"]
+            uploaded_file = form.cleaned_data.get("file")
 
-            # Generieke helper (gehashed, werkt met S3 + CDN)
-            from ._helpers import save_pdf_or_png_with_hash
+            rel_path = ""
+            h = ""
+            original_name = ""
 
-            rel_path, h = save_pdf_or_png_with_hash(
-                uploaded_file=uploaded_file,
-                target_dir=NEWS_DIR,
-                base_name="news",
-            )
+            if uploaded_file:
+                # Alleen als er echt een bestand is
+                from ._helpers import save_pdf_or_png_with_hash
+
+                rel_path, h = save_pdf_or_png_with_hash(
+                    uploaded_file=uploaded_file,
+                    target_dir=NEWS_DIR,
+                    base_name="news",
+                )
+                original_name = uploaded_file.name
 
             news_item = NewsItem(
                 title=form.cleaned_data["title"],
@@ -137,7 +146,7 @@ def news(request):
                 description=form.cleaned_data.get("description", ""),
                 file_path=rel_path,
                 file_hash=h,
-                original_filename=uploaded_file.name,
+                original_filename=original_name,
             )
             news_item.save()
             messages.success(request, "Nieuwsbericht toegevoegd.")
@@ -158,6 +167,10 @@ def news(request):
         # URL naar het originele bestand (S3/CDN of lokaal)
         item.file_url = item.media_url
         item.page_urls = []
+
+        # Geen bestand → geen preview / page_urls
+        if not item.has_file:
+            continue
 
         if item.is_pdf:
             rel_path = item.file_path

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model, authenticate
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxLengthValidator
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.forms import AuthenticationForm
@@ -413,19 +413,28 @@ class AgendaItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["title"].widget.attrs.setdefault("placeholder", "Titel")
-        self.fields["description"].widget.attrs.setdefault(
-            "placeholder", "Korte beschrijving"
-        )
+
+        # === Plaatshouders ===
+        self.fields["title"].widget.attrs.setdefault("placeholder", "Titel (max 50 karakters)")
+        self.fields["description"].widget.attrs.setdefault("placeholder", "Korte beschrijving (max 100 karakters)")
         self.fields["description"].widget.attrs.setdefault("rows", 2)
 
+        # === HTML max length ===
+        self.fields["title"].widget.attrs["maxlength"] = 50
+        self.fields["description"].widget.attrs["maxlength"] = 100
+
+        # === Django server-side validators ===
+        self.fields["title"].validators.append(MaxLengthValidator(50))
+        self.fields["description"].validators.append(MaxLengthValidator(100))
+
 class NewsItemForm(forms.ModelForm):
-    MAX_FILE_SIZE_MB = 25  # zelfde limiet als nginx
+    MAX_FILE_SIZE_MB = 25  # limiet gelijk aan nginx
 
     file = forms.FileField(
-            label="Bestand (PDF of afbeelding)",
-            validators=[FileExtensionValidator(allowed_extensions=["pdf", "jpg", "jpeg", "png"])],
-        )
+        label="Bestand (PDF of afbeelding)",
+        validators=[FileExtensionValidator(allowed_extensions=["pdf", "jpg", "jpeg", "png"])],
+        required=False,
+    )
 
     class Meta:
         model = NewsItem
@@ -434,23 +443,30 @@ class NewsItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # === TITLE ===
         self.fields["title"].widget.attrs.update({
-            "placeholder": "Titel",
+            "placeholder": "Titel (max 50 tekens)",
             "class": "form-input",
+            "maxlength": "50",
         })
+        self.fields["title"].validators.append(MaxLengthValidator(50))
 
+        # === SHORT DESCRIPTION ===
         self.fields["short_description"].widget.attrs.update({
-            "placeholder": "Korte beschrijving (max 200 tekens)",
+            "placeholder": "Korte beschrijving (max 100 tekens)",
             "class": "form-input",
-            "maxlength": "200",
+            "maxlength": "100",
         })
+        self.fields["short_description"].validators.append(MaxLengthValidator(100))
 
+        # === DESCRIPTION (geen max nodig hier tenzij je dat wilt) ===
         self.fields["description"].widget.attrs.update({
             "placeholder": "Beschrijving",
             "class": "form-input",
-            "rows": 2,   # compacter
+            "rows": 2,
         })
 
+        # === FILE ===
         self.fields["file"].widget.attrs.update({
             "accept": ".pdf,.jpg,.jpeg,.png",
         })

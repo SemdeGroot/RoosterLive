@@ -68,7 +68,7 @@
         </div>
 
         <p class="small-text" style="margin-top:4px;">
-          <em>Selecteer een PDF of afbeelding (PNG, JPEG of JPG) met een maximale bestandsgrootte van 25 MB. Nieuws wordt automatisch verwijderd na 6 maanden.</em>
+          <em>Optioneel: selecteer een PDF of afbeelding (PNG, JPEG of JPG) met een maximale bestandsgrootte van 25 MB. Nieuws wordt automatisch verwijderd na 6 maanden.</em>
         </p>
 
         <button type="submit" class="btn">
@@ -110,7 +110,7 @@
               </form>
             {% endif %}
 
-                        {# header (altijd zichtbaar): titel + datum #}
+            {# header (altijd zichtbaar): titel + datum #}
             <div class="birthday-main">
               <div class="birthday-left">
                 <span class="birthday-name">{{ item.title }}</span>
@@ -140,15 +140,17 @@
                 </div>
               {% endif %}
 
-              <div class="news-media">
-                {% if item.is_pdf %}
-                  {% for url in item.page_urls %}
-                    <img src="{{ url }}" alt="Nieuws PDF pagina">
-                  {% endfor %}
-                {% else %}
-                  <img src="{{ item.file_url }}" alt="Nieuws afbeelding">
-                {% endif %}
-              </div>
+              {% if item.has_file %}
+                <div class="news-media">
+                  {% if item.is_pdf %}
+                    {% for url in item.page_urls %}
+                      <img src="{{ url }}" alt="Nieuws PDF pagina">
+                    {% endfor %}
+                  {% else %}
+                    <img src="{{ item.file_url }}" alt="Nieuws afbeelding">
+                  {% endif %}
+                </div>
+              {% endif %}
             </div>
           </li>
         {% endfor %}
@@ -161,23 +163,4 @@
   </div>
 </div>
 
-{# IMask voor dd-mm-jjjj (zelfde als agenda) #}
-<script src="https://unpkg.com/imask"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".js-date").forEach(function (input) {
-      IMask(input, {
-        mask: 'd-m-Y',
-        lazy: true,
-        overwrite: true,
-        autofix: false,
-        blocks: {
-          d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
-          m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
-          Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
-        }
-      });
-    });
-  });
-</script>
 {% endblock %}
