@@ -5,5 +5,5 @@ from core.tiles import build_tiles
 
 @login_required
 def home(request):
-    tiles = build_tiles(request.user)
+    tiles = build_tiles(request.user, group="home")
     return render(request, "home.html", {"tiles": tiles})

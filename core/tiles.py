@@ -1,30 +1,48 @@
 # core/tiles.py
 from core.views._helpers import can
 
-def build_tiles(user):
+TILE_GROUPS = {
+    "home": [
+        {"name": "Agenda", "img": "agenda-256x256.png", "url_name": "agenda", "perm": "can_view_agenda"},
+        {"name": "Nieuws", "img": "nieuws-256x256.png", "url_name": "news", "perm": "can_view_news"},
+        {"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster", "perm": "can_view_roster"},
+        {"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
+        {"name": "Onboarding", "img": "onboarding-256x256.png", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
+        {"name": "Personeel", "img": "personeel-256x256.png", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
+        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Voorraad", "img": "medicijn_zoeken-256x256.png", "url_name": "medications", "perm": "can_view_av_medications"},
+        {"name": "Nazendingen", "img": "nazendingen-256x256.png", "url_name": "nazendingen", "perm": "can_view_av_nazendingen"},
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png", "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_panel", "perm": "can_access_admin"},
+    ],
+
+    "personeel": [
+        {"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
+    ],
+
+    "onboarding": [
+    {"name": "Wie is wie?", "img": "who_is_who-256x256.png", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
+    ],
+}
+
+
+def build_tiles(user, group="home"):
+    """
+    Geef tiles terug voor een bepaalde groep (home, personnel, ...),
+    gefilterd op permissies.
+    """
     tiles = []
     if not user.is_authenticated:
         return tiles
 
-    if can(user, "can_view_agenda"):
-        tiles.append({"name": "Agenda", "img": "agenda-256x256.png", "url_name": "agenda"})
-    if can(user, "can_view_roster"):
-        tiles.append({"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster"})
-    if can(user, "can_send_beschikbaarheid"):
-        tiles.append({"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid"})
-    if can(user, "can_view_beschikbaarheidsdashboard"):
-        tiles.append({"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel"})
-    if can(user, "can_view_policies"):
-        tiles.append({"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies"})
-    if can(user, "can_view_news"):
-        tiles.append({"name": "Nieuws", "img": "nieuws-256x256.png", "url_name": "news"})
-    if can(user, "can_view_av_medications"):
-        tiles.append({"name": "Voorraad", "img": "medicijn_zoeken-256x256.png", "url_name": "medications"})
-    if can(user, "can_view_av_nazendingen"):
-        tiles.append({"name": "Nazendingen", "img": "nazendingen-256x256.png", "url_name": "nazendingen"})
-    if can(user, "can_view_medicatiebeoordeling"):
-        tiles.append({"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png", "url_name": "medicatiebeoordeling"})
-    if can(user, "can_access_admin"):
-        tiles.append({"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_panel"})
+    for t in TILE_GROUPS.get(group, []):
+        perm = t.get("perm")
+        if perm is None or can(user, perm):
+            # alleen velden teruggeven die de templates gebruiken
+            tiles.append({
+                "name": t["name"],
+                "img": t["img"],
+                "url_name": t["url_name"],
+            })
 
     return tiles

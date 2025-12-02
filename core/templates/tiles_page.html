@@ -1,0 +1,27 @@
+{# templates/tiles_page.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block header_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:16px;">
+  {% if intro %}
+    <h3 style="margin-top:0;">{{ intro }}</h3>
+  {% endif %}
+
+  <div class="tiles">
+    {% for t in tiles %}
+      <a href="{% url t.url_name %}" class="tile" aria-label="{{ t.name }}">
+        <div class="tile-box">
+          <div class="tile-icon">
+            <img src="{% static 'img/' %}{{ t.img }}" alt="{{ t.name }}" class="tile-img">
+          </div>
+          <div class="tile-name">{{ t.name }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

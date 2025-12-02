@@ -15,9 +15,11 @@ from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
-
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as medicatiebeoordeling_views
+from core.views.personeel import personeel_tiles
+from core.views.onboarding import onboarding_tiles
+from core.views.whoiswho import whoiswho
 
 from core.views.health import health
 from core.views.passkeys import (
@@ -32,6 +34,8 @@ from core.views.passkeys import (
 
 urlpatterns = [
     path("", home, name="home"),
+    path("personeel/", personeel_tiles, name="personeel_tiles"),
+    path("onboarding/", onboarding_tiles, name="onboarding_tiles"),
     path("logout/", logout_view, name="logout"),
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),
@@ -88,7 +92,8 @@ urlpatterns = [
     path("rooster/", rooster, name="rooster"),
 
     path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
-    path("teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
+    path("personeel/teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
+    path("onboarding/wieiswie/", whoiswho, name="whoiswho"),
 
     path("voorraad/", medications_view, name="medications"),
     path("nazendingen/", nazendingen_view, name="nazendingen"),

@@ -59,7 +59,7 @@ PERM_LABELS = {
     "can_access_admin":        "Mag beheer openen",
     "can_manage_users":        "Mag gebruikers beheren",
     "can_view_agenda":         "Mag agenda bekijken",
-    "can_upload_agenda":       "Mag agenda uploaden",
+    "can_upload_agenda":       "Mag agenda aanpassen",
     "can_view_roster":         "Mag rooster bekijken",
     "can_upload_roster":       "Mag roosters uploaden",
     "can_view_av_medications": "Mag Voorraad zien",
@@ -71,15 +71,29 @@ PERM_LABELS = {
     "can_view_policies":       "Mag Werkafspraken bekijken",
     "can_upload_werkafspraken":"Mag Werkafspraken uploaden",
     "can_send_beschikbaarheid":  "Mag Beschikbaarheid doorgeven",
-    "can_view_beschikbaarheidsdashboard": "Mag Beschikbaarheid Personeel bekijken",
+    "can_view_beschikbaarheidsdashboard": "Mag Teamdashboard bekijken",
     "can_view_medicatiebeoordeling": "Mag Medicatiebeoordeling bekijken",
     "can_perform_medicatiebeoordeling": "Mag Medicatiebeoordeling uitvoeren",
+    "can_view_onboarding":     "Mag Onboarding openen",
+    "can_view_personeel":      "Mag Personeel openen",
+    "can_view_whoiswho":       "Mag Wie is wie? bekijken",
 }
 
 PERM_SECTIONS = [
     ("Agenda",        ["can_view_agenda", "can_upload_agenda"]),
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
-    ("Beschikbaarheid Personeel", ["can_send_beschikbaarheid", "can_view_beschikbaarheidsdashboard"]),
+    ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
+
+    ("Personeel", [
+        "can_view_personeel",
+        "can_view_beschikbaarheidsdashboard",
+    ]),
+
+    ("Onboarding", [
+        "can_view_onboarding",
+        "can_view_whoiswho",
+    ]),
+
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
     ("Nieuws",        ["can_view_news", "can_upload_news"]),
     ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
