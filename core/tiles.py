@@ -13,17 +13,17 @@ def build_tiles(user):
     if can(user, "can_send_beschikbaarheid"):
         tiles.append({"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid"})
     if can(user, "can_view_beschikbaarheidsdashboard"):
-        tiles.append({"name": "Teamdashboard", "img": "personeel_dashboard.png", "url_name": "beschikbaarheidpersoneel"})
+        tiles.append({"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel"})
     if can(user, "can_view_policies"):
         tiles.append({"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies"})
     if can(user, "can_view_news"):
         tiles.append({"name": "Nieuws", "img": "nieuws-256x256.png", "url_name": "news"})
     if can(user, "can_view_av_medications"):
-        tiles.append({"name": "Voorraad", "img": "medicijn_zoeken.png", "url_name": "medications"})
+        tiles.append({"name": "Voorraad", "img": "medicijn_zoeken-256x256.png", "url_name": "medications"})
     if can(user, "can_view_av_nazendingen"):
-        tiles.append({"name": "Nazendingen", "img": "nazendingen.png", "url_name": "nazendingen"})
+        tiles.append({"name": "Nazendingen", "img": "nazendingen-256x256.png", "url_name": "nazendingen"})
     if can(user, "can_view_medicatiebeoordeling"):
-        tiles.append({"name": "Medicatiereview", "img": "medicatiebeoordeling.png", "url_name": "medicatiebeoordeling"})
+        tiles.append({"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png", "url_name": "medicatiebeoordeling"})
     if can(user, "can_access_admin"):
         tiles.append({"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_panel"})
 
