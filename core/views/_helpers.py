@@ -74,31 +74,51 @@ PERM_LABELS = {
     "can_view_beschikbaarheidsdashboard": "Mag Teamdashboard bekijken",
     "can_view_medicatiebeoordeling": "Mag Medicatiebeoordeling bekijken",
     "can_perform_medicatiebeoordeling": "Mag Medicatiebeoordeling uitvoeren",
+    # Onboarding
     "can_view_onboarding":     "Mag Onboarding openen",
+    # Personeel
     "can_view_personeel":      "Mag Personeel openen",
+    # Wie is Wie?
     "can_view_whoiswho":       "Mag Wie is wie? bekijken",
+    "can_edit_whoiswho":       "Mag Wie is wie? aanpassen",
+    # Forms
     "can_view_forms":          "Mag formulieren bekijken",
     "can_edit_forms":          "Mag formulieren aanpassen",
-
     # Checklist
     "can_view_checklist":      "Mag checklist bekijken",
     "can_edit_checklist":      "Mag checklist aanpassen",
+    "can_view_baxter":                 "Mag Baxter openen",
+    "can_view_baxter_omzettingslijst": "Mag Baxter-omzettingslijst bekijken",
+    "can_edit_baxter_omzettingslijst": "Mag Baxter-omzettingslijst aanpassen",
+    "can_view_baxter_no_delivery":     "Mag 'Geen levering' bekijken",
+    "can_edit_baxter_no_delivery":     "Mag 'Geen levering' aanpassen",
+    "can_view_baxter_sts_halfjes":     "Mag STS-halfjes bekijken",
+    "can_edit_baxter_sts_halfjes":     "Mag STS-halfjes aanpassen",
+    "can_view_baxter_laatste_potten":  "Mag laatste potten bekijken",
+    "can_edit_baxter_laatste_potten":  "Mag laatste potten aanpassen",
 }
 
 PERM_SECTIONS = [
     ("Agenda",        ["can_view_agenda", "can_upload_agenda"]),
+    ("Nieuws",        ["can_view_news", "can_upload_news"]),
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
 
     ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard",]),
 
     ("Onboarding", [
-        "can_view_onboarding", "can_view_whoiswho", "can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),
+        "can_view_onboarding", "can_view_whoiswho", "can_edit_whoiswho","can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),
+
+    ("Baxter", [
+        "can_view_baxter",
+        "can_view_baxter_omzettingslijst", "can_edit_baxter_omzettingslijst",
+        "can_view_baxter_no_delivery",     "can_edit_baxter_no_delivery",
+        "can_view_baxter_sts_halfjes",     "can_edit_baxter_sts_halfjes",
+        "can_view_baxter_laatste_potten",  "can_edit_baxter_laatste_potten",
+        "can_view_av_medications", "can_upload_voorraad", "can_view_av_nazendingen", "can_upload_nazendingen"
+    ]),
 
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
-    ("Nieuws",        ["can_view_news", "can_upload_news"]),
-    ("Voorraad",      ["can_view_av_medications", "can_upload_voorraad"]),
-    ("Nazendingen",   ["can_view_av_nazendingen", "can_upload_nazendingen"]),
     ("Medicatiereview", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
     ("Beheer",        ["can_access_admin", "can_manage_users"]),
 ]

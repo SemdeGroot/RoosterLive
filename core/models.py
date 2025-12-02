@@ -28,15 +28,33 @@ class Roster(models.Model):
             ("can_view_beschikbaarheidsdashboard", "Mag Beschikbaarheid Personeel bekijken"),
             ("can_view_medicatiebeoordeling",           "Mag Medicatiebeoordeling bekijken"),
             ("can_perform_medicatiebeoordeling",         "Mag Medicatiebeoordeling uitvoeren"),
-            ("can_view_onboarding",     "Mag Onboarding openen"),("can_view_personeel",      "Mag Personeel openen"),("can_view_whoiswho",       "Mag Wie is wie? bekijken"),
-
+            # Onboarding
+            ("can_view_onboarding",     "Mag Onboarding openen"),
+            # Personeel
+            ("can_view_personeel",      "Mag Personeel openen"),
+            # Wie is wie?
+            ("can_view_whoiswho",       "Mag Wie is wie? bekijken"),
+            ("can_edit_whoiswho",       "Mag Wie is wie? aanpassen"),
             # Onboarding formulieren
             ("can_view_forms",            "Mag formulieren bekijken"),
             ("can_edit_forms",            "Mag formulieren aanpassen"),
-
             # Checklist
             ("can_view_checklist",        "Mag checklist bekijken"),
             ("can_edit_checklist",        "Mag checklist aanpassen"),
+                        # Baxter hoofdpagina
+            ("can_view_baxter",                 "Mag Baxter openen"),
+            # Baxter subpagina’s – Omzettingslijst
+            ("can_view_baxter_omzettingslijst", "Mag Baxter-omzettingslijst bekijken"),
+            ("can_edit_baxter_omzettingslijst", "Mag Baxter-omzettingslijst aanpassen"),
+            # Geen levering
+            ("can_view_baxter_no_delivery",     "Mag 'Geen levering' bekijken"),
+            ("can_edit_baxter_no_delivery",     "Mag 'Geen levering' aanpassen"),
+            # STS halfjes
+            ("can_view_baxter_sts_halfjes",     "Mag STS-halfjes bekijken"),
+            ("can_edit_baxter_sts_halfjes",     "Mag STS-halfjes aanpassen"),
+            # Laatste potten
+            ("can_view_baxter_laatste_potten",  "Mag laatste potten bekijken"),
+            ("can_edit_baxter_laatste_potten",  "Mag laatste potten aanpassen"),
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"

@@ -22,6 +22,11 @@ from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
 from core.views.forms import forms
 from core.views.checklist import checklist
+from core.views.baxter import baxter_tiles
+from core.views.omzettingslijst import omzettingslijst
+from core.views.no_delivery import no_delivery
+from core.views.sts_halfjes import sts_halfjes
+from core.views.laatste_potten import laatste_potten
 from core.views.health import health
 from core.views.passkeys import (
     PasskeySetupView,
@@ -37,6 +42,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("personeel/", personeel_tiles, name="personeel_tiles"),
     path("onboarding/", onboarding_tiles, name="onboarding_tiles"),
+    path("baxter/", baxter_tiles, name="baxter_tiles"),
     path("logout/", logout_view, name="logout"),
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),
@@ -98,8 +104,13 @@ urlpatterns = [
     path("onboarding/formulieren/", forms, name="forms"),
     path("onboarding/checklist/", checklist, name="checklist"),
 
-    path("voorraad/", medications_view, name="medications"),
-    path("nazendingen/", nazendingen_view, name="nazendingen"),
+    path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),
+    path("baxter/geen-levering/", no_delivery, name="baxter_no_delivery"),
+    path("baxter/sts-halfjes/", sts_halfjes, name="baxter_sts_halfjes"),
+    path("baxter/laatste-potten/", laatste_potten, name="baxter_laatste_potten"),
+
+    path("baxter/voorraad/", medications_view, name="medications"),
+    path("baxter/nazendingen/", nazendingen_view, name="nazendingen"),
 
     path("nieuws/", news, name="news"),
     path("werkafspraken/", policies, name="policies"),
