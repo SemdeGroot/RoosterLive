@@ -27,14 +27,14 @@ urlpatterns = [
 
 
 path(
-    "service_worker.v8.js",
+    "service_worker.v9.js",
     never_cache(
         TemplateView.as_view(
-            template_name="service_worker.v8.js",
+            template_name="service_worker.v9.js",
             content_type="application/javascript",
         )
     ),
-    name="service_worker.v8",
+    name="service_worker.v9",
 ),
 ]
 

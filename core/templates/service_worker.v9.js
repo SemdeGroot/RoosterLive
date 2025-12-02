@@ -2,8 +2,6 @@
 const CACHE_NAME = 'apo-jansen-static-v5';
 const OFFLINE_URL = '/static/pwa/offline.v5.html'; 
 const APP_ICON = '/static/img/app_icon_trans-512x512.png';
-const NOTIF_ICON = '/static/pwa/icons/android-chrome-192x192.png';
-const NOTIF_BADGE = '/static/pwa/icons/android-chrome-192x192.png';
 
 // Niet static en media cachen in dev. irritant met development
 const DEV_HOSTNAMES = [
@@ -160,25 +158,16 @@ self.addEventListener('fetch', (event) => {
   // Browser regelt zelf caching; wij blijven er af.
 });
 
+// PUSH
 self.addEventListener('push', (event) => {
-  console.log('[sw] push event ontvangen:', event);
-
-  if (Notification.permission !== 'granted') {
-    console.warn('[sw] push ontvangen, maar permission is', Notification.permission);
-    return;
-  }
-
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
-  } catch (e) {
-    console.warn('[sw] kon push payload niet parsen, gebruik defaults', e);
-    data = {};
-  }
+  } catch (e) {}
 
   const title = data.title || 'Apotheek Jansen';
-  const body  = data.body  || 'Er is een update beschikbaar.';
-  const url   = data.url   || '/';
+  const body = data.body || 'Er is een update beschikbaar.';
+  const url = data.url || '/';
 
   const options = {
     body,
@@ -187,35 +176,25 @@ self.addEventListener('push', (event) => {
     data: { url },
   };
 
-  // Alleen renotify als er echt een tag is
-  if (data.tag) {
-    options.tag = data.tag;
-    options.renotify = true;
-  }
-
-  console.log('[sw] notificatie tonen met data:', { title, options });
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
+// Klik op notificatie
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || '/';
+  const targetUrl =
+    event.notification.data && event.notification.data.url
+      ? event.notification.data.url
+      : '/';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
-          // Tab is al open → focus én navigeren
-          if ('focus' in client) {
-            client.focus();
-            return client.navigate(targetUrl);
-          }
+          if ('focus' in client) return client.focus();
         }
-        // Geen tab open → nieuwe openen
-        return clients.openWindow(targetUrl);
+        if (clients.openWindow) return clients.openWindow(targetUrl);
       })
   );
 });
