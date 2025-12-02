@@ -96,6 +96,8 @@ PERM_LABELS = {
     "can_edit_baxter_sts_halfjes":     "Mag STS-halfjes aanpassen",
     "can_view_baxter_laatste_potten":  "Mag laatste potten bekijken",
     "can_edit_baxter_laatste_potten":  "Mag laatste potten aanpassen",
+    "can_view_openbare_apo":    "Mag Openbare apotheek-tegel zien",
+    "can_view_instellings_apo": "Mag Instellingsapotheek-tegel zien",
 }
 
 PERM_SECTIONS = [
@@ -104,7 +106,7 @@ PERM_SECTIONS = [
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
 
-    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard",]),
+    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard", "can_view_policies", "can_upload_werkafspraken"]),
 
     ("Onboarding", [
         "can_view_onboarding", "can_view_whoiswho", "can_edit_whoiswho","can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),
@@ -118,8 +120,8 @@ PERM_SECTIONS = [
         "can_view_av_medications", "can_upload_voorraad", "can_view_av_nazendingen", "can_upload_nazendingen"
     ]),
 
-    ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
-    ("Medicatiereview", ["can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
+    ("Openbare Apotheek", ["can_view_openbare_apo"]),
+    ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
     ("Beheer",        ["can_access_admin", "can_manage_users"]),
 ]
 

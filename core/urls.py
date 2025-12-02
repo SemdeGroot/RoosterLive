@@ -27,6 +27,8 @@ from core.views.omzettingslijst import omzettingslijst
 from core.views.no_delivery import no_delivery
 from core.views.sts_halfjes import sts_halfjes
 from core.views.laatste_potten import laatste_potten
+from core.views.openbare import openbare_tiles
+from core.views.instellings import instellings_tiles
 from core.views.health import health
 from core.views.passkeys import (
     PasskeySetupView,
@@ -43,6 +45,8 @@ urlpatterns = [
     path("personeel/", personeel_tiles, name="personeel_tiles"),
     path("onboarding/", onboarding_tiles, name="onboarding_tiles"),
     path("baxter/", baxter_tiles, name="baxter_tiles"),
+    path("openbare-apotheek/", openbare_tiles, name="openbare_tiles"),
+    path("instellingsapotheek/", instellings_tiles, name="instellings_tiles"),
     path("logout/", logout_view, name="logout"),
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),

@@ -10,13 +10,14 @@ TILE_GROUPS = {
         {"name": "Onboarding", "img": "onboarding-256x256.png", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
         {"name": "Personeel", "img": "personeel-256x256.png", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
         {"name": "Baxterproductie", "img": "factory-256x256.png", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
-        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
-        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png", "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+        {"name": "Openbare Apo",    "img": "openbareapotheek-256x256.png", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
+        {"name": "Instellingsapotheek", "img": "instellingsapotheek-256x256.png", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
         {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_panel", "perm": "can_access_admin"},
     ],
 
     "personeel": [
         {"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
+        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "onboarding": [
@@ -33,6 +34,16 @@ TILE_GROUPS = {
         {"name": "Geen levering",   "img": "no-delivery-256x256.png",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
         {"name": "STS halfjes",     "img": "pill_half-256x256.png",       "url_name": "baxter_sts_halfjes",       "perm": "can_view_baxter_sts_halfjes"},
         {"name": "Laatste potten",  "img": "pills-bottle-256x256.png",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
+    ],
+
+        "openbare": [
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
+         "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+    ],
+
+    "instellings": [
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
+         "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
     ],
 }
 

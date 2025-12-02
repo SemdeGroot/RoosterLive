@@ -55,6 +55,9 @@ class Roster(models.Model):
             # Laatste potten
             ("can_view_baxter_laatste_potten",  "Mag laatste potten bekijken"),
             ("can_edit_baxter_laatste_potten",  "Mag laatste potten aanpassen"),
+            # Apotheek tiles
+            ("can_view_openbare_apo",    "Mag Openbare apotheek-tegel zien"),
+            ("can_view_instellings_apo", "Mag Instellingsapotheek-tegel zien"),
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"
