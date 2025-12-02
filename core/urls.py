@@ -20,7 +20,8 @@ from core.views import medicatiebeoordeling as medicatiebeoordeling_views
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
-
+from core.views.forms import forms
+from core.views.checklist import checklist
 from core.views.health import health
 from core.views.passkeys import (
     PasskeySetupView,
@@ -94,6 +95,8 @@ urlpatterns = [
     path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
     path("personeel/teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
     path("onboarding/wieiswie/", whoiswho, name="whoiswho"),
+    path("onboarding/formulieren/", forms, name="forms"),
+    path("onboarding/checklist/", checklist, name="checklist"),
 
     path("voorraad/", medications_view, name="medications"),
     path("nazendingen/", nazendingen_view, name="nazendingen"),

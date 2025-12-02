@@ -21,7 +21,9 @@ TILE_GROUPS = {
     ],
 
     "onboarding": [
-    {"name": "Wie is wie?", "img": "who_is_who-256x256.png", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
+        {"name": "Wie is wie?", "img": "who_is_who-256x256.png", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
+        {"name": "Formulieren", "img": "forms-256x256.png", "url_name": "forms", "perm": "can_view_forms"},
+        {"name": "Checklist", "img": "checklist-256x256.png", "url_name": "checklist", "perm": "can_view_checklist"},
     ],
 }
 

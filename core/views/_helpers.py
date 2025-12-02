@@ -77,6 +77,12 @@ PERM_LABELS = {
     "can_view_onboarding":     "Mag Onboarding openen",
     "can_view_personeel":      "Mag Personeel openen",
     "can_view_whoiswho":       "Mag Wie is wie? bekijken",
+    "can_view_forms":          "Mag formulieren bekijken",
+    "can_edit_forms":          "Mag formulieren aanpassen",
+
+    # Checklist
+    "can_view_checklist":      "Mag checklist bekijken",
+    "can_edit_checklist":      "Mag checklist aanpassen",
 }
 
 PERM_SECTIONS = [
@@ -84,15 +90,10 @@ PERM_SECTIONS = [
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
 
-    ("Personeel", [
-        "can_view_personeel",
-        "can_view_beschikbaarheidsdashboard",
-    ]),
+    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard",]),
 
     ("Onboarding", [
-        "can_view_onboarding",
-        "can_view_whoiswho",
-    ]),
+        "can_view_onboarding", "can_view_whoiswho", "can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),
 
     ("Werkafspraken", ["can_view_policies", "can_upload_werkafspraken"]),
     ("Nieuws",        ["can_view_news", "can_upload_news"]),

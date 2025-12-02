@@ -29,6 +29,14 @@ class Roster(models.Model):
             ("can_view_medicatiebeoordeling",           "Mag Medicatiebeoordeling bekijken"),
             ("can_perform_medicatiebeoordeling",         "Mag Medicatiebeoordeling uitvoeren"),
             ("can_view_onboarding",     "Mag Onboarding openen"),("can_view_personeel",      "Mag Personeel openen"),("can_view_whoiswho",       "Mag Wie is wie? bekijken"),
+
+            # Onboarding formulieren
+            ("can_view_forms",            "Mag formulieren bekijken"),
+            ("can_edit_forms",            "Mag formulieren aanpassen"),
+
+            # Checklist
+            ("can_view_checklist",        "Mag checklist bekijken"),
+            ("can_edit_checklist",        "Mag checklist aanpassen"),
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"
