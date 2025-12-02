@@ -1,36 +1,75 @@
 # core/utils/push.py
 import json
-from datetime import date
+from datetime import date, timedelta
+from urllib.parse import urlparse
 
 from pywebpush import webpush, WebPushException
 from django.conf import settings
+from django.utils import timezone
+
 from core.models import PushSubscription
+from core.views._helpers import can
 
 
-def send_roster_updated_push(iso_year: int, iso_week: int,
-                             monday_str: str, friday_str: str):
+def _build_vapid_claims(endpoint: str) -> dict:
     """
-    monday_str / friday_str komen binnen als ISO (YYYY-MM-DD).
-    Voor de body formatteren we:
-    - maandag: dd-mm
-    - vrijdag: dd-mm-YYYY
+    Maak per subscription de juiste 'aud' claim:
+    - FCM: https://fcm.googleapis.com
+    - Apple: https://web.push.apple.com
+    - generiek: 'https://' + netloc
+    'exp' laten we aan pywebpush zelf over.
     """
-    monday = date.fromisoformat(monday_str)
-    friday = date.fromisoformat(friday_str)
+    parsed = urlparse(endpoint)
+    aud = f"https://{parsed.netloc}"  # bv. https://fcm.googleapis.com of https://web.push.apple.com
+    return {
+        "sub": settings.VAPID_SUB,
+        "aud": aud,
+    }
 
-    monday_nl = monday.strftime("%d-%m")        # zonder jaar
-    friday_nl = friday.strftime("%d-%m-%Y")     # met jaar
+
+def send_roster_updated_push(
+    iso_year: int,
+    iso_week: int,
+    monday_str: str,
+    friday_str: str,
+):
+    """
+    Stuur een web-push voor een nieuw rooster.
+    - Alleen naar users die can_view_roster hebben.
+    - Tekst in de notificatie hangt af van of het deze week, volgende week
+      of een andere week is.
+    """
+
+    # Bepaal 'deze week' en 'volgende week' in ISO-weeknotatie
+    today = timezone.localdate()
+    cur_year, cur_week, _ = today.isocalendar()
+
+    next_date = today + timedelta(weeks=1)
+    next_year, next_week, _ = next_date.isocalendar()
+
+    # Tekst voor de body afhankelijk van de week
+    if iso_year == cur_year and iso_week == cur_week:
+        body = "Er is een nieuw rooster voor deze week beschikbaar!"
+    elif iso_year == next_year and iso_week == next_week:
+        body = "Er is een nieuw rooster voor volgende week beschikbaar!"
+    else:
+        body = f"Er is een nieuw rooster voor week {iso_week} beschikbaar."
 
     payload = {
         "title": f"Nieuw rooster – week {iso_week}",
-        "body": f"Er is een nieuw rooster voor week {iso_week} ({monday_nl}–{friday_nl}) beschikbaar!",
-        # URL blijft ISO zodat view 'm goed kan parsen
+        "body": body,
+        # URL blijft ISO zodat de view 'm goed kan parsen
         "url": f"/rooster/?monday={monday_str}",
         "tag": f"rooster-update-{iso_year}-{iso_week}",
     }
 
+    # Alleen subscriptions waarvan de user het rooster mag zien
     subs = PushSubscription.objects.select_related("user").all()
-    for s in subs:
+    eligible_subs = [s for s in subs if can(s.user, "can_view_roster")]
+
+    for s in eligible_subs:
+        claims = _build_vapid_claims(s.endpoint)
+
         try:
             webpush(
                 subscription_info={
@@ -39,8 +78,11 @@ def send_roster_updated_push(iso_year: int, iso_week: int,
                 },
                 data=json.dumps(payload),
                 vapid_private_key=settings.VAPID_PRIVATE_KEY,
-                vapid_claims=settings.VAPID_CLAIMS,
+                vapid_claims=claims,
             )
         except WebPushException as e:
-            if getattr(e, "response", None) and e.response.status_code in (404, 410):
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+
+            # Subscription ongeldig → opruimen
+            if status in (404, 410, 403):
                 s.delete()

@@ -272,7 +272,7 @@ USE_HTTPS_IN_EMAIL_LINKS = not DEBUG
 # === Web Push (VAPID) ===
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
-VAPID_CLAIMS = {"sub": os.getenv("VAPID_SUB")}
+VAPID_SUB = os.getenv("VAPID_SUB")
 
 # === Custom constants ===
 APOTHEEK_JANSEN_ORG_ID = 1

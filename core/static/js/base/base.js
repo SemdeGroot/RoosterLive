@@ -116,7 +116,7 @@ const VAPID =
 
   async function registerSW() {
     try {
-      const reg = await navigator.serviceWorker.register('/service_worker.v7.js');
+      const reg = await navigator.serviceWorker.register('/service_worker.v8.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
       console.warn('[push] SW registratie faalde:', e);
@@ -244,7 +244,7 @@ const VAPID =
       } else if (isIOS && !isStandalone) {
         textEl && (textEl.textContent = 'Installeer de app op je beginscherm om notificaties te ontvangen.');
       } else {
-        textEl && (textEl.textContent = 'Wil je een melding krijgen als er een nieuw rooster is?');
+        textEl && (textEl.textContent = 'Wil je meldingen ontvangen? Zo blijf je direct op de hoogte bij een nieuw rooster, belangrijke updates of andere nieuwtjes.');
       }
 
       openPushModal();
@@ -283,7 +283,7 @@ if ('serviceWorker' in navigator) {
     (async () => {
       try {
         // 1) Normaal gewoon registreren
-        const reg = await navigator.serviceWorker.register('/service_worker.v7.js');
+        const reg = await navigator.serviceWorker.register('/service_worker.v8.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
 
         // 2) Optioneel: cleanup-truc via ?cleanup=1
