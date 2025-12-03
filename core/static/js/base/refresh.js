@@ -151,7 +151,13 @@
     (e) => {
       if (e.touches.length !== 1) return;
 
-      // Alleen starten als de sentinel (bovenkant content) in beeld is
+      const target = e.target;
+
+      // Nooit PTR starten op form-controls
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) {
+        return;
+      }
+
       if (!sentinelVisible) return;
 
       startY = e.touches[0].clientY;
@@ -159,7 +165,6 @@
       maxPull = 0;
       wasArmed = false;
 
-      // direct tonen zonder hapering
       ptr.style.transition = 'none';
       setProgress(0);
     },
@@ -170,6 +175,13 @@
     'touchmove',
     (e) => {
       if (!pulling) return;
+
+      const target = e.target;
+
+      // Extra veiligheid: tijdens move ook niet rommelen met form-controls
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) {
+        return;
+      }
 
       const dy = e.touches[0].clientY - startY;
       if (dy <= 0) {

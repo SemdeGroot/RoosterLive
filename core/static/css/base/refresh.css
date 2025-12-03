@@ -128,3 +128,8 @@ body.ptr-panel-bg {
   /* Hoogte van de “header extension” */
   background-size: 40px !important;
 }
+
+/* Zorg dat de PTR-indicator nooit taps blokkeert */
+#pull-to-refresh {
+  pointer-events: none;
+}

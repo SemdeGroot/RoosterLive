@@ -1,12 +1,6 @@
 {% extends "two_factor/_base.html" %}
 {% load i18n static %}
 
-{% block pre_body %}
-  {% if show_splash %}
-    {% include "includes/splash.html" %}
-  {% endif %}
-{% endblock %}
-
 {% block login_header_image %}
   {% load static %}
   {% if form.otp_token or form.token %}
