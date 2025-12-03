@@ -98,6 +98,10 @@ PERM_LABELS = {
     "can_edit_baxter_laatste_potten":  "Mag laatste potten aanpassen",
     "can_view_openbare_apo":    "Mag Openbare apotheek-tegel zien",
     "can_view_instellings_apo": "Mag Instellingsapotheek-tegel zien",
+    "can_view_reviewplanner": "Mag Review Planner bekijken",
+    "can_edit_reviewplanner": "Mag Review Planner bewerken",
+    "can_view_portavita": "Mag Portavita Check bekijken",
+    "can_edit_portavita": "Mag Portavita Check uitvoeren",
 }
 
 PERM_SECTIONS = [
@@ -121,7 +125,7 @@ PERM_SECTIONS = [
     ]),
 
     ("Openbare Apotheek", ["can_view_openbare_apo"]),
-    ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling"]),
+    ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
     ("Beheer",        ["can_access_admin", "can_manage_users"]),
 ]
 

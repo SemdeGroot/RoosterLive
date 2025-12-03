@@ -58,6 +58,13 @@ class Roster(models.Model):
             # Apotheek tiles
             ("can_view_openbare_apo",    "Mag Openbare apotheek-tegel zien"),
             ("can_view_instellings_apo", "Mag Instellingsapotheek-tegel zien"),
+            # Reviewplanner
+            ("can_view_reviewplanner", "Mag Review Planner bekijken"),
+            ("can_edit_reviewplanner", "Mag Review Planner bewerken"),
+            # Portavita Check
+            ("can_view_portavita", "Mag Portavita Check bekijken"),
+            ("can_edit_portavita", "Mag Portavita Check bewerken"),
+
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"

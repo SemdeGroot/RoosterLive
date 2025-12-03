@@ -27,7 +27,6 @@ TILE_GROUPS = {
     ],
 
     "baxter": [
-        # Let op: Voorraad en Nazendingen verwijzen naar je bestaande views
         {"name": "Voorraad",        "img": "medicijn_zoeken-256x256.png", "url_name": "medications",              "perm": "can_view_av_medications"},
         {"name": "Nazendingen",     "img": "nazendingen-256x256.png",     "url_name": "nazendingen",              "perm": "can_view_av_nazendingen"},
         {"name": "Omzettingslijst", "img": "omzettingslijst-256x256.png", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
@@ -39,11 +38,19 @@ TILE_GROUPS = {
         "openbare": [
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
          "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+        {"name": "Review Planner", "img": "reviewplanner-256x256.png",
+         "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
+        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "instellings": [
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
          "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+        {"name": "Review Planner", "img": "reviewplanner-256x256.png",
+         "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
+        {"name": "Portavita Check", "img": "portavita-256x256.png",
+         "url_name": "portavita-check", "perm": "can_view_portavita"},
+        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
 }
 

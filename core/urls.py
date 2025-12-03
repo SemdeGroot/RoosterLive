@@ -29,6 +29,8 @@ from core.views.sts_halfjes import sts_halfjes
 from core.views.laatste_potten import laatste_potten
 from core.views.openbare import openbare_tiles
 from core.views.instellings import instellings_tiles
+from core.views.reviewplanner import reviewplanner
+from core.views.portavita import portavita_check
 from core.views.health import health
 from core.views.passkeys import (
     PasskeySetupView,
@@ -120,6 +122,8 @@ urlpatterns = [
     path("werkafspraken/", policies, name="policies"),
 
     path("medicatiebeoordeling/", medicatiebeoordeling_views.medicatiebeoordeling, name="medicatiebeoordeling"),
+    path("reviewplanner/", reviewplanner, name="reviewplanner"),
+    path("portavita-check/", portavita_check, name="portavita-check"),
 
     path("beheer/", admin_panel, name="admin_panel"),
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
