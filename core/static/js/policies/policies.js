@@ -1,86 +1,110 @@
-(function () {
-  // --- Upload UI
-  const dz = document.getElementById('polDrop');
-  const input = document.getElementById('polFile');
-  const meta = document.getElementById('polMeta');
-  const nameSpan = document.getElementById('polName');
-  const uploadBtn = document.getElementById('polUpload');
-  const clearBtn = document.getElementById('polClear');
+// static/js/policies/policies.js
+document.addEventListener("DOMContentLoaded", function () {
+  
+  // === 1. Toggle inline form via + knop ===
+  document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
+    btn.addEventListener("click", function (event) {
+      // Voorkom dat de klik "doorbubbelt" en het item uitklapt
+      event.preventDefault();
+      event.stopPropagation();
 
-  if (dz && input) {
-    function setFile(file) {
-      if (!file) return;
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      if (!isPdf) { alert('Kies een PDF (.pdf).'); return; }
+      var targetSelector = btn.getAttribute("data-target");
+      if (!targetSelector) return;
 
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
+      var form = document.querySelector(targetSelector);
+      if (!form) return;
 
-      if (nameSpan) nameSpan.textContent = file.name;
-      if (meta) meta.style.display = '';
-      if (uploadBtn) uploadBtn.disabled = false;
-      if (clearBtn) clearBtn.style.display = '';
-    }
+      var isHidden = form.classList.toggle("is-hidden");
+      btn.setAttribute("aria-expanded", isHidden ? "false" : "true");
 
-    input.addEventListener('change', () => setFile(input.files[0]));
-    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); }));
-    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
-    dz.addEventListener('drop', e => { const f = e.dataTransfer.files?.[0]; if (f) setFile(f); });
-
-    clearBtn && clearBtn.addEventListener('click', () => {
-      input.value = '';
-      if (nameSpan) nameSpan.textContent = '';
-      if (meta) meta.style.display = 'none';
-      if (uploadBtn) uploadBtn.disabled = true;
-      clearBtn.style.display = 'none';
-    });
-  }
-
-  // --- Inline delete via fetch naar DEZELFDE URL
-  const pages = document.getElementById('polPages');
-  if (pages) {
-    function getCSRF() {
-      const m = document.cookie.match(/csrftoken=([^;]+)/);
-      return m ? m[1] : '';
-    }
-
-    pages.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.del-btn');
-      if (!btn) return;
-
-      const img = btn.getAttribute('data-img');
-      if (!img) return;
-
-      if (!confirm('Weet je zeker dat je de PDF wilt verwijderen?')) return;
-      btn.disabled = true;
-
-      try {
-        const resp = await fetch(window.location.href, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCSRF(),
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: 'action=delete&img=' + encodeURIComponent(img)
-        });
-
-        const data = await resp.json();
-        if (data && data.ok) {
-          const hash = data.hash;
-          document.querySelectorAll('.page').forEach(card => {
-            const u = card.getAttribute('data-img') || '';
-            if (u.includes('/cache/policies/' + hash + '/')) card.remove();
-          });
-        } else {
-          alert((data && data.error) ? data.error : 'Verwijderen mislukt.');
-          btn.disabled = false;
-        }
-      } catch (err) {
-        alert('Netwerkfout bij verwijderen.');
-        btn.disabled = false;
+      // Focus op het eerste veld als het formulier opent
+      if (!isHidden) {
+        var firstField = form.querySelector("input, textarea, select");
+        if (firstField) firstField.focus();
       }
     });
-  }
-})();
+  });
+
+  // === 2. Inklappen/uitklappen van werkafspraak items ===
+  document.querySelectorAll(".news-item").forEach(function (item) {
+    var body = item.querySelector(".news-body");
+    if (!body) return;
+
+    function toggleItem() {
+      var expanded = item.classList.toggle("news-item--expanded");
+      body.classList.toggle("is-hidden", !expanded);
+    }
+
+    item.addEventListener("click", function (event) {
+      // Als we op interactieve elementen klikken, niet togglen
+      if (event.target.closest(".js-toggle-form")) return;
+      if (event.target.closest(".news-delete-form")) return;
+      if (event.target.closest(".news-body")) return; // Niet inklappen als je in de PDF/tekst klikt
+      if (event.target.closest("form")) return;       // Niet inklappen als je in het upload formulier klikt
+
+      toggleItem();
+    });
+
+    // Toetsenbord toegankelijkheid (Enter/Spatie)
+    item.setAttribute("tabindex", "0");
+    item.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        // Alleen togglen als de focus op de item-wrapper zelf ligt
+        if(event.target === item) { 
+            event.preventDefault(); 
+            toggleItem(); 
+        }
+      }
+    });
+  });
+
+  // === 3. Bevestiging voor verwijderen ===
+  document.querySelectorAll(".news-delete-form").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      var title =
+        form
+          .closest(".news-item")
+          ?.querySelector(".birthday-name")
+          ?.innerText
+          ?.trim() || "";
+
+      var message =
+        "Weet je zeker dat je de werkafspraak " +
+        (title ? '"' + title + '"' : "deze werkafspraak") +
+        " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!";
+
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+
+  // === 4. Filename tonen naast de upload-knop ===
+  // We luisteren op het hele document naar een 'change' event.
+  // Dit werkt altijd, ongeacht wat de 'auto_id' precies is.
+  document.addEventListener("change", function (event) {
+    
+    // Check: Is het element dat veranderde een file input?
+    if (event.target && event.target.type === "file") {
+      var fileInput = event.target;
+      
+      // Zoek de 'wrapper' om dit specifieke veld heen
+      var wrapper = fileInput.closest(".news-file-wrapper");
+      
+      // Als we de wrapper vinden, zoek daarbinnen naar de span waar de naam moet komen
+      if (wrapper) {
+        var fileNameSpan = wrapper.querySelector(".news-file-name");
+        
+        if (fileNameSpan) {
+          // Pak de bestandsnaam of maak leeg als er geen bestand is
+          var name = fileInput.files && fileInput.files[0] 
+                     ? fileInput.files[0].name 
+                     : "";
+          
+          fileNameSpan.textContent = name;
+        }
+      }
+    }
+  });
+
+});

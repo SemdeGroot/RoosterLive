@@ -1,241 +1,241 @@
-# core/views/policies.py
 import shutil
-from datetime import datetime
 from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.storage import default_storage
 
 from ._helpers import (
     can,
-    POL_DIR, CACHE_POLICIES_DIR,
-    render_pdf_to_cache, hash_from_img_url,
-    save_pdf_upload_with_hash,
-    _media_relpath,
-    pdf_hash,
+    render_pdf_to_cache,
+    save_pdf_or_png_with_hash,
+    CACHE_DIR,
 )
 
-def _delete_policies_by_hash(hash_str: str) -> int:
-    removed = 0
+from core.models import Werkafspraak
+from core.forms import WerkafspraakForm
 
-    # === DEV: lokaal ===
+# Directories
+WERKAFSPRAKEN_DIR = Path(settings.MEDIA_ROOT) / "werkafspraken"
+CACHE_WERKAFSPRAKEN_DIR = Path(CACHE_DIR) / "werkafspraken"
+WERKAFSPRAKEN_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_WERKAFSPRAKEN_DIR.mkdir(parents=True, exist_ok=True)
+
+MEDIA_ROOT = Path(settings.MEDIA_ROOT)
+
+def _delete_werkafspraak_files_for_item(item: Werkafspraak) -> None:
+    """
+    Verwijdert het fysieke werkafspraak bestand (PDF) + bijbehorende cache.
+    Werkt in DEV (filesystem) en PROD (S3 via default_storage).
+    """
+    if not item.file_path:
+        return  # niets te verwijderen
+    
+    rel_path = item.file_path  # bv. "werkafspraken/baxter/werkafspraak.<hash>.pdf"
+    ext = Path(rel_path).suffix.lower()
+
+    # === DEV / lokaal ===
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        cache_path = (CACHE_POLICIES_DIR / hash_str)
-        if cache_path.exists():
-            shutil.rmtree(cache_path, ignore_errors=True)
+        abs_path = MEDIA_ROOT / rel_path
+        try:
+            abs_path.unlink(missing_ok=True)
+        except Exception:
+            pass
 
-        for pdf_fp in list(POL_DIR.glob("*.pdf")):
+        # Cache voor PDF op basis van hash EN categorie
+        if ext == ".pdf" and item.file_hash:
+            cache_path = CACHE_WERKAFSPRAKEN_DIR / item.category / item.file_hash
+            if cache_path.exists():
+                shutil.rmtree(cache_path, ignore_errors=True)
+        return
+
+    # === PROD / S3 ===
+    # origineel bestand
+    try:
+        default_storage.delete(rel_path)
+    except Exception:
+        pass
+
+    # Cache: cache/werkafspraken/<category>/<hash>/page_*.png
+    if ext == ".pdf" and item.file_hash:
+        cache_base = f"cache/werkafspraken/{item.category}/{item.file_hash}"
+        try:
+            _dirs, files = default_storage.listdir(cache_base)
+        except FileNotFoundError:
+            files = []
+        for name in files:
             try:
-                if pdf_hash(pdf_fp.read_bytes()) == hash_str:
-                    pdf_fp.unlink(missing_ok=True)
-                    removed += 1
+                default_storage.delete(f"{cache_base}/{name}")
             except Exception:
                 pass
-        return removed
-
-    # === PROD: S3 ===
-    # Cache: cache/policies/<hash>/*
-    cache_base = f"cache/policies/{hash_str}"
-    try:
-        _dirs, files = default_storage.listdir(cache_base)
-    except FileNotFoundError:
-        files = []
-    for name in files:
-        default_storage.delete(f"{cache_base}/{name}")
-
-    # PDF's: media/policies/*.pdf
-    rel_dir = _media_relpath(POL_DIR)  # "policies"
-    try:
-        _dirs, files = default_storage.listdir(rel_dir)
-    except FileNotFoundError:
-        files = []
-
-    for name in list(files):
-        if not name.lower().endswith(".pdf"):
-            continue
-        storage_path = f"{rel_dir}/{name}"
-        try:
-            with default_storage.open(storage_path, "rb") as f:
-                raw = f.read()
-            if pdf_hash(raw) == hash_str:
-                default_storage.delete(storage_path)
-                removed += 1
-        except Exception:
-            continue
-
-    return removed
-
 
 @login_required
 def policies(request):
     if not can(request.user, "can_view_policies"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # AJAX delete
-    if (
-        request.method == "POST"
-        and request.headers.get("X-Requested-With") == "XMLHttpRequest"
-    ):
+    # Verwijderen via kruisje
+    if request.method == "POST" and "delete_item" in request.POST:
         if not can(request.user, "can_upload_werkafspraken"):
-            return JsonResponse({"ok": False, "error": "Geen rechten."}, status=403)
-        if request.POST.get("action") != "delete":
-            return JsonResponse({"ok": False, "error": "Ongeldig verzoek."}, status=400)
-        img_url = request.POST.get("img", "")
-        h = hash_from_img_url(img_url)
-        if not h:
-            return JsonResponse({"ok": False, "error": "Ongeldige afbeelding."}, status=400)
-        removed = _delete_policies_by_hash(h)
-        if removed > 0:
-            return JsonResponse({"ok": True, "hash": h, "removed": removed})
-        else:
-            return JsonResponse({"ok": False, "error": "PDF niet gevonden."}, status=404)
+            return HttpResponseForbidden("Geen toegang.")
 
-    page_urls = []
+        item = get_object_or_404(Werkafspraak, id=request.POST.get("delete_item"))
+        _delete_werkafspraak_files_for_item(item)
+        item.delete()
+        messages.success(request, "Werkafspraak verwijderd.")
+        return redirect("policies")
 
-    # Upload
-    if request.method == "POST" and "file" in request.FILES:
+    # Toevoegen via formulier
+    if request.method == "POST" and "delete_item" not in request.POST:
         if not can(request.user, "can_upload_werkafspraken"):
             return HttpResponseForbidden("Geen uploadrechten.")
-        f = request.FILES.get("file")
-        if not f or not str(f.name).lower().endswith(".pdf"):
-            messages.error(request, "Alleen PDF toegestaan.")
+
+        form = WerkafspraakForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = form.cleaned_data.get("file")
+            category = form.cleaned_data["category"]
+
+            rel_path = ""
+            h = ""
+            original_name = ""
+
+            if uploaded_file:
+                # Subdir per categorie: werkafspraken/baxter/, werkafspraken/instelling/, etc.
+                category_dir = WERKAFSPRAKEN_DIR / category
+                
+                rel_path, h = save_pdf_or_png_with_hash(
+                    uploaded_file=uploaded_file,
+                    target_dir=category_dir,
+                    base_name="werkafspraak",
+                )
+                original_name = uploaded_file.name
+
+            werkafspraak = Werkafspraak(
+                title=form.cleaned_data["title"],
+                short_description=form.cleaned_data.get("short_description", ""),
+                file_path=rel_path,
+                file_hash=h,
+                original_filename=original_name,
+                category=category,
+                created_by=request.user,
+            )
+            werkafspraak.save()
+            messages.success(request, "Werkafspraak succesvol geüpload.")
             return redirect("policies")
-
-        # Lees bytes voor directe render
-        pdf_bytes_new = f.read()
-        f.seek(0)
-
-        save_pdf_upload_with_hash(
-            uploaded_file=f,
-            target_dir=POL_DIR,
-            base_name="policy",
-            clear_existing=False,
-        )
-        messages.success(request, f"PDF geüpload: {f.name}")
-
-        new_hash = pdf_hash(pdf_bytes_new)
-
-        # Eerst nieuwe policy renderen
-        h_new, n_new = render_pdf_to_cache(
-            pdf_bytes_new, dpi=300, cache_root=CACHE_POLICIES_DIR
-        )
-        for i in range(1, n_new + 1):
-            page_urls.append(
-                f"{settings.MEDIA_URL}cache/policies/{h_new}/page_{i:03d}.png"
-            )
-
-        # Daarna overige policy-PDF's, nieuwste eerst, zonder de net toegevoegde
-        if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-            pdf_files = sorted(
-                POL_DIR.glob("*.pdf"),
-                key=lambda p: p.stat().st_mtime,
-                reverse=True,
-            )
-            for pdf_fp in pdf_files:
-                try:
-                    raw = pdf_fp.read_bytes()
-                except Exception:
-                    continue
-                try:
-                    h = pdf_hash(raw)
-                except Exception:
-                    continue
-                if h == new_hash:
-                    continue
-                h, n = render_pdf_to_cache(
-                    raw, dpi=300, cache_root=CACHE_POLICIES_DIR
-                )
-                for i in range(1, n + 1):
-                    page_urls.append(
-                        f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png"
-                    )
         else:
-            rel_dir = _media_relpath(POL_DIR)  # "policies"
-            try:
-                _dirs, files = default_storage.listdir(rel_dir)
-            except FileNotFoundError:
-                files = []
+            # Toon nette foutmelding
+            file_errors = form.errors.get("file")
+            if file_errors:
+                for err in file_errors:
+                    messages.error(request, err)
+            else:
+                messages.error(request, "Het formulier bevat fouten. Controleer de invoer.")
 
-            pdf_names = sorted(files, reverse=True)
-            for name in pdf_names:
-                if not name.lower().endswith(".pdf"):
-                    continue
-                storage_path = f"{rel_dir}/{name}"
+    # Helper functie om PDF rendering te doen
+    def process_items(items_queryset, category_name):
+        """Verwerkt items: laadt PDF bytes en rendert naar cache per categorie"""
+        items = list(items_queryset)
+        
+        # Cache subdir per categorie: cache/werkafspraken/baxter/, etc.
+        category_cache_dir = CACHE_WERKAFSPRAKEN_DIR / category_name
+        
+        for item in items:
+            item.file_url = item.media_url
+            item.page_urls = []
+
+            if not item.has_file or not item.is_pdf:
+                continue
+
+            rel_path = item.file_path
+
+            # bytes inlezen
+            if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
+                abs_path = MEDIA_ROOT / rel_path
                 try:
-                    with default_storage.open(storage_path, "rb") as fobj:
-                        raw = fobj.read()
+                    pdf_bytes = abs_path.read_bytes()
                 except Exception:
                     continue
+            else:
                 try:
-                    h = pdf_hash(raw)
+                    with default_storage.open(rel_path, "rb") as f:
+                        pdf_bytes = f.read()
                 except Exception:
                     continue
-                if h == new_hash:
-                    continue
-                h, n = render_pdf_to_cache(
-                    raw, dpi=300, cache_root=CACHE_POLICIES_DIR
-                )
-                for i in range(1, n + 1):
-                    page_urls.append(
-                        f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png"
-                    )
 
-        return render(request, "policies/index.html", {
-            "page_urls": page_urls,
+            # PDF → PNG's in cache/werkafspraken/<category>/<hash>/page_XXX.png
+            h, n_pages = render_pdf_to_cache(
+                pdf_bytes,
+                dpi=300,
+                cache_root=category_cache_dir,
+            )
+
+            # backfill hash als die nog leeg is
+            if not item.file_hash:
+                item.file_hash = h
+                item.save(update_fields=["file_hash"])
+
+            item.page_urls = [
+                f"{settings.MEDIA_URL}cache/werkafspraken/{category_name}/{h}/page_{i:03d}.png"
+                for i in range(1, n_pages + 1)
+            ]
+        
+        return items
+
+   # GET (of invalid POST): items ophalen per categorie + maak forms
+    categories = []
+
+    # Voeg werkafspraken per categorie toe als de gebruiker permissies heeft
+    if can(request.user, "can_view_baxter"):
+        baxter_items = process_items(Werkafspraak.objects.filter(category="baxter"), "baxter")
+        # FIX: Voeg auto_id toe zodat ID's uniek zijn (bv. id_baxter_title)
+        baxter_form = WerkafspraakForm(
+            initial={'category': 'baxter'}, 
+            auto_id='id_baxter_%s'
+        )
+        categories.append({
+            "name": "Baxterproductie",
+            "permissions": "can_view_baxter",
+            "category": "baxter",
+            "image": "factory-256x256.png",
+            "workafspraken": baxter_items,
+            "form": baxter_form
+        })
+    
+    if can(request.user, "can_view_instellings_apo"):
+        instelling_items = process_items(Werkafspraak.objects.filter(category="instelling"), "instelling")
+        # FIX: Voeg auto_id toe
+        instelling_form = WerkafspraakForm(
+            initial={'category': 'instelling'}, 
+            auto_id='id_instelling_%s'
+        )
+        categories.append({
+            "name": "Instellingsapotheek",
+            "permissions": "can_view_instellings_apo",
+            "category": "instelling",
+            "image": "instellingsapotheek-256x256.png",
+            "workafspraken": instelling_items,
+            "form": instelling_form
+        })
+    
+    if can(request.user, "can_view_openbare_apo"):
+        openbare_items = process_items(Werkafspraak.objects.filter(category="openbare"), "openbare")
+        # FIX: Voeg auto_id toe
+        openbare_form = WerkafspraakForm(
+            initial={'category': 'openbare'}, 
+            auto_id='id_openbare_%s'
+        )
+        categories.append({
+            "name": "Openbare Apo",
+            "permissions": "can_view_openbare_apo",
+            "category": "openbare",
+            "image": "openbareapotheek-256x256.png",
+            "workafspraken": openbare_items,
+            "form": openbare_form
         })
 
-    # ==== GET: normale weergave ====
-    page_urls = []
-
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        pdf_files = sorted(
-            POL_DIR.glob("*.pdf"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-
-        for pdf_fp in pdf_files:
-            try:
-                pdf_bytes = pdf_fp.read_bytes()
-            except Exception:
-                continue
-            h, n = render_pdf_to_cache(
-                pdf_bytes, dpi=300, cache_root=CACHE_POLICIES_DIR
-            )
-            for i in range(1, n + 1):
-                page_urls.append(
-                    f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png"
-                )
-    else:
-        rel_dir = _media_relpath(POL_DIR)
-        try:
-            _dirs, files = default_storage.listdir(rel_dir)
-        except FileNotFoundError:
-            files = []
-
-        pdf_names = sorted(files, reverse=True)
-        for name in pdf_names:
-            if not name.lower().endswith(".pdf"):
-                continue
-            storage_path = f"{rel_dir}/{name}"
-            try:
-                with default_storage.open(storage_path, "rb") as f:
-                    pdf_bytes = f.read()
-            except Exception:
-                continue
-
-            h, n = render_pdf_to_cache(
-                pdf_bytes, dpi=300, cache_root=CACHE_POLICIES_DIR
-            )
-            for i in range(1, n + 1):
-                page_urls.append(
-                    f"{settings.MEDIA_URL}cache/policies/{h}/page_{i:03d}.png"
-                )
-
     return render(request, "policies/index.html", {
-        "page_urls": page_urls,
+        "categories": categories,
     })

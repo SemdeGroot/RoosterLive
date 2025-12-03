@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, Organization, NewsItem
+from core.models import UserProfile, Organization, AgendaItem, Organization, NewsItem, Werkafspraak
 
 UserModel = get_user_model()
 
@@ -469,6 +469,60 @@ class NewsItemForm(forms.ModelForm):
         # === FILE ===
         self.fields["file"].widget.attrs.update({
             "accept": ".pdf,.jpg,.jpeg,.png",
+        })
+
+    def clean_file(self):
+        f = self.cleaned_data.get("file")
+        if not f:
+            return f
+
+        max_bytes = self.MAX_FILE_SIZE_MB * 1024 * 1024
+        if f.size > max_bytes:
+            raise forms.ValidationError(
+                f"Het bestand is te groot. Maximaal {self.MAX_FILE_SIZE_MB} MB toegestaan."
+            )
+        return f
+    
+class WerkafspraakForm(forms.ModelForm):
+    MAX_FILE_SIZE_MB = 25  # limiet gelijk aan nginx
+
+    file = forms.FileField(
+        label="Bestand (PDF)",
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        required=False,
+    )
+
+    class Meta:
+        model = Werkafspraak
+        fields = ["title", "short_description", "category", "file"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # === TITLE ===
+        self.fields["title"].widget.attrs.update({
+            "placeholder": "Titel (max 50 tekens)",
+            "class": "form-input",
+            "maxlength": "50",
+        })
+        self.fields["title"].validators.append(MaxLengthValidator(50))
+
+        # === SHORT DESCRIPTION ===
+        self.fields["short_description"].widget.attrs.update({
+            "placeholder": "Korte beschrijving (max 100 tekens)",
+            "class": "form-input",
+            "maxlength": "100",
+        })
+        self.fields["short_description"].validators.append(MaxLengthValidator(100))
+
+        # === CATEGORY ===
+        self.fields["category"].widget.attrs.update({
+            "class": "form-input",
+        })
+
+        # === FILE ===
+        self.fields["file"].widget.attrs.update({
+            "accept": ".pdf",
         })
 
     def clean_file(self):

@@ -280,3 +280,67 @@ class NewsItem(models.Model):
         if not self.file_path:
             return ""
         return f"{settings.MEDIA_URL}{self.file_path}"
+
+class Werkafspraak(models.Model):
+    class Category(models.TextChoices):
+        BAXTER = "baxter", "Baxterproductie"
+        INSTELLING = "instelling", "Instellingenapotheek"
+        OPENBARE = "openbare", "Openbare Apotheek"
+
+    title = models.CharField(
+        "Titel",
+        max_length=50,
+        help_text="Korte titel van de werkafspraak (max. 50 tekens).",
+    )
+    short_description = models.CharField(
+        "Beschrijving",
+        max_length=100,
+        help_text="Korte beschrijving van de werkafspraak (max. 100 tekens).",
+    )
+    
+    # Pad relatief t.o.v. MEDIA_ROOT, bv. "werkafspraken/werkafspraak.<hash>.pdf"
+    file_path = models.CharField(max_length=255, blank=True, default="")
+    file_hash = models.CharField(max_length=32, db_index=True, blank=True)
+    original_filename = models.CharField(max_length=255, blank=True)
+    
+    category = models.CharField(
+        "Categorie",
+        max_length=10,
+        choices=Category.choices,
+        db_index=True,
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="werkafspraken",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.title}"
+
+    class Meta:
+        ordering = ["category", "title"]
+    
+    @property
+    def has_file(self) -> bool:
+        return bool(self.file_path)
+
+    @property
+    def is_pdf(self) -> bool:
+        """
+        True als er een bestand is én het eindigt op .pdf
+        """
+        return bool(self.file_path) and self.file_path.lower().endswith(".pdf")
+
+    @property
+    def media_url(self) -> str:
+        """
+        Geeft de MEDIA URL terug, of een lege string als er geen bestand is.
+        """
+        if not self.file_path:
+            return ""
+        return f"{settings.MEDIA_URL}{self.file_path}"
