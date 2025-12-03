@@ -100,7 +100,6 @@ function isCachableStaticOrMedia(request) {
 
 // === STATIC/MEDIA: cache-first strategie ===
 async function handleStaticOrMediaRequest(request) {
-  // In dev gewoon doorgeven naar netwerk
   if (IS_DEV) {
     return fetch(request);
   }
@@ -110,21 +109,25 @@ async function handleStaticOrMediaRequest(request) {
   // 1) Eerst cache proberen
   const cached = await cache.match(request);
   if (cached) {
+    console.log('[sw] Cache hit voor:', request.url); // Debug log
     return cached;
   }
 
   // 2) Anders: naar netwerk, en bij succes in cache stoppen
   try {
     const response = await fetch(request);
+    // Log de CORS-headers
+    console.log('CORS Headers:', response.headers.get('Access-Control-Allow-Origin'));
+
     // Alleen succesvolle responses cachen
     if (response && response.status === 200) {
       cache.put(request, response.clone());
+      console.log('[sw] Cache miss, opslaan in cache:', request.url); // Debug log
     }
     return response;
   } catch (e) {
     console.warn('[sw] static/media fetch faalde', request.url, e);
-    // Als we niets in cache hebben en netwerk faalt, laten we de error bubbelen
-    throw e;
+    throw e; // Als de fetch mislukt, wordt de error doorgestuurd
   }
 }
 
@@ -147,6 +150,8 @@ async function handleNavigationRequest(event) {
 self.addEventListener('fetch', (event) => {
   // Alleen GET-requests interessant
   if (event.request.method !== 'GET') return;
+
+  console.log('Fetch request URL:', event.request.url); // Debug log voor de URL
 
   const isNavigate = event.request.mode === 'navigate';
   const isStaticOrMedia = isCachableStaticOrMedia(event.request);
