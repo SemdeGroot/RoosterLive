@@ -86,6 +86,8 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+    word-wrap: break-word;
+  white-space: normal; 
 }
 
 /* Rechter kolom (datum of badge) */
@@ -182,6 +184,8 @@
 .agenda-description {
   font-size: 0.9rem;
   color: var(--muted);
+  white-space: normal;
+  word-wrap: break-word; 
 }
 
 /* ===== Delete-kruisje rechtsboven in de li ===== */

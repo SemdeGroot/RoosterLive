@@ -1,12 +1,71 @@
 /* Klikbare kaart voor nieuws (hele li) */
 .news-item {
   cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%; /* Zorg ervoor dat het zich aanpast aan de container */
+  margin-bottom: 4px;
 }
 
-/* Delete-knop zelf blijft gewoon pointer */
-.news-item .agenda-delete-form,
-.news-item .agenda-delete-btn {
-  cursor: pointer;
+/* De header van elk nieuwsitem (titel + datum) */
+.news-item .birthday-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;  /* Zorg ervoor dat de inhoud verticaal gecentreerd is */
+  gap: 12px;
+  width: 100%; /* Zorgt ervoor dat de main header zich uitstrekt over de hele breedte */
+}
+
+/* Rechterkolom: Datum (kan een badge zijn) */
+.news-item .birthday-right {
+  display: flex;
+  align-items: center;  /* Centreert de datum verticaal */
+  justify-content: center; /* Centreert de inhoud horizontaal */
+  flex-shrink: 0; /* Zorg ervoor dat de datum niet samengedrukt wordt */
+  min-width: 0; /* Flexbox-fix om te zorgen dat de rechterkolom niet breder wordt dan nodig */
+}
+
+/* Linkerkolom: Titel en beschrijving */
+.news-item .birthday-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;                 /* Ruimte tussen de titel en de beschrijving */
+  min-width: 0;             /* Flexbox fix zodat tekst kan wrappen */
+  flex: 1;                  /* Laat de linker kolom de resterende ruimte vullen */
+}
+
+/* De titel van het nieuwsitem */
+.news-item .birthday-name {
+  font-weight: 600;
+  line-height: 1.3;
+  word-wrap: break-word;  /* Zorgt dat de titel breekt als het te lang is */
+}
+
+/* Beschrijving van het nieuwsitem */
+.news-item .agenda-description {
+  font-size: 0.9rem;
+  color: var(--muted);
+  white-space: normal; /* Laat de tekst netjes afbreken naar de volgende regel */
+  word-wrap: break-word; /* Zorgt ervoor dat lange woorden afbreken */
+  margin-top: 4px;
+  overflow-wrap: break-word; /* Voorkomt dat lange woorden door de container heen gaan */
+  width: 100%; /* Zorgt ervoor dat de beschrijving zich aanpast aan de breedte */
+  margin-bottom: 4px;
+}
+/* Datum-styling */
+.news-item .birthday-date {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
 }
 
 /* File upload met btn-styling */
@@ -17,7 +76,7 @@
   margin-top: 4px;
 }
 
-/* standaard file-input verbergen, label (btn) triggert deze */
+/* Standaard file-input verbergen, label (btn) triggert deze */
 .news-file-wrapper input[type="file"] {
   display: none;
 }
@@ -27,23 +86,17 @@
   color: var(--muted);
 }
 
-/* Eén-regelige korte beschrijving in de header */
-.agenda-description--single-line {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Body van een nieuwsitem (uitklapbaar deel) */
-.news-body {
-  margin-top: 8px;
-}
-
-/* Media (PDF-pagina's of afbeelding) netjes onder elkaar */
+/* Media (afbeeldingen of PDF-pagina's) netjes onder elkaar */
 .news-media img {
   display: block;
   max-width: 100%;
   height: auto;
-  margin-top: 8px;
+  margin-top: 4px;
   border-radius: 8px;
+}
+
+/* Body van een nieuwsitem (uitklapbaar deel) */
+.news-item .news-body {
+  margin-top: 4px;
+  transition: margin-top 0.3s ease;
 }
