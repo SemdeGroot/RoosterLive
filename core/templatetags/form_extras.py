@@ -12,10 +12,12 @@ def has_key(d, key):
 @register.filter
 def get_item(d, key):
     try:
-        return d.get(key)
+        val = d.get(key)
+        # Als val None is, geef lege string terug. Anders de waarde.
+        return val if val is not None else ""
     except Exception:
-        return None
-
+        return ""
+    
 @register.filter
 def field(form, name):
     """

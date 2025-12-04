@@ -6,45 +6,34 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
-  <style>
-    .analysis-section { margin-bottom: 20px; border:1px solid #eee; border-radius:8px; overflow:hidden; }
-    .analysis-header { background:#f8f9fa; padding:10px 15px; font-weight:bold; border-bottom:1px solid #eee; }
-    .analysis-body { padding:15px; }
-    
-    .alert-box { padding: 10px; border-radius: 4px; margin-bottom: 8px; font-size: 0.95rem; }
-    .alert-stopp { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-    .alert-acb { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-    .alert-dubbel { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    .alert-safe { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .badge-score { font-weight: bold; background: #fff; padding: 2px 6px; border-radius: 4px; }
-    ul.simple-list { padding-left: 20px; margin: 5px 0 0 0; }
-  </style>
+    <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="card" style="padding: 16px; margin-bottom: 20px;">
+<div class="review-card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-            <h2>{{ patient.naam }} <small style="color:#666; font-size:0.6em;">({{ patient.leeftijd|default:"?" }} jr)</small></h2>
-            <p class="text-muted">Afdeling: {{ afdeling.afdeling }}</p>
+            <h2 style="margin:0;">{{ patient.naam }} <small style="color:var(--muted); font-size:0.6em;">({{ patient.leeftijd|default:"?" }} jr)</small></h2>
+            <p style="margin:4px 0 0 0; color:var(--muted);">Afdeling: {{ afdeling.afdeling }}</p>
         </div>
-        <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn" style="background:#eee; color:#333;">← Terug</a>
+        <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn" style="background:var(--panel-2);">← Terug</a>
     </div>
 </div>
 
-<div class="card" style="padding: 16px; margin-bottom: 20px;">
+<div class="review-card">
+    <h3 style="margin-top:0; margin-bottom:16px;">Analyses</h3>
     
     <div class="analysis-section">
-        <div class="analysis-header">STOPP Criteria</div>
+        <div class="analysis-header">🛑 STOPP Criteria</div>
         <div class="analysis-body">
             {% if analysis.analyses.stopp %}
                 <div class="alert-box alert-stopp">
-                    ⚠️ <strong>{{ analysis.analyses.stopp|length }} criteria gevonden:</strong>
-                    <ul class="simple-list">
+                    <strong>⚠️ {{ analysis.analyses.stopp|length }} criteria gevonden:</strong>
+                    <ul style="padding-left:20px; margin:8px 0 0;">
                         {% for item in analysis.analyses.stopp %}
-                            <li style="margin-bottom:8px;">
+                            <li style="margin-bottom:6px;">
                                 {{ item.description }}<br>
-                                <small><em>Door: {{ item.triggering_medicines }}</em></small>
+                                <small style="opacity:0.8;"><em>Door: {{ item.triggering_medicines }}</em></small>
                             </li>
                         {% endfor %}
                     </ul>
@@ -56,13 +45,13 @@
     </div>
 
     <div class="analysis-section">
-        <div class="analysis-header">Anticholinerge Belasting (ACB)</div>
+        <div class="analysis-header">🧠 Anticholinerge Belasting (ACB)</div>
         <div class="analysis-body">
             {% if analysis.analyses.acb.score > 0 %}
                 <div class="alert-box alert-acb">
-                    🧠 Score: <span class="badge-score">{{ analysis.analyses.acb.score }}</span> — {{ analysis.analyses.acb.interpretatie }}
+                    <strong>Score: {{ analysis.analyses.acb.score }}</strong> — {{ analysis.analyses.acb.interpretatie }}
                     {% if analysis.analyses.acb.details %}
-                        <ul class="simple-list" style="margin-top:5px;">
+                        <ul style="padding-left:20px; margin:8px 0 0;">
                             {% for detail in analysis.analyses.acb.details %}
                                 <li>{{ detail.middel }} (Score: {{ detail.score }})</li>
                             {% endfor %}
@@ -77,29 +66,16 @@
 
     {% if analysis.analyses.dubbelmedicatie %}
     <div class="analysis-section">
-        <div class="analysis-header">Dubbelmedicatie</div>
+        <div class="analysis-header">👯 Dubbelmedicatie</div>
         <div class="analysis-body">
             <div class="alert-box alert-dubbel">
-                👯 <strong>Mogelijke dubbelmedicatie:</strong>
-                <ul class="simple-list">
+                <strong>⚠️ Mogelijke dubbelmedicatie gevonden:</strong>
+                <ul style="padding-left:20px; margin:8px 0 0;">
                     {% for item in analysis.analyses.dubbelmedicatie %}
-                        <li>{{ item.groep }}: <em>{{ item.middelen|join:", " }}</em></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    {% if analysis.analyses.standaardvragen %}
-    <div class="analysis-section">
-        <div class="analysis-header">Standaard Vragen</div>
-        <div class="analysis-body">
-            <div class="alert-box" style="background:#f0f0f0; border:1px solid #ddd;">
-                ❓ <strong>Te controleren:</strong>
-                <ul class="simple-list">
-                    {% for vraag in analysis.analyses.standaardvragen %}
-                        <li>{{ vraag.vraag }} <small>({{ vraag.betrokken_middelen }})</small></li>
+                        <li style="margin-bottom:6px;">
+                            <strong>{{ item.groep }}</strong>: 
+                            <span style="opacity:0.9;">{{ item.middelen|join:", " }}</span>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -111,55 +87,58 @@
 
 <form method="post">
     {% csrf_token %}
-    <div class="card">
-        <div class="agenda-section-header" style="padding: 16px; border-bottom: 1px solid #eee;">
-            <h3>Medicatieoverzicht & Opmerkingen</h3>
+    <div class="review-card">
+        <div style="border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">Medicatieoverzicht & Opmerkingen</h3>
+            <button type="submit" class="btn btn-primary" style="background:var(--accent); border-color:var(--accent);">
+                💾 Opslaan
+            </button>
         </div>
 
-        <div style="padding: 16px;">
+        <div style="display:flex; flex-direction:column; gap:24px;">
             {% for group_id, group_data in grouped_meds %}
-                <div class="med-group" style="margin-bottom: 30px; border-bottom:1px solid #f0f0f0; padding-bottom:20px;">
+                <div class="med-group">
                     
-                    <h4 style="color: #000080; margin-bottom: 10px;">
+                    <h4 style="color:var(--accent); margin:0 0 10px 0; font-size:1.1rem;">
                         {{ group_data.naam }}
                     </h4>
 
-                    <table class="table table-sm" style="width:100%; font-size:0.9rem; margin-bottom:10px;">
+                    <table class="med-table">
                         <thead>
-                            <tr style="background:#f9f9f9; text-align:left;">
-                                <th style="padding:5px;">Middel</th>
-                                <th style="padding:5px;">Gebruik</th>
-                                <th style="padding:5px;">Opmerking (Medimo)</th>
+                            <tr>
+                                <th style="width:30%">Middel</th>
+                                <th style="width:20%">Gebruik</th>
+                                <th style="width:50%">Opmerking (Medimo)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for gm in group_data.meds %}
                             <tr>
-                                <td style="padding:5px;"><strong>{{ gm.clean }}</strong></td>
-                                <td style="padding:5px;">{{ gm.gebruik }}</td>
-                                <td style="padding:5px; color:#666;"><small>{{ gm.opmerking }}</small></td>
+                                <td><strong style="color:var(--text);">{{ gm.clean }}</strong></td>
+                                <td>{{ gm.gebruik }}</td>
+                                <td style="color:var(--muted); font-size:0.9em;">{{ gm.opmerking|default:"-" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
 
-                    <div class="form-group">
-                        <label for="comment_{{ group_id }}" style="font-weight:600; font-size:0.9em;">Jouw opmerking:</label>
+                    <div style="margin-top:8px;">
+                        <label for="comment_{{ group_id }}" style="font-size:0.9rem; color:var(--muted); margin-bottom:4px; display:block;">
+                            Opmerking apotheker:
+                        </label>
                         <textarea 
                             name="comment_{{ group_id }}" 
                             id="comment_{{ group_id }}"
-                            class="form-control" 
-                            rows="2"
-                            placeholder="Typ hier..."
-                            style="background-color: #fffff8; border-color: #e0e0aa; width:100%; padding:8px;"
+                            class="med-comment-box" 
+                            placeholder="Typ hier uw bevindingen..."
                         >{{ comments_lookup|get_item:group_id }}</textarea>
                     </div>
                 </div>
             {% endfor %}
         </div>
-
-        <div class="card-footer" style="padding: 16px; background: #f8f9fa;">
-            <button type="submit" class="btn btn-primary">
+        
+        <div style="margin-top:24px; text-align:right;">
+             <button type="submit" class="btn btn-primary" style="background:var(--accent); border-color:var(--accent);">
                 💾 Opslaan & Bijwerken
             </button>
         </div>

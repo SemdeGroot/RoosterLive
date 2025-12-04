@@ -131,6 +131,8 @@ urlpatterns = [
     # Details
     path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
     path("medicatiebeoordeling/patient/<int:pk>/", med_views.patient_detail, name="medicatiebeoordeling_patient_detail"),
+    path("medicatiebeoordeling/delete/afdeling/<int:pk>/", med_views.delete_afdeling, name="medicatiebeoordeling_delete_afdeling"),
+    path("medicatiebeoordeling/delete/patient/<int:pk>/", med_views.delete_patient, name="medicatiebeoordeling_delete_patient"),
     path("reviewplanner/", reviewplanner, name="reviewplanner"),
     path("portavita-check/", portavita_check, name="portavita-check"),
 

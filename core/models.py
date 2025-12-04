@@ -386,7 +386,7 @@ class MedicatieReviewPatient(models.Model):
     afdeling = models.ForeignKey(MedicatieReviewAfdeling, on_delete=models.CASCADE, related_name="patienten")
     
     naam = models.CharField(max_length=255)
-    leeftijd = models.IntegerField(null=True, blank=True)
+    geboortedatum = models.DateField(null=True, blank=True)
     
     # Hier zit de HELE analyse in (medicijnen, STOPP, ACB, etc.), versleuteld.
     analysis_data = EncryptedJSONField() 

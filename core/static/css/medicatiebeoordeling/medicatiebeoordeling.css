@@ -1,0 +1,114 @@
+/* Erft variabelen uit base.css (:root) */
+
+.review-card {
+    /* Gebruikt jouw .card stijl */
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px var(--shadow);
+    padding: 16px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+/* Blauwe streep bovenop (zoals in jouw CSS) */
+.review-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background-color: var(--accent);
+    border-top-left-radius: inherit; border-top-right-radius: inherit;
+    z-index: 2;
+}
+
+.analysis-section {
+    margin-bottom: 16px;
+    background: var(--panel-2); /* Iets donkerder voor contrast */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.analysis-header {
+    background: rgba(255,255,255,0.03); /* Subtiel lichter */
+    padding: 12px 16px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+}
+
+.analysis-body {
+    padding: 16px;
+}
+
+/* Alert Boxes in Dark Mode */
+.alert-box {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Specifieke kleuren aangepast aan dark theme */
+.alert-stopp {
+    background: rgba(189, 142, 0, 0.15); /* Geel/Goud transparant */
+    border: 1px solid rgba(189, 142, 0, 0.3);
+    color: #ffd760; 
+}
+
+.alert-acb {
+    background: rgba(7, 42, 114, 0.3); /* Accent blauw transparant */
+    border: 1px solid var(--accent);
+    color: #abc4ff;
+}
+
+.alert-dubbel {
+    background: rgba(106, 21, 14, 0.25); /* Danger rood transparant */
+    border: 1px solid var(--danger-border);
+    color: #ffadad;
+}
+
+.alert-safe {
+    background: rgba(31, 122, 62, 0.15); /* Groen transparant */
+    border: 1px solid rgba(31, 122, 62, 0.3);
+    color: #bfe4c8;
+}
+
+/* Tabel in review */
+.med-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+}
+.med-table th {
+    text-align: left;
+    padding: 8px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+}
+.med-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+.med-table tr:last-child td { border-bottom: none; }
+
+/* Textarea styling (consistent met base.css) */
+.med-comment-box {
+    width: 100%;
+    background: #0f141a; /* Darker input bg */
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+.med-comment-box:focus {
+    border-color: var(--accent);
+    outline: none;
+}

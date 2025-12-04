@@ -28,16 +28,50 @@ def dashboard(request):
     }
     return render(request, "tiles_page.html", context)
 
+# --- DELETE VIEWS ---
+@login_required
+def delete_afdeling(request, pk):
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
+        naam = afd.afdeling
+        afd.delete()
+        messages.success(request, f"Afdeling '{naam}' verwijderd.")
+    return redirect("medicatiebeoordeling_list")
+
+@login_required
+def delete_patient(request, pk):
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        pat = get_object_or_404(MedicatieReviewPatient, pk=pk)
+        afd_pk = pat.afdeling.pk
+        naam = pat.naam
+        pat.delete()
+        messages.success(request, f"Patiënt '{naam}' verwijderd.")
+        # Terug naar de afdeling als die nog bestaat, anders lijst
+        return redirect("medicatiebeoordeling_afdeling_detail", pk=afd_pk)
+    return redirect("medicatiebeoordeling_list")
+
+# --- LIST VIEW ---
 @login_required
 def review_list(request):
-    """
-    Lijst met historie van afdelingen.
-    """
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen toegang.")
     
+    # 1. Afdelingen
     afdelingen = MedicatieReviewAfdeling.objects.all().select_related('created_by')
-    return render(request, "medicatiebeoordeling/list.html", {"afdelingen": afdelingen})
+    
+    # 2. Alle Patiënten (voor de patiënt-zoekbalk)
+    patienten = MedicatieReviewPatient.objects.all().select_related('afdeling')
+
+    return render(request, "medicatiebeoordeling/list.html", {
+        "afdelingen": afdelingen,
+        "patienten": patienten
+    })
 
 @login_required
 def review_create(request):
@@ -72,12 +106,11 @@ def review_create(request):
                 patients_data = result.get("data", [])
                 new_patients = []
                 for p_data in patients_data:
-                    # EncryptedJSONField doet de encryptie automatisch
                     new_patients.append(MedicatieReviewPatient(
                         afdeling=afdeling_obj,
                         naam=p_data.get("naam", "Onbekend"),
-                        leeftijd=p_data.get("leeftijd"),
-                        analysis_data=p_data 
+                        geboortedatum=p_data.get("geboortedatum"), # <--- Opslaan!
+                        analysis_data=p_data
                     ))
                 
                 MedicatieReviewPatient.objects.bulk_create(new_patients)
@@ -109,50 +142,75 @@ def afdeling_detail(request, pk):
 
 @login_required
 def patient_detail(request, pk):
-    """
-    Detailpagina patiënt: Analyse resultaten + Opmerkingen toevoegen.
-    """
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden()
 
     patient = get_object_or_404(MedicatieReviewPatient, pk=pk)
-    
-    # Decryptie gebeurt hier automatisch door het model field
     analysis = patient.analysis_data 
     meds = analysis.get("geneesmiddelen", [])
-    
+    vragen = analysis.get("analyses", {}).get("standaardvragen", [])
+
     # 1. Groeperen op Jansen ID
-    # Geeft terug: [(1, {'naam': 'Mond', 'meds': [...]}), (2, ...)]
     grouped_meds = group_meds_by_jansen(meds)
 
-    # --- POST: Opslaan Opmerkingen ---
+    # --- POST ---
     if request.method == "POST":
         if not can(request.user, "can_perform_medicatiebeoordeling"):
-            return HttpResponseForbidden("Alleen bewerken toegestaan met juiste rechten.")
+            return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
-        saved_count = 0
         for group_id, group_data in grouped_meds:
-            # Check input veld: name="comment_1", "comment_2", etc.
             form_key = f"comment_{group_id}"
-            
             if form_key in request.POST:
                 tekst = request.POST.get(form_key, "").strip()
-                
-                # Opslaan (of updaten) gekoppeld aan ID
                 MedicatieReviewComment.objects.update_or_create(
                     patient=patient,
                     jansen_group_id=group_id,
                     defaults={"tekst": tekst, "updated_by": request.user}
                 )
-                saved_count += 1
-        
         messages.success(request, "Opmerkingen opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
-    # --- GET: Tonen ---
-    # Haal opmerkingen uit DB en maak lookup dict: {ID: Tekst}
+    # --- GET ---
+    
+    # 2. Haal bestaande comments op
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c.tekst for c in db_comments}
+
+    # 3. Injecteer Standaardvragen in lege comments
+    # We moeten weten welk medicijn in welke groep zit.
+    # We maken een map: { "Metoprolol": group_id, ... }
+    med_to_group = {}
+    for gid, gdata in grouped_meds:
+        for m in gdata['meds']:
+            # We gebruiken de 'clean' naam uit de analyse
+            med_to_group[m['clean']] = gid
+
+    for vraag_item in vragen:
+        # vraag_item = { "vraag": "...", "betrokken_middelen": "Metoprolol" }
+        middelen_str = vraag_item.get("betrokken_middelen", "")
+        if not middelen_str: continue
+        
+        # Soms zijn het meerdere middelen, gescheiden door komma?
+        # Laten we simpel beginnen en kijken of de string voorkomt in onze map keys
+        target_group_id = None
+        
+        # Probeer te matchen
+        for med_naam, gid in med_to_group.items():
+            if med_naam in middelen_str:
+                target_group_id = gid
+                break
+        
+        # Als we een groep hebben gevonden én er is nog geen tekst:
+        if target_group_id:
+            huidige_tekst = comments_lookup.get(target_group_id, "")
+            vraag_tekst = f"❓ {vraag_item['vraag']}"
+            
+            # Voeg alleen toe als hij er nog niet in staat
+            if vraag_tekst not in huidige_tekst:
+                if huidige_tekst:
+                    comments_lookup[target_group_id] = huidige_tekst + "\n" + vraag_tekst
+                else:
+                    comments_lookup[target_group_id] = vraag_tekst
 
     return render(request, "medicatiebeoordeling/patient_detail.html", {
         "patient": patient,
