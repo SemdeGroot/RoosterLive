@@ -5,7 +5,9 @@
 {% block header_title %}Review: {{ afdeling.afdeling }}{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
+    <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -14,30 +16,43 @@
         <div class="birthday-header agenda-section-header">
             <div class="birthday-header-text">
                 <h2>{{ afdeling.afdeling }}</h2>
-                <p>{{ afdeling.created_at|date:"d-m-Y" }} ({{ patienten|length }} patiënten)</p>
+                <p>{{ afdeling.created_at|date:"d-m-Y" }} • {{ patienten|length }} patiënten</p>
             </div>
-            <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="background:#eee; color:#333;">Overzicht</a>
+            <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="background:var(--panel-2);">Overzicht</a>
         </div>
 
-        <ul class="birthday-list agenda-list">
-            {% for patient in patienten %}
-                <li class="birthday-item">
-                    <div class="birthday-main">
-                        <div class="birthday-left">
-                            <span class="birthday-name">{{ patient.naam }}</span>
-                            <div class="birthday-meta">
-                                Leeftijd: {{ patient.leeftijd|default:"Onbekend" }}
-                            </div>
-                        </div>
-                        <div class="birthday-right">
-                            <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn">
-                                Bekijk Rapport
-                            </a>
-                        </div>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="search-container">
+            <input type="text" id="searchPatient" class="search-input" placeholder="Filter patiënten in deze lijst...">
+        </div>
+
+        <table id="tablePatient" class="med-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Naam</th>
+                    <th style="width: 30%;">Geboortedatum</th>
+                    <th style="width: 30%;">Rapport</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patienten %}
+                <tr>
+                    <td><strong>{{ patient.naam }}</strong></td>
+                    <td style="color:var(--muted);">
+                        {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
+                    </td>
+                    <td>
+                        <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn" style="padding:6px 12px;">
+                            Openen
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="padding:20px; text-align:center; color:var(--muted);">Geen patiënten gevonden.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
