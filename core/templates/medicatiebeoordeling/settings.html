@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Instellingen Medicatiebeoordeling{% endblock %}
+{% block header_title %}Instellingen{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:16px;">
+  <div class="agenda-section-header" style="margin-bottom: 16px;">
+      <div class="birthday-header-text">
+        <h3 style="margin-top:0;">Instellingen</h3>
+        <p>Beheer hier de configuratie voor medicatiebeoordelingen.</p>
+      </div>
+  </div>
+
+  <p>
+    Hier komen later de instellingen voor <strong>Medicatiebeoordeling</strong>.
+    <br><br>
+    <em>(Bijvoorbeeld: Standaardteksten aanpassen, ATC-codes beheren, of exports instellen.)</em>
+  </p>
+
+  <div style="margin-top: 20px;">
+      <a href="{% url 'medicatiebeoordeling' %}" class="btn" style="background:#eee; color:#333;">Terug naar dashboard</a>
+  </div>
+</div>
+{% endblock %}

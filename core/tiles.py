@@ -35,7 +35,8 @@ TILE_GROUPS = {
         {"name": "Laatste potten",  "img": "pills-bottle-256x256.png",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
     ],
 
-        "openbare": [
+       "openbare": [
+        # Deze verwijst naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
          "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner-256x256.png",
@@ -44,6 +45,7 @@ TILE_GROUPS = {
     ],
 
     "instellings": [
+        # Deze verwijst ook naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
          "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner-256x256.png",
@@ -51,6 +53,28 @@ TILE_GROUPS = {
         {"name": "Portavita Check", "img": "portavita-256x256.png",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
         {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
+    ],
+
+    # De subtiles voor Medicatiebeoordeling
+    "medicatiebeoordeling": [
+        {
+            "name": "Nieuwe Review",
+            "img": "generatereview-256x256.png",
+            "url_name": "medicatiebeoordeling_create",
+            "perm": "can_perform_medicatiebeoordeling"
+        },
+        {
+            "name": "Historie",
+            "img": "openoldreview-256x256.png",
+            "url_name": "medicatiebeoordeling_list",
+            "perm": "can_view_medicatiebeoordeling"
+        },
+        {
+            "name": "Instellingen",
+            "img": "reviewsettings-256x256.png",
+            "url_name": "medicatiebeoordeling_settings", # Placeholder URL
+            "perm": "can_perform_medicatiebeoordeling"
+        },
     ],
 }
 

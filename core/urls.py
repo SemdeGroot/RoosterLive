@@ -16,7 +16,7 @@ from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 from core.views import agenda as agenda_views
-from core.views import medicatiebeoordeling as medicatiebeoordeling_views
+from core.views import medicatiebeoordeling as med_views
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
@@ -120,8 +120,17 @@ urlpatterns = [
 
     path("nieuws/", news, name="news"),
     path("werkafspraken/", policies, name="policies"),
-
-    path("medicatiebeoordeling/", medicatiebeoordeling_views.medicatiebeoordeling, name="medicatiebeoordeling"),
+    # Tiles
+    path("medicatiebeoordeling/", med_views.dashboard, name="medicatiebeoordeling"),
+    # Genereren med review
+    path("medicatiebeoordeling/genereren/", med_views.review_create, name="medicatiebeoordeling_create"),
+    # Oude review openen
+    path("medicatiebeoordeling/historie/", med_views.review_list, name="medicatiebeoordeling_list"),
+    # med review settings aanpassen
+    path("medicatiebeoordeling/instellingen/", med_views.settings_view, name="medicatiebeoordeling_settings"),
+    # Details
+    path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
+    path("medicatiebeoordeling/patient/<int:pk>/", med_views.patient_detail, name="medicatiebeoordeling_patient_detail"),
     path("reviewplanner/", reviewplanner, name="reviewplanner"),
     path("portavita-check/", portavita_check, name="portavita-check"),
 

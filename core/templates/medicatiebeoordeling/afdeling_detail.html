@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ afdeling.afdeling }}{% endblock %}
+{% block header_title %}Review: {{ afdeling.afdeling }}{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card birthdays-card">
+    <div class="agenda-section">
+        <div class="birthday-header agenda-section-header">
+            <div class="birthday-header-text">
+                <h2>{{ afdeling.afdeling }}</h2>
+                <p>{{ afdeling.created_at|date:"d-m-Y" }} ({{ patienten|length }} patiënten)</p>
+            </div>
+            <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="background:#eee; color:#333;">Overzicht</a>
+        </div>
+
+        <ul class="birthday-list agenda-list">
+            {% for patient in patienten %}
+                <li class="birthday-item">
+                    <div class="birthday-main">
+                        <div class="birthday-left">
+                            <span class="birthday-name">{{ patient.naam }}</span>
+                            <div class="birthday-meta">
+                                Leeftijd: {{ patient.leeftijd|default:"Onbekend" }}
+                            </div>
+                        </div>
+                        <div class="birthday-right">
+                            <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn">
+                                Bekijk Rapport
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

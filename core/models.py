@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from cryptography.fernet import Fernet
+import json
 
 class Roster(models.Model):
     file = models.FileField(upload_to="rooster/current.pdf", null=True)
@@ -344,3 +346,69 @@ class Werkafspraak(models.Model):
         if not self.file_path:
             return ""
         return f"{settings.MEDIA_URL}{self.file_path}"
+    
+# --- Helper: Encrypted Field ---
+class EncryptedJSONField(models.TextField):
+    """Slaat data encrypted op met Fernet (AES)."""
+    def get_prep_value(self, value):
+        if value is None: return None
+        f = Fernet(settings.ENCRYPTION_KEY)
+        # Dict -> JSON String -> Bytes -> Encrypted Bytes -> DB String
+        return f.encrypt(json.dumps(value).encode("utf-8")).decode("utf-8")
+
+    def from_db_value(self, value, expression, connection):
+        if value is None: return None
+        f = Fernet(settings.ENCRYPTION_KEY)
+        try:
+            # DB String -> Encrypted Bytes -> Decrypted Bytes -> JSON String -> Dict
+            return json.loads(f.decrypt(value.encode("utf-8")).decode("utf-8"))
+        except Exception:
+            return {}
+        
+class MedicatieReviewAfdeling(models.Model):
+    """Vertegenwoordigt één upload/review sessie (bijv. een Afdeling)."""
+    afdeling = models.CharField(max_length=255)
+    bron = models.CharField(max_length=50, default="medimo")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"{self.afdeling} ({self.created_at.strftime('%d-%m-%Y')})"
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Medicatiereview Afdeling"
+        verbose_name_plural = "Medicatiereview Afdelingen"
+
+class MedicatieReviewPatient(models.Model):
+    """Eén patiënt binnen een afdeling."""
+    # Let op: related_name="patienten" zorgt dat we vanuit afdeling makkelijk bij de patiënten kunnen
+    afdeling = models.ForeignKey(MedicatieReviewAfdeling, on_delete=models.CASCADE, related_name="patienten")
+    
+    naam = models.CharField(max_length=255)
+    leeftijd = models.IntegerField(null=True, blank=True)
+    
+    # Hier zit de HELE analyse in (medicijnen, STOPP, ACB, etc.), versleuteld.
+    analysis_data = EncryptedJSONField() 
+
+    def __str__(self):
+        return self.naam
+
+    class Meta:
+        ordering = ["naam"]
+
+class MedicatieReviewComment(models.Model):
+    """Opmerkingen van de apotheker, gekoppeld aan ID."""
+    patient = models.ForeignKey(MedicatieReviewPatient, on_delete=models.CASCADE, related_name="comments")
+    
+    # We slaan het ID op (bijv. 2 voor Maag/Darm). 
+    # De naam (Maag/Darm) halen we live uit de JSON data van de patiënt, niet uit deze tabel.
+    jansen_group_id = models.IntegerField() 
+    
+    tekst = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        # Uniek per patiënt + groep ID
+        unique_together = ("patient", "jansen_group_id")

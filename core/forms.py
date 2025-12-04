@@ -536,3 +536,30 @@ class WerkafspraakForm(forms.ModelForm):
                 f"Het bestand is te groot. Maximaal {self.MAX_FILE_SIZE_MB} MB toegestaan."
             )
         return f
+    
+class MedicatieReviewForm(forms.Form):
+    BRON_CHOICES = [("medimo", "Medimo AIS")]
+    SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]
+
+    source = forms.ChoiceField(
+        choices=BRON_CHOICES, 
+        initial="medimo",
+        label="Bron",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    scope = forms.ChoiceField(
+        choices=SCOPE_CHOICES, 
+        initial="afdeling",
+        label="Type Review",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    medimo_text = forms.CharField(
+        label="Plak hier de tekst uit het AIS",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control medimo-textarea', 
+            'rows': 12, 
+            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier...\n(Bijvoorbeeld: "Overzicht medicatie...")'
+        }),
+        required=True
+    )

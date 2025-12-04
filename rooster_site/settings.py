@@ -276,3 +276,14 @@ VAPID_SUB = os.getenv("VAPID_SUB")
 
 # === Custom constants ===
 APOTHEEK_JANSEN_ORG_ID = 1
+
+# === MedicatieReview API ===
+# Deze key is nodig om de JSON versleuteld in Postgres op te slaan
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+
+if DEBUG:
+    # Lokaal: we pakken de DEV url of vallen terug op localhost
+    MEDIMO_API_URL = os.getenv("DEV_MEDIMO_API_URL", "http://127.0.0.1:8001/api/review")
+else:
+    # Productie: we pakken de PROD url (Lambda)
+    MEDIMO_API_URL = os.getenv("PROD_MEDIMO_API_URL")

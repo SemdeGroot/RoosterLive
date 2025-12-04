@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nieuwe Review{% endblock %}
+{% block header_title %}Nieuwe Review{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card birthdays-card">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/generatereview-256x256.png' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Gegevens invoeren</h2>
+        <p>Plak de gegevens uit Medimo om de analyse te starten.</p>
+      </div>
+    </div>
+
+    <form method="post" class="form" style="padding: 0 16px 16px;">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight:600;">{{ form.source.label }}</label>
+            {{ form.source }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight:600;">{{ form.scope.label }}</label>
+            {{ form.scope }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight:600;">{{ form.medimo_text.label }}</label>
+            {{ form.medimo_text }}
+            {% if form.medimo_text.errors %}
+                <div style="color:red; font-size:0.9em;">{{ form.medimo_text.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn">Start Analyse</button>
+            <a href="{% url 'medicatiebeoordeling' %}" class="btn" style="background:#eee; color:#333;">Annuleren</a>
+        </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

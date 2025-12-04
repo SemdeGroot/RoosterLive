@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Historie Reviews{% endblock %}
+{% block header_title %}Historie{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card birthdays-card">
+    <div class="agenda-section">
+        <div class="birthday-header agenda-section-header">
+            <img src="{% static 'img/openoldreview-256x256.png' %}" alt="" class="birthday-icon">
+            <div class="birthday-header-text">
+                <h2>Historie</h2>
+                <p>Overzicht van uitgevoerde analyses.</p>
+            </div>
+            <a href="{% url 'medicatiebeoordeling' %}" class="btn" style="background:#eee; color:#333;">Terug</a>
+        </div>
+
+        {% if afdelingen %}
+            <ul class="birthday-list agenda-list">
+                {% for afd in afdelingen %}
+                    <li class="birthday-item">
+                        <div class="birthday-main">
+                            <div class="birthday-left">
+                                <span class="birthday-name">{{ afd.afdeling }}</span>
+                                <div class="birthday-meta">
+                                    <span class="agenda-description">
+                                        {{ afd.created_at|date:"d-m-Y H:i" }} door {{ afd.created_by.username|default:"Onbekend" }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="birthday-right">
+                                <a href="{% url 'medicatiebeoordeling_afdeling_detail' afd.pk %}" class="btn btn-icon">
+                                    ➔
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="birthday-empty">Nog geen reviews gemaakt.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
