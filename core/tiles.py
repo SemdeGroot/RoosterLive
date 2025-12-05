@@ -59,7 +59,7 @@ TILE_GROUPS = {
     "medicatiebeoordeling": [
         {
             "name": "Nieuwe Review",
-            "img": "generatereview-256x256.png",
+            "img": "createreview-256x256.png",
             "url_name": "medicatiebeoordeling_create",
             "perm": "can_perform_medicatiebeoordeling"
         },

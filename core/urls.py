@@ -126,6 +126,7 @@ urlpatterns = [
     path("medicatiebeoordeling/genereren/", med_views.review_create, name="medicatiebeoordeling_create"),
     # Oude review openen
     path("medicatiebeoordeling/historie/", med_views.review_list, name="medicatiebeoordeling_list"),
+    path("medicatiebeoordeling/search/", med_views.review_search_api, name="medicatiebeoordeling_search_api"),
     # med review settings aanpassen
     path("medicatiebeoordeling/instellingen/", med_views.settings_view, name="medicatiebeoordeling_settings"),
     # Details

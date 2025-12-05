@@ -287,3 +287,8 @@ if DEBUG:
 else:
     # Productie: we pakken de PROD url (Lambda)
     MEDIMO_API_URL = os.getenv("PROD_MEDIMO_API_URL")
+
+LANGUAGE_CODE = 'nl-nl'
+TIME_ZONE = 'Europe/Amsterdam'
+USE_I18N = True
+USE_TZ = True

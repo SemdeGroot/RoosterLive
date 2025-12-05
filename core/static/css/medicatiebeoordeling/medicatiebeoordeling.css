@@ -185,35 +185,32 @@
 }
 
 /* =========================================
-   KOLOM UITLIJNING & BREEDTES
+   KOLOM UITLIJNING & BREEDTES (UPDATED V2)
    ========================================= */
 
-/* 1. Afdeling Detail: Patiënten Lijst (.table-patient-list) */
-/* Totaal: 100% */
-.table-patient-list th:nth-child(1), .table-patient-list td:nth-child(1) { width: 40%; }
-.table-patient-list th:nth-child(2), .table-patient-list td:nth-child(2) { width: 30%; }
-.table-patient-list th:nth-child(3), .table-patient-list td:nth-child(3) { width: 30%; }
+/* 1. Afdeling Detail: Patiënten Lijst (.table-patient-list) 
+   Kolommen: Naam, Geb.Datum, Gewijzigd, Door, Actie */
+.table-patient-list th:nth-child(1), .table-patient-list td:nth-child(1) { width: 25%; } /* Naam */
+.table-patient-list th:nth-child(2), .table-patient-list td:nth-child(2) { width: 15%; } /* Geb. Datum */
+.table-patient-list th:nth-child(3), .table-patient-list td:nth-child(3) { width: 20%; } /* Gewijzigd */
+.table-patient-list th:nth-child(4), .table-patient-list td:nth-child(4) { width: 25%; } /* Door */
+.table-patient-list th:nth-child(5), .table-patient-list td:nth-child(5) { width: 15%; } /* Actie */
 
-/* 2. Historie: Afdelingen Lijst (.table-afdeling-history) */
-/* Totaal: 100% */
+/* 2. Historie: Afdelingen Lijst (.table-afdeling-history) 
+   (Hier verandert niets) */
 .table-afdeling-history th:nth-child(1), .table-afdeling-history td:nth-child(1) { width: 35%; }
 .table-afdeling-history th:nth-child(2), .table-afdeling-history td:nth-child(2) { width: 20%; }
 .table-afdeling-history th:nth-child(3), .table-afdeling-history td:nth-child(3) { width: 25%; }
 .table-afdeling-history th:nth-child(4), .table-afdeling-history td:nth-child(4) { width: 20%; }
 
-/* 3. Historie: Patiënten Zoekresultaten (.table-patient-history) */
-/* Totaal: 100% */
-.table-patient-history th:nth-child(1), .table-patient-history td:nth-child(1) { width: 30%; }
-.table-patient-history th:nth-child(2), .table-patient-history td:nth-child(2) { width: 20%; }
-.table-patient-history th:nth-child(3), .table-patient-history td:nth-child(3) { width: 25%; }
-.table-patient-history th:nth-child(4), .table-patient-history td:nth-child(4) { width: 25%; }
-
-/* 4. Patiënt Detail: Medicatie (.table-medication) */
-/* Totaal: 100% */
-.table-medication th:nth-child(1), .table-medication td:nth-child(1) { width: 30%; }
-.table-medication th:nth-child(2), .table-medication td:nth-child(2) { width: 20%; }
-.table-medication th:nth-child(3), .table-medication td:nth-child(3) { width: 50%; }
-
+/* 3. Historie: Patiënten Zoekresultaten (.table-patient-history) 
+   NIEUWE INDELING: Naam, Geb. Datum, Afdeling, Gewijzigd, Door, Actie */
+.table-patient-history th:nth-child(1), .table-patient-history td:nth-child(1) { width: 20%; } /* Naam */
+.table-patient-history th:nth-child(2), .table-patient-history td:nth-child(2) { width: 15%; } /* Geb. Datum (NIEUW) */
+.table-patient-history th:nth-child(3), .table-patient-history td:nth-child(3) { width: 15%; } /* Afdeling */
+.table-patient-history th:nth-child(4), .table-patient-history td:nth-child(4) { width: 15%; } /* Gewijzigd */
+.table-patient-history th:nth-child(5), .table-patient-history td:nth-child(5) { width: 20%; } /* Door */
+.table-patient-history th:nth-child(6), .table-patient-history td:nth-child(6) { width: 15%; } /* Actie */
 
 /* --- Overige componenten --- */
 .search-container { margin-bottom: 16px; }

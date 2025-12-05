@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from cryptography.fernet import Fernet
+from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 import json
 
 class Roster(models.Model):
@@ -347,30 +347,22 @@ class Werkafspraak(models.Model):
             return ""
         return f"{settings.MEDIA_URL}{self.file_path}"
     
-# --- Helper: Encrypted Field ---
-class EncryptedJSONField(models.TextField):
-    """Slaat data encrypted op met Fernet (AES)."""
-    def get_prep_value(self, value):
-        if value is None: return None
-        f = Fernet(settings.ENCRYPTION_KEY)
-        # Dict -> JSON String -> Bytes -> Encrypted Bytes -> DB String
-        return f.encrypt(json.dumps(value).encode("utf-8")).decode("utf-8")
-
-    def from_db_value(self, value, expression, connection):
-        if value is None: return None
-        f = Fernet(settings.ENCRYPTION_KEY)
-        try:
-            # DB String -> Encrypted Bytes -> Decrypted Bytes -> JSON String -> Dict
-            return json.loads(f.decrypt(value.encode("utf-8")).decode("utf-8"))
-        except Exception:
-            return {}
-        
 class MedicatieReviewAfdeling(models.Model):
     """Vertegenwoordigt één upload/review sessie (bijv. een Afdeling)."""
     afdeling = models.CharField(max_length=255)
     bron = models.CharField(max_length=50, default="medimo")
+    
+    # Tracking
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="afdelingen_created")
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="afdelingen_updated"
+    )
 
     def __str__(self):
         return f"{self.afdeling} ({self.created_at.strftime('%d-%m-%Y')})"
@@ -380,35 +372,65 @@ class MedicatieReviewAfdeling(models.Model):
         verbose_name = "Medicatiereview Afdeling"
         verbose_name_plural = "Medicatiereview Afdelingen"
 
+
 class MedicatieReviewPatient(models.Model):
     """Eén patiënt binnen een afdeling."""
-    # Let op: related_name="patienten" zorgt dat we vanuit afdeling makkelijk bij de patiënten kunnen
-    afdeling = models.ForeignKey(MedicatieReviewAfdeling, on_delete=models.CASCADE, related_name="patienten")
     
-    naam = models.CharField(max_length=255)
-    geboortedatum = models.DateField(null=True, blank=True)
+    # AANGEPAST: on_delete=models.CASCADE
+    # Als de Afdeling verwijderd wordt, worden alle gekoppelde patiënten ook verwijderd.
+    afdeling = models.ForeignKey(
+        MedicatieReviewAfdeling, 
+        on_delete=models.CASCADE, 
+        related_name="patienten"
+        # null=True en blank=True zijn verwijderd omdat de koppeling nu strikt is.
+    )
     
-    # Hier zit de HELE analyse in (medicijnen, STOPP, ACB, etc.), versleuteld.
-    analysis_data = EncryptedJSONField() 
+    # ENCRYPTIE: Wel versleuteld (Persoonsgegevens)
+    naam = EncryptedCharField(max_length=255)
+    geboortedatum = EncryptedDateField(null=True, blank=True)
+    
+    # GEEN ENCRYPTIE: Medische data zonder persoonsgegevens mag als standaard JSON
+    analysis_data = models.JSONField()
+
+    # Tracking historie
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name="patienten_created"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="patienten_updated"
+    ) 
 
     def __str__(self):
         return self.naam
 
     class Meta:
-        ordering = ["naam"]
+        verbose_name = "Medicatiereview Patiënt"
+        verbose_name_plural = "Medicatiereview Patiënten"
+
 
 class MedicatieReviewComment(models.Model):
     """Opmerkingen van de apotheker, gekoppeld aan ID."""
+    
+    # DIT STOND AL GOED: on_delete=models.CASCADE
+    # Als de Patiënt verwijderd wordt (handmatig of via cascade van de afdeling),
+    # worden de comments ook verwijderd.
     patient = models.ForeignKey(MedicatieReviewPatient, on_delete=models.CASCADE, related_name="comments")
     
-    # We slaan het ID op (bijv. 2 voor Maag/Darm). 
-    # De naam (Maag/Darm) halen we live uit de JSON data van de patiënt, niet uit deze tabel.
     jansen_group_id = models.IntegerField() 
     
-    tekst = models.TextField(blank=True)
+    # ENCRYPTIE: Wel versleuteld (Vrije tekst kan namen bevatten)
+    tekst = EncryptedTextField(blank=True)
+    
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     class Meta:
-        # Uniek per patiënt + groep ID
         unique_together = ("patient", "jansen_group_id")

@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.views.decorators.http import require_GET
+from django.http import HttpResponseForbidden, JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 # Imports van jouw helpers, forms en models
 from core.views._helpers import can
@@ -10,6 +14,174 @@ from core.forms import MedicatieReviewForm
 from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment
 from core.services.medicatiereview_api import call_review_api
 from core.utils.medication import group_meds_by_jansen
+
+# --- HELPER FUNCTIE (Voor JSON API) ---
+def format_dutch_user_name(user):
+    """
+    Zet een User object om naar een string: 'Voornaam Achternaam'.
+    Eerste letter hoofdletter. Dit doet hetzelfde als je template tag,
+    maar dan binnen Python voor de JSON response.
+    """
+    if not user:
+        return "-"
+    
+    # Probeer first + last name, anders username
+    full_name = f"{user.first_name} {user.last_name}".strip()
+    if not full_name:
+        return user.username
+
+    parts = full_name.split()
+    if not parts:
+        return full_name
+        
+    # Eerste woord Hoofdletter
+    parts[0] = parts[0].capitalize()
+    # Laatste woord Hoofdletter (indien aanwezig)
+    if len(parts) > 1:
+        parts[-1] = parts[-1].capitalize()
+        
+    return " ".join(parts)
+
+# --- STANDAARD LIST VIEW (Server-side rendered) ---
+@login_required
+def review_list(request):
+    """
+    Toont de pagina met standaard de EERSTE 10 items al ingeladen.
+    Dit voorkomt 'layout shift' en is sneller.
+    """
+    if not can(request.user, "can_view_medicatiebeoordeling"):
+        return HttpResponseForbidden("Geen toegang.")
+    
+    # 1. Afdelingen (Eerste 10, gesorteerd op laatst gewijzigd)
+    qs_afd = MedicatieReviewAfdeling.objects.all().select_related('created_by', 'updated_by')
+    qs_afd = qs_afd.order_by('-updated_at')
+    
+    paginator_afd = Paginator(qs_afd, 10)
+    afdelingen_page = paginator_afd.get_page(1) # We laden initieel altijd pagina 1
+
+    # 2. Patiënten (Eerste 10, gesorteerd op laatst gewijzigd)
+    qs_pat = MedicatieReviewPatient.objects.all().select_related('afdeling', 'created_by', 'updated_by')
+    qs_pat = qs_pat.order_by('-updated_at')
+    
+    paginator_pat = Paginator(qs_pat, 10)
+    patienten_page = paginator_pat.get_page(1) # We laden initieel altijd pagina 1
+
+    return render(request, "medicatiebeoordeling/list.html", {
+        "afdelingen_page": afdelingen_page,
+        "patienten_page": patienten_page
+    })
+
+# --- AJAX API VIEW ---
+@login_required
+@require_GET
+def review_search_api(request):
+    """
+    API endpoint voor AJAX search & load more.
+    Geeft JSON terug met geformatteerde data.
+    Handelt encryptie af door memory-optimized Python search.
+    """
+    search_type = request.GET.get('type') # 'afdeling' of 'patient'
+    query = request.GET.get('q', '').strip().lower()
+    page_number = int(request.GET.get('page', 1))
+    
+    data = []
+    has_next = False
+    next_page_num = None
+
+    # =========================================================
+    # 1. AFDELINGEN (Niet encrypted -> Database search)
+    # =========================================================
+    if search_type == 'afdeling':
+        qs = MedicatieReviewAfdeling.objects.all().select_related('created_by', 'updated_by')
+        
+        if query:
+            qs = qs.filter(afdeling__icontains=query)
+        
+        qs = qs.order_by('-updated_at')
+        
+        paginator = Paginator(qs, 10)
+        page_obj = paginator.get_page(page_number)
+        
+        has_next = page_obj.has_next()
+        if has_next:
+            next_page_num = page_obj.next_page_number()
+        
+        for afd in page_obj:
+            # Tijdzone conversie
+            raw_date = afd.updated_at if afd.updated_at else afd.created_at
+            local_date = timezone.localtime(raw_date)
+            
+            show_user = afd.updated_by if afd.updated_by else afd.created_by
+            
+            data.append({
+                'id': afd.pk,
+                'naam': afd.afdeling,
+                'datum': local_date.strftime('%d-%m-%Y %H:%M'),
+                'door': format_dutch_user_name(show_user),
+                'detail_url': f"/medicatiebeoordeling/afdeling/{afd.pk}/"
+            })
+
+    # =========================================================
+    # 2. PATIENTEN (Encrypted -> Python search + Memory Opt.)
+    # =========================================================
+    elif search_type == 'patient':
+        # STAP A: OPTIMALISATIE
+        # We halen ALLEEN de velden op die we nodig hebben voor de lijst en het zoeken.
+        # De zware 'analysis_data' JSON wordt NIET ingeladen. Dit bespaart enorm veel RAM.
+        all_patients = MedicatieReviewPatient.objects.only(
+            'id', 'naam', 'geboortedatum', 'afdeling', 
+            'created_at', 'updated_at', 'created_by', 'updated_by'
+        ).select_related('afdeling', 'created_by', 'updated_by').order_by('-updated_at')
+        
+        filtered_results = []
+
+        # STAP B: Zoeken in Python (Decryptie vindt hier plaats)
+        if query:
+            for pat in all_patients:
+                # 1. Check Naam
+                if query in pat.naam.lower():
+                    filtered_results.append(pat)
+                    continue 
+
+                # 2. Check Geboortedatum
+                if pat.geboortedatum:
+                    if query in pat.geboortedatum.strftime('%d-%m-%Y'):
+                        filtered_results.append(pat)
+        else:
+            # Geen zoekterm? Dan tonen we gewoon alles (Paginator pakt dit op)
+            filtered_results = all_patients
+
+        # STAP C: Paginatie
+        paginator = Paginator(filtered_results, 10)
+        page_obj = paginator.get_page(page_number)
+        
+        has_next = page_obj.has_next()
+        if has_next:
+            next_page_num = page_obj.next_page_number()
+        
+        for pat in page_obj:
+            # Tijdzone conversie
+            raw_date = pat.updated_at if pat.updated_at else pat.created_at
+            local_date = timezone.localtime(raw_date)
+            
+            show_user = pat.updated_by if pat.updated_by else pat.created_by
+            geb_datum = pat.geboortedatum.strftime('%d-%m-%Y') if pat.geboortedatum else "-"
+            
+            data.append({
+                'id': pat.pk,
+                'naam': pat.naam,
+                'geboortedatum': geb_datum,
+                'afdeling': pat.afdeling.afdeling,
+                'datum': local_date.strftime('%d-%m-%Y %H:%M'),
+                'door': format_dutch_user_name(show_user),
+                'detail_url': f"/medicatiebeoordeling/patient/{pat.pk}/"
+            })
+
+    return JsonResponse({
+        'results': data,
+        'has_next': has_next,
+        'next_page': next_page_num
+    })
 
 @login_required
 def dashboard(request):
@@ -56,23 +228,6 @@ def delete_patient(request, pk):
         return redirect("medicatiebeoordeling_afdeling_detail", pk=afd_pk)
     return redirect("medicatiebeoordeling_list")
 
-# --- LIST VIEW ---
-@login_required
-def review_list(request):
-    if not can(request.user, "can_view_medicatiebeoordeling"):
-        return HttpResponseForbidden("Geen toegang.")
-    
-    # 1. Afdelingen
-    afdelingen = MedicatieReviewAfdeling.objects.all().select_related('created_by')
-    
-    # 2. Alle Patiënten (voor de patiënt-zoekbalk)
-    patienten = MedicatieReviewPatient.objects.all().select_related('afdeling')
-
-    return render(request, "medicatiebeoordeling/list.html", {
-        "afdelingen": afdelingen,
-        "patienten": patienten
-    })
-
 @login_required
 def review_create(request):
     """
@@ -99,7 +254,8 @@ def review_create(request):
                 afdeling_obj = MedicatieReviewAfdeling.objects.create(
                     afdeling=afdeling_naam,
                     bron=source,
-                    created_by=request.user
+                    created_by=request.user,
+                    updated_by=request.user
                 )
 
                 # 3. Opslaan Patiënten
@@ -109,8 +265,10 @@ def review_create(request):
                     new_patients.append(MedicatieReviewPatient(
                         afdeling=afdeling_obj,
                         naam=p_data.get("naam", "Onbekend"),
-                        geboortedatum=p_data.get("geboortedatum"), # <--- Opslaan!
-                        analysis_data=p_data
+                        geboortedatum=p_data.get("geboortedatum"),
+                        analysis_data=p_data,
+                        created_by=request.user,
+                        updated_by=request.user
                     ))
                 
                 MedicatieReviewPatient.objects.bulk_create(new_patients)
@@ -158,6 +316,8 @@ def patient_detail(request, pk):
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
+        # 1. Loop door de comments en sla ze op
+        # We houden bij of er iets is gebeurd, al is dat bij een save-knop altijd 'waar'
         for group_id, group_data in grouped_meds:
             form_key = f"comment_{group_id}"
             if form_key in request.POST:
@@ -167,6 +327,18 @@ def patient_detail(request, pk):
                     jansen_group_id=group_id,
                     defaults={"tekst": tekst, "updated_by": request.user}
                 )
+        
+        # 2. UPDATE DE PATIËNT (De fix)
+        # Door save() aan te roepen, wordt updated_at automatisch op nu() gezet
+        patient.updated_by = request.user
+        patient.save()
+
+        # 3. UPDATE DE AFDELING (De fix voor de parent)
+        # Zodat de afdeling ook bovenaan komt te staan in de lijst met 'laatst gewijzigd'
+        afdeling = patient.afdeling
+        afdeling.updated_by = request.user
+        afdeling.save()
+
         messages.success(request, "Opmerkingen opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
@@ -177,35 +349,25 @@ def patient_detail(request, pk):
     comments_lookup = {c.jansen_group_id: c.tekst for c in db_comments}
 
     # 3. Injecteer Standaardvragen in lege comments
-    # We moeten weten welk medicijn in welke groep zit.
-    # We maken een map: { "Metoprolol": group_id, ... }
     med_to_group = {}
     for gid, gdata in grouped_meds:
         for m in gdata['meds']:
-            # We gebruiken de 'clean' naam uit de analyse
             med_to_group[m['clean']] = gid
 
     for vraag_item in vragen:
-        # vraag_item = { "vraag": "...", "betrokken_middelen": "Metoprolol" }
         middelen_str = vraag_item.get("betrokken_middelen", "")
         if not middelen_str: continue
         
-        # Soms zijn het meerdere middelen, gescheiden door komma?
-        # Laten we simpel beginnen en kijken of de string voorkomt in onze map keys
         target_group_id = None
-        
-        # Probeer te matchen
         for med_naam, gid in med_to_group.items():
             if med_naam in middelen_str:
                 target_group_id = gid
                 break
         
-        # Als we een groep hebben gevonden én er is nog geen tekst:
         if target_group_id:
             huidige_tekst = comments_lookup.get(target_group_id, "")
             vraag_tekst = f"❓ {vraag_item['vraag']}"
             
-            # Voeg alleen toe als hij er nog niet in staat
             if vraag_tekst not in huidige_tekst:
                 if huidige_tekst:
                     comments_lookup[target_group_id] = huidige_tekst + "\n" + vraag_tekst
@@ -219,7 +381,6 @@ def patient_detail(request, pk):
         "grouped_meds": grouped_meds,
         "comments_lookup": comments_lookup
     })
-
 @login_required
 def settings_view(request):
     """
