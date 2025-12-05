@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static form_extras %}
 
@@ -7,7 +6,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
-    <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -18,14 +17,15 @@
         <div class="card-header">
             <div>
                 <h2 class="main-title">{{ patient.naam }}</h2>
-                <div style="display:flex; gap:16px; margin-top:6px; color:var(--muted); font-size:0.95rem;">
-                    <div style="display:flex; align-items:center;">
-                        <img src="{% static 'img/geboortedatum-64x64.png' %}" class="icon-sm" alt="Geb">
+                <div class="header-meta">
+                    <div class="header-meta-item">
+                        <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
                         {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
                     </div>
+                    
                     {% if afdeling.afdeling %}
-                    <div style="display:flex; align-items:center;">
-                        <img src="{% static 'img/hospital_department-64x64.png' %}" class="icon-sm" alt="Afd">
+                    <div class="header-meta-item">
+                        <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
                         {{ afdeling.afdeling }}
                     </div>
                     {% endif %}
@@ -41,14 +41,15 @@
 
     <div class="review-card">
         <div class="card-header">
-            <h3 class="sub-title">Analyses</h3> </div>
+            <h3 class="sub-title">Analyses</h3> 
+        </div>
         <div class="card-body">
             <div class="analysis-container">
                 
                 <div class="analysis-box">
                     <div class="analysis-header-row">
                         <img src="{% static 'img/stop-64x64.png' %}" class="icon-md" alt="STOPP">
-                        <h4 class="analysis-title">STOPP Criteria</h4>
+                        <h4 class="analysis-title">Mogelijke STOPP Criteria</h4>
                     </div>
                     
                     <div class="criteria-content {% if analysis.analyses.stopp %}stopp-box{% else %}safe-box{% endif %}">
@@ -68,42 +69,50 @@
                             </ul>
                         {% else %}
                             <div style="display:flex; align-items:center; gap:8px; color:#9cdca3;">
-                                <span>✅</span> Geen STOPP-criteria gevonden.
+                                Geen STOPP-criteria gevonden.
                             </div>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="analysis-box">
-                    <div class="analysis-header-row">
-                        <img src="{% static 'img/anticholinerg-64x64.png' %}" class="icon-md" alt="ACB">
-                        <h4 class="analysis-title">Anticholinerge Belasting</h4>
-                    </div>
+    <div class="analysis-header-row">
+                        <img src="{% static 'img/anticholinerg-64x64.png' %}" class="icon-md" alt="STOPP">
+        <h4 class="analysis-title">Anticholinerge Belasting</h4>
+    </div>
 
-                    {% with score=analysis.analyses.acb.score %}
-                    <div class="criteria-content {% if score > 0 %}acb-box{% else %}safe-box{% endif %}">
+            {% with score=analysis.analyses.acb.score %}
+                    <div class="criteria-content acb-dynamic-box 
+                        {% if score == 0 %}acb-score-0
+                        {% elif score == 1 %}acb-score-1
+                        {% elif score == 2 %}acb-score-2
+                        {% else %}acb-score-high{% endif %}">
+                        
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                            <span class="acb-badge 
-                                {% if score == 0 %}acb-0
-                                {% elif score == 1 %}acb-1
-                                {% elif score == 2 %}acb-2
-                                {% else %}acb-high{% endif %}">
-                                {{ score }}
-                            </span>
-                            <strong style="{% if score > 0 %}color:#d0e6ff;{% else %}color:#9cdca3;{% endif %}">
-                                {{ analysis.analyses.acb.interpretatie }}
+                            <strong class="acb-text-color" style="font-size:1.1rem;">
+                                Score: {{ score }}
                             </strong>
+                            
+                            <span style="opacity:0.8;">|</span>
+                            
+                            <span {% if score == 0 %}style="color: #9cdca3;"{% endif %}>
+                                {{ analysis.analyses.acb.interpretatie }}
+                            </span>
                         </div>
+
                         {% if analysis.analyses.acb.details %}
                             <ul style="padding-left:20px; margin:0;">
                                 {% for detail in analysis.analyses.acb.details %}
-                                    <li>{{ detail.middel }} (Score: {{ detail.score }})</li>
+                                    <li>
+                                        {{ detail.middel }} 
+                                        <span style="opacity:0.7; font-size:0.9em;">(Score: {{ detail.score }})</span>
+                                    </li>
                                 {% endfor %}
                             </ul>
                         {% endif %}
                     </div>
                     {% endwith %}
-                </div>
+        </div>
 
                 {% if analysis.analyses.dubbelmedicatie %}
                 <div class="analysis-box">
@@ -133,7 +142,7 @@
 
     <div class="review-card">
         <div class="card-header">
-            <h3 class="sub-title">Medicatie & Opmerkingen</h3>
+            <h3 class="sub-title">Medicatieoverzicht & Opmerkingen</h3>
         </div>
         <div class="card-body">
             <div style="display:flex; flex-direction:column; gap:32px;">
@@ -144,12 +153,13 @@
                             {{ group_data.naam }}
                         </h4>
 
-                        <table class="med-table">
+                        <!-- Class table-medication toegevoegd -->
+                        <table class="med-table table-medication">
                             <thead>
                                 <tr>
-                                    <th style="width:30%">Middel</th>
-                                    <th style="width:20%">Gebruik</th>
-                                    <th style="width:50%">Opmerking (Medimo)</th>
+                                    <th>Middel</th>
+                                    <th>Gebruik</th>
+                                    <th>Opmerking (Medimo)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -176,7 +186,7 @@
 
             <div style="margin-top:32px; text-align:right;">
                  <button type="submit" class="btn btn-save">
-                    Opslaan & Bijwerken
+                    Opslaan
                 </button>
             </div>
         </div>

@@ -1,3 +1,4 @@
+// core/static/medicatiebeoordeling/medicatiebeoordeling.js
 document.addEventListener("DOMContentLoaded", function() {
     
     function setupSearch(inputId, tableId) {

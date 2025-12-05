@@ -65,7 +65,7 @@ TILE_GROUPS = {
         },
         {
             "name": "Historie",
-            "img": "openoldreview-256x256.png",
+            "img": "history-256x256.png",
             "url_name": "medicatiebeoordeling_list",
             "perm": "can_view_medicatiebeoordeling"
         },

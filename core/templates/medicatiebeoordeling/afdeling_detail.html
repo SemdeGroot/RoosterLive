@@ -6,7 +6,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
-    <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
   <script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling.js' %}" defer></script>
 {% endblock %}
 
@@ -25,12 +25,13 @@
             <input type="text" id="searchPatient" class="search-input" placeholder="Filter patiënten in deze lijst...">
         </div>
 
-        <table id="tablePatient" class="med-table">
+        <!-- Class table-patient-list toegevoegd voor correcte kolombreedtes -->
+        <table id="tablePatient" class="med-table table-patient-list">
             <thead>
                 <tr>
-                    <th style="width: 40%;">Naam</th>
-                    <th style="width: 30%;">Geboortedatum</th>
-                    <th style="width: 30%;">Rapport</th>
+                    <th>Naam</th>
+                    <th>Geboortedatum</th>
+                    <th>Rapport</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,14 +42,14 @@
                         {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
                     </td>
                     <td>
-                        <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn" style="padding:6px 12px;">
+                        <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn" style="padding:6px 12px; font-size: 0.9em;">
                             Openen
                         </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="3" style="padding:20px; text-align:center; color:var(--muted);">Geen patiënten gevonden.</td>
+                    <td colspan="3" style="text-align:center; color:var(--muted);">Geen patiënten gevonden.</td>
                 </tr>
                 {% endfor %}
             </tbody>
