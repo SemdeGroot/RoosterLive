@@ -13,7 +13,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, Organization, NewsItem, Werkafspraak
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling
 
 UserModel = get_user_model()
 
@@ -536,8 +536,15 @@ class WerkafspraakForm(forms.ModelForm):
                 f"Het bestand is te groot. Maximaal {self.MAX_FILE_SIZE_MB} MB toegestaan."
             )
         return f
-    
+
 class MedicatieReviewForm(forms.Form):
+    
+    afdeling_id = forms.ModelChoiceField(
+        queryset=MedicatieReviewAfdeling.objects.none(), # Wordt in view gevuld
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control django-select2'})
+    )
+    
     BRON_CHOICES = [("medimo", "Medimo AIS")]
     SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]
 
@@ -563,3 +570,34 @@ class MedicatieReviewForm(forms.Form):
         }),
         required=True
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Vul de queryset zodat validatie werkt
+        self.fields['afdeling_id'].queryset = MedicatieReviewAfdeling.objects.all()
+
+
+class AfdelingEditForm(forms.ModelForm):
+    class Meta:
+        model = MedicatieReviewAfdeling
+        fields = ['organisatie', 'afdeling', 'locatie', 'email', 'email2', 'telefoon']
+        widgets = {
+            'organisatie': forms.Select(attrs={'class': 'admin-input'}),
+            'afdeling': forms.TextInput(attrs={'class': 'admin-input'}),
+            'locatie': forms.TextInput(attrs={'class': 'admin-input'}),
+            'email': forms.EmailInput(attrs={'class': 'admin-input'}),
+            'email2': forms.EmailInput(attrs={'class': 'admin-input'}),
+            'telefoon': forms.TextInput(attrs={'class': 'admin-input'}),
+        }
+        labels = {
+            'organisatie': 'Organisatie',
+            'afdeling': 'Afdeling',
+            'locatie': 'Locatie',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Maak verplichte velden expliciet (hoewel model dat ook al doet)
+        self.fields['organisatie'].required = True
+        self.fields['afdeling'].required = True
+        self.fields['locatie'].required = True

@@ -6,50 +6,263 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
-    <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
+  <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
-<div class="card birthdays-card">
+<div class="card birthdays-card" style="margin-bottom: 30px;">
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
       <img src="{% static 'img/database-128x128.png' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
         <h2>Gegevens invoeren</h2>
-        <p>Plak de gegevens uit Medimo om de analyse te starten.</p>
+        <p>Selecteer de afdeling en plak het medicatieoverzicht om de analyse te starten.</p>
       </div>
     </div>
 
     <form method="post" class="form" style="padding: 0 16px 16px;">
         {% csrf_token %}
+        <input type="hidden" name="btn_start_review" value="1">
         
         {% if form.non_field_errors %}
             <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <div style="margin-bottom: 15px;">
-            <label style="font-weight:600;">{{ form.source.label }}</label>
-            {{ form.source }}
-        </div>
+        <div style="margin-bottom: 20px;">
+            <label class="section-label">Selecteer Afdeling</label>
+            
+            {{ form.afdeling_id }}
 
-        <div style="margin-bottom: 15px;">
-            <label style="font-weight:600;">{{ form.scope.label }}</label>
-            {{ form.scope }}
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label style="font-weight:600;">{{ form.medimo_text.label }}</label>
-            {{ form.medimo_text }}
-            {% if form.medimo_text.errors %}
-                <div style="color:red; font-size:0.9em;">{{ form.medimo_text.errors }}</div>
+            {% if form.afdeling_id.errors %}
+                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.afdeling_id.errors }}</div>
             {% endif %}
         </div>
 
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="margin-bottom: 15px; flex:1;">
+                <label class="section-label">{{ form.source.label }}</label>
+                {{ form.source }}
+            </div>
+            <div style="margin-bottom: 15px; flex:1;">
+                <label class="section-label">{{ form.scope.label }}</label>
+                {{ form.scope }}
+            </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label class="section-label">{{ form.medimo_text.label }}</label>
+            {{ form.medimo_text }}
+        </div>
         <div style="display:flex; gap:10px;">
             <button type="submit" class="btn">Start Analyse</button>
-            <a href="{% url 'medicatiebeoordeling' %}" class="btn" style="background:#eee; color:#333;">Annuleren</a>
+            <a href="{% url 'medicatiebeoordeling_list' %}" class="btn btn-danger">Annuleren</a>
         </div>
     </form>
   </div>
 </div>
+
+<div class="card birthdays-card" id="manage-card">
+    <div class="agenda-section">
+      <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/department-128x128.png' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+            <h2>Afdeling toevoegen</h2>
+            <p>Nieuwe afdeling aanmaken.</p>
+        </div>
+      </div>
+
+      <form method="post" autocomplete="off" id="afdelingAddForm" class="form" style="padding: 0 16px 16px;">
+        {% csrf_token %}
+        <input type="hidden" name="btn_save_afdeling" value="1">
+        
+        <div style="margin-bottom:12px;">
+            <label class="section-label">{{ afdeling_form.organisatie.label }}</label>
+            {{ afdeling_form.organisatie }}
+        </div>
+
+        <div class="admin-grid" style="margin-bottom:12px;">
+            <div>
+                <label class="section-label">{{ afdeling_form.afdeling.label }}</label>
+                {{ afdeling_form.afdeling }}
+            </div>
+            <div>
+                <label class="section-label">{{ afdeling_form.locatie.label }}</label>
+                {{ afdeling_form.locatie }}
+            </div>
+        </div>
+          
+        <div class="admin-grid" style="margin-bottom:12px;">
+            <div>
+                <label class="section-label">E-mailadres (optioneel)</label>
+                {{ afdeling_form.email }}
+            </div>
+            <div>
+                 <label class="section-label">Telefoonnummer (optioneel)</label>
+                 {{ afdeling_form.telefoon }}
+            </div>
+        </div>
+        <div style="margin-bottom:15px;">
+             <label class="section-label">E-mailadres 2 (optioneel)</label>
+             {{ afdeling_form.email2 }}
+        </div>
+
+        <button class="btn block org-save" type="submit" style="width:100%;">Toevoegen</button>
+      </form>
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+      <hr style="border-color:var(--border); margin:0 0 20px 0;">
+
+      <div class="search-bar" style="margin-bottom:15px;">
+        <input type="text" id="manageSearchInput" placeholder="Zoek in afdelingenlijst...">
+      </div>
+
+      <div class="org-table-wrap" style="max-height: 500px; overflow-y:auto;">
+        <table class="manage-table org-table" id="manageTable">
+          <thead>
+            <tr>
+              <th>Afdeling</th>
+              <th>Locatie</th>
+              <th>Organisatie</th>
+              <th style="width:140px; text-align:right;">Acties</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for afd in afdelingen %}
+            <tr class="manage-row" id="row-{{ afd.id }}">
+              <td style="font-weight:600; color:var(--text);">
+                  {{ afd.afdeling }}
+              </td>
+              <td>{{ afd.locatie }}</td>
+              <td style="color:gray;">
+                  {{ afd.organisatie.name }}
+              </td>
+              
+              <td style="text-align:right;">
+                <div class="actions-wrap" style="flex-direction:row; justify-content:flex-end; gap:6px;">
+                    <button type="button" class="btn small" onclick="toggleEditRow('{{ afd.id }}')">
+                      Bewerken
+                    </button>
+                    
+                    <form method="post" 
+                          action="{% url 'medicatiebeoordeling_delete_afdeling' afd.id %}" 
+                          onsubmit="return confirm('Weet je zeker dat je {{ afd.afdeling }} wilt verwijderen?');" 
+                          style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn danger small" style="padding:6px 8px;" title="Verwijderen">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+              </td>
+            </tr>
+
+            <tr id="edit-row-{{ afd.id }}" class="edit-row" style="display:none; background-color:var(--panel-2);">
+                <td colspan="4" style="padding:15px;">
+                    <form method="post" autocomplete="off">
+                        {% csrf_token %}
+                        <input type="hidden" name="btn_save_afdeling" value="1">
+                        <input type="hidden" name="afdeling_id_edit" value="{{ afd.id }}">
+
+                        <div class="edit-grid">
+                             <div style="grid-column: span 2;">
+                                <label style="font-size:0.85em; font-weight:600;">Organisatie</label>
+                                <select name="organisatie" class="admin-input" style="width:100%;">
+                                    {% for org in organizations %} 
+                                        <option value="{{ org.id }}" {% if afd.organisatie.id == org.id %}selected{% endif %}>{{ org.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.85em; font-weight:600;">Afdeling</label>
+                                <input type="text" name="afdeling" value="{{ afd.afdeling }}" class="admin-input">
+                            </div>
+                            <div>
+                                <label style="font-size:0.85em; font-weight:600;">Locatie</label>
+                                <input type="text" name="locatie" value="{{ afd.locatie }}" class="admin-input">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:10px;">
+                            <label style="font-size:0.85em; font-weight:600;">Email (optioneel)</label>
+                            <input type="email" name="email" value="{{ afd.email|default:'' }}" class="admin-input">
+                        </div>
+                        <div class="edit-grid">
+                            <div>
+                                <label style="font-size:0.85em; font-weight:600;">Email 2 (optioneel)</label>
+                                <input type="email" name="email2" value="{{ afd.email2|default:'' }}" class="admin-input">
+                            </div>
+                            <div>
+                                <label style="font-size:0.85em; font-weight:600;">Telefoon (optioneel)</label>
+                                <input type="text" name="telefoon" value="{{ afd.telefoon|default:'' }}" class="admin-input">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn" type="submit">Opslaan</button>
+                            <button type="button" class="btn" style="background:#eee; color:#333;" onclick="toggleEditRow('{{ afd.id }}')">Annuleren</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center; padding:20px; color:gray;">Nog geen afdelingen.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialiseer Select2
+        var $select = $('.django-select2').select2({
+            placeholder: "Klik om een afdeling te zoeken...",
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Event listener: Als de dropdown opent, zet de placeholder in het zoekveld
+        $select.on('select2:open', function() {
+            let searchField = document.querySelector('.select2-search__field');
+            if (searchField) {
+                searchField.placeholder = "Typ om te zoeken..."; // Dit is de tekst in het type-veldje
+                searchField.focus();
+            }
+        });
+    });
+
+    // Simpele tabel JS (Rij openklappen)
+    function toggleEditRow(id) {
+        const row = document.getElementById('edit-row-' + id);
+        if (row) {
+            row.style.display = (row.style.display === 'none' || row.style.display === '') ? 'table-row' : 'none';
+        }
+    }
+
+    // Tabel Filter Functie
+    const searchInput = document.getElementById('manageSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('.manage-row');
+            
+            rows.forEach(row => {
+                let text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    }
+</script>
 {% endblock %}

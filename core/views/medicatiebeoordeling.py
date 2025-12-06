@@ -10,8 +10,8 @@ from django.utils import timezone
 # Imports van jouw helpers, forms en models
 from core.views._helpers import can
 from core.tiles import build_tiles
-from core.forms import MedicatieReviewForm
-from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment
+from core.forms import MedicatieReviewForm, AfdelingEditForm
+from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, Organization
 from core.services.medicatiereview_api import call_review_api
 from core.utils.medication import group_meds_by_jansen
 
@@ -236,56 +236,106 @@ def delete_patient(request, pk):
 @login_required
 def review_create(request):
     """
-    Formulier om nieuwe review te starten (API call).
+    Formulier om nieuwe review te starten EN afdelingen te beheren.
     """
     if not can(request.user, "can_perform_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen rechten om uit te voeren.")
 
+    # Context data voor de lijsten
+    all_afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
+    all_organizations = Organization.objects.all().order_by('name')
+    
+    # Init forms
+    review_form = MedicatieReviewForm()
+    afdeling_form = AfdelingEditForm()
+
     if request.method == "POST":
-        form = MedicatieReviewForm(request.POST)
-        if form.is_valid():
-            text = form.cleaned_data['medimo_text']
-            source = form.cleaned_data['source']
-            scope = form.cleaned_data['scope']
+        
+        # --- SCENARIO A: AFDELING BEHEREN (OPSLAAN) ---
+        if "btn_save_afdeling" in request.POST:
+            # Check of we een bestaande bewerken (via hidden field)
+            instance = None
+            if request.POST.get('afdeling_id_edit'):
+                instance = get_object_or_404(MedicatieReviewAfdeling, pk=request.POST.get('afdeling_id_edit'))
 
-            # 1. API Call naar Microservice
-            result, errors = call_review_api(text, source, scope)
-
-            if errors:
-                for e in errors: messages.error(request, e)
-            elif result:
-                # 2. Opslaan Afdeling
-                afdeling_naam = result.get("afdeling", "Onbekend")
-                afdeling_obj = MedicatieReviewAfdeling.objects.create(
-                    afdeling=afdeling_naam,
-                    bron=source,
-                    created_by=request.user,
-                    updated_by=request.user
-                )
-
-                # 3. Opslaan Patiënten
-                patients_data = result.get("data", [])
-                new_patients = []
-                for p_data in patients_data:
-                    new_patients.append(MedicatieReviewPatient(
-                        afdeling=afdeling_obj,
-                        naam=p_data.get("naam", "Onbekend"),
-                        geboortedatum=p_data.get("geboortedatum"),
-                        analysis_data=p_data,
-                        created_by=request.user,
-                        updated_by=request.user
-                    ))
+            afdeling_form = AfdelingEditForm(request.POST, instance=instance)
+            if afdeling_form.is_valid():
+                obj = afdeling_form.save(commit=False)
+                if not instance:
+                    obj.created_by = request.user
+                obj.updated_by = request.user
+                obj.save()
                 
-                MedicatieReviewPatient.objects.bulk_create(new_patients)
-                
-                messages.success(request, f"Analyse klaar! {len(new_patients)} patiënten verwerkt.")
-                return redirect("medicatiebeoordeling_afdeling_detail", pk=afdeling_obj.pk)
+                action = "aangepast" if instance else "aangemaakt"
+                messages.success(request, f"Afdeling '{obj.afdeling}' succesvol {action}.")
+                return redirect("medicatiebeoordeling_create") # Refresh pagina (schoont forms op)
             else:
-                messages.error(request, "Geen antwoord van server.")
-    else:
-        form = MedicatieReviewForm()
+                messages.error(request, "Kon afdeling niet opslaan. Controleer de velden.")
 
-    return render(request, "medicatiebeoordeling/create.html", {"form": form})
+        # --- SCENARIO B: REVIEW STARTEN ---
+        elif "btn_start_review" in request.POST:
+            review_form = MedicatieReviewForm(request.POST)
+            
+            if review_form.is_valid():
+                selected_afdeling = review_form.cleaned_data['afdeling_id']
+                text = review_form.cleaned_data['medimo_text']
+                source = review_form.cleaned_data['source']
+                scope = review_form.cleaned_data['scope']
+
+                # 1. API Call
+                result, errors = call_review_api(text, source, scope)
+
+                if errors:
+                    for e in errors: messages.error(request, e)
+                elif result:
+                    # 2. CONTROLE: Is geparste naam gelijk aan geselecteerde naam?
+                    parsed_naam = result.get("afdeling", "").strip()
+                    selected_naam = selected_afdeling.afdeling.strip()
+
+                    # Case-insensitive check
+                    if parsed_naam.lower() != selected_naam.lower():
+                        messages.error(request, 
+                            f"⚠️ FOUT: Je hebt afdeling '{selected_naam}' geselecteerd, "
+                            f"maar de tekst komt van afdeling '{parsed_naam}'. "
+                            "Pas je selectie aan of controleer de tekst."
+                        )
+                        # We breken af en renderen de pagina opnieuw met errors
+                    else:
+                        # 3. Match OK -> Verwerk Data
+                        
+                        # Optioneel: Oude patiënten van deze afdeling verwijderen voor een 'schone' nieuwe review?
+                        # Omdat we een nieuwe momentopname maken, verwijderen we de oude data van DEZE afdeling.
+                        selected_afdeling.patienten.all().delete()
+
+                        # Update timestamp afdeling
+                        selected_afdeling.updated_by = request.user
+                        selected_afdeling.save()
+
+                        patients_data = result.get("data", [])
+                        new_patients = []
+                        for p_data in patients_data:
+                            new_patients.append(MedicatieReviewPatient(
+                                afdeling=selected_afdeling,
+                                naam=p_data.get("naam", "Onbekend"),
+                                geboortedatum=p_data.get("geboortedatum"),
+                                analysis_data=p_data,
+                                created_by=request.user,
+                                updated_by=request.user
+                            ))
+                        
+                        MedicatieReviewPatient.objects.bulk_create(new_patients)
+                        
+                        messages.success(request, f"Analyse geslaagd voor {selected_naam}. {len(new_patients)} patiënten verwerkt.")
+                        return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
+                else:
+                    messages.error(request, "Geen antwoord van server.")
+
+    return render(request, "medicatiebeoordeling/create.html", {
+        "form": review_form,
+        "afdeling_form": afdeling_form,
+        "afdelingen": all_afdelingen,
+        "organizations": all_organizations,
+    })
 
 @login_required
 def afdeling_detail(request, pk):

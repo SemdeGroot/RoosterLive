@@ -348,13 +348,32 @@ class Werkafspraak(models.Model):
         return f"{settings.MEDIA_URL}{self.file_path}"
     
 class MedicatieReviewAfdeling(models.Model):
-    """Vertegenwoordigt één upload/review sessie (bijv. een Afdeling)."""
-    afdeling = models.CharField(max_length=255)
-    bron = models.CharField(max_length=50, default="medimo")
+    """
+    Stamdata: Een afdeling binnen een organisatie en locatie.
+    """
+    organisatie = models.ForeignKey(
+        "Organization", 
+        on_delete=models.CASCADE, 
+        related_name="medicatie_afdelingen",
+        verbose_name="Organisatie"
+    )
     
-    # Tracking
+    afdeling = models.CharField("Naam afdeling", max_length=255)
+    locatie = models.CharField("Locatie", max_length=255)
+    
+    # Optionele contactgegevens
+    email = models.EmailField("E-mailadres", blank=True)
+    email2 = models.EmailField("E-mailadres 2", blank=True)
+    telefoon = models.CharField("Telefoonnummer", max_length=50, blank=True)
+
+    # Tracking (Wanneer voor het laatst gewijzigd/gebruikt)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="afdelingen_created")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="afdelingen_created"
+    )
     
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -365,12 +384,14 @@ class MedicatieReviewAfdeling(models.Model):
     )
 
     def __str__(self):
-        return f"{self.afdeling} ({self.created_at.strftime('%d-%m-%Y')})"
+        return f"{self.afdeling} - {self.organisatie.name}"
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["organisatie__name", "afdeling"]
         verbose_name = "Medicatiereview Afdeling"
         verbose_name_plural = "Medicatiereview Afdelingen"
+        # Voorkom dubbele afdelingsnamen binnen dezelfde organisatie
+        unique_together = ("organisatie", "afdeling")
 
 
 class MedicatieReviewPatient(models.Model):

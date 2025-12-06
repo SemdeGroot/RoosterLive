@@ -1,0 +1,158 @@
+/* =========================================
+   SELECT2 STYLING - FIXED
+   ========================================= */
+
+/* 1. De Hoofd Container */
+.select2-container {
+    font-family: Inter, system-ui, -apple-system, sans-serif !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    font-size: 16px; 
+}
+
+/* 2. De Input Box (Het veld waar je op klikt) */
+.select2-container--default .select2-selection--single {
+    background-color: #0f141a !important; 
+    border: 1px solid var(--border) !important; /* Altijd muted */
+    border-radius: 10px !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    outline: none !important;
+    box-shadow: none !important; 
+    transition: border-color 0.2s ease;
+}
+
+/* Hover over de dichte input - MOET MUTED BLIJVEN */
+.select2-container--default .select2-selection--single:hover {
+    border-color: var(--border) !important; 
+}
+
+/* Focus / Open status - MOET OOK MUTED BLIJVEN */
+.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--border) !important; /* Was accent, nu muted */
+    border-width: 1px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    outline: none !important;
+}
+
+/* De Tekst */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--text) !important;
+    padding-left: 12px;
+    padding-right: 40px; 
+    display: block;
+    width: 100%;
+    line-height: normal !important; 
+}
+
+/* De Placeholder */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: var(--muted) !important;
+}
+
+/* Het pijltje rechts */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100% !important; 
+    top: 0 !important;
+    right: 8px !important;
+    display: flex;
+    align-items: center;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-top-color: var(--text) !important;
+    border-width: 5px 4px 0 4px !important;
+    margin-top: 0 !important;
+}
+
+/* 3. Het Kruisje (Dit is de enige uitzondering voor hover stijlen) */
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 24px;
+    width: 24px;
+    margin-right: 0 !important;
+    font-size: 0 !important;
+    z-index: 2;
+    cursor: pointer;
+
+    /* Container Styling */
+    background-color: var(--button-color) !important; 
+    border: 1px solid var(--border); 
+    border-radius: 6px;
+}
+
+/* Het Icoon (Masker - Rood) */
+.select2-container--default .select2-selection--single .select2-selection__clear::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--logout-color) !important; 
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask-size: 12px;
+    mask-size: 12px;
+}
+
+/* Hover Kruisje */
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+    background-color: var(--button-hover) !important;
+    border: 1px solid var(--danger-border) !important;
+}
+
+/* 4. De Uitklaplijst (Dropdown Container) */
+.select2-dropdown {
+    background-color: var(--panel-2) !important; 
+    border: 1px solid var(--border) !important; 
+    border-top: none !important; 
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* Zoekveld IN de dropdown */
+.select2-search--dropdown {
+    padding: 10px;
+    background-color: var(--panel); 
+    border-bottom: 1px solid var(--border);
+}
+
+.select2-search__field {
+    background-color: #0f141a !important;
+    color: var(--text) !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    outline: none !important;
+    font-family: inherit !important;
+}
+
+.select2-search__field::placeholder {
+    color: var(--muted) !important;
+    opacity: 1;
+}
+
+/* 5. De Opties */
+.select2-results__option {
+    padding: 10px 14px !important;
+    font-size: 15px;
+    color: var(--text);
+}
+
+/* Hover over optie */
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--button-hover) !important;
+    color: var(--text) !important; 
+}
+
+/* Geselecteerde optie */
+.select2-container--default .select2-results__option--selected {
+    background-color: rgba(31, 75, 160, 0.25) !important;
+    font-weight: 600;
+}
