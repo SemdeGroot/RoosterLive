@@ -52,19 +52,19 @@ def review_list(request):
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen toegang.")
     
-    # 1. Afdelingen (Eerste 10, gesorteerd op laatst gewijzigd)
+# 1. Afdelingen: Voeg '-id' toe
     qs_afd = MedicatieReviewAfdeling.objects.all().select_related('created_by', 'updated_by')
-    qs_afd = qs_afd.order_by('-updated_at')
+    qs_afd = qs_afd.order_by('-updated_at', '-id')  # <--- HIER AANPASSEN
     
     paginator_afd = Paginator(qs_afd, 10)
-    afdelingen_page = paginator_afd.get_page(1) # We laden initieel altijd pagina 1
+    afdelingen_page = paginator_afd.get_page(1)
 
-    # 2. Patiënten (Eerste 10, gesorteerd op laatst gewijzigd)
+    # 2. Patiënten: Voeg '-id' toe
     qs_pat = MedicatieReviewPatient.objects.all().select_related('afdeling', 'created_by', 'updated_by')
-    qs_pat = qs_pat.order_by('-updated_at')
+    qs_pat = qs_pat.order_by('-updated_at', '-id')  # <--- HIER AANPASSEN
     
     paginator_pat = Paginator(qs_pat, 10)
-    patienten_page = paginator_pat.get_page(1) # We laden initieel altijd pagina 1
+    patienten_page = paginator_pat.get_page(1)
 
     return render(request, "medicatiebeoordeling/list.html", {
         "afdelingen_page": afdelingen_page,
@@ -97,7 +97,8 @@ def review_search_api(request):
         if query:
             qs = qs.filter(afdeling__icontains=query)
         
-        qs = qs.order_by('-updated_at')
+        # SORTERING: Deterministisch maken met '-id' om dubbele items bij paginatie te voorkomen
+        qs = qs.order_by('-updated_at', '-id')
         
         paginator = Paginator(qs, 10)
         page_obj = paginator.get_page(page_number)
@@ -131,7 +132,11 @@ def review_search_api(request):
         all_patients = MedicatieReviewPatient.objects.only(
             'id', 'naam', 'geboortedatum', 'afdeling', 
             'created_at', 'updated_at', 'created_by', 'updated_by'
-        ).select_related('afdeling', 'created_by', 'updated_by').order_by('-updated_at')
+        ).select_related('afdeling', 'created_by', 'updated_by')
+        
+        # SORTERING: Hier voegen we '-id' toe. Dit is cruciaal voor de 'Toon Meer' knop.
+        # Zonder dit verspringen items met dezelfde tijdstempel tussen pagina's.
+        all_patients = all_patients.order_by('-updated_at', '-id')
         
         filtered_results = []
 

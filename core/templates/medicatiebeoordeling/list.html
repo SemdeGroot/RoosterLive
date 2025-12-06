@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% load tz %}          {% load form_extras %} {% block title %}Historie & Zoeken{% endblock %}
+{% load tz %}          {% load form_extras %} {% block title %}Historie{% endblock %}
 {% block header_title %}Historie{% endblock %}
 
 {% block head %}
@@ -16,7 +16,7 @@
         <div class="birthday-header agenda-section-header">
             <img src="{% static 'img/reviewzoeken-128x128.png' %}" alt="" class="birthday-icon">
             <div class="birthday-header-text">
-                <h2>Historie & Zoeken</h2>
+                <h2>Medicatiebeoordeling historie</h2>
                 <p>Zoek door afdelingen of specifieke patiënten.</p>
             </div>
             <a href="{% url 'medicatiebeoordeling_create' %}" class="btn">Nieuwe Analyse</a>
@@ -79,8 +79,11 @@
             </tbody>
         </table>
         
-        <div style="text-align:center; margin-bottom:40px;">
-            <button id="btnMoreAfdeling" class="btn" style="background:var(--panel-2);" {% if not afdelingen_page.has_next %}hidden{% endif %}>
+        <div id="btnContainerAfdeling" 
+            style="text-align:center; margin-bottom:40px;" 
+            {% if not afdelingen_page.has_next %}hidden{% endif %}>
+            
+            <button id="btnMoreAfdeling" class="btn" style="background:var(--panel-2);">
                 Toon meer
             </button>
         </div>
@@ -143,8 +146,11 @@
             </tbody>
         </table>
         
-        <div style="text-align:center; margin-top:20px; margin-bottom: 2px;">
-            <button id="btnMorePatient" class="btn" style="background:var(--panel-2);" {% if not patienten_page.has_next %}hidden{% endif %}>
+        <div id="btnContainerPatient" 
+            style="text-align:center; margin-top:20px; margin-bottom: 2px;" 
+            {% if not patienten_page.has_next %}hidden{% endif %}>
+            
+            <button id="btnMorePatient" class="btn" style="background:var(--panel-2);">
                 Toon meer
             </button>
         </div>

@@ -58,26 +58,25 @@ document.addEventListener("DOMContentLoaded", function() {
         patient:  { page: 2, query: '', loading: false }
     };
 
-    /**
+/**
      * loadData functie
-     * Haalt data op en bouwt de HTML rijen op inclusief Delete forms.
      */
     function loadData(type, isSearch = false) {
         const s = state[type];
         if (s.loading) return;
 
-        // Als we zoeken, resetten we naar pagina 1
         if (isSearch) {
             s.page = 1;
         }
 
         s.loading = true;
-        const btnMore = type === 'afdeling' ? document.getElementById('btnMoreAfdeling') : document.getElementById('btnMorePatient');
         
-        // UI Feedback
+        // Selecteer knop én container
+        const btnMore = type === 'afdeling' ? document.getElementById('btnMoreAfdeling') : document.getElementById('btnMorePatient');
+        const btnContainer = type === 'afdeling' ? document.getElementById('btnContainerAfdeling') : document.getElementById('btnContainerPatient');
+        
         if(btnMore) btnMore.innerText = "Laden...";
 
-        // API Call
         const url = `/medicatiebeoordeling/search/?type=${type}&q=${encodeURIComponent(s.query)}&page=${s.page}`;
 
         fetch(url)
@@ -85,56 +84,42 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 const tbody = type === 'afdeling' ? document.getElementById('tbodyAfdeling') : document.getElementById('tbodyPatient');
                 
-                // Bij een zoekopdracht maken we de tabel eerst leeg
                 if (isSearch) {
                     tbody.innerHTML = '';
                 }
 
-                // Geen resultaten?
                 if (data.results.length === 0 && isSearch) {
-                    const colSpan = type === 'afdeling' ? 4 : 5;
+                    const colSpan = type === 'afdeling' ? 4 : 6; // Let op: patient tabel heeft 6 kolommen
                     tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color:grey;">Geen resultaten gevonden.</td></tr>`;
-                    if(btnMore) btnMore.style.display = 'none';
+                    
+                    // Verberg knop container als er geen resultaten zijn
+                    if(btnContainer) btnContainer.style.display = 'none';
                     return;
                 }
 
-                // Loop door resultaten en bouw de HTML
                 data.results.forEach(item => {
                     const row = document.createElement('tr');
                     
                     if (type === 'afdeling') {
-                        // URL voor deleten van afdeling
                         const deleteUrl = `/medicatiebeoordeling/delete/afdeling/${item.id}/`;
-
                         row.innerHTML = `
-                            <td>
-                                <a href="${item.detail_url}" style="font-weight:bold; color:var(--text); text-decoration:none;">
-                                    ${item.naam}
-                                </a>
-                            </td>
+                            <td><a href="${item.detail_url}" style="font-weight:bold; color:var(--text); text-decoration:none;">${item.naam}</a></td>
                             <td>${item.datum}</td>
                             <td>${item.door}</td>
                             <td>
                                 <div style="display:flex; gap:6px;">
                                     <a href="${item.detail_url}" class="btn" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
-                                    
                                     <form method="post" action="${deleteUrl}" onsubmit="return confirm('Weet je het zeker?');" style="margin:0;">
                                         <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">
-                                            ${deleteSvgIcon}
-                                        </button>
+                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">${deleteSvgIcon}</button>
                                     </form>
                                 </div>
-                            </td>
-                        `;
-} else { // Dit is het patiënt blok
+                            </td>`;
+                    } else {
                         const deleteUrl = `/medicatiebeoordeling/delete/patient/${item.id}/`;
-
                         row.innerHTML = `
                             <td><strong>${item.naam}</strong></td>
-                            
-                            <td>${item.geboortedatum}</td> 
-
+                            <td>${item.geboortedatum}</td>
                             <td style="color:var(--muted);">${item.afdeling}</td>
                             <td>${item.datum}</td>
                             <td>${item.door}</td>
@@ -146,8 +131,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">${deleteSvgIcon}</button>
                                     </form>
                                 </div>
-                            </td>
-                        `;
+                            </td>`;
                     }
                     tbody.appendChild(row);
                 });
@@ -155,12 +139,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Update "Toon Meer" knop logica
                 if (data.has_next) {
                     s.page = data.next_page;
+                    if(btnContainer) {
+                        btnContainer.style.display = 'block'; // Container tonen
+                    }
                     if(btnMore) {
-                        btnMore.style.display = 'inline-block';
+                        btnMore.style.display = 'inline-block'; // Zeker weten dat knop zichtbaar is
                         btnMore.innerText = "Toon meer";
                     }
                 } else {
-                    if(btnMore) btnMore.style.display = 'none';
+                    // Geen volgende pagina meer? Verberg de container
+                    if(btnContainer) btnContainer.style.display = 'none';
                 }
             })
             .catch(err => {
