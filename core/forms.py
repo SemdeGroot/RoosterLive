@@ -546,7 +546,7 @@ class MedicatieReviewForm(forms.Form):
     )
     
     BRON_CHOICES = [("medimo", "Medimo")]
-    SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]
+    SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]#, ("patient", "Individuele Patiënt")
 
     source = forms.ChoiceField(
         choices=BRON_CHOICES, 

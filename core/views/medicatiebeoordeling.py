@@ -502,7 +502,7 @@ def patient_detail(request, pk):
                 break
         
         if target_group_id:
-            vraag_tekst = f"❓ {vraag_item['vraag']}"
+            vraag_tekst = f"{vraag_item['vraag']}"
             
             # Check of er al een comment object is in onze lookup
             if target_group_id in comments_lookup:

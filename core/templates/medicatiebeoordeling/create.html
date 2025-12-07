@@ -32,7 +32,7 @@
             <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 24px;">
             <label class="section-label">Selecteer Afdeling</label>
             
             {{ form.afdeling_id }}
@@ -53,7 +53,12 @@
             </div>
         </div>
         <div style="margin-bottom: 15px;">
-            <label class="section-label">{{ form.medimo_text.label }}</label>
+        <div id="instruction-wrapper" style="display:none; margin-bottom: 15px;">
+                    <label class="section-label">Instructie:</label>
+                    <div id="instruction-content" class="alert alert-info" style="margin-bottom: 10px; font-size: 0.9em; background-color: var(--bg); color: var(--text); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                </div>
+
             {{ form.medimo_text }}
         </div>
         <div style="display:flex; gap:10px;">
@@ -223,45 +228,5 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script>
-    $(document).ready(function() {
-        // Initialiseer Select2
-        var $select = $('.django-select2').select2({
-            placeholder: "Klik om een afdeling te zoeken...",
-            allowClear: true,
-            width: '100%'
-        });
-
-        // Event listener: Als de dropdown opent, zet de placeholder in het zoekveld
-        $select.on('select2:open', function() {
-            let searchField = document.querySelector('.select2-search__field');
-            if (searchField) {
-                searchField.placeholder = "Typ om te zoeken..."; // Dit is de tekst in het type-veldje
-                searchField.focus();
-            }
-        });
-    });
-
-    // Simpele tabel JS (Rij openklappen)
-    function toggleEditRow(id) {
-        const row = document.getElementById('edit-row-' + id);
-        if (row) {
-            row.style.display = (row.style.display === 'none' || row.style.display === '') ? 'table-row' : 'none';
-        }
-    }
-
-    // Tabel Filter Functie
-    const searchInput = document.getElementById('manageSearchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            let filter = this.value.toLowerCase();
-            let rows = document.querySelectorAll('.manage-row');
-            
-            rows.forEach(row => {
-                let text = row.textContent.toLowerCase();
-                row.style.display = text.includes(filter) ? '' : 'none';
-            });
-        });
-    }
-</script>
+<script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling_create.js' %}"></script>
 {% endblock %}
