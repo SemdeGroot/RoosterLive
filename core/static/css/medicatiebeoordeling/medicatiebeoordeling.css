@@ -245,31 +245,89 @@
 .table-patient-history th:nth-child(8), .table-patient-history td:nth-child(8) { width: 12%; }
 
 /* 4. Beheer: Afdelingen Lijst (Create pagina) 
-   Gebruikt table-layout: fixed om te voorkomen dat rijen verspringen bij bewerken */
+   Gebruikt table-layout: fixed om te voorkomen dat rijen verspringen bij bewerken *//* core/static/css/medicatiebeoordeling/medicatiebeoordeling.css */
 
-/* core/static/css/medicatiebeoordeling/medicatiebeoordeling.css */
-
-/* De tabel dwingen om vaste breedtes te gebruiken */
+/* 1. Basis Tabel */
 .table-afdeling-manage {
-    table-layout: fixed; 
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* Houdt de tabel rustig, zelfs als er veel tekst is */
 }
 
-/* DEFINITIEVE KOLOMBREEDTES 
-   Totaal moet 100% zijn.
-*/
-.table-afdeling-manage th:nth-child(1), .table-afdeling-manage td:nth-child(1) { width: 30%; } /* Afdeling */
-.table-afdeling-manage th:nth-child(2), .table-afdeling-manage td:nth-child(2) { width: 25%; } /* Locatie */
-.table-afdeling-manage th:nth-child(3), .table-afdeling-manage td:nth-child(3) { width: 25%; } /* Zorginstelling */
-.table-afdeling-manage th:nth-child(4), .table-afdeling-manage td:nth-child(4) { width: 20%; } /* Acties (nu links!) */
+/* Algemene styling */
+.table-afdeling-manage th, 
+.table-afdeling-manage td {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: middle;
+}
 
-/* Zorg dat de edit-rij de ruimte krijgt en niet de tabel comprimeert */
-.table-afdeling-manage .edit-row td {
-    white-space: normal;
-    padding: 15px;
+/* 2. KOLOM BREEDTES - HUFTERPROOF GEMAAKT
+   We gebruiken :not(.edit-row).
+   Dit zorgt ervoor dat de browser NOOIT de breedte van de edit-balk 
+   probeert te forceren op basis van deze regels.
+*/
+
+/* Kolom 1: Afdeling */
+.table-afdeling-manage th:nth-child(1), 
+.table-afdeling-manage tr:not(.edit-row) td:nth-child(1) { 
+    width: 220px; 
+    overflow-wrap: anywhere;
+} 
+
+/* Kolom 2: Locatie */
+.table-afdeling-manage th:nth-child(2), 
+.table-afdeling-manage tr:not(.edit-row) td:nth-child(2) { 
+    width: 200px; 
+    overflow-wrap: anywhere;
+} 
+
+/* Kolom 3: Zorginstelling */
+.table-afdeling-manage th:nth-child(3), 
+.table-afdeling-manage tr:not(.edit-row) td:nth-child(3) { 
+    width: 200px; 
+    overflow-wrap: anywhere;
+} 
+
+/* Kolom 4: Acties */
+.table-afdeling-manage th:nth-child(4), 
+.table-afdeling-manage tr:not(.edit-row) td:nth-child(4) { 
+    width: 120px; 
+    overflow-wrap: anywhere;
+}
+
+/* 3. EDIT RIJ CORRECTIE */
+.table-afdeling-manage tr.edit-row td {
+    /* Omdat we hierboven :not(.edit-row) gebruiken,
+       hoeven we hier eigenlijk niks te resetten, 
+       maar voor de zekerheid: */
+    width: auto; 
     background-color: var(--panel-2);
     border-top: 1px solid var(--border);
+    padding: 15px;
+    white-space: normal;
+}
+
+/* 4. Acties Wrap */
+.table-afdeling-manage .actions-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+/* 4. MOBIEL / SCROLLBAAR
+   Net als bij .org-table-wrap in admin panel
+*/
+@media (max-width: 900px) {
+    .table-afdeling-manage {
+        min-width: 600px; /* Zorgt dat de tabel niet in elkaar wordt gedrukt */
+    }
+    
+    .org-table-wrap {
+        overflow-x: auto;
+    }
 }
 
 /* --- Overige componenten --- */
