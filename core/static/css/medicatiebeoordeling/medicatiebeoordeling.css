@@ -197,20 +197,80 @@
 .table-patient-list th:nth-child(5), .table-patient-list td:nth-child(5) { width: 15%; } /* Actie */
 
 /* 2. Historie: Afdelingen Lijst (.table-afdeling-history) 
-   (Hier verandert niets) */
-.table-afdeling-history th:nth-child(1), .table-afdeling-history td:nth-child(1) { width: 35%; }
-.table-afdeling-history th:nth-child(2), .table-afdeling-history td:nth-child(2) { width: 20%; }
-.table-afdeling-history th:nth-child(3), .table-afdeling-history td:nth-child(3) { width: 25%; }
-.table-afdeling-history th:nth-child(4), .table-afdeling-history td:nth-child(4) { width: 20%; }
+   Kolommen: Afdeling, Locatie, Organisatie, Gewijzigd, Door, Actie */
+
+/* Afdeling */
+.table-afdeling-history th:nth-child(1), .table-afdeling-history td:nth-child(1) { width: 20%; } 
+
+/* Locatie (NIEUW) */
+.table-afdeling-history th:nth-child(2), .table-afdeling-history td:nth-child(2) { width: 15%; } 
+
+/* Organisatie (NIEUW) */
+.table-afdeling-history th:nth-child(3), .table-afdeling-history td:nth-child(3) { width: 15%; } 
+
+/* Gewijzigd */
+.table-afdeling-history th:nth-child(4), .table-afdeling-history td:nth-child(4) { width: 15%; } 
+
+/* Door */
+.table-afdeling-history th:nth-child(5), .table-afdeling-history td:nth-child(5) { width: 20%; } 
+
+/* Actie */
+.table-afdeling-history th:nth-child(6), .table-afdeling-history td:nth-child(6) { width: 15%; }
 
 /* 3. Historie: Patiënten Zoekresultaten (.table-patient-history) 
-   NIEUWE INDELING: Naam, Geb. Datum, Afdeling, Gewijzigd, Door, Actie */
-.table-patient-history th:nth-child(1), .table-patient-history td:nth-child(1) { width: 20%; } /* Naam */
-.table-patient-history th:nth-child(2), .table-patient-history td:nth-child(2) { width: 15%; } /* Geb. Datum (NIEUW) */
-.table-patient-history th:nth-child(3), .table-patient-history td:nth-child(3) { width: 15%; } /* Afdeling */
-.table-patient-history th:nth-child(4), .table-patient-history td:nth-child(4) { width: 15%; } /* Gewijzigd */
-.table-patient-history th:nth-child(5), .table-patient-history td:nth-child(5) { width: 20%; } /* Door */
-.table-patient-history th:nth-child(6), .table-patient-history td:nth-child(6) { width: 15%; } /* Actie */
+   Kolommen: Naam, Geb. Datum, Afdeling, Locatie, Organisatie, Gewijzigd, Door, Actie */
+
+/* Naam */
+.table-patient-history th:nth-child(1), .table-patient-history td:nth-child(1) { width: 14%; } 
+
+/* Geb. Datum */
+.table-patient-history th:nth-child(2), .table-patient-history td:nth-child(2) { width: 10%; } 
+
+/* Afdeling */
+.table-patient-history th:nth-child(3), .table-patient-history td:nth-child(3) { width: 12%; } 
+
+/* Locatie (NIEUW) */
+.table-patient-history th:nth-child(4), .table-patient-history td:nth-child(4) { width: 12%; } 
+
+/* Organisatie (NIEUW) */
+.table-patient-history th:nth-child(5), .table-patient-history td:nth-child(5) { width: 15%; } 
+
+/* Gewijzigd */
+.table-patient-history th:nth-child(6), .table-patient-history td:nth-child(6) { width: 12%; } 
+
+/* Door */
+.table-patient-history th:nth-child(7), .table-patient-history td:nth-child(7) { width: 16%; } 
+
+/* Actie */
+.table-patient-history th:nth-child(8), .table-patient-history td:nth-child(8) { width: 12%; }
+
+/* 4. Beheer: Afdelingen Lijst (Create pagina) 
+   Gebruikt table-layout: fixed om te voorkomen dat rijen verspringen bij bewerken */
+
+/* core/static/css/medicatiebeoordeling/medicatiebeoordeling.css */
+
+/* De tabel dwingen om vaste breedtes te gebruiken */
+.table-afdeling-manage {
+    table-layout: fixed; 
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* DEFINITIEVE KOLOMBREEDTES 
+   Totaal moet 100% zijn.
+*/
+.table-afdeling-manage th:nth-child(1), .table-afdeling-manage td:nth-child(1) { width: 30%; } /* Afdeling */
+.table-afdeling-manage th:nth-child(2), .table-afdeling-manage td:nth-child(2) { width: 25%; } /* Locatie */
+.table-afdeling-manage th:nth-child(3), .table-afdeling-manage td:nth-child(3) { width: 25%; } /* Zorginstelling */
+.table-afdeling-manage th:nth-child(4), .table-afdeling-manage td:nth-child(4) { width: 20%; } /* Acties (nu links!) */
+
+/* Zorg dat de edit-rij de ruimte krijgt en niet de tabel comprimeert */
+.table-afdeling-manage .edit-row td {
+    white-space: normal;
+    padding: 15px;
+    background-color: var(--panel-2);
+    border-top: 1px solid var(--border);
+}
 
 /* --- Overige componenten --- */
 .search-container { margin-bottom: 16px; }

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.http import HttpResponseForbidden, JsonResponse
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -45,23 +45,21 @@ def format_dutch_user_name(user):
 # --- STANDAARD LIST VIEW (Server-side rendered) ---
 @login_required
 def review_list(request):
-    """
-    Toont de pagina met standaard de EERSTE 10 items al ingeladen.
-    Dit voorkomt 'layout shift' en is sneller.
-    """
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen toegang.")
     
-# 1. Afdelingen: Voeg '-id' toe
-    qs_afd = MedicatieReviewAfdeling.objects.all().select_related('created_by', 'updated_by')
-    qs_afd = qs_afd.order_by('-updated_at', '-id')  # <--- HIER AANPASSEN
+    # FILTER AANPASSING: .filter(patienten__isnull=False).distinct()
+    # Hierdoor verdwijnen afdelingen uit de lijst zodra ze geen patiënten meer hebben.
+    qs_afd = MedicatieReviewAfdeling.objects.filter(patienten__isnull=False).distinct()
+    qs_afd = qs_afd.select_related('created_by', 'updated_by')
+    qs_afd = qs_afd.order_by('-updated_at', '-id')
     
     paginator_afd = Paginator(qs_afd, 10)
     afdelingen_page = paginator_afd.get_page(1)
 
-    # 2. Patiënten: Voeg '-id' toe
+    # Patiënten logica blijft hetzelfde...
     qs_pat = MedicatieReviewPatient.objects.all().select_related('afdeling', 'created_by', 'updated_by')
-    qs_pat = qs_pat.order_by('-updated_at', '-id')  # <--- HIER AANPASSEN
+    qs_pat = qs_pat.order_by('-updated_at', '-id')
     
     paginator_pat = Paginator(qs_pat, 10)
     patienten_page = paginator_pat.get_page(1)
@@ -75,12 +73,7 @@ def review_list(request):
 @login_required
 @require_GET
 def review_search_api(request):
-    """
-    API endpoint voor AJAX search & load more.
-    Geeft JSON terug met geformatteerde data.
-    Handelt encryptie af door memory-optimized Python search.
-    """
-    search_type = request.GET.get('type') # 'afdeling' of 'patient'
+    search_type = request.GET.get('type')
     query = request.GET.get('q', '').strip().lower()
     page_number = int(request.GET.get('page', 1))
     
@@ -88,16 +81,14 @@ def review_search_api(request):
     has_next = False
     next_page_num = None
 
-    # =========================================================
-    # 1. AFDELINGEN (Niet encrypted -> Database search)
-    # =========================================================
     if search_type == 'afdeling':
-        qs = MedicatieReviewAfdeling.objects.all().select_related('created_by', 'updated_by')
+        # OOK HIER FILTEREN: Alleen tonen als er patiënten zijn
+        qs = MedicatieReviewAfdeling.objects.filter(patienten__isnull=False).distinct()
+        qs = qs.select_related('created_by', 'updated_by')
         
         if query:
             qs = qs.filter(afdeling__icontains=query)
         
-        # SORTERING: Deterministisch maken met '-id' om dubbele items bij paginatie te voorkomen
         qs = qs.order_by('-updated_at', '-id')
         
         paginator = Paginator(qs, 10)
@@ -216,7 +207,7 @@ def delete_afdeling(request, pk):
         naam = afd.afdeling
         afd.delete()
         messages.success(request, f"Afdeling '{naam}' verwijderd.")
-    return redirect("medicatiebeoordeling_list")
+    return redirect("medicatiebeoordeling_create")
 
 @login_required
 def delete_patient(request, pk):
@@ -231,6 +222,29 @@ def delete_patient(request, pk):
         messages.success(request, f"Patiënt '{naam}' verwijderd.")
         # Terug naar de afdeling als die nog bestaat, anders lijst
         return redirect("medicatiebeoordeling_afdeling_detail", pk=afd_pk)
+    return redirect("medicatiebeoordeling_list")
+
+# 3. AFDELING DELETE VIEW (Alleen patiënten wissen met reviews)
+
+@login_required
+def clear_afdeling_review(request, pk):
+    """
+    Wist ALLE patiënten van een afdeling, maar behoudt de afdeling zelf.
+    Hierdoor verdwijnt hij uit de lijst (want geen patiënten meer),
+    maar blijft beschikbaar in create.html.
+    """
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
+        aantal = afd.patienten.count()
+        
+        # We verwijderen de patiënten (Cascade regelt comments)
+        afd.patienten.all().delete()
+        
+        messages.success(request, f"Review van '{afd.afdeling}' gewist. ({aantal} patiënten verwijderd).")
+        
     return redirect("medicatiebeoordeling_list")
 
 @login_required

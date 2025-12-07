@@ -384,14 +384,14 @@ class MedicatieReviewAfdeling(models.Model):
     )
 
     def __str__(self):
-        return f"{self.afdeling} - {self.organisatie.name}"
+        return f"{self.afdeling} - {self.locatie} - {self.organisatie.name}"
 
     class Meta:
         ordering = ["organisatie__name", "afdeling"]
         verbose_name = "Medicatiereview Afdeling"
         verbose_name_plural = "Medicatiereview Afdelingen"
         # Voorkom dubbele afdelingsnamen binnen dezelfde organisatie
-        unique_together = ("organisatie", "afdeling")
+        unique_together = ("organisatie", "locatie", "afdeling")
 
 
 class MedicatieReviewPatient(models.Model):

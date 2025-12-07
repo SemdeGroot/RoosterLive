@@ -590,7 +590,7 @@ class AfdelingEditForm(forms.ModelForm):
             'telefoon': forms.TextInput(attrs={'class': 'admin-input'}),
         }
         labels = {
-            'organisatie': 'Organisatie',
+            'organisatie': 'Zorginstelling',
             'afdeling': 'Afdeling',
             'locatie': 'Locatie',
         }
