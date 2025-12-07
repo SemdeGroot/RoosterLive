@@ -33,7 +33,7 @@
             </div>
             
             <div style="display:flex; gap:10px;">
-                <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn" style="background:var(--panel-2);">Terug</a>
+                <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn">Terug</a>
                 <button type="submit" class="btn btn-save">Opslaan</button>
             </div>
         </div>
@@ -76,12 +76,12 @@
                 </div>
 
                 <div class="analysis-box">
-    <div class="analysis-header-row">
+                    <div class="analysis-header-row">
                         <img src="{% static 'img/anticholinerg-64x64.png' %}" class="icon-md" alt="STOPP">
-        <h4 class="analysis-title">Anticholinerge Belasting</h4>
-    </div>
+                        <h4 class="analysis-title">Anticholinerge Belasting</h4>
+                    </div>
 
-            {% with score=analysis.analyses.acb.score %}
+                    {% with score=analysis.analyses.acb.score %}
                     <div class="criteria-content acb-dynamic-box 
                         {% if score == 0 %}acb-score-0
                         {% elif score == 1 %}acb-score-1
@@ -112,7 +112,7 @@
                         {% endif %}
                     </div>
                     {% endwith %}
-        </div>
+                </div>
 
                 {% if analysis.analyses.dubbelmedicatie %}
                 <div class="analysis-box">
@@ -153,7 +153,6 @@
                             {{ group_data.naam }}
                         </h4>
 
-                        <!-- Class table-medication toegevoegd -->
                         <table class="med-table table-medication">
                             <thead>
                                 <tr>
@@ -174,12 +173,41 @@
                         </table>
 
                         <div>
-                            <textarea 
-                                name="comment_{{ group_id }}" 
-                                class="med-comment-box" 
-                                placeholder="Typ hier uw opmerking..."
-                            >{{ comments_lookup|get_item:group_id|default:"" }}</textarea>
+                            {% with comment=comments_lookup|get_item:group_id %}
+                                
+                        {# 1. Eerder besproken (Historie) (bewerkbaar) #}
+                                {% if comment and comment.historie %}
+                                    <div style="margin-top: 20px; margin-bottom: 8px;">
+                                        <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
+                                            Eerder besproken:
+                                        </label>
+                                        <textarea 
+                                            name="historie_{{ group_id }}" 
+                                            class="med-comment-box" 
+                                            style="font-style: italic;"
+                                        >{{ comment.historie }}</textarea>
+                                    </div>
+                                {% endif %}
+
+                                {# 2. Opmerkingen (Nieuw) #}
+                                {% if comment and comment.historie %}
+                                    <div style="margin-top: 12px;">
+                                {% else %}
+                                    <div style="margin-top: 20px;">
+                                {% endif %}
+                                    <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
+                                        Opmerkingen:
+                                    </label>
+                                    <textarea 
+                                        name="comment_{{ group_id }}" 
+                                        class="med-comment-box" 
+                                        placeholder="Typ hier uw opmerking..."
+                                    >{{ comment.tekst|default:"" }}</textarea>
+                                </div>
+                                
+                            {% endwith %}
                         </div>
+                        
                     </div>
                 {% endfor %}
             </div>

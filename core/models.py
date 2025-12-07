@@ -449,6 +449,9 @@ class MedicatieReviewComment(models.Model):
     
     # ENCRYPTIE: Wel versleuteld (Vrije tekst kan namen bevatten)
     tekst = EncryptedTextField(blank=True)
+
+    # Historische data (alleen-lezen in de frontend)
+    historie = EncryptedTextField(blank=True)
     
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)

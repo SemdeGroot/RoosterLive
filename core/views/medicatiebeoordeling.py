@@ -282,7 +282,7 @@ def review_create(request):
                 
                 action = "aangepast" if instance else "aangemaakt"
                 messages.success(request, f"Afdeling '{obj.afdeling}' succesvol {action}.")
-                return redirect("medicatiebeoordeling_create") # Refresh pagina (schoont forms op)
+                return redirect("medicatiebeoordeling_create") 
             else:
                 messages.error(request, "Kon afdeling niet opslaan. Controleer de velden.")
 
@@ -296,50 +296,99 @@ def review_create(request):
                 source = review_form.cleaned_data['source']
                 scope = review_form.cleaned_data['scope']
 
-                # 1. API Call
                 result, errors = call_review_api(text, source, scope)
 
                 if errors:
                     for e in errors: messages.error(request, e)
                 elif result:
-                    # 2. CONTROLE: Is geparste naam gelijk aan geselecteerde naam?
                     parsed_naam = result.get("afdeling", "").strip()
                     selected_naam = selected_afdeling.afdeling.strip()
 
-                    # Case-insensitive check
                     if parsed_naam.lower() != selected_naam.lower():
                         messages.error(request, 
-                            f"⚠️ FOUT: Je hebt afdeling '{selected_naam}' geselecteerd, "
-                            f"maar de tekst komt van afdeling '{parsed_naam}'. "
-                            "Pas je selectie aan of controleer de tekst."
+                            f"⚠️ FOUT: Je selecteerde '{selected_naam}', maar de tekst is van '{parsed_naam}'."
                         )
-                        # We breken af en renderen de pagina opnieuw met errors
                     else:
                         # 3. Match OK -> Verwerk Data
                         
-                        # Optioneel: Oude patiënten van deze afdeling verwijderen voor een 'schone' nieuwe review?
-                        # Omdat we een nieuwe momentopname maken, verwijderen we de oude data van DEZE afdeling.
-                        selected_afdeling.patienten.all().delete()
+                        # --- STAP A: Historie veiligstellen ---
+                        history_map = {}
+                        
+                        # We halen de oude patiënten op
+                        current_patients = selected_afdeling.patienten.all().prefetch_related('comments')
+                        
+                        for old_pat in current_patients:
+                            # 1. Naam normaliseren (kleine letters, geen spaties rondom)
+                            p_naam_clean = old_pat.naam.strip().lower()
+                            
+                            # 2. Datum normaliseren naar string 'YYYY-MM-DD'
+                            p_dob_str = str(old_pat.geboortedatum) if old_pat.geboortedatum else "onbekend"
+                            
+                            # (Hier zijn de foute regels verwijderd)
 
-                        # Update timestamp afdeling
+                            for comment in old_pat.comments.all():
+                                # We slaan op als er tekst of historie was
+                                content_to_save = ""
+                                if comment.tekst:
+                                    content_to_save += comment.tekst
+                                
+                                # Als er iets te bewaren is, stop het in de map
+                                if content_to_save:
+                                    # De sleutel is: (naam, geboortedatum, groep_id)
+                                    key = (p_naam_clean, p_dob_str, comment.jansen_group_id)
+                                    history_map[key] = content_to_save
+
+                        # --- STAP B: Database opschonen ---
+                        selected_afdeling.patienten.all().delete()
                         selected_afdeling.updated_by = request.user
                         selected_afdeling.save()
 
+                        # --- STAP C: Nieuwe patiënten & Comments herstellen ---
                         patients_data = result.get("data", [])
-                        new_patients = []
+                        new_patients_created = 0
+                        comments_restored = 0
+                        
                         for p_data in patients_data:
-                            new_patients.append(MedicatieReviewPatient(
+                            # 1. Patiënt aanmaken
+                            new_pat = MedicatieReviewPatient(
                                 afdeling=selected_afdeling,
                                 naam=p_data.get("naam", "Onbekend"),
                                 geboortedatum=p_data.get("geboortedatum"),
                                 analysis_data=p_data,
                                 created_by=request.user,
                                 updated_by=request.user
-                            ))
+                            )
+                            new_pat.save()
+                            new_patients_created += 1
+                            
+                            # CRUCIAAL: Haal de patiënt direct vers op uit de DB.
+                            new_pat.refresh_from_db()
+                            
+                            # 2. Sleutel genereren voor lookup 
+                            n_naam_clean = new_pat.naam.strip().lower()
+                            n_dob_str = str(new_pat.geboortedatum) if new_pat.geboortedatum else "onbekend"
+
+                            # 3. Checken op historie
+                            meds = p_data.get("geneesmiddelen", [])
+                            grouped_meds = group_meds_by_jansen(meds)
+                            
+                            for group_id, group_data in grouped_meds:
+                                key = (n_naam_clean, n_dob_str, group_id)
+                                
+                                if key in history_map:
+                                    old_text = history_map[key]
+                                    
+                                    # We maken de comment aan met de oude tekst in 'historie'
+                                    MedicatieReviewComment.objects.create(
+                                        patient=new_pat,
+                                        jansen_group_id=group_id,
+                                        historie=old_text,
+                                        tekst="", # Leeg voor nieuwe input
+                                        updated_by=request.user
+                                    )
+                                    comments_restored += 1
                         
-                        MedicatieReviewPatient.objects.bulk_create(new_patients)
-                        
-                        messages.success(request, f"Analyse geslaagd voor {selected_naam}. {len(new_patients)} patiënten verwerkt.")
+                        messages.success(request, f"Analyse geslaagd. {new_patients_created} patiënten verwerkt ({comments_restored} x opmerkingen uit historie toegevoegd).")
                         return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
                 else:
                     messages.error(request, "Geen antwoord van server.")
@@ -367,6 +416,8 @@ def afdeling_detail(request, pk):
         "patienten": patienten
     })
 
+# In core/views.py -> functie patient_detail
+
 @login_required
 def patient_detail(request, pk):
     if not can(request.user, "can_view_medicatiebeoordeling"):
@@ -385,43 +436,60 @@ def patient_detail(request, pk):
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
-        # 1. Loop door de comments en sla ze op
-        # We houden bij of er iets is gebeurd, al is dat bij een save-knop altijd 'waar'
         for group_id, group_data in grouped_meds:
-            form_key = f"comment_{group_id}"
-            if form_key in request.POST:
-                tekst = request.POST.get(form_key, "").strip()
-                MedicatieReviewComment.objects.update_or_create(
-                    patient=patient,
-                    jansen_group_id=group_id,
-                    defaults={"tekst": tekst, "updated_by": request.user}
-                )
+            key_tekst = f"comment_{group_id}"
+            key_historie = f"historie_{group_id}"
+            
+            # We bereiden de data voor die we willen opslaan
+            defaults_data = {
+                "updated_by": request.user
+            }
+
+            # 1. Haal de 'nieuwe' opmerking op
+            if key_tekst in request.POST:
+                defaults_data["tekst"] = request.POST.get(key_tekst, "").strip()
+
+            # 2. Haal de 'historie' op (als die in het formulier zat)
+            # Als het veld niet in de HTML stond (omdat de if-check faalde), 
+            # wordt dit overgeslagen en blijft de historie in de DB intact.
+            if key_historie in request.POST:
+                defaults_data["historie"] = request.POST.get(key_historie, "").strip()
+
+            # Opslaan (Update of Create)
+            # Let op: update_or_create kijkt naar 'patient' en 'jansen_group_id' om de rij te vinden
+            MedicatieReviewComment.objects.update_or_create(
+                patient=patient,
+                jansen_group_id=group_id,
+                defaults=defaults_data
+            )
         
-        # 2. UPDATE DE PATIËNT (De fix)
-        # Door save() aan te roepen, wordt updated_at automatisch op nu() gezet
         patient.updated_by = request.user
         patient.save()
-
-        # 3. UPDATE DE AFDELING (De fix voor de parent)
-        # Zodat de afdeling ook bovenaan komt te staan in de lijst met 'laatst gewijzigd'
+        
         afdeling = patient.afdeling
         afdeling.updated_by = request.user
         afdeling.save()
 
-        messages.success(request, "Opmerkingen opgeslagen.")
+        messages.success(request, "Opmerkingen en historie opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
     # --- GET ---
     
     # 2. Haal bestaande comments op
     db_comments = patient.comments.all()
-    comments_lookup = {c.jansen_group_id: c.tekst for c in db_comments}
+    
+    # BELANGRIJK: We mappen nu naar het OBJECT, niet alleen de tekst string
+    # Zodat we straks in de template zowel obj.historie als obj.tekst hebben.
+    comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    # 3. Injecteer Standaardvragen in lege comments
+    # 3. Injecteer Standaardvragen (in MEMORY, in het 'tekst' veld)
     med_to_group = {}
     for gid, gdata in grouped_meds:
         for m in gdata['meds']:
             med_to_group[m['clean']] = gid
+
+    # Lijst bijhouden van gemaakte tijdelijke objecten voor de template
+    # (Als er nog geen DB comment is, maar wel een vraag, moeten we een 'fake' object maken)
 
     for vraag_item in vragen:
         middelen_str = vraag_item.get("betrokken_middelen", "")
@@ -434,14 +502,26 @@ def patient_detail(request, pk):
                 break
         
         if target_group_id:
-            huidige_tekst = comments_lookup.get(target_group_id, "")
             vraag_tekst = f"❓ {vraag_item['vraag']}"
             
-            if vraag_tekst not in huidige_tekst:
-                if huidige_tekst:
-                    comments_lookup[target_group_id] = huidige_tekst + "\n" + vraag_tekst
-                else:
-                    comments_lookup[target_group_id] = vraag_tekst
+            # Check of er al een comment object is in onze lookup
+            if target_group_id in comments_lookup:
+                existing_comment = comments_lookup[target_group_id]
+                # Voeg vraag toe aan tekst als hij er nog niet staat
+                if vraag_tekst not in existing_comment.tekst:
+                    if existing_comment.tekst:
+                        existing_comment.tekst += "\n" + vraag_tekst
+                    else:
+                        existing_comment.tekst = vraag_tekst
+            else:
+                # Maak een tijdelijk object (niet saven, alleen voor weergave)
+                temp_comment = MedicatieReviewComment(
+                    patient=patient,
+                    jansen_group_id=target_group_id,
+                    tekst=vraag_tekst,
+                    historie="" # Geen historie want nieuw object
+                )
+                comments_lookup[target_group_id] = temp_comment
 
     return render(request, "medicatiebeoordeling/patient_detail.html", {
         "patient": patient,
@@ -450,6 +530,7 @@ def patient_detail(request, pk):
         "grouped_meds": grouped_meds,
         "comments_lookup": comments_lookup
     })
+
 @login_required
 def settings_view(request):
     """

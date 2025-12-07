@@ -545,13 +545,13 @@ class MedicatieReviewForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control django-select2'})
     )
     
-    BRON_CHOICES = [("medimo", "Medimo AIS")]
+    BRON_CHOICES = [("medimo", "Medimo")]
     SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]
 
     source = forms.ChoiceField(
         choices=BRON_CHOICES, 
         initial="medimo",
-        label="Bron",
+        label="Bron (AIS)",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     scope = forms.ChoiceField(
@@ -562,7 +562,7 @@ class MedicatieReviewForm(forms.Form):
     )
     
     medimo_text = forms.CharField(
-        label="Plak hier de tekst uit het AIS",
+        label="Plak hier de tekst uit het geselecteerde AIS",
         widget=forms.Textarea(attrs={
             'class': 'form-control medimo-textarea', 
             'rows': 12, 
