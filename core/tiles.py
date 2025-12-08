@@ -55,6 +55,12 @@ TILE_GROUPS = {
         {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
+        "review_settings": [
+        # Deze verwijst ook naar de dashboard view
+        {"name": "Standaard Opmerkingen", "img": "standaardvragen-256x256.png",
+         "url_name": "standaardvragen_settings", "perm": "can_view_medicatiebeoordeling"},
+    ],
+
     # De subtiles voor Medicatiebeoordeling
     "medicatiebeoordeling": [
         {

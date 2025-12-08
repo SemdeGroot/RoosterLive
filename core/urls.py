@@ -17,6 +17,7 @@ from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as med_views
+from core.views import review_settings as med_settings
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
@@ -128,7 +129,8 @@ urlpatterns = [
     path("medicatiebeoordeling/historie/", med_views.review_list, name="medicatiebeoordeling_list"),
     path("medicatiebeoordeling/search/", med_views.review_search_api, name="medicatiebeoordeling_search_api"),
     # med review settings aanpassen
-    path("medicatiebeoordeling/instellingen/", med_views.settings_view, name="medicatiebeoordeling_settings"),
+    path("medicatiebeoordeling/instellingen/", med_settings.settings_dashboard, name="medicatiebeoordeling_settings"),
+    path("medicatiebeoordeling/instellingen/standaardvragen/", med_settings.standaardvragen, name="standaardvragen_settings"),
     # Details
     path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
     path("medicatiebeoordeling/patient/<int:pk>/", med_views.patient_detail, name="medicatiebeoordeling_patient_detail"),
