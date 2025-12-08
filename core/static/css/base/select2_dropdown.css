@@ -1,5 +1,5 @@
 /* =========================================
-   SELECT2 STYLING - FIXED
+   1. SINGLE SELECT & BASIS (JOUW ORIGINELE CODE)
    ========================================= */
 
 /* 1. De Hoofd Container */
@@ -157,214 +157,155 @@
     font-weight: 600;
 }
 
-/* =========================================
-   SELECT2 STYLING - SINGLE & MULTIPLE
-   ========================================= */
-
-/* 1. De Hoofd Container */
-.select2-container {
-    font-family: Inter, system-ui, -apple-system, sans-serif !important;
-    width: 100% !important;
-    box-sizing: border-box;
-    font-size: 14px; 
-    margin-bottom: 0;
-}
 
 /* =========================================
-   A. SINGLE SELECT (Jouw originele stijl)
+   2. NIEUWE TOEVOEGINGEN (MULTI SELECT & LOGICA)
    ========================================= */
-.select2-container--default .select2-selection--single {
+
+/* A. MULTI SELECT CONTAINER */
+.select2-container--default .select2-selection--multiple {
     background-color: #0f141a !important; 
-    border: 1px solid var(--border) !important;
+    border: 1px solid var(--border) !important; /* Standaard border */
     border-radius: 10px !important;
-    height: 48px !important;
+    min-height: 48px !important;
     display: flex !important;
     align-items: center !important;
-    outline: none !important;
-    box-shadow: none !important; 
-    transition: border-color 0.2s ease;
-}
-
-.select2-container--default .select2-selection--single:hover {
-    border-color: var(--border) !important; 
-}
-
-.select2-container--open .select2-selection--single,
-.select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: var(--border) !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
-
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: var(--text) !important;
-    padding-left: 12px;
-    padding-right: 40px; 
-    display: block;
-    width: 100%;
-    line-height: normal !important; 
-}
-
-.select2-container--default .select2-selection--single .select2-selection__placeholder {
-    color: var(--muted) !important;
-}
-
-.select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 100% !important; 
-    top: 0 !important;
-    right: 8px !important;
-    display: flex;
-    align-items: center;
-}
-.select2-container--default .select2-selection--single .select2-selection__arrow b {
-    border-top-color: var(--text) !important;
-    border-width: 5px 4px 0 4px !important;
-    margin-top: 0 !important;
-}
-
-/* Clear knop styling */
-.select2-container--default .select2-selection--single .select2-selection__clear {
-    position: absolute;
-    right: 35px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 24px;
-    width: 24px;
-    margin-right: 0 !important;
-    font-size: 0 !important;
-    z-index: 2;
-    cursor: pointer;
-    background-color: var(--button-color) !important; 
-    border: 1px solid var(--border); 
-    border-radius: 6px;
-}
-/* Icoon maskers voor clear knop */
-.select2-container--default .select2-selection--single .select2-selection__clear::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--logout-color) !important; 
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
-    -webkit-mask-size: 12px;
-    mask-size: 12px;
-}
-.select2-container--default .select2-selection--single .select2-selection__clear:hover {
-    background-color: var(--button-hover) !important;
-    border: 1px solid var(--danger-border) !important;
-}
-
-/* =========================================
-   B. MULTI SELECT (Nieuw toegevoegd)
-   ========================================= */
-
-/* De Container voor Multi */
-.select2-container--default .select2-selection--multiple {
-    background-color: #0f141a !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-    min-height: 48px !important; /* Minimaal zelfde hoogte als single */
-    display: flex !important;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 4px 8px !important;
+    padding: 4px 6px !important;
     outline: none !important;
     box-shadow: none !important;
     transition: border-color 0.2s ease;
+    cursor: text;
 }
 
-/* Focus state Multi */
+/* ALLEEN BIJ FOCUS: De rand wordt accent kleur */
 .select2-container--default.select2-container--focus .select2-selection--multiple {
-    border-color: var(--border) !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
+    border-color: var(--accent) !important; 
 }
 
-/* De Chips (Geselecteerde items) */
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-    background-color: var(--panel-2) !important; /* Iets lichter dan input */
-    border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
-    color: var(--text) !important;
-    padding: 4px 8px !important;
-    margin-right: 6px !important;
-    margin-top: 4px !important;
-    margin-bottom: 4px !important;
-    font-size: 13px !important;
-    display: flex;
-    align-items: center;
-    flex-direction: row-reverse; /* Zorgt dat kruisje rechts staat */
+/* B. INTERNE VOLGORDE */
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
 }
 
-/* Kruisje in de Chip */
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    color: var(--muted) !important;
-    margin-left: 8px !important; /* Afstand tot tekst */
-    margin-right: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s;
+/* Het input veld */
+.select2-container--default .select2-selection--multiple .select2-search--inline {
+    order: -1 !important; 
+    flex-grow: 1 !important;
+    margin: 0 !important;
 }
 
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-    color: var(--logout-color) !important; /* Rood bij hover */
-}
-
-/* Placeholder tekst in Multi */
 .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+    background: transparent !important;
     color: var(--text) !important;
     font-family: inherit !important;
-    margin-top: 5px !important;
-    background: transparent !important;
+    font-size: 15px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    
+    /* AANPASSINGEN MARGINS */
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+    margin-left: 12px !important;  /* Meer ruimte links voor placeholder */
+    margin-right: 10px !important; /* Ruimte tussen input en de chips */
+    
+    padding: 0 !important;
+    width: 100% !important; 
 }
 .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field::placeholder {
     color: var(--muted) !important;
 }
 
-/* =========================================
-   C. DROPDOWN (Gedeeld)
-   ========================================= */
-.select2-dropdown {
-    background-color: var(--panel-2) !important; 
-    border: 1px solid var(--border) !important; 
-    border-top: none !important; 
+/* C. DE CHIPS (Rechts stapelen) */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--panel-2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    color: var(--text) !important;
+    padding: 0 0 0 10px !important;
+    margin-left: 6px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 30px;
+    order: 2; 
+}
+
+/* D. HET KRUISJE IN DE CHIP (Jouw SVG techniek) */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    position: relative;
+    color: transparent !important; /* Verberg tekst */
+    font-size: 0 !important;
+    margin-left: 8px !important;
+    margin-right: 0 !important;
+    border: none !important;
+    border-left: 1px solid var(--border) !important; /* Divider */
+    border-radius: 0 6px 6px 0 !important;
+    background: transparent !important;
+    width: 28px;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 2;
+}
+/* SVG Masker voor Multi Select Kruisje */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove::after {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 14px;
+    background-color: var(--logout-color) !important;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask-size: 100%;
+    mask-size: 100%;
+    transition: background-color 0.2s;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover::after {
+    background-color: #dc3545 !important;
+}
+
+/* E. DROPDOWN AANPASSINGEN (Voor Force Below) */
+/* Als we met JS forceren dat hij "onder" staat, moeten we zorgen dat de border-radius klopt */
+.select2-container--below .select2-dropdown {
+    border-top: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
     border-bottom-left-radius: 10px !important;
     border-bottom-right-radius: 10px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    z-index: 9999;
-    overflow: hidden;
+    margin-top: -1px; /* Aansluiten */
 }
 
-.select2-search--dropdown {
-    padding: 10px;
-    background-color: var(--panel); 
-    border-bottom: 1px solid var(--border);
-}
-
-.select2-search__field {
-    background-color: #0f141a !important;
-    color: var(--text) !important;
-    border: 1px solid var(--accent) !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
-    outline: none !important;
-    font-family: inherit !important;
-}
-
-.select2-results__option {
-    padding: 10px 14px !important;
-    font-size: 14px;
-    color: var(--text);
-}
-
-.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
-    background-color: var(--button-hover) !important;
-    color: var(--text) !important; 
-}
-
-.select2-container--default .select2-results__option--selected {
-    background-color: rgba(31, 75, 160, 0.25) !important;
+/* F. HIERARCHIE LOGICA STYLING */
+.atc-hierarchy-warning {
+    font-size: 10px;
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Flexbox voor resultaten zodat badge rechts staat */
+.select2-results__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
