@@ -1,14 +1,209 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Standaardvragen{% endblock %}
-{% block header_title %}Standaardvragen{% endblock %}
+{% block title %}Standaardvragen Configurator{% endblock %}
+{% block header_title %}Instellingen{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+
+  <style>
+      /* Layout specifiek voor deze pagina */
+      .question-row {
+          background-color: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 24px;
+          margin-bottom: 24px;
+          position: relative;
+      }
+      .delete-btn-abs {
+          position: absolute;
+          top: 20px; right: 20px;
+          background: transparent; border: none;
+          color: var(--text-muted, #888); cursor: pointer;
+      }
+      .delete-btn-abs:hover { color: #dc3545; }
+      
+      .subsection-title {
+          font-size: 0.85rem; text-transform: uppercase; font-weight: 600;
+          color: var(--text-muted, #666); margin-top: 20px; margin-bottom: 12px;
+          border-bottom: 1px solid var(--border-light, #eee); padding-bottom: 5px;
+      }
+      .subsection-title:first-child { margin-top: 0; }
+      
+      .logic-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+      }
+      .help-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; display: block; }
+  </style>
+{% endblock %}
 
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Standaardvragen</h3>
-  <p>
-    Hier komt later de inhoud voor <strong>Standaardvragen</strong> aanpassen.
-  </p>
+<div class="card birthdays-card" style="margin-bottom: 30px;">
+  <div class="agenda-section">
+    
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/medication_data-128x128.png' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Standaardvragen Configurator</h2>
+        <p>Beheer de beslisregels (JSON v2.0).</p>
+      </div>
+    </div>
+
+    <form method="post" id="configForm" style="padding: 0 16px 16px;">
+        {% csrf_token %}
+        
+        <div id="questions-container">
+            {% for c in criteria %}
+                {% with unique_id=forloop.counter0|stringformat:"s" %}
+                <div class="question-row" id="row-{{ unique_id }}">
+                    <input type="hidden" name="row_index" value="{{ unique_id }}">
+
+                    <button type="button" class="delete-btn-abs" onclick="removeRow('{{ unique_id }}')">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </button>
+
+                    <div class="subsection-title">Algemeen</div>
+                    <div class="admin-grid" style="grid-template-columns: 1fr 2fr 1fr 1fr;">
+                        <div>
+                            <label class="section-label">ID</label>
+                            <input type="text" name="id_field" class="admin-input" value="{{ c.id }}" required>
+                        </div>
+                        <div>
+                            <label class="section-label">Titel</label>
+                            <input type="text" name="title" class="admin-input" value="{{ c.title }}" required>
+                        </div>
+                        <div>
+                            <label class="section-label">Categorie</label>
+                            <input type="text" name="category" class="admin-input" value="{{ c.category }}">
+                        </div>
+                        <div>
+                            <label class="section-label">Min. Leeftijd</label>
+                            <input type="number" name="age_min_{{ unique_id }}" class="admin-input" value="{{ c.filters.age_min|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="subsection-title">1. Trigger</div>
+                    <div style="margin-bottom: 12px;">
+                        <label class="section-label">ATC Groepen</label>
+                        <select class="atc-select" name="triggers_{{ unique_id }}" multiple="multiple">
+                            {% for t in c.logic_rules.triggers_enriched %}
+                                <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="subsection-title">2. Logica</div>
+                    <div style="margin-bottom: 16px;">
+                        <label class="section-label" style="color:var(--primary);">Geldige Indicaties (Requires at least one)</label>
+                        <select class="atc-select" name="one_of_{{ unique_id }}" multiple="multiple">
+                            {% for t in c.logic_rules.requires_at_least_one_of_enriched %}
+                                <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="help-text">Selecteer meerdere opties. Maagbescherming is geldig bij NSAID <b>OF</b> Bloedverdunner.</small>
+                    </div>
+
+                    <div class="logic-grid">
+                        <div>
+                            <label class="section-label">Verplichte Co-medicatie (AND)</label>
+                            <select class="atc-select" name="required_{{ unique_id }}" multiple="multiple">
+                                {% for t in c.logic_rules.required_co_medication_enriched %}
+                                    <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="section-label">Uitgesloten Co-medicatie (NOT)</label>
+                            <select class="atc-select" name="excluded_{{ unique_id }}" multiple="multiple">
+                                {% for t in c.logic_rules.excluded_co_medication_enriched %}
+                                    <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="subsection-title">3. Rapportage</div>
+                    <div style="margin-bottom:12px;">
+                        <label class="section-label">Vraagstelling</label>
+                        <input type="text" name="description" class="admin-input" value="{{ c.description }}" required>
+                    </div>
+                    <div>
+                        <label class="section-label">Argumentatie</label>
+                        <textarea name="argument" class="admin-input" rows="2">{{ c.argument }}</textarea>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <button type="button" class="btn" onclick="addNewRow()" style="background-color: var(--secondary); border-color: var(--secondary-border);">
+                + Nieuwe Vraag
+            </button>
+            <span style="flex:1;"></span>
+            <button type="submit" class="btn">Opslaan</button>
+        </div>
+    </form>
+  </div>
 </div>
+
+<template id="row-template">
+    <div class="question-row" id="row-__idx__">
+        <input type="hidden" name="row_index" value="__idx__">
+        <button type="button" class="delete-btn-abs" onclick="removeRow('__idx__')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
+        </button>
+
+        <div class="subsection-title">Algemeen</div>
+        <div class="admin-grid" style="grid-template-columns: 1fr 2fr 1fr 1fr;">
+            <div><label class="section-label">ID</label><input type="text" name="id_field" class="admin-input" required></div>
+            <div><label class="section-label">Titel</label><input type="text" name="title" class="admin-input" required></div>
+            <div><label class="section-label">Categorie</label><input type="text" name="category" class="admin-input"></div>
+            <div><label class="section-label">Min. Leeftijd</label><input type="number" name="age_min___idx__" class="admin-input"></div>
+        </div>
+
+        <div class="subsection-title">1. Trigger</div>
+        <div style="margin-bottom: 12px;">
+            <label class="section-label">ATC Groepen</label>
+            <select class="atc-select-new" name="triggers___idx__" multiple="multiple"></select>
+        </div>
+
+        <div class="subsection-title">2. Logica</div>
+        <div style="margin-bottom: 16px;">
+            <label class="section-label" style="color:var(--primary);">Geldige Indicaties (Requires at least one)</label>
+            <select class="atc-select-new" name="one_of___idx__" multiple="multiple"></select>
+            <small class="help-text">Selecteer meerdere opties.</small>
+        </div>
+
+        <div class="logic-grid">
+            <div><label class="section-label">Verplichte Co-medicatie</label><select class="atc-select-new" name="required___idx__" multiple="multiple"></select></div>
+            <div><label class="section-label">Uitgesloten Co-medicatie</label><select class="atc-select-new" name="excluded___idx__" multiple="multiple"></select></div>
+        </div>
+
+        <div class="subsection-title">3. Rapportage</div>
+        <div style="margin-bottom:12px;">
+            <label class="section-label">Vraagstelling</label><input type="text" name="description" class="admin-input" required>
+        </div>
+        <div>
+            <label class="section-label">Argumentatie</label><textarea name="argument" class="admin-input" rows="2"></textarea>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'js/medicatiebeoordeling/review_settings.js' %}"></script>
 {% endblock %}

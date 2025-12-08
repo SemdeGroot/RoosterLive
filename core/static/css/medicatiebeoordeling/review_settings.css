@@ -1,0 +1,68 @@
+/* review_settings.css */
+
+/* --- Algemene Container Styling --- */
+.stApp {
+    background-color: #0f172a; /* Zeer donker blauw/grijs als basis */
+}
+
+/* --- Input Velden & Selectboxen --- */
+/* Zorgt voor donkere input velden met lichte tekst */
+.stTextInput > div > div > input, 
+.stSelectbox > div > div > div, 
+.stTextArea > div > div > textarea,
+.stNumberInput > div > div > input {
+    background-color: #1e293b; 
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 6px;
+}
+
+/* Focus effect voor inputs */
+.stTextInput > div > div > input:focus, 
+.stTextArea > div > div > textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* --- MultiSelect (De Tags) --- */
+/* De container waar de tags in staan */
+.stMultiSelect > div > div > div {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+}
+
+/* De individuele tags (geselecteerde medicatie) */
+span[data-baseweb="tag"] {
+    background-color: #2563eb !important; /* Helder blauw */
+    border-radius: 4px;
+}
+
+span[data-baseweb="tag"] > span {
+    color: white !important;
+    font-weight: 500;
+}
+
+/* --- Headers & Tekst --- */
+h1, h2, h3, h4, p, label {
+    color: #e2e8f0 !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Knoppen --- */
+button[kind="primary"] {
+    background-color: #3b82f6;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+button[kind="primary"]:hover {
+    background-color: #2563eb;
+}
+
+/* --- JSON Block Styling --- */
+.stCode {
+    background-color: #020617 !important;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+}

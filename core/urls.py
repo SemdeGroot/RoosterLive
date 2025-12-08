@@ -131,6 +131,7 @@ urlpatterns = [
     # med review settings aanpassen
     path("medicatiebeoordeling/instellingen/", med_settings.settings_dashboard, name="medicatiebeoordeling_settings"),
     path("medicatiebeoordeling/instellingen/standaardvragen/", med_settings.standaardvragen, name="standaardvragen_settings"),
+    path("medicatiebeoordeling/api/atc-lookup/", med_settings.atc_lookup, name="api_atc_lookup"),
     # Details
     path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
     path("medicatiebeoordeling/patient/<int:pk>/", med_views.patient_detail, name="medicatiebeoordeling_patient_detail"),
