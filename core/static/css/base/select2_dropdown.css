@@ -157,119 +157,146 @@
     font-weight: 600;
 }
 
-
 /* =========================================
-   2. NIEUWE TOEVOEGINGEN (MULTI SELECT & LOGICA)
+   2. MULTI SELECT (CHIPS LINKS, ZOEKVELD RECHTS)
    ========================================= */
 
-/* A. MULTI SELECT CONTAINER */
+/* A. DE CONTAINER */
 .select2-container--default .select2-selection--multiple {
     background-color: #0f141a !important; 
-    border: 1px solid var(--border) !important; /* Standaard border */
+    border: 1px solid var(--border) !important; 
     border-radius: 10px !important;
-    min-height: 48px !important;
+    min-height: 52px !important; 
     display: flex !important;
     align-items: center !important;
-    padding: 4px 6px !important;
-    outline: none !important;
-    box-shadow: none !important;
-    transition: border-color 0.2s ease;
+    padding: 6px !important;
+    box-sizing: border-box;
     cursor: text;
 }
 
-/* ALLEEN BIJ FOCUS: De rand wordt accent kleur */
+/* Focus: Alleen binnenste veld licht op, rand blijft muted */
 .select2-container--default.select2-container--focus .select2-selection--multiple {
-    border-color: var(--accent) !important; 
+    border-color: var(--border) !important; 
 }
 
-/* B. INTERNE VOLGORDE */
+/* B. DE INTERNE LAYOUT */
 .select2-container--default .select2-selection--multiple .select2-selection__rendered {
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center !important;
     width: 100%;
-    padding: 0 !important;
     margin: 0 !important;
-    box-sizing: border-box;
+    padding: 0 !important;
+    gap: 8px; /* Ruimte tussen de chips onderling en zoekveld */
 }
 
-/* Het input veld */
+/* C. HET ZOEKVELD (RECHTS - STANDAARD) */
 .select2-container--default .select2-selection--multiple .select2-search--inline {
-    order: -1 !important; 
-    flex-grow: 1 !important;
+    flex-grow: 1 !important; /* Vult de resterende ruimte op */
     margin: 0 !important;
 }
 
 .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
-    background: transparent !important;
+    /* Box styling */
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
     color: var(--text) !important;
     font-family: inherit !important;
-    font-size: 15px !important;
-    height: 32px !important;
-    line-height: 32px !important;
+    font-size: 14px !important;
     
-    /* AANPASSINGEN MARGINS */
-    margin-top: 4px !important;
-    margin-bottom: 4px !important;
-    margin-left: 12px !important;  /* Meer ruimte links voor placeholder */
-    margin-right: 10px !important; /* Ruimte tussen input en de chips */
+    height: 36px !important;
+    line-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 12px !important; 
     
-    padding: 0 !important;
-    width: 100% !important; 
-}
-.select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field::placeholder {
-    color: var(--muted) !important;
+    width: 100% !important; /* Vult de flex-ruimte */
+    min-width: 200px !important; /* Voorkomt dat tekst afbreekt */
 }
 
-/* C. DE CHIPS (Rechts stapelen) */
+/* Focus op zoekveld */
+.select2-container--default.select2-container--focus .select2-selection--multiple .select2-search--inline .select2-search__field {
+    border-color: var(--accent) !important;
+    background-color: #0f141a !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field::placeholder {
+    color: var(--muted) !important;
+    opacity: 0.7;
+}
+
+/* D. DE CHIPS (ATC CODES) */
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background-color: var(--panel-2) !important;
     border: 1px solid var(--border) !important;
     border-radius: 6px !important;
     color: var(--text) !important;
-    padding: 0 0 0 10px !important;
-    margin-left: 6px !important;
-    margin-top: 4px !important;
-    margin-bottom: 4px !important;
-    font-size: 13px !important;
+    
+    /* Flexbox om tekst en kruisje netjes uit te lijnen */
     display: inline-flex !important;
     align-items: center !important;
-    height: 30px;
-    order: 2; 
+    height: 36px !important;
+    margin: 0 !important;
+    
+    /* Padding links voor tekst, RECHTS 0 want daar komt de box van het kruisje */
+    padding: 0 0 0 12px !important; 
+    font-size: 14px !important;
+    
+    overflow: hidden; /* Belangrijk voor hover background van kruisje */
 }
 
-/* D. HET KRUISJE IN DE CHIP (Jouw SVG techniek) */
+/* E. HET KRUISJE (ALS EIGEN 'KNOP' BINNEN DE CHIP) */
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    /* ORDER 2: Zorgt dat hij RECHTS van de tekst komt te staan */
+    order: 2 !important; 
+    
     position: relative;
-    color: transparent !important; /* Verberg tekst */
-    font-size: 0 !important;
-    margin-left: 8px !important;
+    color: transparent !important;
+    
+    /* Afmetingen van de 'delete knop' */
+    width: 32px !important; 
+    height: 100% !important; 
+    
+    /* Styling */
+    margin-left: 10px !important; /* Afstand tot de tekst */
     margin-right: 0 !important;
     border: none !important;
-    border-left: 1px solid var(--border) !important; /* Divider */
-    border-radius: 0 6px 6px 0 !important;
+    border-left: 1px solid var(--border) !important; /* Scheidingslijntje */
+    border-radius: 0 !important; /* Recht, want zit tegen rand aan */
     background: transparent !important;
-    width: 28px;
-    height: 100%;
+    
     cursor: pointer;
+    
+    /* Zorgt dat het icoontje perfect in het midden van dit vakje staat */
     display: flex;
     align-items: center;
     justify-content: center;
-    order: 2;
+    
+    transition: background-color 0.2s;
 }
-/* SVG Masker voor Multi Select Kruisje */
+
+/* Het rode icoontje */
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove::after {
     content: '';
     display: block;
-    width: 14px;
-    height: 14px;
+    width: 12px !important;
+    height: 12px !important;
+    
+    /* Zorg dat hij NOOIT kleiner mag worden dan 12px (dit fixt het krimpen) */
+    flex-shrink: 0 !important; 
+
     background-color: var(--logout-color) !important;
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
-    -webkit-mask-size: 100%;
-    mask-size: 100%;
-    transition: background-color 0.2s;
+
+    /* === HIERMEE VERPLAATS JE HEM VEILIG === */
+    /* Positief getal = naar RECHTS. Negatief getal = naar LINKS */
+    transform: translateX(-4px) !important; 
+    
+    margin: 0 !important; /* Margins op 0 houden */
 }
+
+/* Hover effect op het kruisje-vakje */
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
     background-color: rgba(220, 53, 69, 0.1) !important;
 }
@@ -277,18 +304,23 @@
     background-color: #dc3545 !important;
 }
 
-/* E. DROPDOWN AANPASSINGEN (Voor Force Below) */
-/* Als we met JS forceren dat hij "onder" staat, moeten we zorgen dat de border-radius klopt */
+/* E. DROPDOWN AANPASSINGEN & SCROLL */
 .select2-container--below .select2-dropdown {
     border-top: none !important;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
     border-bottom-left-radius: 10px !important;
     border-bottom-right-radius: 10px !important;
-    margin-top: -1px; /* Aansluiten */
+    margin-top: -1px;
 }
 
-/* F. HIERARCHIE LOGICA STYLING */
+/* AANGEPAST: Scrollbaar maken */
+.select2-results__options {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* F. HIERARCHIE LOGICA STYLING (Ongewijzigd) */
 .atc-hierarchy-warning {
     font-size: 10px;
     background-color: rgba(255, 193, 7, 0.1);
@@ -303,7 +335,6 @@
     white-space: nowrap;
 }
 
-/* Flexbox voor resultaten zodat badge rechts staat */
 .select2-results__option {
     display: flex;
     align-items: center;

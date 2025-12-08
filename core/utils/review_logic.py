@@ -60,12 +60,21 @@ def hydrate_criteria_with_descriptions(criteria_list):
     if not os.path.exists(LOOKUP_DB_PATH) or not criteria_list: return criteria_list
     
     all_codes = set()
-    fields = ['triggers', 'required_co_medication', 'excluded_co_medication', 'requires_at_least_one_of']
+    # Lijst velden
+    list_fields = ['triggers', 'required_co_medication', 'excluded_co_medication', 'requires_at_least_one_of']
+    # Enkel veld
+    single_fields = ['subcategory']
     
     for item in criteria_list:
         logic = item.get('logic_rules', {})
-        for f in fields:
+        # Verzamel codes uit lijsten in logic_rules
+        for f in list_fields:
             all_codes.update(logic.get(f, []))
+        
+        # Verzamel codes uit enkele velden (top level of in logic, in jouw JSON zit subcategory top level)
+        for f in single_fields:
+            val = item.get(f)
+            if val: all_codes.add(val)
             
     if not all_codes: return criteria_list
 
@@ -78,7 +87,14 @@ def hydrate_criteria_with_descriptions(criteria_list):
 
     for item in criteria_list:
         logic = item.setdefault('logic_rules', {})
-        for f in fields:
+        
+        # Hydrateer lijsten
+        for f in list_fields:
             logic[f'{f}_enriched'] = [{"id": c, "text": f"{c} - {lookup.get(c, '?')}"} for c in logic.get(f, [])]
+        
+        # Hydrateer subcategory (enkel object)
+        sub_code = item.get('subcategory')
+        if sub_code:
+            item['subcategory_enriched'] = {"id": sub_code, "text": f"{sub_code} - {lookup.get(sub_code, '?')}"}
             
     return criteria_list
