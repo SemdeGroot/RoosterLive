@@ -1,11 +1,9 @@
-import json
 import uuid
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
 
-from core.tiles import build_tiles
 from core.utils.review_logic import (
     get_review_settings_json, 
     save_review_settings_json, 
@@ -13,13 +11,6 @@ from core.utils.review_logic import (
     hydrate_criteria_with_descriptions
 )
 from core.views._helpers import can
-
-@login_required
-def settings_dashboard(request):
-    if not (can(request.user, "can_view_medicatiebeoordeling") or can(request.user, "can_perform_medicatiebeoordeling")):
-        return HttpResponseForbidden("Geen toegang.")
-    tiles = build_tiles(request.user, group="review_settings")
-    return render(request, "tiles_page.html", {"page_title": "Instellingen", "tiles": tiles})
 
 @login_required
 @require_GET
@@ -41,6 +32,8 @@ def atc_lookup(request):
 
 @login_required
 def standaardvragen(request):
+    if not (can(request.user, "can_view_medicatiebeoordeling") or can(request.user, "can_perform_medicatiebeoordeling")):
+        return HttpResponseForbidden("Geen toegang.")
     if request.method == 'POST':
         new_data = {"version": "3.0", "criteria": []}
         question_indices = request.POST.getlist('row_index') 

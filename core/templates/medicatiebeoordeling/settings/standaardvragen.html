@@ -23,7 +23,7 @@
       <img src="{% static 'img/standaardvragen_config-128x128.png' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
         <h2>Standaardvragen Configurator</h2>
-        <p>Beheer hier de logica, teksten en triggers van de standaardvragen in de medicatiereview generator.</p>
+        <p>Beheer hier de logica, teksten en triggers van de vragen die standaard ingevuld worden in de medicatiereview generator.</p>
       </div>
     </div>
 
@@ -85,7 +85,7 @@
                     <div class="section-header">Logica</div>
                     
                     <div style="margin-bottom: 20px;">
-                        <label class="section-label">1. Start controle bij gebruik van (OR):</label>
+                        <label class="section-label">Start controle bij gebruik van één van deze middelen/groepen:</label>
                         <select class="atc-select" name="primary_triggers_{{ q_uid }}" multiple="multiple">
                             {% for t in c.activation.primary_triggers_enriched %}
                                 <option value="{{ t.id }}" selected>{{ t.text }}</option>
@@ -107,7 +107,7 @@
                                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                         </span>
                                     </div>
-                                    <span class="rule-desc">Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen gebruikt:</span>
+                                    <span class="rule-desc">Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen/groepen gebruikt:</span>
                                     
                                     <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
                                         {% for t in rule.trigger_codes_enriched %}
@@ -137,7 +137,7 @@
                                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                         </span>
                                     </div>
-                                    <span class="rule-desc">Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen gebruikt:</span>
+                                    <span class="rule-desc">Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen/groepen gebruikt:</span>
                                     
                                     <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
                                         {% for t in rule.trigger_codes_enriched %}
@@ -159,7 +159,7 @@
         </div>
 
         <div style="margin-top:30px; border-top: 1px solid var(--border); padding-top: 20px; display:flex; gap: 10px;">
-            <button type="button" class="btn" onclick="addNewQuestion()" style="background-color: var(--secondary);">
+            <button type="button" class="btn" onclick="addNewQuestion()">
                 + Nieuwe Vraag
             </button>
             <span style="flex:1;"></span>
@@ -224,7 +224,7 @@
             </span>
         </div>
         <span class="rule-desc">
-            Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen gebruikt:
+            Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen/groepen gebruikt:
         </span>
         <select class="atc-select-init" name="rule_codes___QID_____RID__" multiple="multiple"></select>
     </div>
@@ -243,7 +243,7 @@
             </span>
         </div>
         <span class="rule-desc">
-        Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen gebruikt:
+        Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen/groepen gebruikt:
         </span>
         <select class="atc-select-init" name="rule_codes___QID_____RID__" multiple="multiple"></select>
     </div>

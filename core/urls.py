@@ -129,8 +129,7 @@ urlpatterns = [
     path("medicatiebeoordeling/historie/", med_views.review_list, name="medicatiebeoordeling_list"),
     path("medicatiebeoordeling/search/", med_views.review_search_api, name="medicatiebeoordeling_search_api"),
     # med review settings aanpassen
-    path("medicatiebeoordeling/instellingen/", med_settings.settings_dashboard, name="medicatiebeoordeling_settings"),
-    path("medicatiebeoordeling/instellingen/standaardvragen/", med_settings.standaardvragen, name="standaardvragen_settings"),
+    path("medicatiebeoordeling/instellingen/", med_settings.standaardvragen, name="medicatiebeoordeling_settings"),
     path("medicatiebeoordeling/api/atc-lookup/", med_settings.atc_lookup, name="api_atc_lookup"),
     # Details
     path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
