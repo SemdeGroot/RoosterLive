@@ -81,10 +81,17 @@ def review_search_api(request):
     has_next = False
     next_page_num = None
 
+    # =========================================================
+    # 1. AFDELINGEN
+    # =========================================================
     if search_type == 'afdeling':
-        # OOK HIER FILTEREN: Alleen tonen als er patiënten zijn
-        qs = MedicatieReviewAfdeling.objects.filter(patienten__isnull=False).distinct()
-        qs = qs.select_related('created_by', 'updated_by')
+        # Alleen afdelingen tonen waar patiënten zijn (zelfde als review_list)
+        qs = (
+            MedicatieReviewAfdeling.objects
+            .filter(patienten__isnull=False)
+            .distinct()
+            .select_related('organisatie', 'created_by', 'updated_by')
+        )
         
         if query:
             qs = qs.filter(afdeling__icontains=query)
@@ -99,55 +106,64 @@ def review_search_api(request):
             next_page_num = page_obj.next_page_number()
         
         for afd in page_obj:
-            # Tijdzone conversie
             raw_date = afd.updated_at if afd.updated_at else afd.created_at
             local_date = timezone.localtime(raw_date)
-            
             show_user = afd.updated_by if afd.updated_by else afd.created_by
-            
+
             data.append({
-                'id': afd.pk,
-                'naam': afd.afdeling,
-                'datum': local_date.strftime('%d-%m-%Y %H:%M'),
-                'door': format_dutch_user_name(show_user),
-                'detail_url': f"/medicatiebeoordeling/afdeling/{afd.pk}/"
+                "id": afd.pk,
+                "naam": afd.afdeling,
+                "locatie": afd.locatie or "",
+                "organisatie": afd.organisatie.name if afd.organisatie else "",
+                "datum": local_date.strftime('%d-%m-%Y %H:%M'),
+                "door": format_dutch_user_name(show_user),
+                "detail_url": f"/medicatiebeoordeling/afdeling/{afd.pk}/",
             })
 
     # =========================================================
     # 2. PATIENTEN (Encrypted -> Python search + Memory Opt.)
     # =========================================================
     elif search_type == 'patient':
-        # STAP A: OPTIMALISATIE
-        # We halen ALLEEN de velden op die we nodig hebben voor de lijst en het zoeken.
-        # De zware 'analysis_data' JSON wordt NIET ingeladen. Dit bespaart enorm veel RAM.
-        all_patients = MedicatieReviewPatient.objects.only(
-            'id', 'naam', 'geboortedatum', 'afdeling', 
-            'created_at', 'updated_at', 'created_by', 'updated_by'
-        ).select_related('afdeling', 'created_by', 'updated_by')
-        
-        # SORTERING: Hier voegen we '-id' toe. Dit is cruciaal voor de 'Toon Meer' knop.
-        # Zonder dit verspringen items met dezelfde tijdstempel tussen pagina's.
-        all_patients = all_patients.order_by('-updated_at', '-id')
+        all_patients = (
+            MedicatieReviewPatient.objects.only(
+                'id', 'naam', 'geboortedatum', 'afdeling', 
+                'created_at', 'updated_at', 'created_by', 'updated_by'
+            )
+            .select_related('afdeling', 'afdeling__organisatie', 'created_by', 'updated_by')
+            .order_by('-updated_at', '-id')
+        )
         
         filtered_results = []
 
-        # STAP B: Zoeken in Python (Decryptie vindt hier plaats)
         if query:
             for pat in all_patients:
-                # 1. Check Naam
-                if query in pat.naam.lower():
+                naam_l = (pat.naam or "").lower()
+
+                # 1. Naam
+                if query in naam_l:
                     filtered_results.append(pat)
                     continue 
 
-                # 2. Check Geboortedatum
+                # 2. Geboortedatum
                 if pat.geboortedatum:
                     if query in pat.geboortedatum.strftime('%d-%m-%Y'):
                         filtered_results.append(pat)
+                        continue
+
+                # 3. Afdeling
+                if pat.afdeling and pat.afdeling.afdeling:
+                    if query in pat.afdeling.afdeling.lower():
+                        filtered_results.append(pat)
+                        continue
+
+                # 4. Zorginstelling
+                org = getattr(pat.afdeling, "organisatie", None)
+                if org and org.name and query in org.name.lower():
+                    filtered_results.append(pat)
+                    continue
         else:
-            # Geen zoekterm? Dan tonen we gewoon alles (Paginator pakt dit op)
             filtered_results = all_patients
 
-        # STAP C: Paginatie
         paginator = Paginator(filtered_results, 10)
         page_obj = paginator.get_page(page_number)
         
@@ -156,27 +172,35 @@ def review_search_api(request):
             next_page_num = page_obj.next_page_number()
         
         for pat in page_obj:
-            # Tijdzone conversie
             raw_date = pat.updated_at if pat.updated_at else pat.created_at
             local_date = timezone.localtime(raw_date)
-            
             show_user = pat.updated_by if pat.updated_by else pat.created_by
+
             geb_datum = pat.geboortedatum.strftime('%d-%m-%Y') if pat.geboortedatum else "-"
-            
+            afdeling_naam = pat.afdeling.afdeling if pat.afdeling else "-"
+            locatie = pat.afdeling.locatie if pat.afdeling and pat.afdeling.locatie else "-"
+            organisatie_naam = (
+                pat.afdeling.organisatie.name
+                if pat.afdeling and getattr(pat.afdeling, "organisatie", None)
+                else "-"
+            )
+
             data.append({
-                'id': pat.pk,
-                'naam': pat.naam,
-                'geboortedatum': geb_datum,
-                'afdeling': pat.afdeling.afdeling,
-                'datum': local_date.strftime('%d-%m-%Y %H:%M'),
-                'door': format_dutch_user_name(show_user),
-                'detail_url': f"/medicatiebeoordeling/patient/{pat.pk}/"
+                "id": pat.pk,
+                "naam": pat.naam,
+                "geboortedatum": geb_datum,
+                "afdeling": afdeling_naam,
+                "locatie": locatie,
+                "organisatie": organisatie_naam,
+                "datum": local_date.strftime('%d-%m-%Y %H:%M'),
+                "door": format_dutch_user_name(show_user),
+                "detail_url": f"/medicatiebeoordeling/patient/{pat.pk}/",
             })
 
     return JsonResponse({
-        'results': data,
-        'has_next': has_next,
-        'next_page': next_page_num
+        "results": data,
+        "has_next": has_next,
+        "next_page": next_page_num,
     })
 
 @login_required

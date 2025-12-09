@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
         patient:  { page: 2, query: '', loading: false }
     };
 
-/**
+    /**
      * loadData functie
      */
     function loadData(type, isSearch = false) {
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const btnMore = type === 'afdeling' ? document.getElementById('btnMoreAfdeling') : document.getElementById('btnMorePatient');
         const btnContainer = type === 'afdeling' ? document.getElementById('btnContainerAfdeling') : document.getElementById('btnContainerPatient');
         
-        if(btnMore) btnMore.innerText = "Laden...";
+        if (btnMore) btnMore.innerText = "Laden...";
 
         const url = `/medicatiebeoordeling/search/?type=${type}&q=${encodeURIComponent(s.query)}&page=${s.page}`;
 
@@ -89,11 +89,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 if (data.results.length === 0 && isSearch) {
-                    const colSpan = type === 'afdeling' ? 4 : 6; // Let op: patient tabel heeft 6 kolommen
+                    // Kolommen laten matchen met de HTML tables:
+                    // Afdeling: 6 kolommen, Patiënt: 8 kolommen
+                    const colSpan = type === 'afdeling' ? 6 : 8;
                     tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; color:grey;">Geen resultaten gevonden.</td></tr>`;
                     
                     // Verberg knop container als er geen resultaten zijn
-                    if(btnContainer) btnContainer.style.display = 'none';
+                    if (btnContainer) btnContainer.style.display = 'none';
                     return;
                 }
 
@@ -103,7 +105,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (type === 'afdeling') {
                         const deleteUrl = `/medicatiebeoordeling/delete/afdeling/${item.id}/`;
                         row.innerHTML = `
-                            <td><a href="${item.detail_url}" style="font-weight:bold; color:var(--text); text-decoration:none;">${item.naam}</a></td>
+                            <td>
+                                <a href="${item.detail_url}" style="font-weight:bold; color:var(--text); text-decoration:none;">
+                                    ${item.naam}
+                                </a>
+                            </td>
+                            <td>${item.locatie || ""}</td>
+                            <td style="color:var(--muted);">${item.organisatie || ""}</td>
                             <td>${item.datum}</td>
                             <td>${item.door}</td>
                             <td>
@@ -111,7 +119,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <a href="${item.detail_url}" class="btn" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
                                     <form method="post" action="${deleteUrl}" onsubmit="return confirm('Weet je het zeker?');" style="margin:0;">
                                         <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">${deleteSvgIcon}</button>
+                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">
+                                            ${deleteSvgIcon}
+                                        </button>
                                     </form>
                                 </div>
                             </td>`;
@@ -121,6 +131,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             <td><strong>${item.naam}</strong></td>
                             <td>${item.geboortedatum}</td>
                             <td style="color:var(--muted);">${item.afdeling}</td>
+                            <td style="color:var(--muted);">${item.locatie || ""}</td>
+                            <td style="color:var(--muted);">${item.organisatie || ""}</td>
                             <td>${item.datum}</td>
                             <td>${item.door}</td>
                             <td>
@@ -128,7 +140,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <a href="${item.detail_url}" class="btn" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
                                     <form method="post" action="${deleteUrl}" onsubmit="return confirm('Weet je het zeker?');" style="margin:0;">
                                         <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">${deleteSvgIcon}</button>
+                                        <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">
+                                            ${deleteSvgIcon}
+                                        </button>
                                     </form>
                                 </div>
                             </td>`;
@@ -139,21 +153,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Update "Toon Meer" knop logica
                 if (data.has_next) {
                     s.page = data.next_page;
-                    if(btnContainer) {
+                    if (btnContainer) {
                         btnContainer.style.display = 'block'; // Container tonen
                     }
-                    if(btnMore) {
+                    if (btnMore) {
                         btnMore.style.display = 'inline-block'; // Zeker weten dat knop zichtbaar is
                         btnMore.innerText = "Toon meer";
                     }
                 } else {
                     // Geen volgende pagina meer? Verberg de container
-                    if(btnContainer) btnContainer.style.display = 'none';
+                    if (btnContainer) btnContainer.style.display = 'none';
                 }
             })
             .catch(err => {
                 console.error("Fout bij laden:", err);
-                if(btnMore) btnMore.innerText = "Fout bij laden";
+                if (btnMore) btnMore.innerText = "Fout bij laden";
             })
             .finally(() => {
                 s.loading = false;
@@ -181,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (e.key === "Enter") handleSearchAfd(); 
         });
 
-        if(btnMoreAfd) {
+        if (btnMoreAfd) {
             btnMoreAfd.addEventListener("click", () => {
                 loadData('afdeling', false);
             });
@@ -205,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (e.key === "Enter") handleSearchPat(); 
         });
 
-        if(btnMorePat) {
+        if (btnMorePat) {
             btnMorePat.addEventListener("click", () => {
                 loadData('patient', false);
             });
