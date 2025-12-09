@@ -1,68 +1,76 @@
-/* review_settings.css */
-
-/* --- Algemene Container Styling --- */
-.stApp {
-    background-color: #0f172a; /* Zeer donker blauw/grijs als basis */
-}
-
-/* --- Input Velden & Selectboxen --- */
-/* Zorgt voor donkere input velden met lichte tekst */
-.stTextInput > div > div > input, 
-.stSelectbox > div > div > div, 
-.stTextArea > div > div > textarea,
-.stNumberInput > div > div > input {
-    background-color: #1e293b; 
-    color: #f1f5f9;
-    border: 1px solid #334155;
-    border-radius: 6px;
-}
-
-/* Focus effect voor inputs */
-.stTextInput > div > div > input:focus, 
-.stTextArea > div > div > textarea:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 1px #3b82f6;
-}
-
-/* --- MultiSelect (De Tags) --- */
-/* De container waar de tags in staan */
-.stMultiSelect > div > div > div {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 6px;
-}
-
-/* De individuele tags (geselecteerde medicatie) */
-span[data-baseweb="tag"] {
-    background-color: #2563eb !important; /* Helder blauw */
-    border-radius: 4px;
-}
-
-span[data-baseweb="tag"] > span {
-    color: white !important;
-    font-weight: 500;
-}
-
-/* --- Headers & Tekst --- */
-h1, h2, h3, h4, p, label {
-    color: #e2e8f0 !important;
-    font-family: 'Inter', sans-serif;
-}
-
-/* --- Knoppen --- */
-button[kind="primary"] {
-    background-color: #3b82f6;
-    border: none;
-    transition: background-color 0.2s;
-}
-
-button[kind="primary"]:hover {
-    background-color: #2563eb;
-}
-
-/* --- JSON Block Styling --- */
-.stCode {
-    background-color: #020617 !important;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-}
+      .question-row {
+          background-color: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 24px;
+          margin-bottom: 24px;
+          position: relative;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      }
+      
+      .delete-btn-abs {
+          position: absolute; top: 20px; right: 20px;
+          background: transparent; border: none; color: var(--danger); cursor: pointer;
+          opacity: 0.7; transition: opacity 0.2s;
+          padding: 5px;
+      }
+      .delete-btn-abs:hover { opacity: 1; background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; }
+      
+      .section-header {
+          font-weight: 700; text-transform: uppercase; font-size: 0.8rem; color: var(--muted);
+          margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
+          padding-bottom: 4px; letter-spacing: 0.5px;
+      }
+      
+      .form-row { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
+      .full-width { grid-column: 1 / -1; }
+      
+      .logic-rule-box {
+          padding: 16px; border-radius: 8px; margin-bottom: 12px;
+          border-left: 4px solid #ccc; background-color: rgba(0,0,0,0.02);
+      }
+      .logic-rule-box.type-AND { 
+          border-left-color: #28a745; background-color: rgba(40, 167, 69, 0.04); 
+      }
+      .logic-rule-box.type-AND_NOT { 
+          border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.04); 
+      }
+      
+      .rule-header { 
+          font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; 
+          display: flex; align-items: center; justify-content: space-between;
+      }
+      .rule-desc {
+          display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;
+      }
+      
+      /* Aangepaste buttons zoals gevraagd (btn class + custom colors) */
+      .btn-logic {
+          text-align: center; 
+          margin-bottom: 20px;
+          background-color: transparent;
+      }
+      
+.btn-add-and {
+          background-color: #e6f4ea; /* Lichtgroene achtergrond */
+          border: 1px solid #28a745; /* Groene rand */
+          color: #28a745;            /* Groene tekst */
+          margin-bottom: 20px;       /* Beetje ruimte eronder */
+          transition: all 0.2s ease;
+      }
+      .btn-add-and:hover {
+          background-color: #28a745; /* Volledig groen bij hover */
+          color: white;              /* Witte tekst bij hover */
+      }
+      
+      .btn-add-not {
+          background-color: #fde8e9; /* Lichtrode achtergrond */
+          border: 1px solid #dc3545; /* Rode rand */
+          color: #dc3545;            /* Rode tekst */
+          margin-bottom: 20px;
+          transition: all 0.2s ease;
+      }
+      .btn-add-not:hover {
+          background-color: #dc3545; /* Volledig rood bij hover */
+          color: white;
+      }

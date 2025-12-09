@@ -1,155 +1,199 @@
 $(document).ready(function () {
-    // Initialiseer bestaande velden
+    // Initialiseer bestaande velden bij het laden van de pagina
     initSelect2($('.atc-select'));
 });
 
-function initSelect2($element) {
-    $element.select2({
-        placeholder: 'Zoek ATC code of naam...',
-        minimumInputLength: 2,
-        closeOnSelect: false,
-        width: '100%',
-        language: {
-            inputTooShort: function () { return "Typ min. 2 tekens..."; },
-            searching: function () { return "Zoeken..."; },
-            noResults: function () { return "Geen resultaten"; }
-        },
-        ajax: {
-            url: "/medicatiebeoordeling/api/atc-lookup/",
-            dataType: 'json',
-            delay: 250,
-            data: function (params) { return { q: params.term }; },
-            processResults: function (data) { return { results: data.results }; },
-            cache: true
-        },
-        templateResult: function (data) {
-            if (data.loading || !data.id) return data.text;
+/**
+ * Hoofdfunctie voor Select2 initialisatie.
+ * Bevat logic voor: AJAX, Hierarchy Check, Parent/Child conflict, Backspace fix.
+ */
+function initSelect2($elements) {
+    $elements.each(function() {
+        var $el = $(this);
+        
+        // Haal restrictie op (1, 3 of undefined)
+        // Dit is nieuw toegevoegd aan jouw oude logica
+        var limitLen = $el.data('atc-len'); 
 
-            var currentSelection = $element.val() || [];
+        $el.select2({
+            placeholder: 'Zoek ATC code of naam...',
+            // Als ATC1 (len=1), mag je direct zoeken (0 chars), anders min. 2
+            minimumInputLength: limitLen === 1 ? 0 : 2,
+            closeOnSelect: false,
+            width: '100%',
+            language: {
+                inputTooShort: function () { return "Typ min. 2 tekens..."; },
+                searching: function () { return "Zoeken..."; },
+                noResults: function () { return "Geen resultaten"; }
+            },
+            ajax: {
+                url: "/medicatiebeoordeling/api/atc-lookup/",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) { 
+                    return { 
+                        q: params.term,
+                        len: limitLen // Stuur parameter mee naar backend
+                    }; 
+                },
+                processResults: function (data) { return { results: data.results }; },
+                cache: true
+            },
+            templateResult: function (data) {
+                if (data.loading || !data.id) return data.text;
 
-            // Check of item al gedekt is door ouder
+                var currentSelection = $el.val() || [];
+
+                // Check of item al gedekt is door ouder
+                var coveredBy = currentSelection.find(function (sel) {
+                    return data.id.startsWith(sel) && data.id !== sel;
+                });
+
+                if (coveredBy) {
+                    return $(
+                        '<span>' + data.text + '</span>' +
+                        '<span class="atc-hierarchy-warning">Al geïncludeerd via ' + coveredBy + '</span>'
+                    );
+                }
+                return data.text;
+            }
+        });
+
+        // ============================================================
+        // LOGICA: KINDEREN VERWIJDEREN BIJ KIEZEN OUDER
+        // ============================================================
+        $el.on('select2:selecting', function (e) {
+            var data = e.params.args.data;
+            var currentSelection = $el.val() || [];
+
+            // 1. Ouder check: Als we een kind kiezen dat al gedekt is door een ouder
             var coveredBy = currentSelection.find(function (sel) {
                 return data.id.startsWith(sel) && data.id !== sel;
             });
 
             if (coveredBy) {
-                return $(
-                    '<span>' + data.text + '</span>' +
-                    '<span class="atc-hierarchy-warning">Al geïncludeerd via ' + coveredBy + '</span>'
-                );
+                e.preventDefault();
+                return;
             }
-            return data.text;
-        }
-    });
 
-    // ============================================================
-    // LOGICA: KINDEREN VERWIJDEREN BIJ KIEZEN OUDER (FIXED)
-    // ============================================================
-    $element.on('select2:selecting', function (e) {
-        var data = e.params.args.data;
-        var currentSelection = $element.val() || [];
+            // 2. Kinder check: Als we een ouder kiezen die kinderen overbodig maakt
+            var parentId = String(data.id);
+            var childrenToRemove = [];
 
-        // 1. Ouder check
-        var coveredBy = currentSelection.find(function (sel) {
-            return data.id.startsWith(sel) && data.id !== sel;
-        });
-
-        if (coveredBy) {
-            e.preventDefault();
-            return;
-        }
-
-        // 2. Kinder check
-        var parentId = String(data.id); // Forceer string voor zekerheid
-        var childrenToRemove = [];
-
-        $.each(currentSelection, function (index, value) {
-            // Check of value start met parentId, maar niet parentId zelf is
-            if (value.startsWith(parentId) && value !== parentId) {
-                childrenToRemove.push(value);
-            }
-        });
-
-        if (childrenToRemove.length > 0) {
-            // Pauzeer selectie om conflict op te lossen
-            e.preventDefault();
-
-            var msg = "Je kiest nu de hoofdgroep '" + data.text + "'.\n" +
-                "Hierdoor vervallen de specifiekere selecties (" + childrenToRemove.join(", ") + ").\n\n" +
-                "Klik OK om door te gaan.";
-
-            // Gebruik setTimeout om uit de event-loop van Select2 te breken
-            // Dit fixt het probleem dat de parent niet werd toegevoegd.
-            setTimeout(function () {
-                if (confirm(msg)) {
-                    // Filter de kinderen eruit
-                    var newSelection = currentSelection.filter(function (val) {
-                        return !childrenToRemove.includes(val);
-                    });
-
-                    // Zorg dat de optie in de DOM bestaat (voor AJAX items)
-                    if ($element.find("option[value='" + parentId + "']").length === 0) {
-                        var newOption = new Option(data.text, parentId, true, true);
-                        $element.append(newOption);
-                    }
-
-                    // Voeg de ouder toe aan de array (als hij er nog niet in zit)
-                    if (!newSelection.includes(parentId)) {
-                        newSelection.push(parentId);
-                    }
-
-                    // Update Select2 en trigger change
-                    $element.val(newSelection).trigger('change');
-                    $element.select2('close');
+            $.each(currentSelection, function (index, value) {
+                if (value.startsWith(parentId) && value !== parentId) {
+                    childrenToRemove.push(value);
                 }
-            }, 0);
+            });
+
+            if (childrenToRemove.length > 0) {
+                e.preventDefault();
+                var msg = "Je kiest nu de hoofdgroep '" + data.text + "'.\n" +
+                    "Hierdoor vervallen de specifiekere selecties (" + childrenToRemove.join(", ") + ").\n\n" +
+                    "Klik OK om door te gaan.";
+
+                setTimeout(function () {
+                    if (confirm(msg)) {
+                        var newSelection = currentSelection.filter(function (val) {
+                            return !childrenToRemove.includes(val);
+                        });
+
+                        // Zorg dat de optie bestaat
+                        if ($el.find("option[value='" + parentId + "']").length === 0) {
+                            var newOption = new Option(data.text, parentId, true, true);
+                            $el.append(newOption);
+                        }
+
+                        if (!newSelection.includes(parentId)) {
+                            newSelection.push(parentId);
+                        }
+
+                        $el.val(newSelection).trigger('change');
+                        $el.select2('close');
+                    }
+                }, 0);
+            }
+        });
+
+        // ============================================================
+        // FIXES: BACKSPACE & PLACEHOLDER
+        // ============================================================
+        // Check of select2 data beschikbaar is (voor veiligheid)
+        if ($el.data('select2')) {
+            var $selection = $el.data('select2').$selection;
+
+            $selection.on('keydown', '.select2-search__field', function (e) {
+                if (e.which === 8 && $(this).val() === '') {
+                    e.stopPropagation();
+                    return false;
+                }
+            });
+
+            function fixPlaceholder() {
+                var $input = $selection.find('.select2-search__field');
+                // Pas placeholder aan op basis van type
+                var txt = limitLen ? 'Zoek...' : 'Zoek ATC code of naam...';
+                $input.attr('placeholder', txt);
+                $input.css('min-width', '150px');
+            }
+
+            fixPlaceholder();
+            $el.on('select2:select select2:unselect select2:open', fixPlaceholder);
         }
     });
-
-    // ============================================================
-    // FIXES: BACKSPACE & PLACEHOLDER
-    // ============================================================
-
-    // We pakken de container die de input bevat (de selection container, niet de dropdown)
-    var $selection = $element.data('select2').$selection;
-
-    // Backspace preventie
-    $selection.on('keydown', '.select2-search__field', function (e) {
-        // Als toets Backspace (8) is EN veld is leeg
-        if (e.which === 8 && $(this).val() === '') {
-            // Stop Propagation voorkomt dat Select2 zijn interne 'remove last item' event triggert
-            e.stopPropagation();
-            return false;
-        }
-    });
-
-    // Placeholder styling fix
-    function fixPlaceholder() {
-        var $input = $selection.find('.select2-search__field');
-        $input.attr('placeholder', 'Zoek ATC code of naam...');
-        // Min-width zorgt dat placeholder altijd past en niet afbreekt
-        $input.css('min-width', '220px');
-    }
-
-    // Trigger placeholder fix bij events
-    fixPlaceholder();
-    $element.on('select2:select select2:unselect select2:open', fixPlaceholder);
 }
 
-function addNewRow() {
-    const idx = Date.now();
-    const template = document.getElementById('row-template').innerHTML;
-    const newHtml = template.replace(/__idx__/g, idx);
+/**
+ * Voegt een nieuwe Vraag toe aan de pagina.
+ */
+function addNewQuestion() {
+    const qId = Date.now();
+    let html = document.getElementById('tpl-question').innerHTML;
+    html = html.replace(/__QID__/g, qId);
+    
+    const $newNode = $(html).hide();
+    $('#questions-container').append($newNode);
+    $newNode.fadeIn(300);
+    
+    // Initialiseer Select2 op de nieuwe elementen
+    const $selects = $newNode.find('.atc-select-init');
+    initSelect2($selects);
+    $selects.removeClass('atc-select-init').addClass('atc-select');
 
-    const $newRow = $(newHtml).hide();
-    $('#questions-container').append($newRow);
-    $newRow.fadeIn(300);
-
-    initSelect2($newRow.find('.atc-select-new'));
+    // Voeg direct de standaard regels toe (AND en NOT)
+    addRule(qId, 'AND', false);
+    addRule(qId, 'AND_NOT', false);
 }
 
-function removeRow(idx) {
-    if (confirm("Weet je het zeker?")) {
-        $(`#row-${idx}`).fadeOut(200, function () { $(this).remove(); });
+/**
+ * Voegt een logica regel toe (AND of AND_NOT).
+ */
+function addRule(qId, type, animate=true) {
+    const rId = Math.floor(Math.random() * 1000000);
+    const tplId = type === 'AND' ? 'tpl-rule-AND' : 'tpl-rule-AND_NOT';
+    
+    let html = document.getElementById(tplId).innerHTML;
+    html = html.replace(/__QID__/g, qId).replace(/__RID__/g, rId);
+    
+    const $container = $(`#container-${type}-${qId}`);
+    const $newNode = $(html);
+    
+    if (animate) $newNode.hide();
+    $container.append($newNode);
+    if (animate) $newNode.slideDown(200);
+
+    // Initialiseer Select2
+    const $select = $newNode.find('.atc-select-init');
+    initSelect2($select);
+    $select.removeClass('atc-select-init').addClass('atc-select');
+}
+
+function removeRow(id) {
+    if(confirm("Weet je zeker dat je deze vraag wilt verwijderen?")) {
+        $(`#row-${id}`).slideUp(200, function(){ $(this).remove(); });
     }
+}
+
+function removeRule(qId, rId) {
+    $(`#rule-${qId}-${rId}`).slideUp(200, function(){ $(this).remove(); });
 }
