@@ -1,76 +1,82 @@
-      .question-row {
-          background-color: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 24px;
-          margin-bottom: 24px;
-          position: relative;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-      }
-      
-      .delete-btn-abs {
-          position: absolute; top: 20px; right: 20px;
-          background: transparent; border: none; color: var(--danger); cursor: pointer;
-          opacity: 0.7; transition: opacity 0.2s;
-          padding: 5px;
-      }
-      .delete-btn-abs:hover { opacity: 1; background-color: rgba(220, 53, 69, 0.1); border-radius: 4px; }
-      
-      .section-header {
-          font-weight: 700; text-transform: uppercase; font-size: 0.8rem; color: var(--muted);
-          margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
-          padding-bottom: 4px; letter-spacing: 0.5px;
-      }
-      
-      .form-row { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
-      .full-width { grid-column: 1 / -1; }
-      
-      .logic-rule-box {
-          padding: 16px; border-radius: 8px; margin-bottom: 12px;
-          border-left: 4px solid #ccc; background-color: rgba(0,0,0,0.02);
-      }
-      .logic-rule-box.type-AND { 
-          border-left-color: #28a745; background-color: rgba(40, 167, 69, 0.04); 
-      }
-      .logic-rule-box.type-AND_NOT { 
-          border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.04); 
-      }
-      
-      .rule-header { 
-          font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; 
-          display: flex; align-items: center; justify-content: space-between;
-      }
-      .rule-desc {
-          display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;
-      }
-      
-      /* Aangepaste buttons zoals gevraagd (btn class + custom colors) */
-      .btn-logic {
-          text-align: center; 
-          margin-bottom: 20px;
-          background-color: transparent;
-      }
-      
+.question-row {
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.delete-btn-abs {
+    position: absolute; top: 20px; right: 20px;
+    background: transparent; border: none; color: var(--danger); cursor: pointer;
+    opacity: 0.7; transition: opacity 0.2s;
+    padding: 5px;
+}
+.delete-btn-abs:hover {
+    opacity: 1; background-color: rgba(220, 53, 69, 0.1); border-radius: 4px;
+}
+
+.section-header {
+    font-weight: 700; text-transform: uppercase; font-size: 0.8rem; color: var(--muted);
+    margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
+    padding-bottom: 4px; letter-spacing: 0.5px;
+}
+
+.form-row { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
+.full-width { grid-column: 1 / -1; }
+
+.logic-rule-box {
+    padding: 16px; border-radius: 8px; margin-bottom: 12px;
+    border-left: 4px solid #ccc; background-color: rgba(0,0,0,0.02);
+}
+.logic-rule-box.type-AND { 
+    border-left-color: #28a745; background-color: rgba(40, 167, 69, 0.04); 
+}
+.logic-rule-box.type-AND_NOT { 
+    border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.04); 
+}
+
+.rule-header { 
+    font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; 
+    display: flex; align-items: center; justify-content: space-between;
+}
+.rule-desc {
+    display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;
+}
+
+/* Logica-buttons */
+.btn-logic {
+    text-align: center; 
+    margin-bottom: 20px;
+    background-color: transparent;
+}
+
+/* Groene AND-knop: niet meer zo licht */
 .btn-add-and {
-          background-color: #e6f4ea; /* Lichtgroene achtergrond */
-          border: 1px solid #28a745; /* Groene rand */
-          color: #28a745;            /* Groene tekst */
-          margin-bottom: 20px;       /* Beetje ruimte eronder */
-          transition: all 0.2s ease;
-      }
-      .btn-add-and:hover {
-          background-color: #28a745; /* Volledig groen bij hover */
-          color: white;              /* Witte tekst bij hover */
-      }
-      
-      .btn-add-not {
-          background-color: #fde8e9; /* Lichtrode achtergrond */
-          border: 1px solid #dc3545; /* Rode rand */
-          color: #dc3545;            /* Rode tekst */
-          margin-bottom: 20px;
-          transition: all 0.2s ease;
-      }
-      .btn-add-not:hover {
-          background-color: #dc3545; /* Volledig rood bij hover */
-          color: white;
-      }
+    background-color: #198754;          /* Groen */
+    border: 1px solid #198754;          /* Groene rand */
+    color: #ffffff;                     /* Witte tekst */
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+.btn-add-and:hover {
+    background-color: #146c43;          /* Donkergroen */
+    border-color: #146c43;              /* Ook de border donkerder (geen blauw) */
+    color: #ffffff;
+}
+
+/* Rode NOT-knop: ook vol rood */
+.btn-add-not {
+    background-color: #dc3545;          /* Rood */
+    border: 1px solid #dc3545;          /* Rode rand */
+    color: #ffffff;                     /* Witte tekst */
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+.btn-add-not:hover {
+    background-color: #b02a37;          /* Donkerder rood */
+    border-color: #b02a37;              /* Border mee in dezelfde kleur */
+    color: #ffffff;
+}

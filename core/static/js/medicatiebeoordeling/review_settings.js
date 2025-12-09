@@ -12,8 +12,8 @@ function initSelect2($elements) {
         var $el = $(this);
         
         // Haal restrictie op (1, 3 of undefined)
-        // Dit is nieuw toegevoegd aan jouw oude logica
         var limitLen = $el.data('atc-len'); 
+        var isMultiple = $el.prop('multiple'); // onderscheid single/multiple
 
         $el.select2({
             placeholder: 'Zoek ATC code of naam...',
@@ -42,7 +42,17 @@ function initSelect2($elements) {
             templateResult: function (data) {
                 if (data.loading || !data.id) return data.text;
 
+                // Voor single-select (categorie/subcategorie) geen parent/child-logica
+                if (!isMultiple) {
+                    return data.text;
+                }
+
                 var currentSelection = $el.val() || [];
+
+                // Zorg dat currentSelection altijd een array is
+                if (!Array.isArray(currentSelection)) {
+                    currentSelection = [currentSelection];
+                }
 
                 // Check of item al gedekt is door ouder
                 var coveredBy = currentSelection.find(function (sel) {
@@ -61,10 +71,18 @@ function initSelect2($elements) {
 
         // ============================================================
         // LOGICA: KINDEREN VERWIJDEREN BIJ KIEZEN OUDER
+        // Alleen zinvol bij multiple-select (regels, triggers)
         // ============================================================
         $el.on('select2:selecting', function (e) {
+            // Single-select (categorie/subcategorie): gebruik standaard select2 gedrag
+            if (!isMultiple) return;
+
             var data = e.params.args.data;
             var currentSelection = $el.val() || [];
+
+            if (!Array.isArray(currentSelection)) {
+                currentSelection = [currentSelection];
+            }
 
             // 1. Ouder check: Als we een kind kiezen dat al gedekt is door een ouder
             var coveredBy = currentSelection.find(function (sel) {
