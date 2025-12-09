@@ -36,6 +36,7 @@ def admin_panel(request):
     # ---- Organisatie aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "org":
         name = (request.POST.get("name") or "").strip()
+        org_type = (request.POST.get("org_type") or "").strip()
         email = (request.POST.get("email") or "").strip()
         email2 = (request.POST.get("email2") or "").strip()
         phone = (request.POST.get("phone") or "").strip()
@@ -55,6 +56,7 @@ def admin_panel(request):
 
         Organization.objects.create(
             name=name,
+            org_type=org_type,
             email=email,              # verplicht
             email2=email2 or "",    # optioneel
             phone=phone or "",      # optioneel

@@ -273,6 +273,16 @@
               id="org_name"
               required
             >
+            <label for="org_type">Type organisatie:</label>
+            <select
+              class="admin-select narrow"
+              name="org_type"
+              id="org_type"
+              required
+            >
+              <option value="apotheek" selected>Apotheek</option>
+              <option value="zorginstelling">Zorginstelling</option>
+            </select>
 
             <label for="org_email">E-mailadres:</label>
             <input
@@ -359,6 +369,25 @@
                                name="name"
                                value="{{ org.name }}"
                                style="margin-top:6px;">
+                      </div>
+                      <div>
+                        <label>Type organisatie:</label>
+                        <select
+                          name="org_type"
+                          class="admin-select narrow"
+                          style="margin-top:6px;"
+                        >
+                          <option value="apotheek"
+                            {% if org.org_type == "apotheek" %}selected{% endif %}
+                          >
+                            Apotheek
+                          </option>
+                          <option value="zorginstelling"
+                            {% if org.org_type == "zorginstelling" %}selected{% endif %}
+                          >
+                            Zorginstelling
+                          </option>
+                        </select>
                       </div>
                       <div>
                         <label>E-mailadres:</label>

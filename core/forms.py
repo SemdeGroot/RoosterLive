@@ -205,10 +205,20 @@ class SimpleUserEditForm(forms.Form):
         return u
     
 class OrganizationEditForm(forms.Form):
+    ORG_TYPE_CHOICES = [
+        ("apotheek", "Apotheek"),
+        ("zorginstelling", "Zorginstelling"),
+    ]
+
     name = forms.CharField(label="Naam organisatie", max_length=255)
     email = forms.EmailField(label="E-mailadres", required=True)
     email2 = forms.EmailField(label="E-mailadres 2", required=False)
     phone = forms.CharField(label="Telefoonnummer", max_length=50, required=False)
+    org_type = forms.ChoiceField(
+        label="Type organisatie",
+        choices=ORG_TYPE_CHOICES,
+        required=True,
+    )
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance")
@@ -218,13 +228,13 @@ class OrganizationEditForm(forms.Form):
         self.fields["email"].initial = self.instance.email
         self.fields["email2"].initial = self.instance.email2
         self.fields["phone"].initial = self.instance.phone
+        self.fields["org_type"].initial = self.instance.org_type or "zorginstelling"
 
     def clean_name(self):
         name = (self.cleaned_data.get("name") or "").strip()
         if not name:
             raise forms.ValidationError("Organisatienaam is verplicht.")
 
-        # Unieke naam afdwingen (case-insensitive), behalve voor deze organisatie zelf
         qs = Organization.objects.filter(name__iexact=name).exclude(pk=self.instance.pk)
         if qs.exists():
             raise forms.ValidationError("Er bestaat al een organisatie met deze naam.")
@@ -236,6 +246,7 @@ class OrganizationEditForm(forms.Form):
         org.email = (self.cleaned_data.get("email") or "").strip() or ""
         org.email2 = (self.cleaned_data.get("email2") or "").strip() or ""
         org.phone = (self.cleaned_data.get("phone") or "").strip() or ""
+        org.org_type = self.cleaned_data["org_type"]
         org.save()
         return org
 

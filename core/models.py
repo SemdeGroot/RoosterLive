@@ -149,6 +149,13 @@ class WebAuthnPasskey(models.Model):
         return f"{base} – {self.user}"
     
 class Organization(models.Model):
+    ORG_TYPE_APOTHEEK = "apotheek"
+    ORG_TYPE_ZORGINSTELLING = "zorginstelling"
+
+    ORG_TYPE_CHOICES = [
+        (ORG_TYPE_APOTHEEK, "Apotheek"),
+        (ORG_TYPE_ZORGINSTELLING, "Zorginstelling"),
+    ]
     name = models.CharField(
         "Organisatienaam",
         max_length=255,
@@ -169,6 +176,13 @@ class Organization(models.Model):
         "Telefoonnummer",
         max_length=50,
         blank=True,
+    )
+
+    org_type = models.CharField(
+    "Type organisatie",
+    max_length=20,
+    choices=ORG_TYPE_CHOICES,
+    default=ORG_TYPE_APOTHEEK,
     )
 
     class Meta:
