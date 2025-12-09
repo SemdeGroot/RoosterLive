@@ -608,7 +608,21 @@ class AfdelingEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Maak verplichte velden expliciet (hoewel model dat ook al doet)
+
+        # Basis: alleen zorginstellingen
+        qs = Organization.objects.filter(
+            org_type=Organization.ORG_TYPE_ZORGINSTELLING
+        ).order_by('name')
+
+        # Extra safety: als deze afdeling al gekoppeld is aan een andere org,
+        # zorg dat die ook zichtbaar blijft in de dropdown, zodat je geen validation error krijgt.
+        if self.instance and self.instance.pk and self.instance.organisatie_id:
+            qs = Organization.objects.filter(pk=self.instance.organisatie_id) | qs
+            qs = qs.distinct()
+
+        self.fields['organisatie'].queryset = qs
+
+        # Verplichte velden
         self.fields['organisatie'].required = True
         self.fields['afdeling'].required = True
         self.fields['locatie'].required = True

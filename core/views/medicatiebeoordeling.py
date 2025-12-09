@@ -281,7 +281,7 @@ def review_create(request):
 
     # Context data voor de lijsten
     all_afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
-    all_organizations = Organization.objects.all().order_by('name')
+    all_organizations = Organization.objects.filter(org_type=Organization.ORG_TYPE_ZORGINSTELLING).order_by('name')
     
     # Init forms
     review_form = MedicatieReviewForm()

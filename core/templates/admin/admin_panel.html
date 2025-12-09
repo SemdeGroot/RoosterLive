@@ -152,106 +152,135 @@
           <input type="text" id="userSearch" placeholder="Typ om te zoeken…">
         </div>
 
-        <table class="manage-table user-table" id="userTable">
-          <tr>
-            <th>Voornaam</th>
-            <th>Achternaam</th>
-            <th>Organisatie</th>
-            <th>Groep</th>
-            <th>Acties</th>
-          </tr>
+       <table class="manage-table user-table" id="userTable">
+  <tr>
+    <th>Actief</th>
+    <th>Voornaam</th>
+    <th>Achternaam</th>
+    <th>Organisatie</th>
+    <th>Groep</th>
+    <th>Acties</th>
+  </tr>
 
-          {% for u in users %}
-          <tr class="user-row" id="user-row-{{ u.id }}">
-            <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td><td>{{ u.last_name }}</td>
-            <td>
-            {% if u.profile and u.profile.organization %}
-              {{ u.profile.organization.name }}
-            {% else %}
-              -
-            {% endif %}
-          </td>
-            <td>
+  {% for u in users %}
+  <tr class="user-row" id="user-row-{{ u.id }}">
+    {# 1: Actief (has_usable_password) #}
+    <td class="user-active"
+        title="{% if u.has_usable_password %}Account actief{% else %}Nog niet geactiveerd{% endif %}">
+      {% if u.has_usable_password %}
+        ✅
+      {% else %}
+        ⛔
+      {% endif %}
+    </td>
+
+    {# 2: Voornaam #}
+    <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
+
+    {# 3: Achternaam #}
+    <td>{{ u.last_name }}</td>
+
+    {# 4: Organisatie #}
+    <td>
+      {% if u.profile and u.profile.organization %}
+        {{ u.profile.organization.name }}
+      {% else %}
+        -
+      {% endif %}
+    </td>
+
+    {# 5: Groep #}
+    <td>
+      {% with g=u.groups.all|first %}
+        {{ g.name|default:"-" }}
+      {% endwith %}
+    </td>
+
+    {# 6: Acties #}
+    <td>
+      <div class="actions-wrap user-actions-vertical">
+        <button type="button"
+                class="btn small block"
+                onclick="toggleEdit('{{ u.id }}')">
+          Bewerken
+        </button>
+        <form method="post"
+              action="{% url 'user_delete' u.id %}"
+              style="display:inline;"
+              onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
+          {% csrf_token %}
+          <button class="btn small danger block" type="submit">Verwijderen</button>
+        </form>
+      </div>
+    </td>
+  </tr>
+
+  {# Edit-rij: gewoon colspan="6", geen Actief veld nodig #}
+  <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
+    <td colspan="6">
+      <form method="post" action="{% url 'user_update' u.id %}">
+        {% csrf_token %}
+        <div class="edit-grid">
+          <div>
+            <label>Voornaam:</label>
+            <input class="admin-input" type="text" name="first_name"
+                   value="{{ u.first_name|default:u.username }}" style="margin-top: 6px;">
+          </div>
+          <div>
+            <label>Achternaam:</label>
+            <input class="admin-input" type="text" name="last_name"
+                   value="{{ u.last_name }}" style="margin-top: 6px;">
+          </div>
+          <div>
+            <label>E-mail:</label>
+            <input class="admin-input" type="email" name="email"
+                   value="{{ u.email }}" style="margin-top: 6px;">
+          </div>
+          <div>
+            <label>Geboortedatum:</label>
+            <input class="admin-input js-date" type="text" name="birth_date"
+                   value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
+                   placeholder="dd-mm-jjjj"
+                   autocomplete="off"
+                   style="margin-top: 6px;">
+          </div>
+          <div>
+            <label>Groep:</label>
+            <select name="group" class="admin-select narrow" style="margin-left: 4px;">
               {% with g=u.groups.all|first %}
-                {{ g.name|default:"-" }}
+                {% for grp in groups %}
+                  <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
+                    {{ grp.name }}
+                  </option>
+                {% endfor %}
               {% endwith %}
-            </td>
-            <td>
-              <div class="actions-wrap user-actions-vertical">
-                <button type="button" class="btn small block" onclick="toggleEdit('{{ u.id }}')">Bewerken</button>
-                <form method="post" action="{% url 'user_delete' u.id %}" style="display:inline;"
-                      onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
-                  {% csrf_token %}
-                  <button class="btn small danger block" type="submit">Verwijderen</button>
-                </form>
-              </div>
-            </td>
-          </tr>
+            </select>
+          </div>
+          <div>
+            <label>Organisatie:</label>
+            <select name="organization" class="admin-select narrow" style="margin-left: 4px;">
+              <option value="">----------</option>
+              {% with profile=u.profile %}
+                {% for org in organizations %}
+                  <option value="{{ org.id }}"
+                          {% if profile.organization and profile.organization.id == org.id %}selected{% endif %}>
+                    {{ org.name }}
+                  </option>
+                {% endfor %}
+              {% endwith %}
+            </select>
+          </div>
+        </div>
+        <div class="edit-actions" style="margin-bottom: 4px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" type="submit">Opslaan</button>
+          <button type="button" class="btn" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
+        </div>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
 
-          <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
-            <td colspan="4">
-              <form method="post" action="{% url 'user_update' u.id %}">
-                {% csrf_token %}
-                <div class="edit-grid">
-                  <div>
-                    <label>Voornaam:</label>
-                    <input class="admin-input" type="text" name="first_name"
-                           value="{{ u.first_name|default:u.username }}" style="margin-top: 6px;">
-                  </div>
-                  <div>
-                    <label>Achternaam:</label>
-                    <input class="admin-input" type="text" name="last_name"
-                          value="{{ u.last_name }}" style="margin-top: 6px;">
-                  </div>
-                  <div>
-                    <label>E-mail:</label>
-                    <input class="admin-input" type="email" name="email"
-                           value="{{ u.email }}" style="margin-top: 6px;">
-                  </div>
-                  <div>
-                    <label>Geboortedatum:</label>
-                    <input class="admin-input js-date" type="text" name="birth_date"
-                           value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
-                           placeholder="dd-mm-jjjj"
-                           autocomplete="off"
-                           style="margin-top: 6px;">
-                  </div>
-                  <div>
-                    <label>Groep:</label>
-                    <select name="group" class="admin-select narrow" style="margin-left: 4px;">
-                      {% with g=u.groups.all|first %}
-                        {% for grp in groups %}
-                          <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
-                            {{ grp.name }}
-                          </option>
-                        {% endfor %}
-                      {% endwith %}
-                    </select>
-                  </div>
-                  <div>
-                    <label>Organisatie:</label>
-                    <select name="organization" class="admin-select narrow" style="margin-left: 4px;">
-                      <option value="">----------</option>
-                      {% with profile=u.profile %}
-                        {% for org in organizations %}
-                          <option value="{{ org.id }}"
-                            {% if profile.organization and profile.organization.id == org.id %}selected{% endif %}>
-                            {{ org.name }}
-                          </option>
-                        {% endfor %}
-                      {% endwith %}
-                    </select>
-                  </div>
-                </div>
-                <div class="edit-actions" style="margin-bottom: 4px;margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button class="btn" type="submit">Opslaan</button>
-                  <button type="button" class="btn" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
-                </div>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
       </div>
     </div>
 
