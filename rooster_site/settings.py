@@ -290,6 +290,10 @@ else:
 
 MEDICATIEREVIEW_API_KEY = os.getenv("MEDICATIEREVIEW_API_KEY")
 
+ALLOWED_MEDICATIEREVIEW_IPS = [
+    "127.0.0.1",      # Localhost (voor development)
+]
+
 LANGUAGE_CODE = 'nl-nl'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True

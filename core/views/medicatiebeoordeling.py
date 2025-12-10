@@ -14,6 +14,7 @@ from core.forms import MedicatieReviewForm, AfdelingEditForm
 from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, Organization
 from core.services.medicatiereview_api import call_review_api
 from core.utils.medication import group_meds_by_jansen
+from core.decorators import ip_restricted
 
 # --- HELPER FUNCTIE (Voor JSON API) ---
 def format_dutch_user_name(user):
@@ -43,6 +44,7 @@ def format_dutch_user_name(user):
     return " ".join(parts)
 
 # --- STANDAARD LIST VIEW (Server-side rendered) ---
+@ip_restricted
 @login_required
 def review_list(request):
     if not can(request.user, "can_view_medicatiebeoordeling"):
@@ -70,6 +72,7 @@ def review_list(request):
     })
 
 # --- AJAX API VIEW ---
+@ip_restricted
 @login_required
 @require_GET
 def review_search_api(request):
@@ -221,6 +224,7 @@ def dashboard(request):
     return render(request, "tiles_page.html", context)
 
 # --- DELETE VIEWS ---
+@ip_restricted
 @login_required
 def delete_afdeling(request, pk):
     if not can(request.user, "can_perform_medicatiebeoordeling"):
@@ -233,6 +237,7 @@ def delete_afdeling(request, pk):
         messages.success(request, f"Afdeling '{naam}' verwijderd.")
     return redirect("medicatiebeoordeling_create")
 
+@ip_restricted
 @login_required
 def delete_patient(request, pk):
     if not can(request.user, "can_perform_medicatiebeoordeling"):
@@ -249,7 +254,7 @@ def delete_patient(request, pk):
     return redirect("medicatiebeoordeling_list")
 
 # 3. AFDELING DELETE VIEW (Alleen patiënten wissen met reviews)
-
+@ip_restricted
 @login_required
 def clear_afdeling_review(request, pk):
     """
@@ -270,7 +275,7 @@ def clear_afdeling_review(request, pk):
         messages.success(request, f"Review van '{afd.afdeling}' gewist. ({aantal} patiënten verwijderd).")
         
     return redirect("medicatiebeoordeling_list")
-
+@ip_restricted
 @login_required
 def review_create(request):
     """
@@ -424,6 +429,7 @@ def review_create(request):
         "organizations": all_organizations,
     })
 
+@ip_restricted
 @login_required
 def afdeling_detail(request, pk):
     """
@@ -441,7 +447,7 @@ def afdeling_detail(request, pk):
     })
 
 # In core/views.py -> functie patient_detail
-
+@ip_restricted
 @login_required
 def patient_detail(request, pk):
     if not can(request.user, "can_view_medicatiebeoordeling"):
