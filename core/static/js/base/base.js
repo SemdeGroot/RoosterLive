@@ -117,7 +117,7 @@ const VAPID =
   async function registerSW() {
     try {
       // Zeker weten dat we v12 pakken
-      const reg = await navigator.serviceWorker.register('/service_worker.v13.js');
+      const reg = await navigator.serviceWorker.register('/service_worker.v14.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
       console.warn('[push] SW registratie faalde:', e);
@@ -220,28 +220,37 @@ const VAPID =
     closePushModal();
   }
 
-  // ---- NIEUW: Silent Sync functie voor herstelacties ----
+  // ---- Silent Sync functie voor herstelacties ----
   window.silentPushSync = async function() {
-    if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
-    try {
-      const reg = await registerSW();
-      if (!reg) return;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        // Als we al een sub hebben, stuur hem opnieuw naar de DB
-        await saveSubscription(sub);
-      } else {
-        // Heel zeldzaam: wel permission, geen sub. Probeer opnieuw.
-        const newSub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: b64ToUint8Array(VAPID),
-        });
-        await saveSubscription(newSub);
-      }
-    } catch(e) {
-      console.warn('[push] silent sync failed', e);
+  if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
+  
+  try {
+    const reg = await registerSW();
+    if (!reg) return;
+
+    // 1. Haal de oude subscription op
+    const oldSub = await reg.pushManager.getSubscription();
+    
+    // 2. Als die er is: VERWIJDER HEM EERST (Cruciaal!)
+    if (oldSub) {
+        console.log('[push] Oude subscription gevonden, verwijderen voor force refresh...');
+        await oldSub.unsubscribe();
     }
-  };
+
+    // 3. Maak nu een gloednieuwe subscription aan met de juiste VAPID key
+    const newSub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: b64ToUint8Array(VAPID),
+    });
+
+    // 4. Stuur de nieuwe, frisse data naar de server
+    await saveSubscription(newSub);
+    console.log('[push] Force refresh succesvol uitgevoerd.');
+
+  } catch(e) {
+    console.warn('[push] silent sync (force refresh) failed', e);
+  }
+};
 
   // ---- Promise-achtige prompt voor serial use ----
   window.offerPushPrompt = async function () {
@@ -278,16 +287,18 @@ const VAPID =
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
 
-  // 'onboardingPushFixed_v1' forceert een nieuwe run bij iedereen
-  const doneKey = 'onboardingPushFixed_v1';
+  // BUMP DE VERSIE HIERONDER NAAR v2
+  const doneKey = 'onboardingPushFixed_v3'; 
   const done = localStorage.getItem(doneKey) === '1';
   
+  // Voer dit ook uit als het NIET standalone is als je wilt testen in de browser, 
+  // maar voor productie is je check op isStandalone prima.
   if (!isStandalone || done) return;
 
   (async () => {
-    // Situatie 1: Gebruiker heeft al 'granted' (de mensen die hersteld moeten worden)
+    // Situatie 1: Gebruiker heeft al 'granted' -> FORCE REFRESH
     if (Notification.permission === 'granted' && typeof window.silentPushSync === 'function') {
-      console.log('[onboarding] Permission al granted, uitvoeren silent sync...');
+      console.log('[onboarding] Permission granted, force refresh van keys...');
       await window.silentPushSync();
     }
     // Situatie 2: Gebruiker moet nog kiezen (nieuwe gebruikers)
@@ -295,7 +306,7 @@ const VAPID =
       try { await window.offerPushPrompt(); } catch {}
     }
 
-    // Markeer als gedaan zodat dit niet bij elke page load gebeurt
+    // Markeer als gedaan
     try { localStorage.setItem(doneKey, '1'); } catch {}
   })();
 })();
@@ -307,7 +318,7 @@ if ('serviceWorker' in navigator) {
     (async () => {
       try {
         // 1) Normaal gewoon registreren
-        const reg = await navigator.serviceWorker.register('/service_worker.v13.js');
+        const reg = await navigator.serviceWorker.register('/service_worker.v14.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
 
         // 2) Optioneel: cleanup-truc via ?cleanup=1

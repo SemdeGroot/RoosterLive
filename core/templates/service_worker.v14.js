@@ -1,5 +1,5 @@
 // === BASIS-CONFIG ===
-const CACHE_NAME = 'apo-jansen-static-v7';
+const CACHE_NAME = 'apo-jansen-static-v8';
 const OFFLINE_URL = '/static/pwa/offline.v7.html';
 const APP_ICON = '/static/img/app_icon_trans-512x512.png';
 const NOTIF_ICON = '/static/pwa/icons/android-chrome-192x192.png';
@@ -12,7 +12,6 @@ const MAX_AGE_MS = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
 const PURGE_INTERVAL_MS = PURGE_INTERVAL_HOURS * 60 * 60 * 1000;
 
 // === DEV-OMGEVINGEN ===
-// (Exact overgenomen van jouw origineel)
 const DEV_HOSTNAMES = [
   'localhost',
   '127.0.0.1',
@@ -28,16 +27,33 @@ const DB_NAME = 'sw-metadata-db';
 const STORE_NAME = 'access-timestamps';
 const META_KEY_LAST_PRUNE = '__SYS_LAST_PRUNE__'; // Speciale key voor laatste check
 
+let dbInstance = null; // 1. We maken een variabele buiten de functie
+
 function openDB() {
+  // 2. Als we de deur al open hebben, gebruiken we die direct!
+  if (dbInstance) return Promise.resolve(dbInstance);
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
+    
     request.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    
+    request.onsuccess = () => {
+      // 3. We slaan de geopende verbinding op voor de volgende keer
+      dbInstance = request.result;
+      
+      // Veiligheid: als de verbinding onverwacht sluit, resetten we de variabele
+      dbInstance.onclose = () => { dbInstance = null; };
+      dbInstance.onerror = () => { dbInstance = null; };
+      
+      resolve(dbInstance);
+    };
+    
     request.onerror = () => reject(request.error);
   });
 }
