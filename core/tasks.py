@@ -22,3 +22,13 @@ def send_password_reset_email_task(self, user_id: int):
     User = get_user_model()
     user = User.objects.get(pk=user_id)
     send_password_reset_email(user)
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_news_uploaded_push_task(self):
+    from core.utils.push import send_news_upload_push
+    send_news_upload_push()
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_agenda_uploaded_push_task(self, category):
+    from core.utils.push import send_agenda_upload_push
+    send_agenda_upload_push(category)

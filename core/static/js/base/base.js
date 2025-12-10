@@ -116,6 +116,7 @@ const VAPID =
 
   async function registerSW() {
     try {
+      // Zeker weten dat we v12 pakken
       const reg = await navigator.serviceWorker.register('/service_worker.v12.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
@@ -129,7 +130,6 @@ const VAPID =
     return m ? decodeURIComponent(m[1]) : '';
   }
 
-  // Stabiel device-ID voor server-side dedupe
   async function getDeviceHash() {
     const ua = navigator.userAgent || "";
     const platform = navigator.platform || "";
@@ -160,6 +160,7 @@ const VAPID =
           replace: true
         }),
       });
+      console.log('[push] Subscription succesvol gesynchroniseerd met server');
     } catch (e) {
       console.warn('[push] opslaan subscription faalde:', e);
     }
@@ -170,7 +171,9 @@ const VAPID =
     if (!VAPID) return false;
     if (!onHttps) return false;
     if (!pushSupported) return false;
-    if (Notification.permission === 'granted') return false;
+    // LET OP: hier returnen we false als permission al granted is, 
+    // daarom hebben we straks de silentSync functie nodig.
+    if (Notification.permission === 'granted') return false; 
     if (Notification.permission === 'denied') return false;
     if (!isMobileUA) return false;
     if (isIOS) return isStandalone;
@@ -192,10 +195,9 @@ const VAPID =
     if (!VAPID) { alert('VAPID sleutel ontbreekt.'); return; }
     if (!onHttps) { alert('Notificaties vereisen HTTPS.'); return; }
 
-    // Zorg dat de SW écht geregistreerd is
     const reg = await registerSW();
     if (!reg) {
-      alert('Service worker kon niet worden geregistreerd. Probeer het later opnieuw.');
+      alert('Service worker kon niet worden geregistreerd.');
       return;
     }
 
@@ -218,6 +220,29 @@ const VAPID =
     closePushModal();
   }
 
+  // ---- NIEUW: Silent Sync functie voor herstelacties ----
+  window.silentPushSync = async function() {
+    if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
+    try {
+      const reg = await registerSW();
+      if (!reg) return;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        // Als we al een sub hebben, stuur hem opnieuw naar de DB
+        await saveSubscription(sub);
+      } else {
+        // Heel zeldzaam: wel permission, geen sub. Probeer opnieuw.
+        const newSub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: b64ToUint8Array(VAPID),
+        });
+        await saveSubscription(newSub);
+      }
+    } catch(e) {
+      console.warn('[push] silent sync failed', e);
+    }
+  };
+
   // ---- Promise-achtige prompt voor serial use ----
   window.offerPushPrompt = async function () {
     try { if (!canOfferPush()) return; } catch { return; }
@@ -234,11 +259,7 @@ const VAPID =
       const esc = (e)=>{ if (e.key === 'Escape') { onDecl(); window.removeEventListener('keydown', esc); } };
       window.addEventListener('keydown', esc);
 
-      // Contextuele tekst
-      const ua = navigator.userAgent || "";
-      const isIOS = /iPad|iPhone|iPod/.test(ua);
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                        || window.navigator.standalone === true;
+      // Contextuele tekst (rest blijft hetzelfde)
       if (!onHttps) {
         textEl && (textEl.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.');
       } else if (isIOS && !isStandalone) {
@@ -250,13 +271,6 @@ const VAPID =
       openPushModal();
     });
   };
-
-  // Debug
-  window.__pushDebug = {
-    onHttps,
-    pushSupported,
-    perm: Notification.permission
-  };
 })();
 
 // ---------- ONBOARDING ORCHESTRATOR: alleen PUSH ----------
@@ -264,15 +278,25 @@ const VAPID =
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
 
-  // Toon push-prompt precies één keer bij eerste PWA-open
-  const done = localStorage.getItem('onboardingPushDone') === '1';
+  // 'onboardingPushFixed_v1' forceert een nieuwe run bij iedereen
+  const doneKey = 'onboardingPushFixed_v1';
+  const done = localStorage.getItem(doneKey) === '1';
+  
   if (!isStandalone || done) return;
 
   (async () => {
-    if (typeof window.offerPushPrompt === 'function') {
+    // Situatie 1: Gebruiker heeft al 'granted' (de mensen die hersteld moeten worden)
+    if (Notification.permission === 'granted' && typeof window.silentPushSync === 'function') {
+      console.log('[onboarding] Permission al granted, uitvoeren silent sync...');
+      await window.silentPushSync();
+    }
+    // Situatie 2: Gebruiker moet nog kiezen (nieuwe gebruikers)
+    else if (typeof window.offerPushPrompt === 'function') {
       try { await window.offerPushPrompt(); } catch {}
     }
-    try { localStorage.setItem('onboardingPushDone', '1'); } catch {}
+
+    // Markeer als gedaan zodat dit niet bij elke page load gebeurt
+    try { localStorage.setItem(doneKey, '1'); } catch {}
   })();
 })();
 

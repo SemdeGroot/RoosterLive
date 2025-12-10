@@ -86,3 +86,86 @@ def send_roster_updated_push(
             # Subscription ongeldig → opruimen
             if status in (404, 410, 403):
                 s.delete()
+
+def send_news_upload_push():
+    """
+    Stuur een web-push voor een nieuw nieuwsbericht.
+    - Alleen naar users die can_view_news hebben.
+    """
+    payload = {
+        "title": "Nieuwtje!",
+        "body": "Er is een nieuwsbericht geplaatst in de app.",
+        "url": "/nieuws/",
+        "tag": "news-update",  # Zorgt dat meerdere berichten elkaar overschrijven/stapelen
+    }
+
+    # Haal subscriptions op en filter op permissie
+    subs = PushSubscription.objects.select_related("user").all()
+    eligible_subs = [s for s in subs if can(s.user, "can_view_news")]
+
+    for s in eligible_subs:
+        claims = _build_vapid_claims(s.endpoint)
+
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+
+            # Subscription ongeldig → opruimen
+            if status in (404, 410, 403):
+                s.delete()
+
+
+def send_agenda_upload_push(category: str):
+    """
+    Stuur een web-push voor een nieuw agenda-item.
+    - Alleen naar users die can_view_agenda hebben.
+    - Tekst verschilt lichtjes per categorie.
+    """
+    
+    # Vriendelijke tekst op basis van categorie
+    if category == "outing":
+        title = "Nieuw uitje!"
+        body = "Er is een nieuw uitje toegevoegd aan de agenda. Ben je erbij?"
+    else:
+        title = "Nieuw in de agenda!"
+        body = "Er is iets nieuws gepland in de agenda."
+
+    payload = {
+        "title": title,
+        "body": body,
+        "url": "/agenda/",
+        "tag": "agenda-update",
+    }
+
+    # Haal subscriptions op en filter op permissie
+    subs = PushSubscription.objects.select_related("user").all()
+    eligible_subs = [s for s in subs if can(s.user, "can_view_agenda")]
+
+    for s in eligible_subs:
+        claims = _build_vapid_claims(s.endpoint)
+
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+
+            # Subscription ongeldig → opruimen
+            if status in (404, 410, 403):
+                s.delete()

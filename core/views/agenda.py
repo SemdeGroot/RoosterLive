@@ -12,7 +12,7 @@ from ._helpers import can
 
 from core.models import UserProfile, AgendaItem
 from core.forms import AgendaItemForm
-
+from core.tasks import send_agenda_uploaded_push_task
 
 # Gebruik constante uit settings, fallback = 1
 ORG_ID_APOTHEEK_JANSEN = getattr(settings, "APOTHEEK_JANSEN_ORG_ID", 1)
@@ -104,6 +104,8 @@ def agenda(request):
             item.category = category  # hier zetten we de categorie
             item.created_by = request.user
             item.save()
+            
+            send_agenda_uploaded_push_task.delay(category)
             return redirect("agenda")
         # Als form niet valid is: we laten de pagina vallen naar render(),
         # met een gebonden form inclusief errors. Form blijft open (zie template).

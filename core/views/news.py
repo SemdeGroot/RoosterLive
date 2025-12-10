@@ -19,7 +19,7 @@ from ._helpers import (
 
 from core.models import NewsItem
 from core.forms import NewsItemForm
-
+from core.tasks import send_news_uploaded_push_task
 
 # Directories
 NEWS_DIR = Path(settings.MEDIA_ROOT) / "news"
@@ -149,6 +149,7 @@ def news(request):
                 original_filename=original_name,
             )
             news_item.save()
+            send_news_uploaded_push_task.delay()
             messages.success(request, "Nieuwsbericht toegevoegd.")
             return redirect("news")
         else:
