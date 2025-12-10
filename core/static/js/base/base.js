@@ -117,7 +117,7 @@ const VAPID =
   async function registerSW() {
     try {
       // Zeker weten dat we v12 pakken
-      const reg = await navigator.serviceWorker.register('/service_worker.v14.js');
+      const reg = await navigator.serviceWorker.register('/service_worker.v17.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
       console.warn('[push] SW registratie faalde:', e);
@@ -318,7 +318,7 @@ if ('serviceWorker' in navigator) {
     (async () => {
       try {
         // 1) Normaal gewoon registreren
-        const reg = await navigator.serviceWorker.register('/service_worker.v14.js');
+        const reg = await navigator.serviceWorker.register('/service_worker.v17.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
 
         // 2) Optioneel: cleanup-truc via ?cleanup=1
