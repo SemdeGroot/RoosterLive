@@ -1,6 +1,6 @@
 // === BASIS-CONFIG ===
 const CACHE_NAME = 'apo-jansen-static-v7';
-const OFFLINE_URL = '/static/pwa/offline.v6.html';
+const OFFLINE_URL = '/static/pwa/offline.v7.html';
 const APP_ICON = '/static/img/app_icon_trans-512x512.png';
 const NOTIF_ICON = '/static/pwa/icons/android-chrome-192x192.png';
 const NOTIF_BADGE = '/static/pwa/icons/android-chrome-192x192.png';
