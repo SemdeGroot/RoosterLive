@@ -13,28 +13,38 @@
 <div class="card birthdays-card">
     <div class="agenda-section">
         <div class="birthday-header agenda-section-header">
-            <div class="birthday-header-text">
-                <h2>{{ afdeling.afdeling }}</h2>
-                <p>{{ afdeling.created_at|date:"d-m-Y" }} • {{ patienten|length }} patiënten</p>
-                <p style="font-size:0.85rem; color:var(--muted);">
-                    Laatst gewijzigd: 
-                    {% if afdeling.updated_at %}
-                        {{ afdeling.updated_at|date:"d-m-Y H:i" }}
-                    {% else %}
-                        {{ afdeling.created_at|date:"d-m-Y H:i" }}
-                    {% endif %}
-                    door 
-                    <strong>
-                    {% if afdeling.updated_by %}
-                        {{ afdeling.updated_by|dutch_name }}
-                    {% else %}
-                        {{ afdeling.created_by|dutch_name }}
-                    {% endif %}
-                    </strong>
-                </p>
-            </div>
-            <a href="{% url 'medicatiebeoordeling_list' %}" class="btn">Naar Overzicht</a>
+            
+        <img src="{% static 'img/department-128x128.png' %}" 
+            alt="Afdeling icoon" 
+            class="birthday-icon">
+
+        <div class="birthday-header-text">
+            <h2>{{ afdeling.afdeling }}</h2>
+            <p>{{ afdeling.created_at|date:"d-m-Y" }} • {{ patienten|length }} patiënten</p>
+
+            <p style="font-size:0.85rem; color:var(--muted);">
+                Laatst gewijzigd:
+                {% if afdeling.updated_at %}
+                    {{ afdeling.updated_at|date:"d-m-Y H:i" }}
+                {% else %}
+                    {{ afdeling.created_at|date:"d-m-Y H:i" }}
+                {% endif %}
+                door
+                <strong>
+                {% if afdeling.updated_by %}
+                    {{ afdeling.updated_by|dutch_name }}
+                {% else %}
+                    {{ afdeling.created_by|dutch_name }}
+                {% endif %}
+                </strong>
+            </p>
         </div>
+
+        <a href="{% url 'medicatiebeoordeling_list' %}" class="btn">
+            Naar Overzicht
+        </a>
+    </div>
+
 
         <div class="search-container">
             <input type="text" id="liveSearchPatient" class="search-input" placeholder="Typ om te zoeken op naam of geboortedatum...">
