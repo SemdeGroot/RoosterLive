@@ -575,9 +575,9 @@ class MedicatieReviewForm(forms.Form):
     medimo_text = forms.CharField(
         label="Plak hier de tekst uit het geselecteerde AIS",
         widget=forms.Textarea(attrs={
-            'class': 'form-control medimo-textarea', 
+            'class': 'form-input', 
             'rows': 12, 
-            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier...\n(Bijvoorbeeld: "Overzicht medicatie...")'
+            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier. Bijvoorbeeld:\n\nOverzicht medicatie Argusvlinder\nEen overzicht van alle actieve medicatie in afdeling Argusvlinder. Per patient wordt weergegeven of en zo ja welke geneesmiddelen deze mensen gebruiken.\n\n10 records in selectie\n________________________________________\nDhr. A Einstein (14-03-1879)\nC   Clozapine tablet 6,25mg	0-0-4 stuks, dagelijks, Continu\nEtc...'
         }),
         required=True
     )
