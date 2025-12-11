@@ -2,44 +2,40 @@ def group_meds_by_jansen(geneesmiddelen_lijst):
     """
     Groepeert meds op Jansen ID.
     Zorgt dat ID 1 (Vallen?) en ID 2 (Malen?) ALTIJD aanwezig zijn,
-    ook als er geen medicatie in zit.
+    maar hier worden NOOIT geneesmiddelen aan gekoppeld.
     """
-    
-    # 1. We initialiseren de 'verplichte' groepen vooraf.
-    #    Zo zijn ze altijd aanwezig, ook als de lijst meds leeg is.
+
+    # 1. Verplichte (lege) groepen vooraf initialiseren
     groepen = {
         1: {'naam': 'Vallen?', 'meds': []},
         2: {'naam': 'Malen?',  'meds': []}
     }
 
-    # 2. Loop door de daadwerkelijke medicatie
     for gm in geneesmiddelen_lijst:
-        gm = gm if isinstance(gm, dict) else {}
-        
-        # ID ophalen en veilig naar int converteren
+        if not isinstance(gm, dict):
+            continue
+
         raw_id = gm.get("ATC3_jansen_id")
+
+        # ID veilig naar int
         try:
             gid = int(raw_id) if raw_id is not None else 9999
         except ValueError:
             gid = 9999
-            
+
+        # ✅ Alles met Jansen ID 1 of 2 nooit als medicijn opnemen
+        if gid in (1, 2):
+            continue
+
         gnaam = gm.get("ATC3_jansen_naam") or "Overig"
-        
-        # Als deze groep nog niet bestaat (bijv ID 3, 4, etc), maak hem aan.
-        # ID 1 en 2 bestaan al, dus die slaan we hier over (en behouden de naam).
+
+        # Nieuwe groep aanmaken (behalve 1 en 2, die bestaan al)
         if gid not in groepen:
             groepen[gid] = {'naam': gnaam, 'meds': []}
-        else:
-            # Optioneel: Update de naam als de parser een specifiekere naam heeft,
-            # maar voor 1 en 2 wil je waarschijnlijk je eigen hardcoded naam houden.
-            # Als je de parser naam leidend wilt laten zijn voor ID 1 en 2, uncomment dan:
-            # groepen[gid]['naam'] = gnaam
-            pass
-        
-        # Voeg medicijn toe aan de lijst
+
+        # Medicijn toevoegen aan de juiste groep
         groepen[gid]['meds'].append(gm)
 
-    # 3. Sorteer numeriek op ID (1, 2, 3 ... 9999)
+    # Gesorteerde lijst van (jansen_id, groep_dict)
     sorted_groups = sorted(groepen.items(), key=lambda item: item[0])
-    
     return sorted_groups

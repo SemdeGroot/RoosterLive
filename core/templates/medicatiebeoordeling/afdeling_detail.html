@@ -13,14 +13,14 @@
 <div class="card birthdays-card">
     <div class="agenda-section">
         <div class="birthday-header agenda-section-header">
-            
+
         <img src="{% static 'img/department-128x128.png' %}" 
             alt="Afdeling icoon" 
             class="birthday-icon">
 
         <div class="birthday-header-text">
             <h2>{{ afdeling.afdeling }}</h2>
-            <p>{{ afdeling.created_at|date:"d-m-Y" }} • {{ patienten|length }} patiënten</p>
+            <p>{{ patienten|length }} patiënten</p>
 
             <p style="font-size:0.85rem; color:var(--muted);">
                 Laatst gewijzigd:

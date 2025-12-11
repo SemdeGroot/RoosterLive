@@ -58,7 +58,7 @@
     border-top-color: var(--accent);          /* Lichtere highlight */
 
     /* Mooie, constante rotatie */
-    animation: review-spin 1s linear infinite;
+    animation: review-spin 0.75s linear infinite;
 }
 
 
