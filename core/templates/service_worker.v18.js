@@ -248,18 +248,17 @@ async function handleNavigationRequest(event) {
 
 // === FETCH-LISTENER (Aangepast met Periodic Trigger) ===
 self.addEventListener('fetch', (event) => {
-  // PERIODIEKE CHECK:
-  // We triggeren dit bij elke GET request, maar de functie zelf checkt
-  // de database timestamp en stopt direct als het nog geen tijd is.
-  // We gebruiken event.waitUntil zodat de browser de SW niet killt tijdens het opruimen,
-  // maar we wachten er NIET op voor de response (respondWith).
-  if (!IS_DEV) {
+  // PERIODIEKE CHECK AANPASSING:
+  // Alleen checken bij navigatie (nieuwe pagina), NIET bij elke API call.
+  // Dit voorkomt vertraging tijdens het login-request.
+  const isNavigate = event.request.mode === 'navigate';
+
+  if (!IS_DEV && isNavigate) {
     event.waitUntil(checkAndPrunePeriodically());
   }
 
   if (event.request.method !== 'GET') return;
 
-  const isNavigate = event.request.mode === 'navigate';
   const isStaticOrMedia = isCachableStaticOrMedia(event.request);
 
   if (isStaticOrMedia) {

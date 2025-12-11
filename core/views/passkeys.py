@@ -241,10 +241,10 @@ def passkey_password_login(request: HttpRequest):
     body = json.loads(request.body.decode("utf-8"))
     username = (body.get("username") or "").strip()
     password = body.get("password") or ""
-    device_hash = body.get("device_hash") or ""
+    # device_hash halen we wel op, maar gebruiken we niet meer voor filtering
+    # device_hash = body.get("device_hash") or "" 
     next_url = body.get("next") or "/"
 
-    # Gebruik dezelfde form als je 2FA wizard, zodat "Voornaam / E-mail" werkt
     form = IdentifierAuthenticationForm(
         request=request,
         data={
@@ -266,20 +266,29 @@ def passkey_password_login(request: HttpRequest):
             status=400,
         )
 
-    # Kijk of er een passkey is voor deze user + device
-    try:
-        passkey = WebAuthnPasskey.objects.get(user=user, device_hash=device_hash)
-    except WebAuthnPasskey.DoesNotExist:
-        # Geen passkey → normale 2FA-flow. Front-end doet dan form.submit()
-        return JsonResponse({"ok": True, "has_passkey": False})
+    # === WIJZIGING START ===
+    # OUD: We zochten specifiek op device_hash. Als die op Android veranderd was, faalde dit.
+    # try:
+    #     passkey = WebAuthnPasskey.objects.get(user=user, device_hash=device_hash)
+    # except WebAuthnPasskey.DoesNotExist:
+    #     return JsonResponse({"ok": True, "has_passkey": False})
 
-    # Er is een passkey → authentication options genereren
+    # NIEUW: We halen ALLE passkeys van deze gebruiker op.
+    # De browser bepaalt zelf wel of hij de private key heeft voor één van deze credentials.
+    passkeys = WebAuthnPasskey.objects.filter(user=user)
+    
+    if not passkeys.exists():
+         return JsonResponse({"ok": True, "has_passkey": False})
+
+    # Maak een lijst van ALLE credential ID's van deze gebruiker
     allowed_credentials = [
         PublicKeyCredentialDescriptor(
-            id=base64url_to_bytes(passkey.credential_id),
+            id=base64url_to_bytes(pk.credential_id),
             type=PublicKeyCredentialType.PUBLIC_KEY,
         )
+        for pk in passkeys
     ]
+    # === WIJZIGING EIND ===
 
     options = generate_authentication_options(
         rp_id=_get_rp_id(request),
@@ -292,8 +301,8 @@ def passkey_password_login(request: HttpRequest):
 
     _store_auth_state(request, challenge_b64u, user.id, next_url)
 
+    # has_passkey is True zolang de user ERGENS een passkey heeft.
     return JsonResponse({"ok": True, "has_passkey": True, "options": opts})
-
 
 # =========================
 # LOGIN STAP 2: WebAuthn assertion verifiëren
