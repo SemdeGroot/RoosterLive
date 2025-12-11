@@ -1,4 +1,4 @@
-/* Bestand: static/js/medicatiebeoordeling/medicatiebeoordeling_create.js */
+// Bestand: static/js/medicatiebeoordeling/medicatiebeoordeling_create.js
 
 $(document).ready(function() {
     
@@ -25,8 +25,6 @@ $(document).ready(function() {
     // ==========================================
     
     // Definieer hier de teksten. 
-    // Let op: De titel 'Instructie:' staat al hardcoded in je HTML wrapper, 
-    // dus die hoeft hier niet meer in de tekst.
     const instructions = {
         'medimo_afdeling': `
             1. Controleer rechtsboven of de juiste zorginstelling geselecteerd is.<br>
@@ -48,31 +46,22 @@ $(document).ready(function() {
         const source = $('#id_source').val(); 
         const scope = $('#id_scope').val();
         
-        // Elementen ophalen
-        const $wrapper = $('#instruction-wrapper'); // De container met de titel "Instructie:"
-        const $content = $('#instruction-content'); // Het vakje voor de tekst
+        const $wrapper = $('#instruction-wrapper'); 
+        const $content = $('#instruction-content'); 
         
-        // Maak de sleutel (bijv: "medimo_afdeling")
         const key = `${source}_${scope}`;
 
         if (instructions[key]) {
-            // 1. Vul de tekst
             $content.html(instructions[key]);
-            
-            // 2. Toon de wrapper (inclusief titel) als deze nog verborgen is
             if ($wrapper.is(':hidden')) {
                 $wrapper.slideDown(200);
             }
         } else {
-            // Verberg de hele wrapper als er geen instructie is
             $wrapper.slideUp(200);
         }
     }
 
-    // Luister naar wijzigingen op de dropdowns
     $('#id_source, #id_scope').on('change', updateInstruction);
-
-    // Initialiseer direct bij laden pagina
     updateInstruction();
 
     // ==========================================
@@ -84,11 +73,51 @@ $(document).ready(function() {
         $('.manage-row').each(function() {
             const $row = $(this);
             const text = $row.text().toLowerCase();
-            
-            // Toggle laat de rij zien of verbergt hem op basis van de boolean
             $row.toggle(text.indexOf(filter) > -1);
         });
     });
+
+    // ==========================================
+    // 5. REVIEW LOADING OVERLAY (Start Analyse)
+    // ==========================================
+    // Alleen voor het formulier dat de medicatiereview start
+    const $reviewForm = $('form').filter(function() {
+        return $(this).find('input[name="btn_start_review"]').length > 0;
+    });
+
+    if ($reviewForm.length) {
+        $reviewForm.on('submit', function() {
+            const $overlay = $('#review-loading-overlay');
+            if (!$overlay.length) return;
+
+            // Basis state
+            $('#review-loading-main').text('Container opstarten...');
+            $overlay.removeClass('is-long-wait').addClass('is-visible');
+
+            // Oude timers opruimen (voor het geval van back/forward nav)
+            if (window.reviewLoadingTimers && window.reviewLoadingTimers.length) {
+                window.reviewLoadingTimers.forEach(function(id) { clearTimeout(id); });
+            }
+            window.reviewLoadingTimers = [];
+
+            // Na 5 seconden: andere tekst
+            window.reviewLoadingTimers.push(
+                setTimeout(function() {
+                    $('#review-loading-main').text('Medicatiereview uitvoeren...');
+                }, 5000)
+            );
+
+            // Na 20 seconden: overlay een subtiel "lange wachttijd" accent geven
+            window.reviewLoadingTimers.push(
+                setTimeout(function() {
+                    $overlay.addClass('is-long-wait');
+                }, 20000)
+            );
+
+            // Geen preventDefault: formulier mag normaal submitten
+            // De overlay blijft zichtbaar totdat de server response terug is
+        });
+    }
 
 });
 
@@ -96,11 +125,9 @@ $(document).ready(function() {
 // 4. GLOBALE FUNCTIES (Voor onclick="" attributes)
 // ==========================================
 
-// We hangen deze aan window zodat de onclick in de HTML hem kan vinden
 window.toggleEditRow = function(id) {
     const row = document.getElementById('edit-row-' + id);
     if (row) {
-        // Toggle display style
         row.style.display = (row.style.display === 'none' || row.style.display === '') ? 'table-row' : 'none';
     }
 };

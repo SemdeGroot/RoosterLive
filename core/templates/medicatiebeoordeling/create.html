@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+  <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/reviewcreate_spinner.css' %}">
 
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
@@ -222,6 +223,33 @@
 </div>
     </div>
 </div>
+
+<!-- Loading overlay voor de medicatiereview -->
+<div id="review-loading-overlay" class="review-loading-overlay" aria-hidden="true">
+    <div class="review-loading-content">
+
+        <!-- Logo boven de spinner -->
+        <img src="{% static 'img/app_icon_trans-512x512.png' %}"
+             alt="App icoon"
+             class="review-loading-logo">
+
+        <!-- Spinner zelf -->
+        <div class="review-spinner">
+            <div class="review-spinner-ring"></div>
+        </div>
+
+        <div class="review-loading-text">
+            <p id="review-loading-main" class="review-loading-main">
+                Container opstarten...
+            </p>
+            <p class="review-loading-sub">
+                Dit kan enkele seconden duren. Sluit deze pagina niet.
+            </p>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
