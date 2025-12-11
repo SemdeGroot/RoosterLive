@@ -7,12 +7,140 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+
+  <style>
+@media print {
+
+  /* 0. Pagina marges */
+  @page {
+      margin: 10mm;
+  }
+
+  /* 1. Nuclear fix: geen enkele min-height blokkeert de layout */
+  * {
+      min-height: 0 !important;
+  }
+
+  html,
+  body {
+      height: auto !important;
+      overflow: visible !important;
+  }
+
+  /* 2. Typische layout-containers: geen 100vh/scroll-gedrag in print */
+  .app,
+  .content,
+  .app-main,
+  .main-wrapper,
+  .page,
+  .layout,
+  main,
+  #patient-pdf-root {
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      display: block !important;
+  }
+
+  /* 3. Header (logo + 'Patiënt Analyse') op dezelfde pagina als de eerste card */
+  header,
+  .header,
+  .topbar,
+  .navbar {
+      position: static !important;
+      page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+  }
+
+  /* Eerste review-card (met patiëntnaam) direct achter de header houden */
+  #patient-pdf-root .review-card:first-child {
+      page-break-before: avoid !important;
+      page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+      margin-top: 0 !important;
+  }
+
+  /* 4. Grote blokken (incl. STOPP) niet binnenin breken */
+  .review-card,
+  .analysis-box,
+  .criteria-content,
+  .med-group {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin-bottom: 8mm;
+  }
+
+  /* Headings niet alleen onderaan de pagina */
+  h1, h2, h3, h4, h5, h6,
+  .card-header {
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+      page-break-inside: avoid !important;
+  }
+
+  /* Tabellen netjes + header herhalen */
+  table {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      border-collapse: collapse !important;
+  }
+
+  thead {
+      display: table-header-group !important;
+  }
+
+  tbody {
+      display: table-row-group !important;
+  }
+
+  tr, th, td {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+  }
+
+  /* 5. Interactieve dingen niet printen */
+  button,
+  .btn,
+  input[type="submit"],
+  a.btn,
+  [onclick] {
+      display: none !important;
+  }
+
+  /* 6. Footer helemaal weg in print */
+  footer,
+  .footer,
+  .site-footer {
+      display: none !important;
+  }
+
+  /* 7. Kleuren behouden */
+  body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+  }
+
+  /* 8. Textareas volledig tonen */
+  textarea {
+      overflow: visible !important;
+      height: auto !important;
+  }
+
+  /* 9. Geen lelijke woordafbrekingen */
+  body,
+  * {
+      word-break: normal !important;
+      hyphens: manual !important;
+  }
+}
+    
+  </style>
 {% endblock %}
 
 {% block content %}
 <form method="post">
     {% csrf_token %}
-    
+    <div id="patient-pdf-root">
     <div class="review-card">
         <div class="card-header">
             <div>
@@ -217,7 +345,13 @@
                     Opslaan
                 </button>
             </div>
+            <div style="margin-top: -40px; text-align:left;">
+                <button type="button" class="btn btn-save" onclick="window.print()">
+                    Exporteer als PDF
+                </button>
+            </div>
         </div>
+    </div>
     </div>
 </form>
 {% endblock %}
