@@ -1,82 +1,220 @@
+/* Klikbare kaart voor elke standaardvraag (hergebruikt birthday-item layout) */
 .question-row {
-    background-color: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    position: relative;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  position: relative;
+  margin-bottom: 8px;
 }
 
-.delete-btn-abs {
-    position: absolute; top: 20px; right: 20px;
-    background: transparent; border: none; color: var(--danger); cursor: pointer;
-    opacity: 0.7; transition: opacity 0.2s;
-    padding: 5px;
-}
-.delete-btn-abs:hover {
-    opacity: 1; background-color: rgba(220, 53, 69, 0.1); border-radius: 4px;
+/* Header van een vraag (klikbaar): maakt gebruik van .birthday-main / .birthday-left / .birthday-right uit agenda.css */
+.question-header {
+  cursor: pointer;
 }
 
+/* Separator tussen titel en meldingstekst */
+.question-title-desc-separator {
+  margin: 0 4px;
+  color: var(--muted);
+}
+
+/* Meldingstekst in de header */
+.question-description-preview {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Chevron rechts */
+.question-toggle-icon {
+  font-size: 1.1rem;
+  margin-left: 8px;
+}
+
+/* Delete-knop in de header én bij logica (zelfde styling) */
+.question-delete-btn {
+  width: 24px;
+  height: 24px;
+  min-width: 0;             /* override .btn min-width */
+  padding: 0;
+  margin: 0;
+  margin-right: 4px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+.question-delete-btn svg {
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.question-delete-btn:hover {
+  background: var(--danger-hover);
+  border: 1px solid var(--danger-border);
+}
+
+/* Extra hook als je ooit logica-delete anders wilt positioneren */
+.question-rule-delete-btn {
+  margin-left: 8px;
+}
+
+/* Body van de vraag (inklapbaar deel) */
+.question-body {
+  margin-top: 8px;
+}
+
+/* Grid layout van formulieren */
+.form-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Sectieheaders in de body */
 .section-header {
-    font-weight: 700; text-transform: uppercase; font-size: 0.8rem; color: var(--muted);
-    margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
-    padding-bottom: 4px; letter-spacing: 0.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 24px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 
-.form-row { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
-.full-width { grid-column: 1 / -1; }
-
+/* Logica blokken */
 .logic-rule-box {
-    padding: 16px; border-radius: 8px; margin-bottom: 12px;
-    border-left: 4px solid #ccc; background-color: rgba(0,0,0,0.02);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 4px solid #ccc;
+  background-color: rgba(0,0,0,0.02);
 }
 .logic-rule-box.type-AND { 
-    border-left-color: #28a745; background-color: rgba(40, 167, 69, 0.04); 
+  border-left-color: #28a745;
+  background-color: rgba(40, 167, 69, 0.04);
 }
 .logic-rule-box.type-AND_NOT { 
-    border-left-color: #dc3545; background-color: rgba(220, 53, 69, 0.04); 
+  border-left-color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.04);
 }
 
 .rule-header { 
-    font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; 
-    display: flex; align-items: center; justify-content: space-between;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .rule-desc {
-    display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
-/* Logica-buttons */
+/* Logica-knoppen */
 .btn-logic {
-    text-align: center; 
-    margin-bottom: 20px;
-    background-color: transparent;
+  text-align: center;
+  margin-bottom: 20px;
+  background-color: transparent;
 }
 
-/* Groene AND-knop: niet meer zo licht */
+/* Groene AND-knop */
 .btn-add-and {
-    background-color: #198754;          /* Groen */
-    border: 1px solid #198754;          /* Groene rand */
-    color: #ffffff;                     /* Witte tekst */
-    margin-bottom: 20px;
-    transition: all 0.2s ease;
+  background-color: #198754;
+  border: 1px solid #198754;
+  color: #ffffff;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
 }
 .btn-add-and:hover {
-    background-color: #146c43;          /* Donkergroen */
-    border-color: #146c43;              /* Ook de border donkerder (geen blauw) */
-    color: #ffffff;
+  background-color: #146c43;
+  border-color: #146c43;
+  color: #ffffff;
 }
 
-/* Rode NOT-knop: ook vol rood */
+/* Rode NOT-knop */
 .btn-add-not {
-    background-color: #dc3545;          /* Rood */
-    border: 1px solid #dc3545;          /* Rode rand */
-    color: #ffffff;                     /* Witte tekst */
-    margin-bottom: 20px;
-    transition: all 0.2s ease;
+  background-color: #dc3545;
+  border: 1px solid #dc3545;
+  color: #ffffff;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
 }
 .btn-add-not:hover {
-    background-color: #b02a37;          /* Donkerder rood */
-    border-color: #b02a37;              /* Border mee in dezelfde kleur */
-    color: #ffffff;
+  background-color: #b02a37;
+  border-color: #b02a37;
+  color: #ffffff;
+}
+
+/* Zoekbalk boven de vragen */
+.review-search-wrapper {
+  margin: 16px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.review-search-input {
+  max-width: 420px;
+}
+.review-search-help {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Top actions bar (opslaan rechtsboven) */
+.review-top-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* Groepen per categorie/subcategorie */
+.question-group {
+  margin-bottom: 24px;
+}
+
+.question-group-header {
+  margin-bottom: 8px;
+}
+
+.question-group-category {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.question-group-subcategory {
+  margin: 4px 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Container per subcategorie binnen een categorie */
+.question-subgroup {
+  margin-bottom: 12px;
+}
+
+.question-group-list {
+  margin-top: 4px;
+}
+/* Horizontale scrollcontainer voor mobiele weergave */
+.review-settings-scroll {
+  overflow-x: auto;          /* horizontaal scrollen toestaan */
+  overflow-y: visible;       /* verticale flow blijft normaal */
+  -webkit-overflow-scrolling: touch; /* smooth scrolling op iOS */
+}
+
+/* Belangrijk: forceer dat de inhoud niet wrapt of krimpt */
+.review-settings-scroll > .agenda-section {
+  min-width: 900px;   /* of 1000px, afhankelijk van jouw layout */
+  /* Hierdoor blijft de desktop layout intact */
+  white-space: normal; /* Laat normale layout binnen */
 }

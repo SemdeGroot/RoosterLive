@@ -23,9 +23,37 @@
 
   // ---------- DEVICE DETECTIE ----------
   function isMobile() {
-    const ua = navigator.userAgent || "";
-    return /Android|iPhone|iPad|iPod/i.test(ua);
-  }
+      const ua = navigator.userAgent || "";
+
+      // 1. BLOKKEER WINDOWS (Jouw ThinkPad)
+      // Dit blokkeert alles met 'Windows' in de browser-info,
+      // ongeacht of het een touchscreen heeft of hoe breed het scherm is.
+      if (/Windows/i.test(ua)) {
+        return false;
+      }
+
+      // 2. BLOKKEER MACOS DESKTOP (MacBooks/iMacs)
+      // MacBooks hebben 'Macintosh' maar géén touchpoints (of max 0).
+      // (iPads hebben soms ook 'Macintosh' maar wel touchpoints > 0).
+      const isMac = /Macintosh/i.test(ua);
+      if (isMac && (!navigator.maxTouchPoints || navigator.maxTouchPoints === 0)) {
+        return false; 
+      }
+
+      // 3. BLOKKEER LINUX DESKTOP
+      // Android is ook Linux, dus we blokkeren Linux alleen als het GEEN Android is.
+      if (/Linux/i.test(ua) && !/Android/i.test(ua)) {
+          return false;
+      }
+
+      // 4. WAT OVERBLIJFT IS MOBIEL (Android / iOS / iPadOS)
+      // Hier vallen ook brede foldables onder, want die hebben 'Android' in de ua.
+      if (/Android|iPhone|iPad|iPod/i.test(ua) || (isMac && navigator.maxTouchPoints > 0)) {
+          return true;
+      }
+
+      return false;
+    }
 
   function isWebAuthnSupported() {
     return (
@@ -271,7 +299,7 @@
       }
     };
 
-    if (!onHttps || !isWebAuthnSupported()) return;
+    if (!onHttps || !isWebAuthnSupported() || !isMobile()) return;
 
     form.addEventListener("submit", async (ev) => {
       const username = (usernameInput.value || "").trim();

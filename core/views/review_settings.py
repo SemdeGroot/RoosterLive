@@ -82,7 +82,7 @@ def standaardvragen(request):
             })
 
         save_review_settings_json(new_data)
-        return redirect('standaardvragen_settings')
+        return redirect('medicatiebeoordeling_settings')
 
     # GET
     data = get_review_settings_json()

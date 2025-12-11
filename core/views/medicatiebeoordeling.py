@@ -275,6 +275,7 @@ def clear_afdeling_review(request, pk):
         messages.success(request, f"Review van '{afd.afdeling}' gewist. ({aantal} patiënten verwijderd).")
         
     return redirect("medicatiebeoordeling_list")
+
 @ip_restricted
 @login_required
 def review_create(request):

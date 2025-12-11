@@ -12,11 +12,11 @@
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/review_settings.css' %}">
-
 {% endblock %}
 
 {% block content %}
-<div class="card birthdays-card" style="margin-bottom: 30px;">
+<div class="card birthdays-card review-settings-card" style="margin-bottom: 30px;">
+    <div class="review-settings-scroll">
   <div class="agenda-section">
     
     <div class="birthday-header agenda-section-header">
@@ -29,130 +29,258 @@
 
     <form method="post" id="configForm" style="padding: 0 16px 16px;">
         {% csrf_token %}
-        
+
+        <!-- Zoekbalk + Alles Opslaan op één rij -->
+        <div class="review-search-wrapper">
+            <div class="review-search-row">
+                <input
+                    type="text"
+                    id="question-search"
+                    class="admin-input review-search-input"
+                    placeholder="Zoek op titel of meldingstekst..."
+                    autocomplete="off"
+                >
+                <button type="submit" class="btn review-save-top-btn" style="float: right;">
+                    Alles Opslaan
+                </button>
+            </div>
+            <small class="review-search-help">
+                Live zoeken in titel en meldingstekst. Klik om te openen.
+            </small>
+        </div>
+
+
+        <!-- JS groepeert deze rows per categorie/subcategorie -->
         <div id="questions-container">
             {% for c in criteria %}
                 {% with q_uid=forloop.counter0|stringformat:"s" %}
-                <div class="question-row" id="row-{{ q_uid }}">
+                <div
+                    class="birthday-item question-row"
+                    id="row-{{ q_uid }}"
+                    data-row-id="{{ q_uid }}"
+                    data-category-id="{{ c.definition.category_enriched.id|default:'' }}"
+                    data-category-label="{{ c.definition.category_enriched.text|default:'Zonder categorie' }}"
+                    data-subcategory-id="{{ c.definition.subcategory_enriched.id|default:'' }}"
+                    data-subcategory-label="{{ c.definition.subcategory_enriched.text|default:'Zonder subcategorie' }}"
+                >
                     <input type="hidden" name="row_index" value="{{ q_uid }}">
 
-                    <button type="button" class="delete-btn-abs" onclick="removeRow('{{ q_uid }}')" title="Vraag verwijderen">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-                        </svg>
-                    </button>
+                    <!-- Klikbare header (titel + meldingstekst) -->
+                    <div
+                        class="question-header birthday-main"
+                        tabindex="0"
+                        data-question-toggle
+                    >
+                        <div class="birthday-left">
+                            <span class="birthday-name">
+                                <span data-title-overview>{{ c.definition.title|default:"(zonder titel)" }}</span>
+                                <span class="question-title-desc-separator"> – </span>
+                                <span
+                                    class="question-description-preview"
+                                    data-description-overview
+                                >
+                                    {{ c.definition.description|default:"" }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="birthday-right">
+                            <!-- Delete-knop netjes in de header, links van caret -->
+                            <button
+                                type="button"
+                                class="btn question-delete-btn"
+                                onclick="removeRow('{{ q_uid }}')"
+                                title="Vraag verwijderen"
+                                aria-label="Vraag verwijderen"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    width="16"
+                                    height="16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                            </button>
+                            <span class="question-toggle-icon" aria-hidden="true">▾</span>
+                        </div>
+                    </div>
 
-                    <div class="section-header" style="margin-top: 0;">Algemeen</div>
-                    <div class="form-row" style="grid-template-columns: 3fr 1fr;">
-                        <input type="hidden" name="id_field_{{ q_uid }}" value="{{ c.definition.id }}">
+                    <!-- Inhoud van de vraag: inklapbaar -->
+                    <div class="question-body is-hidden" data-question-body>
+                        <div class="section-header" style="margin-top: 0;">Algemeen</div>
+                        <div class="form-row" style="grid-template-columns: 3fr 1fr;">
+                            <input type="hidden" name="id_field_{{ q_uid }}" value="{{ c.definition.id }}">
+
+                            <div>
+                                <label class="section-label">Titel (Intern)</label>
+                                <input
+                                    type="text"
+                                    name="title_{{ q_uid }}"
+                                    class="admin-input js-title-input"
+                                    value="{{ c.definition.title|default:'' }}"
+                                    required
+                                >
+                            </div>
+                            <div>
+                                <label class="section-label">Min. Leeftijd</label>
+                                <input
+                                    type="number"
+                                    name="age_min_{{ q_uid }}"
+                                    class="admin-input"
+                                    value="{{ c.filters.age_min|default:'' }}"
+                                    placeholder="-"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                            <div>
+                                <label class="section-label">Categorie (ATC 1)</label>
+                                <select
+                                    class="atc-select js-category-select"
+                                    name="category_{{ q_uid }}"
+                                    data-atc-len="1"
+                                >
+                                    {% if c.definition.category_enriched %}
+                                        <option value="{{ c.definition.category_enriched.id }}" selected>
+                                            {{ c.definition.category_enriched.text }}
+                                        </option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="section-label">Subcategorie (ATC 3)</label>
+                                <select
+                                    class="atc-select js-subcategory-select"
+                                    name="subcategory_{{ q_uid }}"
+                                    data-atc-len="3"
+                                >
+                                    {% if c.definition.subcategory_enriched %}
+                                        <option value="{{ c.definition.subcategory_enriched.id }}" selected>
+                                            {{ c.definition.subcategory_enriched.text }}
+                                        </option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="full-width">
+                                <label class="section-label">Melding tekst (getoond in review)</label>
+                                <input
+                                    type="text"
+                                    name="description_{{ q_uid }}"
+                                    class="admin-input js-description-input"
+                                    value="{{ c.definition.description }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="section-header">Logica</div>
                         
-                        <div>
-                            <label class="section-label">Titel (Intern)</label>
-                            <input type="text" name="title_{{ q_uid }}" class="admin-input" value="{{ c.definition.title|default:'' }}" required>
-                        </div>
-                        <div>
-                            <label class="section-label">Min. Leeftijd</label>
-                            <input type="number" name="age_min_{{ q_uid }}" class="admin-input" value="{{ c.filters.age_min|default:'' }}" placeholder="-">
-                        </div>
-                    </div>
-
-                    <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-                        <div>
-                            <label class="section-label">Categorie (ATC 1)</label>
-                            <select class="atc-select" name="category_{{ q_uid }}" data-atc-len="1">
-                                {% if c.definition.category_enriched %}
-                                    <option value="{{ c.definition.category_enriched.id }}" selected>{{ c.definition.category_enriched.text }}</option>
-                                {% endif %}
+                        <div style="margin-bottom: 20px;">
+                            <label class="section-label">Start controle bij gebruik van één van deze middelen/groepen:</label>
+                            <select
+                                class="atc-select"
+                                name="primary_triggers_{{ q_uid }}"
+                                multiple="multiple"
+                            >
+                                {% for t in c.activation.primary_triggers_enriched %}
+                                    <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                                {% endfor %}
                             </select>
                         </div>
-                        <div>
-                            <label class="section-label">Subcategorie (ATC 3)</label>
-                            <select class="atc-select" name="subcategory_{{ q_uid }}" data-atc-len="3">
-                                {% if c.definition.subcategory_enriched %}
-                                    <option value="{{ c.definition.subcategory_enriched.id }}" selected>{{ c.definition.subcategory_enriched.text }}</option>
+
+                        <div id="container-AND-{{ q_uid }}">
+                            {% for rule in c.logic_rules %}
+                                {% if rule.boolean_operator == 'AND' %}
+                                    {% with r_uid=forloop.counter0|stringformat:"s" %}
+                                    <div class="logic-rule-box type-AND" id="rule-{{ q_uid }}-{{ r_uid }}">
+                                        <input type="hidden" name="rule_indices_{{ q_uid }}" value="{{ r_uid }}">
+                                        <input type="hidden" name="rule_operator_{{ q_uid }}_{{ r_uid }}" value="AND">
+                                        
+                                        <div class="rule-header">
+                                            <span style="color:#28a745;">✅ Vereiste Combinatie</span>
+                                            <button
+                                                type="button"
+                                                class="btn question-delete-btn question-rule-delete-btn"
+                                                onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')"
+                                                title="Regel verwijderen"
+                                                aria-label="Regel verwijderen"
+                                            >
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <span class="rule-desc">Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen/groepen gebruikt:</span>
+                                        
+                                        <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
+                                            {% for t in rule.trigger_codes_enriched %}
+                                                <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% endwith %}
                                 {% endif %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="full-width">
-                            <label class="section-label">Melding tekst (getoond in review)</label>
-                            <input type="text" name="description_{{ q_uid }}" class="admin-input" value="{{ c.definition.description }}" required>
-                        </div>
-                    </div>
-
-                    <div class="section-header">Logica</div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <label class="section-label">Start controle bij gebruik van één van deze middelen/groepen:</label>
-                        <select class="atc-select" name="primary_triggers_{{ q_uid }}" multiple="multiple">
-                            {% for t in c.activation.primary_triggers_enriched %}
-                                <option value="{{ t.id }}" selected>{{ t.text }}</option>
                             {% endfor %}
-                        </select>
-                    </div>
+                        </div>
+                        <button type="button" class="btn btn-logic btn-add-and" onclick="addRule('{{ q_uid }}', 'AND')">
+                            + Extra voorwaarde toevoegen (AND)
+                        </button>
 
-                    <div id="container-AND-{{ q_uid }}">
-                        {% for rule in c.logic_rules %}
-                            {% if rule.boolean_operator == 'AND' %}
-                                {% with r_uid=forloop.counter0|stringformat:"s" %}
-                                <div class="logic-rule-box type-AND" id="rule-{{ q_uid }}-{{ r_uid }}">
-                                    <input type="hidden" name="rule_indices_{{ q_uid }}" value="{{ r_uid }}">
-                                    <input type="hidden" name="rule_operator_{{ q_uid }}_{{ r_uid }}" value="AND">
-                                    
-                                    <div class="rule-header">
-                                        <span style="color:#28a745;">✅ Vereiste Combinatie</span>
-                                        <span class="delete-btn-abs" style="position:relative; top:auto; right:auto;" onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                        </span>
+                        <div id="container-AND_NOT-{{ q_uid }}">
+                            {% for rule in c.logic_rules %}
+                                {% if rule.boolean_operator == 'AND_NOT' %}
+                                    {% with r_uid=forloop.counter0|stringformat:"s" %}
+                                    <div class="logic-rule-box type-AND_NOT" id="rule-{{ q_uid }}-{{ r_uid }}">
+                                        <input type="hidden" name="rule_indices_{{ q_uid }}" value="{{ r_uid }}">
+                                        <input type="hidden" name="rule_operator_{{ q_uid }}_{{ r_uid }}" value="AND_NOT">
+                                        
+                                        <div class="rule-header">
+                                            <span style="color:#dc3545;">⛔ MAAR NIET (Uitsluiten)</span>
+                                            <button
+                                                type="button"
+                                                class="btn question-delete-btn question-rule-delete-btn"
+                                                onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')"
+                                                title="Regel verwijderen"
+                                                aria-label="Regel verwijderen"
+                                            >
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <span class="rule-desc">Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen/groepen gebruikt:</span>
+                                        
+                                        <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
+                                            {% for t in rule.trigger_codes_enriched %}
+                                                <option value="{{ t.id }}" selected>{{ t.text }}</option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
-                                    <span class="rule-desc">Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen/groepen gebruikt:</span>
-                                    
-                                    <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
-                                        {% for t in rule.trigger_codes_enriched %}
-                                            <option value="{{ t.id }}" selected>{{ t.text }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                {% endwith %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                    <button type="button" class="btn btn-logic btn-add-and" onclick="addRule('{{ q_uid }}', 'AND')">
-                        + Extra voorwaarde toevoegen (AND)
-                    </button>
-
-                    <div id="container-AND_NOT-{{ q_uid }}">
-                        {% for rule in c.logic_rules %}
-                            {% if rule.boolean_operator == 'AND_NOT' %}
-                                {% with r_uid=forloop.counter0|stringformat:"s" %}
-                                <div class="logic-rule-box type-AND_NOT" id="rule-{{ q_uid }}-{{ r_uid }}">
-                                    <input type="hidden" name="rule_indices_{{ q_uid }}" value="{{ r_uid }}">
-                                    <input type="hidden" name="rule_operator_{{ q_uid }}_{{ r_uid }}" value="AND_NOT">
-                                    
-                                    <div class="rule-header">
-                                        <span style="color:#dc3545;">⛔ MAAR NIET (Uitsluiten)</span>
-                                        <span class="delete-btn-abs" style="position:relative; top:auto; right:auto;" onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                        </span>
-                                    </div>
-                                    <span class="rule-desc">Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen/groepen gebruikt:</span>
-                                    
-                                    <select class="atc-select" name="rule_codes_{{ q_uid }}_{{ r_uid }}" multiple="multiple">
-                                        {% for t in rule.trigger_codes_enriched %}
-                                            <option value="{{ t.id }}" selected>{{ t.text }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                {% endwith %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                    <button type="button" class="btn btn-logic btn-add-not" onclick="addRule('{{ q_uid }}', 'AND_NOT')">
-                        + Uitzondering toevoegen (NOT)
-                    </button>
-
+                                    {% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-logic btn-add-not" onclick="addRule('{{ q_uid }}', 'AND_NOT')">
+                            + Uitzondering toevoegen (NOT)
+                        </button>
+                    </div> <!-- einde question-body -->
                 </div>
                 {% endwith %}
             {% endfor %}
@@ -169,59 +297,131 @@
   </div>
 </div>
 
+<!-- Template voor nieuwe vragen -->
 <template id="tpl-question">
-    <div class="question-row" id="row-__QID__">
+    <div
+        class="birthday-item question-row"
+        id="row-__QID__"
+        data-row-id="__QID__"
+        data-category-id=""
+        data-category-label="Zonder categorie"
+        data-subcategory-id=""
+        data-subcategory-label="Zonder subcategorie"
+    >
         <input type="hidden" name="row_index" value="__QID__">
-        <button type="button" class="delete-btn-abs" onclick="removeRow('__QID__')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        </button>
 
-        <div class="section-header" style="margin-top: 0;">Algemeen</div>
-        <input type="hidden" name="id_field___QID__" value="__QID__">
-        
-        <div class="form-row" style="grid-template-columns: 3fr 1fr;">
-            <div><label class="section-label">Titel (Intern)</label><input type="text" name="title___QID__" class="admin-input" required></div>
-            <div><label class="section-label">Min. Leeftijd</label><input type="number" name="age_min___QID__" class="admin-input"></div>
-        </div>
-
-        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-            <div>
-                <label class="section-label">Categorie (ATC 1)</label>
-                <select class="atc-select-init" name="category___QID__" data-atc-len="1"></select>
+        <div
+            class="question-header birthday-main"
+            tabindex="0"
+            data-question-toggle
+        >
+            <div class="birthday-left">
+                <span class="birthday-name">
+                    <span data-title-overview>(nieuwe vraag)</span>
+                    <span class="question-title-desc-separator"> – </span>
+                    <span
+                        class="question-description-preview"
+                        data-description-overview
+                    ></span>
+                </span>
             </div>
-            <div>
-                <label class="section-label">Subcategorie (ATC 3)</label>
-                <select class="atc-select-init" name="subcategory___QID__" data-atc-len="3"></select>
+            <div class="birthday-right">
+                <button
+                    type="button"
+                    class="btn question-delete-btn"
+                    onclick="removeRow('__QID__')"
+                    title="Vraag verwijderen"
+                    aria-label="Vraag verwijderen"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                </button>
+                <span class="question-toggle-icon" aria-hidden="true">▾</span>
             </div>
         </div>
 
-        <div class="form-row"><div class="full-width"><label class="section-label">Melding tekst</label><input type="text" name="description___QID__" class="admin-input"></div></div>
+        <div class="question-body is-hidden" data-question-body>
+            <div class="section-header" style="margin-top: 0;">Algemeen</div>
+            <input type="hidden" name="id_field___QID__" value="__QID__">
+            
+            <div class="form-row" style="grid-template-columns: 3fr 1fr;">
+                <div>
+                    <label class="section-label">Titel (Intern)</label>
+                    <input type="text" name="title___QID__" class="admin-input js-title-input" required>
+                </div>
+                <div>
+                    <label class="section-label">Min. Leeftijd</label>
+                    <input type="number" name="age_min___QID__" class="admin-input">
+                </div>
+            </div>
 
-        <div class="section-header">Logica</div>
-        <div style="margin-bottom: 20px;">
-            <label class="section-label">1. Start controle bij gebruik van:</label>
-            <select class="atc-select-init" name="primary_triggers___QID__" multiple="multiple"></select>
+            <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                <div>
+                    <label class="section-label">Categorie (ATC 1)</label>
+                    <select class="atc-select-init js-category-select" name="category___QID__" data-atc-len="1"></select>
+                </div>
+                <div>
+                    <label class="section-label">Subcategorie (ATC 3)</label>
+                    <select class="atc-select-init js-subcategory-select" name="subcategory___QID__" data-atc-len="3"></select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="full-width">
+                    <label class="section-label">Melding tekst</label>
+                    <input type="text" name="description___QID__" class="admin-input js-description-input">
+                </div>
+            </div>
+
+            <div class="section-header">Logica</div>
+            <div style="margin-bottom: 20px;">
+                <label class="section-label">1. Start controle bij gebruik van:</label>
+                <select class="atc-select-init" name="primary_triggers___QID__" multiple="multiple"></select>
+            </div>
+
+            <div id="container-AND-__QID__"></div>
+            <button type="button" class="btn btn-logic btn-add-and" onclick="addRule('__QID__', 'AND')">+ Extra voorwaarde toevoegen (AND)</button>
+
+            <div id="container-AND_NOT-__QID__"></div>
+            <button type="button" class="btn btn-logic btn-add-not" onclick="addRule('__QID__', 'AND_NOT')">+ Uitzondering toevoegen (NOT)</button>
         </div>
-
-        <div id="container-AND-__QID__"></div>
-        <button type="button" class="btn btn-logic btn-add-and" onclick="addRule('__QID__', 'AND')">+ Extra voorwaarde toevoegen (AND)</button>
-
-        <div id="container-AND_NOT-__QID__"></div>
-        <button type="button" class="btn btn-logic btn-add-not" onclick="addRule('__QID__', 'AND_NOT')">+ Uitzondering toevoegen (NOT)</button>
     </div>
 </template>
 
 <template id="tpl-rule-AND">
     <div class="logic-rule-box type-AND" id="rule-__QID__-__RID__">
         <input type="hidden" name="rule_indices___QID__" value="__RID__">
-        
         <input type="hidden" name="rule_operator___QID_____RID__" value="AND">
         
         <div class="rule-header">
             <span style="color:#28a745; font-weight:800;">✅ Vereiste Combinatie</span>
-            <span class="delete-btn-abs" style="position:relative; top:auto; right:auto;" onclick="removeRule('__QID__', '__RID__')">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </span>
+            <button
+                type="button"
+                class="btn question-delete-btn question-rule-delete-btn"
+                onclick="removeRule('__QID__', '__RID__')"
+                title="Regel verwijderen"
+                aria-label="Regel verwijderen"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+            </button>
         </div>
         <span class="rule-desc">
             Het signaal is <b>pas relevant</b> als de patiënt <b>OOK</b> één van deze middelen/groepen gebruikt:
@@ -233,19 +433,30 @@
 <template id="tpl-rule-AND_NOT">
     <div class="logic-rule-box type-AND_NOT" id="rule-__QID__-__RID__">
         <input type="hidden" name="rule_indices___QID__" value="__RID__">
-        
         <input type="hidden" name="rule_operator___QID_____RID__" value="AND_NOT">
         
         <div class="rule-header">
             <span style="color:#dc3545; font-weight:800;">⛔ MAAR NIET (Uitsluiten)</span>
-            <span class="delete-btn-abs" style="position:relative; top:auto; right:auto;" onclick="removeRule('__QID__', '__RID__')">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </span>
+            <button
+                type="button"
+                class="btn question-delete-btn question-rule-delete-btn"
+                onclick="removeRule('__QID__', '__RID__')"
+                title="Regel verwijderen"
+                aria-label="Regel verwijderen"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+            </button>
         </div>
         <span class="rule-desc">
         Het signaal is pas relevant als de patiënt <b>GEEN</b> van de volgende middelen/groepen gebruikt:
         </span>
         <select class="atc-select-init" name="rule_codes___QID_____RID__" multiple="multiple"></select>
+    </div>
     </div>
 </template>
 

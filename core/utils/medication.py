@@ -1,34 +1,45 @@
-from collections import defaultdict
-
 def group_meds_by_jansen(geneesmiddelen_lijst):
     """
-    Groepeert een lijst geneesmiddelen (dicts) op basis van 'ATC3_jansen_id'.
-    
-    Returns:
-        Een lijst van tuples, gesorteerd op groepsnaam:
-        [
-            (1, {'naam': 'Mond', 'meds': [gm1, gm2]}), 
-            (2, {'naam': 'Maag/darm', 'meds': [gm3]}),
-            ...
-        ]
+    Groepeert meds op Jansen ID.
+    Zorgt dat ID 1 (Vallen?) en ID 2 (Malen?) ALTIJD aanwezig zijn,
+    ook als er geen medicatie in zit.
     """
-    groepen = {} # Key = ID
+    
+    # 1. We initialiseren de 'verplichte' groepen vooraf.
+    #    Zo zijn ze altijd aanwezig, ook als de lijst meds leeg is.
+    groepen = {
+        1: {'naam': 'Vallen?', 'meds': []},
+        2: {'naam': 'Malen?',  'meds': []}
+    }
 
+    # 2. Loop door de daadwerkelijke medicatie
     for gm in geneesmiddelen_lijst:
         gm = gm if isinstance(gm, dict) else {}
         
-        # Haal ID en Naam uit de API data (ingevuld door jouw nieuwe parser)
-        # Fallback naar 999/Overig als het mist
-        gid = gm.get("ATC3_jansen_id") or 999
+        # ID ophalen en veilig naar int converteren
+        raw_id = gm.get("ATC3_jansen_id")
+        try:
+            gid = int(raw_id) if raw_id is not None else 9999
+        except ValueError:
+            gid = 9999
+            
         gnaam = gm.get("ATC3_jansen_naam") or "Overig"
         
+        # Als deze groep nog niet bestaat (bijv ID 3, 4, etc), maak hem aan.
+        # ID 1 en 2 bestaan al, dus die slaan we hier over (en behouden de naam).
         if gid not in groepen:
             groepen[gid] = {'naam': gnaam, 'meds': []}
+        else:
+            # Optioneel: Update de naam als de parser een specifiekere naam heeft,
+            # maar voor 1 en 2 wil je waarschijnlijk je eigen hardcoded naam houden.
+            # Als je de parser naam leidend wilt laten zijn voor ID 1 en 2, uncomment dan:
+            # groepen[gid]['naam'] = gnaam
+            pass
         
+        # Voeg medicijn toe aan de lijst
         groepen[gid]['meds'].append(gm)
 
-    # Sorteer de output alfabetisch op NAAM (prettig voor de gebruiker)
-    # We gebruiken een lambda functie om te sorteren op de naam in de value dict
-    sorted_groups = sorted(groepen.items(), key=lambda item: item[1]['naam'])
+    # 3. Sorteer numeriek op ID (1, 2, 3 ... 9999)
+    sorted_groups = sorted(groepen.items(), key=lambda item: item[0])
     
     return sorted_groups
