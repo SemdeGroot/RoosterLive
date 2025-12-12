@@ -602,7 +602,7 @@ class AfdelingEditForm(forms.ModelForm):
         }
         labels = {
             'organisatie': 'Zorginstelling',
-            'afdeling': 'Afdeling',
+            'afdeling': 'Afdeling (zorg dat deze overeenkomt met de naam in Medimo)',
             'locatie': 'Locatie',
         }
 

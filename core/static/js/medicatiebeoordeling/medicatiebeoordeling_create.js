@@ -91,7 +91,7 @@ $(document).ready(function() {
             if (!$overlay.length) return;
 
             // Basis state
-            $('#review-loading-main').text('Container opstarten...');
+            $('#review-loading-main').text('Applicatie opstarten...');
             $overlay.removeClass('is-long-wait').addClass('is-visible');
 
             // Oude timers opruimen (voor het geval van back/forward nav)
