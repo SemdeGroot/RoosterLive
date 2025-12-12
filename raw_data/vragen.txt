@@ -1,0 +1,97 @@
+Zijn er bij deze medicatie relevante contra-indicaties of allergieën bekend?
+
+Is vitamine D-suppletie bij deze patiënt nog geïndiceerd?
+
+Is de pijnmedicatie goed ingesteld en is de pijn voldoende onder controle (inclusief zo-nodig gebruik)?
+
+Is voortzetting van metoclopramide nog noodzakelijk?
+
+Is voortzetting van domperidon nog noodzakelijk?
+
+Is de combinatie van domperidon met parkinsonmedicatie noodzakelijk? Kunnen elkaars werking tegengaan.
+
+Is de dosering van de protonpompremmer passend of hoger dan nodig?
+
+Zijn kunsttranen nog nodig en heeft de patiënt nog klachten van droge ogen?
+
+Is de schildkliermedicatie goed ingesteld op basis van T4- en TSH-waarden?
+
+Is voortzetting van tramadol wenselijk gezien mogelijke bijwerkingen zoals duizeligheid?
+
+Worden dermale corticosteroïden correct gebruikt (juiste klasse, basiszalf en frequentie) en is voortzetting nodig?
+
+Is bij gebruik van een anti-aritmicum de antistolling (DOAC of VKA) passend geregeld?
+
+Is de dosering van het TCA nog passend en is de indicatie (pijn of gedrag) nog actueel?
+
+Wordt een LABA gebruikt zonder ICS of LAMA en is dit geïndiceerd?
+
+Wordt bij hartfalen een lisdiureticum gebruikt zonder RAS-remmer en kan deze worden toegevoegd?
+
+Wordt een RAAS-remmer gebruikt zonder SGLT2-remmer of bètablokker bij hartfalen en is dit optimaal?
+
+Is vitamine B12-suppletie nog nodig bij afwezigheid van PPI- of metforminegebruik en wat is de spiegel?
+
+Is acetylcysteïne nog zinvol gezien de beperkte effectiviteit?
+
+Is de dosering van de DOAC passend bij de huidige nierfunctie en het lichaamsgewicht?
+
+Is er bij antipsychoticagebruik een evaluatie- of stopdatum afgesproken?
+
+Is voortzetting van een statine zinvol gezien de levensverwachting (> 2 jaar)?
+
+Is de jichtmedicatie nog nodig en is de jicht voldoende onder controle?
+
+Wat is de indicatie voor promethazine als monotherapie en is dit nog passend?
+
+Zijn de psychofarmaca goed ingesteld en is er ruimte voor afbouw?
+
+Wordt ferrofumaraat maximaal tweemaal per week gebruikt en wat is het Hb?
+
+Is bij gebruik van systemische glucocorticoïden botbescherming geïndiceerd?
+
+Zijn de pols en bloeddruk passend bij het huidige bètablokkergebruik?
+
+Zijn de pols en bloeddruk passend bij het gebruik van de huidige antihypertensiva?
+
+Kan epilepsiemedicatie worden afgebouwd na minimaal zes maanden insultvrij zijn?
+
+Heeft rivastigmine nog voldoende effect op stemming en functioneren en is afbouw mogelijk?
+
+Hebben solifenacine of tamsulosine nog voldoende effect om voortzetting te rechtvaardigen?
+
+Is voortzetting van mebeverine of een vergelijkbaar middel nog zinvol?
+
+Is de diabetesmedicatie passend op basis van bloedglucosewaarden en HbA1c?
+
+Kan latanoprost worden gestopt indien het druppelen als belastend wordt ervaren?
+
+Kan SSRI-gebruik worden afgebouwd na circa negen maanden en zijn er eerdere stoppogingen gedaan?
+
+Is diclofenacgel nog nodig gezien milieubelasting en beperkte klinische meerwaarde?
+
+Is de dosering van parkinsonmedicatie correct verdeeld over kort- en langwerkende preparaten?
+
+Is het type pijn waarvoor pijnmedicatie wordt gebruikt adequaat vastgesteld (nociceptief, neuropathisch of gemengd)?
+
+Is de calciuminname voldoende bij gebruik van calcium- of botmedicatie?
+
+Er wordt geen calcium gebruikt bij het bisfosfonaat. past dit binnen het valpreventiebeleid?
+
+Is ICS-gebruik passend bij de diagnose astma of COPD?
+
+Heeft een eerste generatie antihistaminicum nog toegevoegde waarde gezien val- en reactierisico?
+
+Is het laxantiagebruik passend bij het huidige ontlastingspatroon?
+
+Worden opioïden zo nodig frequent gebruikt en is structureel gebruik ontstaan?
+
+Is amiodaron correct opgeladen en afgebouwd en is de nierfunctie bekend?
+
+Is digoxine correct gedoseerd, inclusief oplaad- en onderhoudsdosering, en passend bij de nierfunctie?
+
+Is thiamine nog geïndiceerd, bijvoorbeeld in relatie tot alcoholgebruik?
+
+Is de kaliumwaarde adequaat bij gebruik van een kaliumsparend diureticum?
+
+Is bij bisfosfonaten de startdatum bekend en is herbeoordeling na vijf jaar gepland?
