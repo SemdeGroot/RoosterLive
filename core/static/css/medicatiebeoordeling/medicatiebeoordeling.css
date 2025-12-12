@@ -439,3 +439,48 @@
     border: 1px solid var(--border, #eee);
     border-radius: 4px;
 }
+
+/* --- Kopieer-knop per Jansen categorie --- */
+.jansen-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.btn-copy-medimo{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background: var(--button-color);
+    color: var(--text);
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:0.9rem;
+    white-space:nowrap;
+}
+
+.btn-copy-medimo:hover{
+    border-color: var(--accent);
+    background: var(--button-hover);
+    transition: background .2s ease, border-color .2s ease;
+}
+
+.btn-copy-medimo:active{
+    transform: translateY(1px);
+}
+
+.copy-icon{
+    width:18px;
+    height:18px;
+    fill: currentColor;
+    opacity:0.85;
+}
+
+.btn-copy-medimo.is-copied{
+    border-color: var(--accent);
+}
