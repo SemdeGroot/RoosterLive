@@ -65,7 +65,12 @@
             <tbody>
                 {% for patient in patienten %}
                 <tr>
-                    <td><strong>{{ patient.naam }}</strong></td>
+                    <td>
+                        <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}"
+                        style="font-weight:bold; color:var(--text); text-decoration:none;">
+                            {{ patient.naam }}
+                        </a>
+                    </td>
                     
                     <td style="color:var(--muted);">
                         {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}

@@ -116,7 +116,12 @@
             <tbody id="tbodyPatient">
                 {% for pat in patienten_page %}
                 <tr>
-                    <td><strong>{{ pat.naam }}</strong></td>
+                    <td>
+                    <a href="{% url 'medicatiebeoordeling_patient_detail' pat.pk %}"
+                        style="font-weight:bold; color:var(--text); text-decoration:none;">
+                        {{ pat.naam }}
+                    </a>
+                    </td>
                     
                     <td>{{ pat.geboortedatum|date:"d-m-Y"|default:"-" }}</td>
 
