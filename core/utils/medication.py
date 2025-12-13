@@ -9,7 +9,7 @@ def group_meds_by_jansen(geneesmiddelen_lijst):
     groepen = {
         1: {'naam': 'Vallen?', 'meds': []},
         2: {'naam': 'Malen?',  'meds': []},
-        50: {'naam': 'Formularium B3.0', 'meds': []}
+        50: {'naam': 'Buiten formularium?', 'meds': []}
     }
 
     for gm in geneesmiddelen_lijst:
@@ -24,7 +24,7 @@ def group_meds_by_jansen(geneesmiddelen_lijst):
         except ValueError:
             gid = 43
 
-        # ✅ Alles met Jansen ID 1 of 2 nooit als medicijn opnemen
+        # Alles met Jansen ID 1 of 2 nooit als medicijn opnemen
         if gid in (1, 2, 50):
             continue
 
