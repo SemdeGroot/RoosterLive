@@ -29,4 +29,4 @@ COPY . .
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f http://localhost:${PORT:-8000}/health/ || exit 1
 
-CMD ["sh","-c","gunicorn rooster_site.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WORKERS:-3} --timeout ${TIMEOUT:-60}"]
+CMD ["sh", "-c", "gunicorn rooster_site.wsgi:application --preload --bind 0.0.0.0:${PORT:-8000} --workers ${WORKERS:-3} --timeout ${TIMEOUT:-60} --max-requests 500 --max-requests-jitter 50"]
