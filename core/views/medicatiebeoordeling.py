@@ -447,7 +447,6 @@ def afdeling_detail(request, pk):
         "patienten": patienten
     })
 
-# In core/views.py -> functie patient_detail
 @ip_restricted
 @login_required
 def patient_detail(request, pk):

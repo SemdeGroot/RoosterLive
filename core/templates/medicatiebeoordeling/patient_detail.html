@@ -275,7 +275,7 @@
         <div class="card-body">
             <div style="display:flex; flex-direction:column; gap:32px;">
                 {% for group_id, group_data in grouped_meds %}
-                    <div class="med-group">
+                    <div class="med-group" data-group-id="{{ group_id }}">
                         
             <div class="jansen-header">
                 <h4 class="jansen-title">{{ group_data.naam }}</h4>
@@ -295,6 +295,7 @@
             </div>
 
 
+                       {% if group_data.meds %}
                         <table class="med-table table-medication">
                             <thead>
                                 <tr>
@@ -313,6 +314,8 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% endif %}
+
 
                         <div>
                             {% with comment=comments_lookup|get_item:group_id %}
@@ -359,7 +362,20 @@
                     Opslaan
                 </button>
             </div>
-            <div style="margin-top: -40px; text-align:left;">
+            <div style="text-align:center; margin-top: -40px;">
+            <button
+                type="button"
+                class="btn-copy-medimo btn-copy-all-medimo"
+                title="Kopieer alles voor Medimo"
+            >
+                <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1z"/>
+                    <path d="M18 5H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h8v14z"/>
+                </svg>
+                <span class="copy-label">Kopieer alles voor Medimo</span>
+            </button>
+            </div>
+            <div style="margin-top: -42px; text-align:left;">
                 <button type="button" class="btn btn-save" onclick="window.print()">
                     Exporteer als PDF
                 </button>
@@ -368,4 +384,7 @@
     </div>
     </div>
 </form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/medicatiebeoordeling/patient_detail.js' %}"></script>
 {% endblock %}
