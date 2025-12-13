@@ -45,7 +45,7 @@ docker compose -f deploy/docker-compose.yml pull
 
 echo "===> Starting / updating stack"
 set +e
-docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml up -d --remove-orphans
 UP_EXIT=$?
 set -e
 
@@ -54,7 +54,7 @@ rollback_to_prev() {
     echo "===> Rolling back to previous image: ${PREV_IMAGE_TAG}"
     export IMAGE_TAG="${PREV_IMAGE_TAG}"
     docker compose -f deploy/docker-compose.yml pull
-    docker compose -f deploy/docker-compose.yml up -d || true
+    docker compose -f deploy/docker-compose.yml up -d --remove-orphans || true
   else
     echo "!!! No previous successful image found, cannot rollback"
   fi
@@ -118,11 +118,30 @@ echo "${IMAGE_TAG}" > "${LAST_OK_FILE}"
 echo "===> Deploy succeeded with image ${IMAGE_TAG}"
 
 echo "===> Cleaning up unused Docker resources"
-
+# Dit verwijdert geen volumes, dus redis data blijft veilig
 docker system prune -af --volumes || true
 
 # --- Automatische Cronjob Maintenance Configuratie ---
 echo "===> Configuring maintenance cronjob on host"
+
+# 1. Check of crontab commando bestaat. Zo niet: INSTALLEER het.
+if ! command -v crontab >/dev/null 2>&1; then
+    echo "!!! Crontab command not found. Installing cronie..."
+    
+    # Check package manager (dnf voor Amazon Linux 2023, yum voor oudere)
+    if command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y cronie
+    else
+        sudo yum install -y cronie
+    fi
+
+    # Start de cron service
+    echo "Starting crond service..."
+    sudo systemctl enable crond
+    sudo systemctl start crond
+fi
+
+# 2. Stel de cronjob in
 # Voert elke nacht om 04:00 clearsessions uit in de bestaande container
 CRON_JOB="0 4 * * * docker exec rooster-web python manage.py clearsessions > /dev/null 2>&1"
 
