@@ -118,6 +118,21 @@ echo "${IMAGE_TAG}" > "${LAST_OK_FILE}"
 echo "===> Deploy succeeded with image ${IMAGE_TAG}"
 
 echo "===> Cleaning up unused Docker resources"
+
 docker system prune -af --volumes || true
+
+# --- Automatische Cronjob Maintenance Configuratie ---
+echo "===> Configuring maintenance cronjob on host"
+# Voert elke nacht om 04:00 clearsessions uit in de bestaande container
+CRON_JOB="0 4 * * * docker exec rooster-web python manage.py clearsessions > /dev/null 2>&1"
+
+# Check of hij al bestaat, zo niet, voeg toe
+if ! crontab -l 2>/dev/null | grep -Fq "clearsessions"; then
+    echo "Adding clearsessions to crontab..."
+    (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
+else
+    echo "Cronjob already exists. Skipping."
+fi
+# -----------------------------------------------
 
 echo "===> Done."

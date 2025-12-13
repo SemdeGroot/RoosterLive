@@ -7,7 +7,6 @@ services:
     environment:
       - PORT=8000
       - WORKERS=3
-      - THREADS=2
       - TIMEOUT=60
     expose:
       - "8000"
@@ -19,7 +18,7 @@ services:
   celery:
     container_name: rooster-celery
     image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
-    command: celery -A rooster_site worker -l INFO -Q default,mail,push
+    command: celery -A rooster_site worker -l INFO -Q default,mail,push --concurrency=2 --max-tasks-per-child=100
     env_file:
       - /opt/rooster/app/.env
     depends_on:
@@ -33,6 +32,7 @@ services:
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis_data:/data
     restart: unless-stopped
 
   pgbouncer:
@@ -41,7 +41,6 @@ services:
     env_file:
       - /opt/rooster/app/.env
     environment:
-      # Alleen PgBouncer settings, DB_* komt uit env_file, auth scram-sha256.
       LISTEN_PORT: 6432
       AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction
@@ -62,22 +61,5 @@ services:
       - web
     restart: unless-stopped
 
-  maintenance:
-    container_name: rooster-maintenance
-    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
-    env_file:
-      - /opt/rooster/app/.env
-    depends_on:
-      - pgbouncer
-      - redis
-    command: >
-      sh -c "
-        echo 'Starting maintenance loop';
-        while true; do
-          echo 'Running clearsessions...';
-          python manage.py clearsessions;
-          echo 'Done, sleeping for 24h...';
-          sleep 86400;
-        done
-      "
-    restart: unless-stopped
+volumes:
+  redis_data:
