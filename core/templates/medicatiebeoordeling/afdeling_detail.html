@@ -40,8 +40,11 @@
             </p>
         </div>
 
-        <a href="{% url 'medicatiebeoordeling_list' %}" class="btn">
+        <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="text-align: center;">
             Naar Overzicht
+        </a>
+        <a href="{% url 'medicatiebeoordeling_afdeling_export_pdf' afdeling.pk %}" class="btn btn-save" style="text-align: right;">
+            Exporteer afdeling als PDF
         </a>
     </div>
 

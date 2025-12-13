@@ -144,10 +144,10 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         const ok = await copyTextToClipboard(text);
         if (!ok) throw new Error("Copy failed");
-        setCopyFeedback(copyAllBtn, true, "Kopieer alles voor medimo");
+        setCopyFeedback(copyAllBtn, true, "Kopieer alles voor Medimo");
       } catch (e) {
         console.error("Kopiëren mislukt:", e);
-        setCopyFeedback(copyAllBtn, false, "Kopieer alles voor medimo");
+        setCopyFeedback(copyAllBtn, false, "Kopieer alles voor Medimo");
       }
     });
   }

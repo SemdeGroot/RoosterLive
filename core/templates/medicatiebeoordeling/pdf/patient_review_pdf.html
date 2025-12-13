@@ -1,0 +1,74 @@
+{% load form_extras %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+
+<div class="pdf-header">
+  <img class="pdf-logo" src="file://{{ logo_path }}" alt="Logo">
+  <div>
+    <h1 class="pdf-title">{{ title }}</h1>
+    <div class="pdf-submeta">
+      <div><strong>Patiënt:</strong> {{ block.patient.naam }}</div>
+      <div><strong>Geboortedatum:</strong> {{ block.patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}</div>
+      <div><strong>Afdeling:</strong> {{ block.afdeling_naam }}</div>
+    </div>
+    <div class="prepared-by">
+      <strong>Voorbereid door:</strong> {{ prepared_by_user|dutch_name }}<br>
+      <span class="muted">{{ prepared_by_email }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Medicatieoverzicht &amp; Opmerkingen</div>
+
+{% for group_id, group_data in block.grouped_meds %}
+  <div class="group-block">
+    <div class="group-title">{{ group_data.naam }}</div>
+
+    {# Medicatie-tabel alleen als er meds zijn (maar geen "geen medicatie" melding) #}
+    {% if group_data.meds %}
+      <table>
+        <thead>
+          <tr>
+            <th style="width:35%;">Middel</th>
+            <th style="width:30%;">Gebruik</th>
+            <th>Opmerking (Medimo)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for gm in group_data.meds %}
+          <tr>
+            <td><strong>{{ gm.clean }}</strong></td>
+            <td>{{ gm.gebruik }}</td>
+            <td class="muted">{{ gm.opmerking|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% with comment=block.comments_lookup|get_item:group_id %}
+      {% if comment and comment.historie %}
+        <div class="comment-box">
+          <div class="comment-label">Eerder besproken</div>
+          {{ comment.historie|linebreaksbr }}
+        </div>
+      {% endif %}
+
+      {% if comment and comment.tekst %}
+        <div class="comment-box">
+          <div class="comment-label">Opmerkingen</div>
+          {{ comment.tekst|linebreaksbr }}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endfor %}
+
+</body>
+</html>
+

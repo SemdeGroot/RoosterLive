@@ -376,9 +376,9 @@
             </button>
             </div>
             <div style="margin-top: -42px; text-align:left;">
-                <button type="button" class="btn btn-save" onclick="window.print()">
-                    Exporteer als PDF
-                </button>
+                <a href="{% url 'medicatiebeoordeling_patient_export_pdf' patient.pk %}" class="btn btn-save">
+                Exporteer als PDF
+                </a>
             </div>
         </div>
     </div>
