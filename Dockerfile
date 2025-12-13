@@ -7,6 +7,12 @@ WORKDIR /app
 # OS deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libpq-dev curl \
+    # WeasyPrint: Core libraries (Render engine & Text shaping)
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libharfbuzz-subset0 \
+    # WeasyPrint: Fonts (Nodig omdat 'slim' images kaal zijn)
+    fonts-liberation \
  && rm -rf /var/lib/apt/lists/*
 
 # 1) requirements eerst, voor layer caching
