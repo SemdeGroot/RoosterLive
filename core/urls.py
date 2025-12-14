@@ -5,7 +5,7 @@ from django.conf import settings
 
 from core.views.home import home
 from core.views.roster import rooster
-from core.views.medications import medications_view
+from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view
 from core.views.news import news
 from core.views.policies import policies

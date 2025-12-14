@@ -15,6 +15,8 @@ from django.core.files.base import ContentFile
 from fnmatch import fnmatch
 from io import BytesIO, StringIO
 
+import sqlite3
+
 # ===== PATHS =====
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 MEDIA_URL = settings.MEDIA_URL
@@ -22,14 +24,8 @@ MEDIA_URL = settings.MEDIA_URL
 CACHE_DIR = settings.CACHE_DIR
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-CACHE_AGENDA_DIR = CACHE_DIR / "agenda"
-CACHE_AGENDA_DIR.mkdir(parents=True, exist_ok=True)
-
 CACHE_ROSTER_DIR = CACHE_DIR / "rooster"
 CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
-
-CACHE_VOORRAAD_DIR = CACHE_DIR / "voorraad"
-CACHE_VOORRAAD_DIR.mkdir(parents=True, exist_ok=True)
 
 CACHE_NAZENDINGEN_DIR = CACHE_DIR / "nazendingen"
 CACHE_NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
@@ -40,19 +36,14 @@ POL_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_POLICIES_DIR = CACHE_DIR / "policies"
 CACHE_POLICIES_DIR.mkdir(parents=True, exist_ok=True)
 
-AGENDA_DIR = MEDIA_ROOT / "agenda"
-AGENDA_DIR.mkdir(parents=True, exist_ok=True)
-AGENDA_FILE = AGENDA_DIR / "agenda.pdf"
-
 ROSTER_DIR = MEDIA_ROOT / "rooster"
 ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 ROSTER_FILE = ROSTER_DIR / "rooster.pdf"
 
-VOORRAAD_DIR = MEDIA_ROOT / "voorraad"
-VOORRAAD_DIR.mkdir(parents=True, exist_ok=True)
-
 NAZENDINGEN_DIR = MEDIA_ROOT / "nazendingen"
 NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH = settings.BASE_DIR / "lookup.db"
 
 # ===== PERM LABELS =====
 PERM_LABELS = {
@@ -434,65 +425,76 @@ def save_pdf_or_png_with_hash(uploaded_file, target_dir: Path, base_name: str):
     default_storage.save(storage_path, ContentFile(file_bytes))
     return storage_path, h
 
-
-def save_table_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True):
+def save_voorraad_to_db(df):
     """
-    Slaat een geüploade CSV/Excel op als <base_name>.<hash><ext> in target_dir.
-
-    DEV:
-        - Lokaal filesystem.
-    PROD:
-        - S3 via default_storage onder 'media/<subdir>/<base_name>.<hash><ext>'.
-
-    Retourneert:
-        DEV: Path object
-        PROD: storage-pad (string) relatief t.o.v. 'media'.
+    Slaat een Pandas DataFrame op in lookup.db (tabel: 'voorraad').
+    Vervangt de hele tabel en zet indexen op de eerste 3 kolommen.
     """
-    # Bestand in memory lezen (voor hashing)
-    if hasattr(uploaded_file, "chunks"):
-        file_bytes = b"".join(uploaded_file.chunks())
-    else:
-        file_bytes = uploaded_file.read()
+    # 1. Kolomnamen opschonen (spaties en punten kunnen lastig zijn in SQL)
+    # We houden het simpel: strip whitespace
+    df.columns = [str(c).strip() for c in df.columns]
 
-    ext = (Path(uploaded_file.name).suffix or "").lower()
-    if ext not in (".csv", ".xlsx", ".xls"):
-        raise ValueError("Unsupported table extension")
+    with sqlite3.connect(DB_PATH) as conn:
+        # Schrijf naar DB (vervangt bestaande tabel)
+        df.to_sql("voorraad", conn, if_exists="replace", index=False)
+        
+        # Maak indexen aan op de eerste 3 kolommen voor snelheid
+        cursor = conn.cursor()
+        cols = df.columns.tolist()[:3] # Pak max de eerste 3
+        
+        for col in cols:
+            # Gebruik quotes om kolomnamen met spaties veilig te stellen
+            safe_col = f'"{col}"' 
+            idx_name = f"idx_voorraad_{col}".replace(" ", "_").replace("-", "_")
+            try:
+                cursor.execute(f"CREATE INDEX IF NOT EXISTS {idx_name} ON voorraad ({safe_col})")
+            except Exception as e:
+                print(f"Index warning {col}: {e}")
 
-    h = pdf_hash(file_bytes)
-
-    # === DEV / lokaal ===
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        target_dir.mkdir(parents=True, exist_ok=True)
-
-        if clear_existing:
-            # Alleen bestaande CSV/Excel-bestanden weghalen
-            for p in target_dir.iterdir():
-                if p.is_file() and p.suffix.lower() in (".csv", ".xlsx", ".xls"):
-                    try:
-                        p.unlink()
-                    except Exception:
-                        pass
-
-        dest = target_dir / f"{base_name}.{h}{ext}"
-        dest.write_bytes(file_bytes)
-        return dest
-
-    # === PROD / S3 ===
-    rel_dir = _media_relpath(target_dir)  # bv. "voorraad"
-
-    if clear_existing:
+def get_voorraad_rows(query=None, limit=None):
+    """
+    Haalt data uit de DB.
+    Als query is ingevuld, zoekt hij in de eerste 3 kolommen.
+    Retourneert: (columns_list, data_rows_list)
+    """
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        
+        # Check of tabel bestaat
         try:
-            _, files = default_storage.listdir(rel_dir)
-        except FileNotFoundError:
-            files = []
-        for name in files:
-            if name.startswith(f"{base_name}.") and Path(name).suffix.lower() in (".csv", ".xlsx", ".xls"):
-                default_storage.delete(f"{rel_dir}/{name}")
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='voorraad'")
+            if not cursor.fetchone():
+                return [], []
+        except sqlite3.DatabaseError:
+            return [], []
 
-    filename = f"{base_name}.{h}{ext}"
-    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
-    default_storage.save(storage_path, ContentFile(file_bytes))
-    return storage_path
+        # Haal kolomnamen op
+        cursor.execute("PRAGMA table_info(voorraad)")
+        cols_info = cursor.fetchall()
+        columns = [c[1] for c in cols_info]
+        
+        if not columns:
+            return [], []
+
+        base_sql = "SELECT * FROM voorraad"
+        params = []
+
+        if query:
+            # Zoek in de eerste 3 kolommen (of minder als er minder zijn)
+            search_cols = columns[:3]
+            clauses = [f'"{c}" LIKE ?' for c in search_cols]
+            where_sql = " OR ".join(clauses)
+            base_sql += f" WHERE {where_sql}"
+            # Vul params voor elke kolom
+            params = [f"%{query}%"] * len(search_cols)
+
+        if limit:
+            base_sql += f" LIMIT {limit}"
+
+        cursor.execute(base_sql, params)
+        rows = cursor.fetchall()
+        
+        return columns, rows
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()
