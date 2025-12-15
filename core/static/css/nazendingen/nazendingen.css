@@ -39,3 +39,74 @@
 .select2-container--open {
     z-index: 9999;
 }
+
+/* core/static/css/nazendingen/nazendingen.css */
+
+/* ============================= */
+/* Nazendingen tabel – desktop  */
+/* ============================= */
+
+table.nazending-table{
+  width: 100%;
+  table-layout: fixed;           /* dwingt vaste kolombreedtes */
+  border-collapse: collapse;
+}
+
+/* Tekst altijd zichtbaar, wrappen toegestaan */
+table.nazending-table th,
+table.nazending-table td{
+  white-space: normal;           /* nieuwe regels toegestaan */
+  word-break: break-word;        /* breek lange woorden */
+  overflow-wrap: anywhere;       /* breek ook zonder spaties */
+  overflow: visible;             /* niets afkappen */
+  text-overflow: clip;           /* geen ... */
+  vertical-align: top;
+}
+
+/* 7 kolommen: # | ZI | Geneesmiddel | Datum | Nazending tot | Alternatief | Acties */
+table.nazending-table th:nth-child(1),
+table.nazending-table td:nth-child(1){ width: 40px; }
+
+table.nazending-table th:nth-child(2),
+table.nazending-table td:nth-child(2){ width: 120px; }
+
+table.nazending-table th:nth-child(3),
+table.nazending-table td:nth-child(3){ width: 260px; }   /* Geneesmiddel */
+
+table.nazending-table th:nth-child(4),
+table.nazending-table td:nth-child(4){ width: 110px; }
+
+table.nazending-table th:nth-child(5),
+table.nazending-table td:nth-child(5){ width: 140px; }
+
+table.nazending-table th:nth-child(6),
+table.nazending-table td:nth-child(6){ width: 220px; }
+
+table.nazending-table th:nth-child(7),
+table.nazending-table td:nth-child(7){
+  width: 140px;
+}
+
+/* ============================= */
+/* Mobiel: horizontaal scrollen */
+/* ============================= */
+
+@media (max-width: 900px){
+
+  /* Scrollcontainer */
+  .org-table-wrap{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tabel NIET laten krimpen */
+  table.nazending-table{
+    min-width: 1030px;   /* som van alle kolommen */
+  }
+
+  /* Geen nowrap afdwingen: tekst blijft wrappen */
+  table.nazending-table th,
+  table.nazending-table td{
+    white-space: normal;
+  }
+}

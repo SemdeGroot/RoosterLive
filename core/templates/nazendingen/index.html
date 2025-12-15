@@ -13,19 +13,6 @@
   
   <link rel="stylesheet" href="{% static 'css/nazendingen/nazendingen.css' %}">
 
-  <style>
-      /* Extra styling voor de ZI badge in de tabel */
-      .zi-badge {
-          background-color: #eef2f7;
-          color: #333;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: monospace;
-          font-size: 0.9em;
-          font-weight: 600;
-          border: 1px solid #dce1e7;
-      }
-  </style>
 {% endblock %}
 
 {% block content %}
@@ -36,13 +23,13 @@
         <img src="{% static 'img/nazendingen-128x128.png' %}" alt="" class="birthday-icon">
         <div class="birthday-header-text">
             <h2>Nazendingen</h2>
-            <p>Overzicht van openstaande nazendingen.</p>
+            <p>Overzicht van geneesmiddelen die in nazending zijn.</p>
         </div>
 
         {% if can_upload %}
         <div class="header-actions">
-            <button type="button" class="btn" id="toggleAddBtn" onclick="toggleAddSection()">
-                + Toevoegen
+            <button type="button" class="btn btn-save" id="toggleAddBtn" onclick="toggleAddSection()">
+                Toevoegen
             </button>
         </div>
         {% endif %}
@@ -77,7 +64,7 @@
                             {{ form.datum }}
                         </div>
                         <div>
-                            <label class="section-label">Tot (bijv. week 45)</label>
+                            <label class="section-label">Nazending tot</label>
                             {{ form.nazending_tot }}
                         </div>
                     </div>
@@ -88,8 +75,8 @@
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:10px;">
-                        <button type="button" class="btn ghost" onclick="toggleAddSection()">Annuleren</button>
-                        <button type="submit" class="btn">Opslaan</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
+                        <button type="submit" class="btn btn-save">Opslaan</button>
                     </div>
                 </form>
             </div>
@@ -97,21 +84,21 @@
         {% endif %}
 
         <div class="search-bar" style="margin-bottom:15px;">
-            <input type="text" id="filterInput" placeholder="Zoek in lijst..." class="admin-input">
+            <input type="text" id="filterInput" placeholder="Typ om te zoeken..." class="admin-input">
         </div>
 
         <div class="org-table-wrap" style="max-height: 600px; overflow-y:auto;">
-            <table class="med-table table-afdeling-manage" id="nazendingTable">
+            <table class="med-table table-afdeling-manage nazending-table" id="nazendingTable">
                 <thead>
                     <tr>
-                        <th style="width: 40px;">#</th>
-                        <th style="width: 120px;">ZI Nummer</th>
+                        <th></th>
+                        <th>ZI Nummer</th>
                         <th>Geneesmiddel</th>
-                        <th style="width: 110px;">Datum</th>
-                        <th>Tot</th>
+                        <th>Datum</th>
+                        <th>Nazending tot</th>
                         <th>Alternatief</th>
                         {% if can_upload %}
-                        <th style="width: 140px; text-align: right;">Acties</th>
+                        <th>Acties</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -121,18 +108,18 @@
                         <td style="color:var(--muted); font-size:0.85em;">{{ forloop.counter }}</td>
                         
                         <td>
-                            <span class="zi-badge">{{ item.voorraad_item.zi_nummer }}</span>
+                            <span>{{ item.voorraad_item.zi_nummer }}</span>
                         </td>
                         
-                        <td style="font-weight:600; color:var(--text);">
+                        <td>
                             {{ item.voorraad_item.naam }}
                         </td>
                         
-                        <td>{{ item.datum|date:"d-m-Y" }}</td>
+                        <td style="color: var(--muted);">{{ item.datum|date:"d-m-Y" }}</td>
                         
-                        <td>{{ item.nazending_tot }}</td>
+                        <td style="color: var(--muted)">{{ item.nazending_tot }}</td>
                         
-                        <td style="font-style:italic;">{{ item.alternatief|default:"-" }}</td>
+                        <td>{{ item.alternatief|default:"-" }}</td>
                         
                         {% if can_upload %}
                         <td>
@@ -185,7 +172,7 @@
                                 </div>
                                 <div style="display:flex; gap:10px; margin-top:10px; justify-content: flex-end;">
                                     <button type="button" class="btn btn-danger" onclick="toggleEditRow('{{ item.id }}')">Annuleren</button>
-                                    <button class="btn" type="submit">Opslaan</button>
+                                    <button class="btn btn-save" type="submit">Opslaan</button>
                                 </div>
                             </form>
                         </td>

@@ -248,8 +248,20 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .btn:disabled {
   cursor: not-allowed;
 }
-.btn-danger{ background: var(--danger); border-color:var(--danger-border); }
-.btn-danger:hover{ background:var(--danger-hover); }
+.btn-danger{ background-color: var(--danger) !important; border-color:var(--danger-border) !important ; }
+.btn-danger:hover {
+    border-color: var(--danger-border) !important;
+    background-color: var(--danger-hover) !important;
+}
+
+.btn-save {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+.btn-save:hover { background-color: var(--button-hover-blue) !important; }
+
 
 /* Form fields (file input uitgezonderd) */
 .form{ padding:16px; max-width:100%; }

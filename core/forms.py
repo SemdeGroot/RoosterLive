@@ -640,7 +640,7 @@ class NazendingForm(forms.ModelForm):
             }),
             'nazending_tot': forms.TextInput(attrs={
                 'class': 'admin-input',
-                'placeholder': 'Bijv. week 42'
+                'placeholder': 'Bijvoorbeeld "week 42" of "onbekend"'
             }),
             'alternatief': forms.TextInput(attrs={
                 'class': 'admin-input',

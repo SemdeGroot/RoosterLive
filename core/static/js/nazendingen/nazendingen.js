@@ -1,59 +1,55 @@
 /* core/static/js/nazendingen/nazendingen.js */
 
 document.addEventListener("DOMContentLoaded", function () {
-    
-    /**
-     * Format functie voor de resultatenlijst (Dropdown items).
-     * Zorgt voor: "ZI: 12345678" (dikgedrukt) en daaronder de naam.
-     */
-    function formatRepo(repo) {
-        if (repo.loading) {
-            return repo.text;
-        }
 
-        // repo.id bevat het ZI nummer
-        // repo.text bevat "ZI - Naam" string uit de backend, 
-        // maar we splitsen het liever netjes als we de data los zouden hebben.
-        // Omdat de backend nu "ZI - Naam" stuurt in 'text', parsen we het even simpel 
-        // of we stylen de hele string. 
-        
-        // Optie A: We vertrouwen op de backend string "12345678 - Paracetamol"
-        // We splitsen op ' - ' om ze los te stylen.
-        const parts = repo.text.split(' - ');
-        const zi = parts[0] || repo.id;
-        // De rest is de naam (join voor het geval er nog streepjes in de naam zitten)
-        const naam = parts.slice(1).join(' - ') || ''; 
-
-        // HTML output voor in de dropdown
-        var $container = $(
-            "<div class='select2-result-repository clearfix'>" +
-                "<div class='select2-result-repository__meta'>" +
-                    "<div class='select2-result-repository__title' style='font-weight:700; color:#333; font-size:1.1em;'>" + 
-                         "<span style='color:#666; font-size:0.8em; font-weight:normal;'>ZI:</span> " + zi + 
-                    "</div>" +
-                    "<div class='select2-result-repository__description' style='font-size:0.95em; color:#555; margin-top:2px;'>" + naam + "</div>" +
-                "</div>" +
-            "</div>"
-        );
-
-        return $container;
+    // Helper: haal ZI + naam uit repo.text ("ZI - Naam") met fallback op repo.id
+    function parseZiNaam(repo) {
+        const raw = (repo && repo.text) ? String(repo.text) : "";
+        const parts = raw.split(" - ");
+        const zi = (parts[0] && parts[0].trim()) || (repo && repo.id) || "";
+        const naam = parts.slice(1).join(" - ").trim();
+        return { zi, naam };
     }
 
     /**
-     * Format functie voor het geselecteerde item (wat je ziet na klikken).
-     * Hier houden we het simpel: "12345678 - Naam".
+     * Format functie voor de resultatenlijst (Dropdown items).
+     * ZI-nummer links, muted kleur, streepje, naam normaal (niet bold).
+     */
+    function formatRepo(repo) {
+        if (repo.loading) return repo.text;
+
+        const { zi, naam } = parseZiNaam(repo);
+
+        return $(
+            "<div class='select2-result-repository clearfix'>" +
+                "<div class='select2-result-repository__meta'>" +
+                    "<div class='select2-result-repository__title' style='font-size:1.1em;'>" +
+                        "<span style='font-size:0.8em; color:var(--muted);'>ZI-nummer:</span> " +
+                        "<span'>" + zi + "</span>" +
+                        (naam ? "<span'> - " + naam + "</span>" : "") +
+                    "</div>" +
+                "</div>" +
+            "</div>"
+        );
+    }
+
+    /**
+     * Geselecteerde waarde (input zelf)
      */
     function formatRepoSelection(repo) {
-        return repo.text || repo.id;
+        if (!repo) return "";
+        const { zi, naam } = parseZiNaam(repo);
+        if (zi && naam) return `ZI: ${zi} - ${naam}`;
+        return repo.text || repo.id || "";
     }
 
     // 1. Configuratie object
     const select2AjaxConfig = {
         width: '100%',
-        placeholder: "Typ ZI-nummer of naam...",
+        placeholder: "Zoek medicijn op ZI-nummer of naam...",
         allowClear: true,
-        minimumInputLength: 2, 
-        closeOnSelect: true, 
+        minimumInputLength: 2,
+        closeOnSelect: true,
         language: {
             inputTooShort: function () { return "Typ min. 2 tekens..."; },
             searching: function () { return "Zoeken..."; },
@@ -61,9 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
             errorLoading: function () { return "Resultaten konden niet worden geladen."; }
         },
         ajax: {
-            url: '/api/voorraad-zoeken/', 
+            url: '/api/voorraad-zoeken/',
             dataType: 'json',
-            delay: 250, 
+            delay: 250,
             data: function (params) {
                 return { q: params.term };
             },
@@ -72,10 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             cache: true
         },
-        // KOPPEL DE FORMAT FUNCTIES HIER:
-        templateResult: formatRepo, 
+        templateResult: formatRepo,
         templateSelection: formatRepoSelection,
-        escapeMarkup: function(m) { return m; } // Nodig om HTML te renderen
+        escapeMarkup: function (m) { return m; }
     };
 
     // 2. Initialiseer Select2 op het 'Toevoegen' formulier
@@ -86,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 3. Initialiseer Datum maskers
     document.querySelectorAll(".js-date").forEach(function (input) {
-         IMask(input, {
+        IMask(input, {
             mask: 'd-m-Y',
             lazy: true,
             blocks: {
@@ -99,8 +94,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 4. Client-side filter tabel
     const filterInput = document.getElementById('filterInput');
-    if(filterInput){
-        filterInput.addEventListener('keyup', function() {
+    if (filterInput) {
+        filterInput.addEventListener('keyup', function () {
             const term = this.value.toLowerCase();
             document.querySelectorAll('#nazendingTable tbody tr.manage-row').forEach(row => {
                 row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
@@ -113,40 +108,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function toggleAddSection() {
     const section = document.getElementById('addSection');
-    const btn = document.getElementById('toggleAddBtn');
-    
-    if (section.style.display === 'none') {
+
+    const isHidden = window.getComputedStyle(section).display === 'none';
+
+    if (isHidden) {
         section.style.display = 'block';
-        btn.textContent = '- Annuleren';
-        btn.classList.add('ghost'); 
     } else {
         section.style.display = 'none';
-        btn.textContent = '+ Toevoegen';
-        btn.classList.remove('ghost');
     }
 }
 
 function toggleEditRow(id) {
     const viewRow = document.getElementById('row-' + id);
     const editRow = document.getElementById('edit-row-' + id);
-    
+
+    // Lokale helper
+    function parseZiNaam(repo) {
+        const raw = (repo && repo.text) ? String(repo.text) : "";
+        const parts = raw.split(" - ");
+        const zi = (parts[0] && parts[0].trim()) || (repo && repo.id) || "";
+        const naam = parts.slice(1).join(" - ").trim();
+        return { zi, naam };
+    }
+
     if (editRow.style.display === 'none') {
         viewRow.style.display = 'none';
         editRow.style.display = 'table-row';
-        
+
         const $select = $(editRow).find('.select2-edit');
-        
+
         if (!$select.hasClass("select2-hidden-accessible")) {
-            // We dupliceren de config maar voegen dropdownParent toe
-            // Helaas kunnen we 'select2AjaxConfig' niet 1-op-1 gebruiken als we 
-            // dropdownParent dynamisch moeten zetten.
-            
             $select.select2({
                 width: '100%',
-                placeholder: "Kies medicijn...",
+                placeholder: "Zoek medicijn op ZI-nummer of naam...",
                 minimumInputLength: 2,
                 closeOnSelect: true,
-                dropdownParent: $(editRow), // Cruciaal voor edits in tabel
+                dropdownParent: $(editRow),
                 language: {
                     inputTooShort: function () { return "Typ min. 2 tekens..."; },
                     searching: function () { return "Zoeken..."; },
@@ -160,25 +157,30 @@ function toggleEditRow(id) {
                     processResults: function (data) { return { results: data.results }; },
                     cache: true
                 },
-                // Ook hier de formatting functies
-                templateResult: function(repo) {
-                     if (repo.loading) return repo.text;
-                     const parts = repo.text.split(' - ');
-                     const zi = parts[0] || repo.id;
-                     const naam = parts.slice(1).join(' - ') || ''; 
-                     return $(
+                templateResult: function (repo) {
+                    if (repo.loading) return repo.text;
+
+                    const { zi, naam } = parseZiNaam(repo);
+
+                    return $(
                         "<div class='select2-result-repository clearfix'>" +
                             "<div class='select2-result-repository__meta'>" +
-                                "<div class='select2-result-repository__title' style='font-weight:700; color:#333;'>" + 
-                                     "<span style='color:#666; font-weight:normal; font-size:0.9em;'>ZI:</span> " + zi + 
+                                "<div class='select2-result-repository__title' style='font-size:1.1em;'>" +
+                                    "<span style='font-size:0.8em; color:var(--muted);'>ZI-nummer:</span> " +
+                                    "<span'>" + zi + "</span>" +
+                                    (naam ?"<span'> - " + naam + "</span>" : "") +
                                 "</div>" +
-                                "<div class='select2-result-repository__description' style='font-size:0.9em; color:#555;'>" + naam + "</div>" +
                             "</div>" +
                         "</div>"
                     );
                 },
-                templateSelection: function(repo) { return repo.text || repo.id; },
-                escapeMarkup: function(m) { return m; }
+                templateSelection: function (repo) {
+                    if (!repo) return "";
+                    const { zi, naam } = parseZiNaam(repo);
+                    if (zi && naam) return `ZI: ${zi} - ${naam}`;
+                    return repo.text || repo.id || "";
+                },
+                escapeMarkup: function (m) { return m; }
             });
         }
 

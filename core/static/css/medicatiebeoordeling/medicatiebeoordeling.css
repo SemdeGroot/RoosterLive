@@ -340,19 +340,6 @@
 }
 .search-input:focus { border-color: var(--accent); outline: none; }
 
-.btn-save {
-    background-color: var(--accent) !important;
-    border-color: var(--accent) !important;
-    color: #ffffff !important;
-    font-weight: 600;
-}
-.btn-save:hover { background-color: var(--button-hover-blue) !important; }
-
-.btn-danger:hover {
-    border-color: var(--danger-border) !important;
-    background-color: var(--danger-hover) !important;
-}
-
 .med-comment-box {
     width: 100%; background: var(--bg); color: var(--text);
     border: 1px solid var(--border); border-radius: 8px;
