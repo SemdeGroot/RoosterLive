@@ -1,0 +1,168 @@
+/* core/static/css/table.css */
+
+/* -------------------------------------------------------
+   TABLE WRAPPER (scroll op mobiel)
+------------------------------------------------------- */
+.table-scroll{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* -------------------------------------------------------
+   CRUD TABLE (fix base.css table hacks)
+------------------------------------------------------- */
+table.crud-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  display:table;
+}
+table.crud-table thead{ display:table-header-group; }
+table.crud-table tbody{ display:table-row-group; }
+table.crud-table tr{ display:table-row; }
+
+table.crud-table th,
+table.crud-table td{
+  border-bottom:1px solid var(--border);
+  padding:8px 10px;
+  text-align:left;
+  vertical-align:middle;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+table.crud-table.compact th,
+table.crud-table.compact td{ padding:6px 8px; }
+
+table.crud-table td.wrap{
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+
+.center-col{ text-align:center; }
+
+/* -------------------------------------------------------
+   COLUMN WIDTHS VIA CSS VARS
+------------------------------------------------------- */
+table.crud-table :is(th,td):nth-child(1){ width:var(--c1, auto); }
+table.crud-table :is(th,td):nth-child(2){ width:var(--c2, auto); }
+table.crud-table :is(th,td):nth-child(3){ width:var(--c3, auto); }
+table.crud-table :is(th,td):nth-child(4){ width:var(--c4, auto); }
+table.crud-table :is(th,td):nth-child(5){ width:var(--c5, auto); }
+table.crud-table :is(th,td):nth-child(6){ width:var(--c6, auto); }
+table.crud-table :is(th,td):nth-child(7){ width:var(--c7, auto); }
+table.crud-table :is(th,td):nth-child(8){ width:var(--c8, auto); }
+table.crud-table :is(th,td):nth-child(9){ width:var(--c9, auto); }
+table.crud-table :is(th,td):nth-child(10){ width:var(--c10, auto); }
+
+/* -------------------------------------------------------
+   ACTIONS (default horizontaal)
+------------------------------------------------------- */
+.actions-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+}
+.actions-wrap.vertical{
+  flex-direction:column;
+  align-items:stretch;
+}
+
+/* -------------------------------------------------------
+   ICON BUTTONS (edit/delete)
+------------------------------------------------------- */
+.icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px;
+  width:32px;
+  height:32px;
+
+  border-radius:10px;
+  border:1px solid var(--accent);
+  background:var(--accent);
+  color:var(--text);
+  cursor:pointer;
+  transition:background .2s ease, border-color .2s ease;
+}
+.icon-btn:hover{
+  background:var(--button-hover-blue);
+}
+.icon-btn svg{ display:block; }
+
+.icon-btn.danger{
+  background:var(--danger);
+  border-color:var(--danger-border);
+  color:#fff;
+}
+.icon-btn.danger:hover{
+  background:var(--danger-hover);
+  border-color:var(--danger-border);
+}
+
+/* -------------------------------------------------------
+   INLINE EDIT ROW (stabiel: geen compress)
+------------------------------------------------------- */
+tr.edit-row td{
+  background:var(--panel-2);
+  padding:0;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+
+.edit-wrap{ padding:10px; }
+
+.edit-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:6px;
+  margin-bottom:10px;
+}
+@media (max-width:720px){ .edit-grid{ grid-template-columns:1fr; } }
+
+.admin-input,.admin-select{
+  width:100%;
+  max-width:100%;
+  background:#0f141a;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:.95em;
+}
+.admin-select.narrow{ max-width:160px; width:160px; }
+
+/* -------------------------------------------------------
+   GENERIEKE SEARCH BAR
+------------------------------------------------------- */
+.search-bar{
+  margin:10px 0 12px;
+  display:flex;
+  gap:8px;
+}
+.search-bar input{
+  flex:1;
+  background:#0f141a;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px 8px;
+}
+
+/* -------------------------------------------------------
+   GENERIEKE "TOON MEER" (max 10 per keer)
+------------------------------------------------------- */
+tr.is-hidden-row{ display:none !important; }
+
+.crud-more-wrap{
+  margin-top:10px;
+  display:flex;
+  justify-content:flex-start;
+}

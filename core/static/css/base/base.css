@@ -257,7 +257,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .btn-save {
     background-color: var(--accent) !important;
     border-color: var(--accent) !important;
-    color: #ffffff !important;
+    color: var(--text) !important;
     font-weight: 600;
 }
 .btn-save:hover { background-color: var(--button-hover-blue) !important; }
