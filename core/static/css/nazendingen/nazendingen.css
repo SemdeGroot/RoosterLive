@@ -110,3 +110,14 @@ table.nazending-table td:nth-child(7){
     white-space: normal;
   }
 }
+
+/* Hergebruik admin_panel .edit-grid, maar voor nazendingen willen we 4 kolommen */
+.nazending-edit-grid{
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: end;
+}
+@media (max-width: 720px){
+  .nazending-edit-grid{
+    grid-template-columns: 1fr;
+  }
+}
