@@ -15,8 +15,6 @@ from django.core.files.base import ContentFile
 from fnmatch import fnmatch
 from io import BytesIO, StringIO
 
-import sqlite3
-
 # ===== PATHS =====
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 MEDIA_URL = settings.MEDIA_URL
@@ -424,77 +422,6 @@ def save_pdf_or_png_with_hash(uploaded_file, target_dir: Path, base_name: str):
     storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
     default_storage.save(storage_path, ContentFile(file_bytes))
     return storage_path, h
-
-def save_voorraad_to_db(df):
-    """
-    Slaat een Pandas DataFrame op in lookup.db (tabel: 'voorraad').
-    Vervangt de hele tabel en zet indexen op de eerste 3 kolommen.
-    """
-    # 1. Kolomnamen opschonen (spaties en punten kunnen lastig zijn in SQL)
-    # We houden het simpel: strip whitespace
-    df.columns = [str(c).strip() for c in df.columns]
-
-    with sqlite3.connect(DB_PATH) as conn:
-        # Schrijf naar DB (vervangt bestaande tabel)
-        df.to_sql("voorraad", conn, if_exists="replace", index=False)
-        
-        # Maak indexen aan op de eerste 3 kolommen voor snelheid
-        cursor = conn.cursor()
-        cols = df.columns.tolist()[:3] # Pak max de eerste 3
-        
-        for col in cols:
-            # Gebruik quotes om kolomnamen met spaties veilig te stellen
-            safe_col = f'"{col}"' 
-            idx_name = f"idx_voorraad_{col}".replace(" ", "_").replace("-", "_")
-            try:
-                cursor.execute(f"CREATE INDEX IF NOT EXISTS {idx_name} ON voorraad ({safe_col})")
-            except Exception as e:
-                print(f"Index warning {col}: {e}")
-
-def get_voorraad_rows(query=None, limit=None):
-    """
-    Haalt data uit de DB.
-    Als query is ingevuld, zoekt hij in de eerste 3 kolommen.
-    Retourneert: (columns_list, data_rows_list)
-    """
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        
-        # Check of tabel bestaat
-        try:
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='voorraad'")
-            if not cursor.fetchone():
-                return [], []
-        except sqlite3.DatabaseError:
-            return [], []
-
-        # Haal kolomnamen op
-        cursor.execute("PRAGMA table_info(voorraad)")
-        cols_info = cursor.fetchall()
-        columns = [c[1] for c in cols_info]
-        
-        if not columns:
-            return [], []
-
-        base_sql = "SELECT * FROM voorraad"
-        params = []
-
-        if query:
-            # Zoek in de eerste 3 kolommen (of minder als er minder zijn)
-            search_cols = columns[:3]
-            clauses = [f'"{c}" LIKE ?' for c in search_cols]
-            where_sql = " OR ".join(clauses)
-            base_sql += f" WHERE {where_sql}"
-            # Vul params voor elke kolom
-            params = [f"%{query}%"] * len(search_cols)
-
-        if limit:
-            base_sql += f" LIMIT {limit}"
-
-        cursor.execute(base_sql, params)
-        rows = cursor.fetchall()
-        
-        return columns, rows
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()

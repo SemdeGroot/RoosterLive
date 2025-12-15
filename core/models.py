@@ -472,3 +472,23 @@ class MedicatieReviewComment(models.Model):
 
     class Meta:
         unique_together = ("patient", "jansen_group_id")
+
+class VoorraadItem(models.Model):
+    # Kolom 1: ZI-nummer (Verplicht 8 cijfers)
+    zi_nummer = models.CharField(max_length=8, unique=True)
+    
+    # Kolom 2: Medicijnnaam
+    naam = models.CharField(max_length=255)
+    
+    # Rest van de kolommen: Dynamische metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    # Upload datum
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["naam"]
+        verbose_name = "Voorraaditem"
+        verbose_name_plural = "Voorraad"
+
+    def __str__(self):
+        return f"{self.zi_nummer} - {self.naam}"
