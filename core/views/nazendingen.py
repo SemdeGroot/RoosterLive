@@ -1,119 +1,91 @@
-from pathlib import Path
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
-from django.core.files.storage import default_storage
+from django.http import HttpResponseForbidden, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import models
 
-from ._helpers import (
-    can,
-    NAZENDINGEN_DIR,
-    CACHE_NAZENDINGEN_DIR,
-    render_pdf_to_cache,
-    clear_dir,
-    save_pdf_upload_with_hash,
-    _media_relpath,
-)
+from ..models import Nazending, VoorraadItem
+from ..forms import NazendingForm
+from ._helpers import can 
 
+# --- API ---
+@login_required
+def medications_search_api(request):
+    # 1. Beveiliging
+    if not can(request.user, "can_view_av_medications"):
+        return JsonResponse({"results": []}, status=403)
 
+    query = request.GET.get('q', '').strip()
+    
+    # 2. Zoek logica (alleen als er getypt is)
+    if not query:
+        return JsonResponse({"results": []})
+
+    # Zoek in ZI nummer OF Naam, limit op 20 resultaten voor snelheid
+    qs = VoorraadItem.objects.filter(
+        models.Q(zi_nummer__icontains=query) | models.Q(naam__icontains=query)
+    ).values('zi_nummer', 'naam')[:20] 
+
+    results = [
+        {
+            "id": item['zi_nummer'],              
+            "text": f"{item['zi_nummer']} - {item['naam']}" 
+        } 
+        for item in qs
+    ]
+
+    return JsonResponse({"results": results})
+
+# --- PAGE VIEW ---
 @login_required
 def nazendingen_view(request):
     if not can(request.user, "can_view_av_nazendingen"):
         return HttpResponseForbidden("Geen toegang.")
-
-    key = "nazendingen"
-    cache_root = CACHE_NAZENDINGEN_DIR
-    cache_root.mkdir(parents=True, exist_ok=True)
+    
+    can_upload = can(request.user, "can_upload_nazendingen")
 
     if request.method == "POST":
-        if not can(request.user, "can_upload_nazendingen"):
-            return HttpResponseForbidden("Geen uploadrechten.")
-        f = request.FILES.get("file")
-        if not f or not str(f.name).lower().endswith(".pdf"):
-            messages.error(request, "Alleen PDF toegestaan.")
+        if not can_upload:
+            messages.error(request, "Geen rechten om te wijzigen.")
             return redirect(request.path)
 
-        # Lees bytes voor directe render
-        pdf_bytes = f.read()
-        f.seek(0)
+        if "btn_delete_nazending" in request.POST:
+            nazending_id = request.POST.get("nazending_id_delete")
+            nazending = get_object_or_404(Nazending, id=nazending_id)
+            nazending.delete()
+            messages.success(request, "Nazending verwijderd.")
+            return redirect(request.path)
 
-        # PDF opslaan als nazendingen.<hash>.pdf, max 1 actief
-        save_pdf_upload_with_hash(
-            uploaded_file=f,
-            target_dir=NAZENDINGEN_DIR,
-            base_name=key,
-            clear_existing=True,
-        )
+        elif "btn_edit_nazending" in request.POST:
+            instance_id = request.POST.get("nazending_id_edit")
+            instance = get_object_or_404(Nazending, id=instance_id)
+            form = NazendingForm(request.POST, instance=instance)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Nazending gewijzigd.")
+                return redirect(request.path)
 
-        # Cache leegmaken en opnieuw opbouwen uit upload
-        clear_dir(cache_root)
-        h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=cache_root)
-        page_urls = [
-            f"{settings.MEDIA_URL}cache/{key}/{h}/page_{i:03d}.png"
-            for i in range(1, n + 1)
-        ]
-
-        messages.success(request, f"PDF geüpload: {f.name}")
-        return render(request, "nazendingen/index.html", {
-            "title": "Nazendingen",
-            "no_nazending": False,
-            "page_urls": page_urls,
-        })
-
-    # ==== GET / weergave bestaande PDF ====
-    pdf_bytes = None
-
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        pdf_path = None
-        candidates = sorted(NAZENDINGEN_DIR.glob(f"{key}.*.pdf"))
-        if candidates:
-            pdf_path = candidates[-1]
-        else:
-            legacy = NAZENDINGEN_DIR / f"{key}.pdf"
-            if legacy.exists():
-                pdf_path = legacy
-
-        if pdf_path and pdf_path.exists():
-            pdf_bytes = pdf_path.read_bytes()
+        elif "btn_add_nazending" in request.POST:
+            form = NazendingForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Nazending toegevoegd.")
+                return redirect(request.path)
     else:
-        rel_dir = _media_relpath(NAZENDINGEN_DIR)  # "nazendingen"
-        try:
-            _dirs, files = default_storage.listdir(rel_dir)
-        except FileNotFoundError:
-            files = []
+        form = NazendingForm()
 
-        pdf_storage_path = None
-        hashed = sorted(
-            name for name in files
-            if name.startswith(f"{key}.") and name.endswith(".pdf")
-        )
-        if hashed:
-            pdf_storage_path = f"{rel_dir}/{hashed[-1]}"
-        else:
-            legacy_name = f"{key}.pdf"
-            if legacy_name in files:
-                pdf_storage_path = f"{rel_dir}/{legacy_name}"
+    # --- DATA OPHALEN ---
+    nazendingen = Nazending.objects.select_related('voorraad_item').order_by('datum')
+    
+    # LET OP: Ik heb 'voorraad_items = VoorraadItem.objects.all()' HIER WEGGEHAALD.
+    # Reden: Je gebruikt nu de API. Als je hier .all() doet, laad je alsnog alles in.
+    # Dat maakt je pagina traag.
 
-        if pdf_storage_path and default_storage.exists(pdf_storage_path):
-            with default_storage.open(pdf_storage_path, "rb") as f:
-                pdf_bytes = f.read()
-
-    if not pdf_bytes:
-        return render(request, "nazendingen/index.html", {
-            "title": "Nazendingen",
-            "no_nazending": True,
-            "page_urls": [],
-        })
-
-    h, n = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=cache_root)
-    page_urls = [
-        f"{settings.MEDIA_URL}cache/{key}/{h}/page_{i:03d}.png"
-        for i in range(1, n + 1)
-    ]
-
-    return render(request, "nazendingen/index.html", {
+    context = {
         "title": "Nazendingen",
-        "no_nazending": False,
-        "page_urls": page_urls,
-    })
+        "form": form,
+        "nazendingen": nazendingen,
+        "can_upload": can_upload,
+    }
+
+    return render(request, "nazendingen/index.html", context)

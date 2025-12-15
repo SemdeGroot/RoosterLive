@@ -475,7 +475,7 @@ class MedicatieReviewComment(models.Model):
 
 class VoorraadItem(models.Model):
     # Kolom 1: ZI-nummer (Verplicht 8 cijfers)
-    zi_nummer = models.CharField(max_length=8, unique=True)
+    zi_nummer = models.CharField(max_length=8, primary_key=True)
     
     # Kolom 2: Medicijnnaam
     naam = models.CharField(max_length=255)
@@ -492,3 +492,38 @@ class VoorraadItem(models.Model):
 
     def __str__(self):
         return f"{self.zi_nummer} - {self.naam}"
+
+class Nazending(models.Model):
+    # Koppeling met VoorraadItem (bevat ZI en Naam)
+    voorraad_item = models.ForeignKey(
+        'VoorraadItem', 
+        on_delete=models.CASCADE, 
+        related_name='nazendingen',
+        verbose_name="Geneesmiddel"
+    )
+    
+    datum = models.DateField(verbose_name="Datum nazending")
+    
+    # Vrije tekst velden
+    nazending_tot = models.CharField(
+        max_length=255, 
+        verbose_name="Nazending tot",
+        help_text="Bijv. week 45 of 'onbekend'"
+    )
+    alternatief = models.CharField(
+        max_length=255, 
+        blank=True, 
+        verbose_name="Alternatief",
+        help_text="Vrij tekstveld"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["datum", "created_at"] # Oudste datum bovenaan
+        verbose_name = "Nazending"
+        verbose_name_plural = "Nazendingen"
+
+    def __str__(self):
+        return f"{self.datum} - {self.voorraad_item.naam}"

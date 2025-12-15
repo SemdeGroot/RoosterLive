@@ -2,18 +2,16 @@ from django import forms
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model, authenticate
 from django.core.validators import FileExtensionValidator, MaxLengthValidator
-from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from django.forms.widgets import DateInput
 
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem
 
 UserModel = get_user_model()
 
@@ -626,3 +624,33 @@ class AfdelingEditForm(forms.ModelForm):
         self.fields['organisatie'].required = True
         self.fields['afdeling'].required = True
         self.fields['locatie'].required = True
+
+class NazendingForm(forms.ModelForm):
+    class Meta:
+        model = Nazending
+        fields = ['voorraad_item', 'datum', 'nazending_tot', 'alternatief']
+        widgets = {
+            'voorraad_item': forms.Select(attrs={
+                'class': 'select2-single', 
+                'style': 'width: 100%'
+            }),
+            'datum': forms.TextInput(attrs={
+                'class': 'admin-input js-date', 
+                'placeholder': 'dd-mm-jjjj'
+            }),
+            'nazending_tot': forms.TextInput(attrs={
+                'class': 'admin-input',
+                'placeholder': 'Bijv. week 42'
+            }),
+            'alternatief': forms.TextInput(attrs={
+                'class': 'admin-input',
+                'placeholder': 'Alternatief middel...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Zorg dat datum input dd-mm-yyyy accepteert
+        self.fields['datum'].input_formats = ['%d-%m-%Y']
+        # Queryset optimalisatie voor de dropdown
+        self.fields['voorraad_item'].queryset = VoorraadItem.objects.all()

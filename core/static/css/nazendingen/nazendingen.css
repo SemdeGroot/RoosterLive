@@ -1,43 +1,41 @@
-/* --- Uploader styles --- */
-.uploader { margin-bottom: 14px; }
-.dropzone{
-  display:flex; align-items:center; gap:12px;
-  padding:14px 16px;
-  background:var(--panel-2);
-  border:1px dashed var(--border);
-  border-radius:12px;
-  cursor:pointer;
-  transition:border-color .15s, box-shadow .15s;
-}
-.dropzone:hover,
-.dropzone.is-dragover{ border-color: var(--accent); }
+/* core/static/css/nazendingen/nazendingen.css */
 
-.dz-icon{
-  flex:0 0 auto; width:36px; height:36px; border-radius:10px;
-  display:flex; align-items:center; justify-content:center;
-  background:#13223f; color:#cfe0ff; border:1px solid #223355;
+/* Simpele styling voor de toggle en header */
+.header-actions {
+    margin-left: auto; /* Duwt knop naar rechts */
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.dz-text{ display:flex; flex-direction:column; gap:4px; }
-.dz-title{ color:var(--text); font-weight:600; line-height:1.1; }
-.dz-hint{ color:var(--muted); font-size:.95em; }
-.file-meta{ margin-top:8px; color:var(--muted); }
-.file-name{ color:var(--text); font-weight:600; }
 
-.u-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-
-/* --- Pagina grid --- */
-.pages{ display:grid; gap:12px; }
-.page{
-  border:1px solid var(--border);
-  border-radius:12px;
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  box-shadow:0 8px 24px var(--shadow);
-  overflow:hidden;
+.add-section-panel {
+    background-color: var(--panel); /* Iets lichter dan achtergrond */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-top: 15px;
 }
-.page img{
-  display:block;
-  width:100%;
-  height:auto;
-  margin:0 auto;
-  border-radius:8px;
+
+.nazending-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.actions-wrap {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+/* Zorg dat Select2 breedte pakt in verborgen divs en tabellen */
+.select2-container {
+    width: 100% !important;
+    max-width: 100%;
+}
+
+/* Zorg dat de dropdown boven alles zweeft (belangrijk in tabellen) */
+.select2-container--open {
+    z-index: 9999;
 }
