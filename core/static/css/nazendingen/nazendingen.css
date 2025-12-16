@@ -52,16 +52,16 @@ table.nazending-table {
    We willen 4 kolommen in de edit row voor optimale ruimte
 ------------------------------------------------------- */
 .nazending-edit-grid {
-  grid-template-columns: 2fr 1fr 1fr 2fr;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Twee gelijke kolommen */
+  gap: 16px;
   align-items: start;
 }
 
+/* Op mobiel alles onder elkaar */
 @media (max-width: 720px) {
   .nazending-edit-grid {
-    grid-template-columns: 1fr; /* Alles onder elkaar op mobiel */
-  }
-  .nazending-edit-grid > div {
-    grid-column: span 1 !important;
+    grid-template-columns: 1fr;
   }
 }
 

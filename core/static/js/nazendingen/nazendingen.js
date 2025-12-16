@@ -25,6 +25,7 @@ window.toggleAddSection = function() {
 };
 
 // Toggle de Edit-rij + Init Select2 binnen die rij
+// Toggle de Edit-rij + Init Select2 binnen die rij
 window.toggleEdit = function(id) {
   const viewRow = document.getElementById('row-' + id);
   const editRow = document.getElementById('edit-row-' + id);
@@ -36,16 +37,26 @@ window.toggleEdit = function(id) {
     viewRow.style.display = 'none';
     editRow.style.display = 'table-row';
 
-    // Zoek de select binnen deze edit-rij en initialiseer Select2 als dat nog niet gebeurd is
+    // Zoek de select binnen deze edit-rij
     const $select = $(editRow).find('.select2-edit');
+    
+    // Check of hij bestaat en nog niet geinitialiseerd is
     if ($select.length && !$select.hasClass("select2-hidden-accessible")) {
-      initSelect2($select, $(editRow));
+      // FIX: Gebruik $('body') als parent, NIET $(editRow).
+      // Dit voorkomt dat je tabel verspringt/comprimeert.
+      initSelect2($select, $('body')); 
     }
 
   } else {
     // Sluiten
     viewRow.style.display = 'table-row';
     editRow.style.display = 'none';
+    
+    // Optioneel: Als je wilt dat de select2 sluit als je op annuleren drukt
+    const $select = $(editRow).find('.select2-edit');
+    if ($select.length) {
+        $select.select2('close');
+    }
   }
 };
 
@@ -139,7 +150,7 @@ function formatRepo(repo) {
     <div class='select2-result-repository clearfix'>
       <div class='select2-result-repository__meta'>
         <div class='select2-result-repository__title' style='font-size:1.1em;'>
-          <span style='font-size:0.8em; color:var(--muted);'>ZI:</span> <span>${zi}</span>
+          <span style='font-size:0.8em; color:var(--muted);'>ZI-nummer:</span> <span>${zi}</span>
           ${naam ? `<span> - ${naam}</span>` : ""}
         </div>
       </div>
@@ -149,6 +160,6 @@ function formatRepo(repo) {
 function formatRepoSelection(repo) {
   if (!repo) return "";
   const { zi, naam } = parseZiNaam(repo);
-  if (zi && naam) return `ZI: ${zi} - ${naam}`;
+  if (zi && naam) return `ZI-nummer: ${zi} - ${naam}`;
   return repo.text || repo.id || "";
 }

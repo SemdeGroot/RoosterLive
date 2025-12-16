@@ -140,7 +140,7 @@ tr.edit-row td{
   width:100%;
   text-align:left;
   font-weight:600;
-  margin:0 0 0px;
+  margin:0 0 4px;
 }
 
 .admin-input,.admin-select{

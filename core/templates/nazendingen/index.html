@@ -90,8 +90,8 @@
           <table class="crud-table nazending-table" id="nazendingTable">
             <thead>
               <tr>
-                <th class="center-col">#</th>
-                <th>ZI Nummer</th>
+                <th class="center-col"></th>
+                <th>ZI-nummer</th>
                 <th>Geneesmiddel</th>
                 <th>Datum</th>
                 <th>Nazending tot</th>
@@ -108,8 +108,8 @@
                 <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
                 <td>{{ item.voorraad_item.zi_nummer }}</td>
                 <td class="wrap">{{ item.voorraad_item.naam }}</td>
-                <td>{{ item.datum|date:"d-m-Y" }}</td>
-                <td>{{ item.nazending_tot }}</td>
+                <td style="color: var(--muted);">{{ item.datum|date:"d-m-Y" }}</td>
+                <td style="color: var(--muted);">{{ item.nazending_tot }}</td>
                 <td class="wrap">{{ item.alternatief|default:"-" }}</td>
 
                 {% if can_upload %}
@@ -150,25 +150,30 @@
                       <input type="hidden" name="nazending_id_edit" value="{{ item.id }}">
 
                       <div class="edit-grid nazending-edit-grid">
-                        <div style="grid-column: span 2;"> <label class="select2-label">Geneesmiddel:</label>
-                          <select name="voorraad_item" class="select2-edit" style="width:100%;">
-                            <option value="{{ item.voorraad_item.zi_nummer }}" selected>
-                              {{ item.voorraad_item.naam }} (ZI: {{ item.voorraad_item.zi_nummer }})
-                            </option>
-                          </select>
-                        </div>
-                        <div>
-                          <label class="section-label">Datum:</label>
-                          <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
-                        </div>
-                        <div>
-                          <label class="section-label">Tot:</label>
-                          <input type="text" name="nazending_tot" value="{{ item.nazending_tot }}" class="admin-input">
-                        </div>
-                        <div style="grid-column: span 4;"> <label class="section-label">Alternatief:</label>
-                          <input type="text" name="alternatief" value="{{ item.alternatief }}" class="admin-input">
-                        </div>
+                      <div style="grid-column: 1 / -1;"> 
+                        <label class="select2-label">Geneesmiddel:</label>
+                        <select name="voorraad_item" class="select2-edit" style="width:100%;">
+                          <option value="{{ item.voorraad_item.zi_nummer }}" selected>
+                            {{ item.voorraad_item.naam }} (ZI-nummer: {{ item.voorraad_item.zi_nummer }})
+                          </option>
+                        </select>
                       </div>
+
+                      <div>
+                        <label class="section-label">Datum:</label>
+                        <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
+                      </div>
+
+                      <div>
+                        <label class="section-label">Tot:</label>
+                        <input type="text" name="nazending_tot" value="{{ item.nazending_tot }}" class="admin-input">
+                      </div>
+
+                      <div style="grid-column: 1 / -1;"> 
+                        <label class="section-label">Alternatief:</label>
+                        <input type="text" name="alternatief" value="{{ item.alternatief }}" class="admin-input">
+                      </div>
+                    </div>
 
                       <div class="actions-wrap horizontal" style="margin-top:12px; justify-content: flex-end;">
                         <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
