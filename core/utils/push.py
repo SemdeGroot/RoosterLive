@@ -87,16 +87,25 @@ def send_roster_updated_push(
             if status in (404, 410, 403):
                 s.delete()
 
-def send_news_upload_push():
+def send_news_upload_push(uploader_first_name: str):
     """
     Stuur een web-push voor een nieuw nieuwsbericht.
     - Alleen naar users die can_view_news hebben.
+    - Inclusief naam van uploader.
     """
+    
+    # Zorg voor een fallback als de naam leeg is, en capitalize zoals gevraagd
+    if uploader_first_name:
+        formatted_name = uploader_first_name.capitalize()
+        body_text = f"Er is een nieuwsbericht geplaatst in de app door {formatted_name}"
+    else:
+        body_text = "Er is een nieuwsbericht geplaatst in de app."
+
     payload = {
         "title": "Nieuwtje!",
-        "body": "Er is een nieuwsbericht geplaatst in de app.",
+        "body": body_text,
         "url": "/nieuws/",
-        "tag": "news-update",  # Zorgt dat meerdere berichten elkaar overschrijven/stapelen
+        "tag": "news-update",
     }
 
     # Haal subscriptions op en filter op permissie

@@ -149,7 +149,7 @@ def news(request):
                 original_filename=original_name,
             )
             news_item.save()
-            send_news_uploaded_push_task.delay()
+            send_news_uploaded_push_task.delay(request.user.first_name)
             messages.success(request, "Nieuwsbericht toegevoegd.")
             return redirect("news")
         else:

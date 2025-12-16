@@ -258,12 +258,12 @@ SESSION_SAVE_EVERY_REQUEST = False
 
 # === Email ===
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = "email-smtp.eu-central-1.amazonaws.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = os.getenv("AWS_SES_USER")
+EMAIL_HOST_PASSWORD = os.getenv("AWS_SES_PASSWORD")
+DEFAULT_FROM_EMAIL = "Apotheek Jansen <noreply@apotheekjansen.com>"
 
 # === Links in mail ===
 USE_HTTPS_IN_EMAIL_LINKS = not DEBUG
