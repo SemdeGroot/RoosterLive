@@ -127,6 +127,21 @@ tr.edit-row td{
 }
 @media (max-width:720px){ .edit-grid{ grid-template-columns:1fr; } }
 
+/* -------------------------------------------------------
+   EDIT FORM: labels altijd links boven input
+------------------------------------------------------- */
+.edit-grid > div{
+  text-align:left;              /* voorkomt gecentreerde labels */
+}
+
+.edit-grid label{
+  display:block;
+  width:100%;
+  text-align:left;
+  font-weight:600;
+  margin:0 0 0px;
+}
+
 .admin-input,.admin-select{
   width:100%;
   max-width:100%;
@@ -137,7 +152,6 @@ tr.edit-row td{
   padding:6px 8px;
   font-size:.95em;
 }
-.admin-select.narrow{ max-width:160px; width:160px; }
 
 /* -------------------------------------------------------
    GENERIEKE SEARCH BAR
@@ -165,4 +179,14 @@ tr.is-hidden-row{ display:none !important; }
   margin-top:10px;
   display:flex;
   justify-content:flex-start;
+}
+
+/* -------------------------------------------------------
+   CRUD SECTION DIVIDER
+   (tussen "toevoegen" en "bestaande ...")
+------------------------------------------------------- */
+.crud-divider{
+  border:0;
+  border-top:2px solid var(--border);
+  margin:18px 0 14px;
 }

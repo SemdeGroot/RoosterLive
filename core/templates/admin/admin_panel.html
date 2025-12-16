@@ -77,11 +77,11 @@
               </div>
             {% endfor %}
 
-            <button class="btn group-save" type="submit">Opslaan</button>
+            <button class="btn btn-save btn-block" type="submit" style="margin-top: 20px;">Opslaan</button>
           </div>
         </form>
 
-        <hr>
+        <hr class="crud-divider">
         <h3 style="margin-top:0;">Bestaande groepen</h3>
 
         <div class="search-bar">
@@ -186,11 +186,11 @@
             {{ user_form.group.label_tag }} {{ user_form.group }}
             {{ user_form.organization.label_tag }} {{ user_form.organization }}
 
-            <button class="btn user-create" type="submit">Aanmaken</button>
+            <button class="btn btn-save btn-block" type="submit">Aanmaken</button>
           </div>
         </form>
 
-        <hr>
+        <hr class="crud-divider">
         <h3 style="margin-top:0;">Bestaande gebruikers</h3>
 
         <div class="search-bar">
@@ -304,7 +304,7 @@
                           </div>
                           <div>
                             <label>Groep:</label>
-                            <select name="group" class="admin-select narrow" style="margin-top:6px;">
+                            <select name="group" class="admin-select" style="margin-top:6px;">
                               {% with g=u.groups.all|first %}
                                 {% for grp in groups %}
                                   <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
@@ -316,7 +316,7 @@
                           </div>
                           <div>
                             <label>Organisatie:</label>
-                            <select name="organization" class="admin-select narrow" style="margin-top:6px;">
+                            <select name="organization" class="admin-select" style="margin-top:6px;">
                               <option value="">----------</option>
                               {% with profile=u.profile %}
                                 {% for org in organizations %}
@@ -331,8 +331,8 @@
                         </div>
 
                         <div class="actions-wrap horizontal" style="margin-top:12px;">
-                          <button class="btn" type="submit">Opslaan</button>
-                          <button type="button" class="btn" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
+                          <button class="btn btn-save" type="submit">Opslaan</button>
+                          <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
                         </div>
                       </form>
                     </div>
@@ -367,7 +367,7 @@
             <input class="admin-input" type="text" name="name" id="org_name" required>
 
             <label for="org_type">Type organisatie:</label>
-            <select class="admin-select narrow" name="org_type" id="org_type" required>
+            <select class="admin-select" name="org_type" id="org_type" required>
               <option value="apotheek" selected>Apotheek</option>
               <option value="zorginstelling">Zorginstelling</option>
             </select>
@@ -381,11 +381,11 @@
             <label for="org_phone">Telefoonnummer:</label>
             <input class="admin-input" type="text" name="phone" id="org_phone">
 
-            <button class="btn org-save" type="submit">Opslaan</button>
+            <button class="btn btn-save btn-block" type="submit">Opslaan</button>
           </div>
         </form>
 
-        <hr>
+        <hr class="crud-divider">
         <h3 style="margin-top:0;">Bestaande organisaties</h3>
 
         <div class="search-bar">
@@ -463,7 +463,7 @@
                           </div>
                           <div>
                             <label>Type organisatie:</label>
-                            <select name="org_type" class="admin-select narrow" style="margin-top:6px;">
+                            <select name="org_type" class="admin-select" style="margin-top:6px;">
                               <option value="apotheek" {% if org.org_type == "apotheek" %}selected{% endif %}>Apotheek</option>
                               <option value="zorginstelling" {% if org.org_type == "zorginstelling" %}selected{% endif %}>Zorginstelling</option>
                             </select>
@@ -486,8 +486,8 @@
                         </div>
 
                         <div class="actions-wrap horizontal" style="margin-top:12px;">
-                          <button class="btn" type="submit">Opslaan</button>
-                          <button type="button" class="btn" onclick="toggleOrgEdit('{{ org.id }}')">Annuleren</button>
+                          <button class="btn btn-save" type="submit">Opslaan</button>
+                          <button type="button" class="btn btn-danger" onclick="toggleOrgEdit('{{ org.id }}')">Annuleren</button>
                         </div>
                       </form>
                     </div>

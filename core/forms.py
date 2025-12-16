@@ -62,9 +62,9 @@ class GroupWithPermsForm(forms.ModelForm):
 
 
 class SimpleUserCreateForm(forms.Form):
-    first_name = forms.CharField(label="Voornaam", max_length=150)
-    last_name = forms.CharField(label="Achternaam", max_length=150)
-    email = forms.EmailField(label="E-mail")
+    first_name = forms.CharField(label="Voornaam", max_length=150, required=True)
+    last_name = forms.CharField(label="Achternaam", max_length=150, required=True)
+    email = forms.EmailField(label="E-mail", required=True)
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
@@ -87,7 +87,7 @@ class SimpleUserCreateForm(forms.Form):
     organization = forms.ModelChoiceField(
         label="Organisatie",
         queryset=Organization.objects.all(),
-        required=False,
+        required=True,
         empty_label="----------",
     )
 
@@ -113,9 +113,9 @@ class SimpleUserCreateForm(forms.Form):
 
 
 class SimpleUserEditForm(forms.Form):
-    first_name = forms.CharField(label="Voornaam", max_length=150)
-    last_name = forms.CharField(label="Achternaam", max_length=150)
-    email = forms.EmailField(label="E-mail")
+    first_name = forms.CharField(label="Voornaam", max_length=150, required=True)
+    last_name = forms.CharField(label="Achternaam", max_length=150, required=True)
+    email = forms.EmailField(label="E-mail", required=True)
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
@@ -131,13 +131,13 @@ class SimpleUserEditForm(forms.Form):
     group = forms.ModelChoiceField(
         label="Groep",
         queryset=Group.objects.all(),
-        required=False,
+        required=True,
         empty_label="----------",
     )
     organization = forms.ModelChoiceField(
         label="Organisatie",
         queryset=Organization.objects.all(),
-        required=False,
+        required=True,
         empty_label="----------",
     )
 

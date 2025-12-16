@@ -262,6 +262,11 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 }
 .btn-save:hover { background-color: var(--button-hover-blue) !important; }
 
+.btn-block{
+  display:block;
+  width:100%;
+  margin-top: 8px;
+}
 
 /* Form fields (file input uitgezonderd) */
 .form{ padding:16px; max-width:100%; }

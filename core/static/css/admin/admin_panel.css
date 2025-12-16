@@ -7,8 +7,29 @@
 .card-inner{padding:16px}
 
 /* =========================
-   PERMISSIONS (CHECKBOXES)
+   PERMISSIONS
 ========================= */
+
+/* hoofdheader "Permissies" (in je HTML nu een <strong>) */
+.perms-title{
+  display:block;
+  font-weight:800;
+  font-size:1.1rem;
+  margin:12px 0 10px;   /* <-- dit miste je */
+}
+
+/* sectie headers zoals Agenda / Nieuws / Rooster */
+.perm-section-title{
+  display:block;
+  font-weight:800;
+  font-size:1.05rem;
+  margin:14px 0 8px;    /* <-- duidelijke spacing */
+}
+
+/* geen extra top-margin op de allereerste sectie */
+.perm-section-title:first-of-type{
+  margin-top:10px;
+}
 
 .perms-grid{
   display:grid;
