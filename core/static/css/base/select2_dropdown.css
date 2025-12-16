@@ -340,3 +340,11 @@
     align-items: center;
     justify-content: space-between;
 }
+
+/* --- FORM label --- */
+.select2-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    color: var(--text);
+}

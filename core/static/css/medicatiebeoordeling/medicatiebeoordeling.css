@@ -409,10 +409,9 @@
 /* --- FORM STYLING --- */
 .section-label {
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     display: block;
-    color: #333;
-    color: var(--text, #333);
+    color: var(--text);
 }
 
 /* --- TABLE STYLING --- */

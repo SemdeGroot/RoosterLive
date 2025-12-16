@@ -5,13 +5,14 @@
 {% block header_title %}Nazendingen{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
-  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/nazendingen/nazendingen.css' %}">
 
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
-
-  <link rel="stylesheet" href="{% static 'css/nazendingen/nazendingen.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -27,7 +28,7 @@
 
       {% if can_upload %}
       <div class="header-actions">
-        <button type="button" class="btn btn-save" id="toggleAddBtn" onclick="toggleAddSection()">
+        <button type="button" class="btn btn-save" onclick="toggleAddSection()">
           Toevoegen
         </button>
       </div>
@@ -46,157 +47,153 @@
             <input type="hidden" name="btn_add_nazending" value="1">
 
             <div class="form form-sticky-actions" style="padding:0;">
-
               {% if form.non_field_errors %}
                 <div class="alert alert-danger">{{ form.non_field_errors }}</div>
               {% endif %}
 
-              <label>Geneesmiddel zoeken</label>
+              <label class="select2-label">Geneesmiddel zoeken</label>
               {{ form.voorraad_item }}
               {% if form.voorraad_item.errors %}
-                <div style="color:var(--logout-color); font-size:0.9em;">{{ form.voorraad_item.errors }}</div>
+                <div style="color:var(--danger); font-size:0.9em;">{{ form.voorraad_item.errors }}</div>
               {% endif %}
 
-              <div class="nazending-grid" style="margin-bottom: 15px;">
+              <div class="nazending-grid-add" style="margin-top:15px; margin-bottom: 15px;">
                 <div>
-                  <label>Datum</label>
+                  <label class="section-label">Datum</label>
                   {{ form.datum }}
                 </div>
                 <div>
-                  <label>Nazending tot</label>
+                  <label class="section-label">Nazending tot</label>
                   {{ form.nazending_tot }}
                 </div>
               </div>
 
-              <label>Alternatief</label>
+              <label class="section-label">Alternatief</label>
               {{ form.alternatief }}
 
-              <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <div style="display:flex; justify-content:flex-end; gap:10px; ">
                 <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
                 <button type="submit" class="btn btn-save">Opslaan</button>
               </div>
-
             </div>
           </form>
         </div>
       </div>
       {% endif %}
 
-      <div class="search-bar" style="margin-bottom:15px;">
-        <input type="text" id="filterInput" placeholder="Typ om te zoeken..." class="admin-input">
+      <div class="search-bar">
+        <input type="text" id="nazendingSearch" placeholder="Typ om te zoeken..." class="admin-input">
       </div>
 
-      <div class="org-table-wrap" style="max-height: 600px; overflow-y:auto;">
-        <table class="med-table table-afdeling-manage nazending-table" id="nazendingTable">
-          <thead>
-            <tr>
-              <th></th>
-              <th>ZI Nummer</th>
-              <th>Geneesmiddel</th>
-              <th>Datum</th>
-              <th>Nazending tot</th>
-              <th>Alternatief</th>
-              {% if can_upload %}
-              <th>Acties</th>
-              {% endif %}
-            </tr>
-          </thead>
+      <div data-crud data-table="#nazendingTable" data-rows="#nazendingTable .nazending-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table nazending-table" id="nazendingTable">
+            <thead>
+              <tr>
+                <th class="center-col">#</th>
+                <th>ZI Nummer</th>
+                <th>Geneesmiddel</th>
+                <th>Datum</th>
+                <th>Nazending tot</th>
+                <th>Alternatief</th>
+                {% if can_upload %}
+                <th>Acties</th>
+                {% endif %}
+              </tr>
+            </thead>
 
-          <tbody>
-            {% for item in nazendingen %}
-            <tr class="manage-row" id="row-{{ item.id }}">
-              <td style="color:var(--muted); font-size:0.85em;">{{ forloop.counter }}</td>
+            <tbody>
+              {% for item in nazendingen %}
+              <tr class="nazending-row" id="row-{{ item.id }}">
+                <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+                <td>{{ item.voorraad_item.zi_nummer }}</td>
+                <td class="wrap">{{ item.voorraad_item.naam }}</td>
+                <td>{{ item.datum|date:"d-m-Y" }}</td>
+                <td>{{ item.nazending_tot }}</td>
+                <td class="wrap">{{ item.alternatief|default:"-" }}</td>
 
-              <td><span>{{ item.voorraad_item.zi_nummer }}</span></td>
-
-              <td>{{ item.voorraad_item.naam }}</td>
-
-              <td style="color:var(--muted);">{{ item.datum|date:"d-m-Y" }}</td>
-
-              <td style="color:var(--muted);">{{ item.nazending_tot }}</td>
-
-              <td>{{ item.alternatief|default:"-" }}</td>
-
-              {% if can_upload %}
-              <td>
-                <div class="actions-wrap">
-                  <button type="button" class="btn small" onclick="toggleEditRow('{{ item.id }}')">
-                    Bewerken
-                  </button>
-                  <form method="post" onsubmit="return confirm('Verwijderen?');" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="btn_delete_nazending" value="1">
-                    <input type="hidden" name="nazending_id_delete" value="{{ item.id }}">
-                    <button type="submit" class="btn danger small" style="padding:6px 8px; border-color:var(--danger-border);">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
+                {% if can_upload %}
+                <td>
+                  <div class="actions-wrap horizontal">
+                    <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')" aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                       </svg>
                     </button>
-                  </form>
-                </div>
-              </td>
-              {% endif %}
-            </tr>
 
-            {% if can_upload %}
-            <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none; background-color: rgba(0,0,0,0.02);">
-              <td colspan="7" style="padding:16px;">
-                <form method="post" autocomplete="off">
-                  {% csrf_token %}
-                  <input type="hidden" name="btn_edit_nazending" value="1">
-                  <input type="hidden" name="nazending_id_edit" value="{{ item.id }}">
-
-                  <div class="form form-sticky-actions" style="padding:0;">
-
-                        <div class="edit-grid nazending-edit-grid">
-                      <div>
-                        <label>Geneesmiddel</label>
-                        <select name="voorraad_item" class="select2-edit" style="width:100%;">
-                          <option value="{{ item.voorraad_item.zi_nummer }}" selected>
-                            {{ item.voorraad_item.naam }} (ZI: {{ item.voorraad_item.zi_nummer }})
-                          </option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label>Datum</label>
-                        <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
-                      </div>
-
-                      <div>
-                        <label>Nazending tot</label>
-                        <input type="text" name="nazending_tot" value="{{ item.nazending_tot }}" class="admin-input">
-                      </div>
-
-                      <div>
-                        <label>Alternatief</label>
-                        <input type="text" name="alternatief" value="{{ item.alternatief }}" class="admin-input">
-                      </div>
-                    </div>
-
-                    <div style="display:flex; gap:10px; margin-top:10px; justify-content:flex-end;">
-                      <button type="button" class="btn btn-danger" onclick="toggleEditRow('{{ item.id }}')">Annuleren</button>
-                      <button class="btn btn-save" type="submit">Opslaan</button>
-                    </div>
-
+                    <form method="post" onsubmit="return confirm('Weet je zeker dat je deze nazending wilt verwijderen?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="btn_delete_nazending" value="1">
+                      <input type="hidden" name="nazending_id_delete" value="{{ item.id }}">
+                      <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
                   </div>
-                </form>
-              </td>
-            </tr>
-            {% endif %}
+                </td>
+                {% endif %}
+              </tr>
 
-            {% empty %}
-            <tr>
-              <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
-                Nog geen nazendingen.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+              {% if can_upload %}
+              <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
+                <td colspan="7">
+                  <div class="edit-wrap">
+                    <form method="post" autocomplete="off">
+                      {% csrf_token %}
+                      <input type="hidden" name="btn_edit_nazending" value="1">
+                      <input type="hidden" name="nazending_id_edit" value="{{ item.id }}">
+
+                      <div class="edit-grid nazending-edit-grid">
+                        <div style="grid-column: span 2;"> <label class="select2-label">Geneesmiddel:</label>
+                          <select name="voorraad_item" class="select2-edit" style="width:100%;">
+                            <option value="{{ item.voorraad_item.zi_nummer }}" selected>
+                              {{ item.voorraad_item.naam }} (ZI: {{ item.voorraad_item.zi_nummer }})
+                            </option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="section-label">Datum:</label>
+                          <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
+                        </div>
+                        <div>
+                          <label class="section-label">Tot:</label>
+                          <input type="text" name="nazending_tot" value="{{ item.nazending_tot }}" class="admin-input">
+                        </div>
+                        <div style="grid-column: span 4;"> <label class="section-label">Alternatief:</label>
+                          <input type="text" name="alternatief" value="{{ item.alternatief }}" class="admin-input">
+                        </div>
+                      </div>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
+                        <button class="btn btn-save" type="submit">Opslaan</button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+
+              {% empty %}
+              <tr>
+                <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
+                  Nog geen nazendingen gevonden.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="crud-more-wrap">
+          <button class="btn small" type="button" data-crud-more>Toon meer</button>
+        </div>
       </div>
 
     </div>

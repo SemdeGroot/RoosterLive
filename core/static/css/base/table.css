@@ -28,10 +28,11 @@ table.crud-table td{
   padding:8px 10px;
   text-align:left;
   vertical-align:middle;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  overflow-wrap: anywhere; 
 }
 
 table.crud-table.compact th,

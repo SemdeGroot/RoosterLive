@@ -645,3 +645,11 @@ textarea.form-input::placeholder {
   font-family: inherit;
   color: var(--muted); /* of wat je nu voor inputs gebruikt */
 }
+
+/* --- FORM label --- */
+.section-label {
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: block;
+    color: var(--text);
+}
