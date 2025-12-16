@@ -653,3 +653,41 @@ textarea.form-input::placeholder {
     display: block;
     color: var(--text);
 }
+
+/* =========================================
+   GLOBAL HEADERS (Gemigreerd uit agenda.css)
+   ========================================= */
+
+/* De hoofdcontainer */
+.birthday-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* Het icoon */
+.birthday-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* De tekst container */
+.birthday-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.birthday-header-text h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.birthday-header-text p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

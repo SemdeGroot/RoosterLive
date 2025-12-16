@@ -12,7 +12,7 @@ TILE_GROUPS = {
         {"name": "Baxterproductie", "img": "factory-256x256.png", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
         {"name": "Openbare Apo",    "img": "openbareapotheek-256x256.png", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
         {"name": "Instellingsapotheek", "img": "instellingsapotheek-256x256.png", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
-        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_panel", "perm": "can_access_admin"},
+        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_dashboard", "perm": "can_access_admin"},
     ],
 
     "personeel": [
@@ -74,6 +74,26 @@ TILE_GROUPS = {
             "img": "reviewsettings-256x256.png",
             "url_name": "medicatiebeoordeling_settings", # Placeholder URL
             "perm": "can_perform_medicatiebeoordeling"
+        },
+    ],
+    "beheer": [
+        {
+            "name": "Gebruikers", 
+            "img": "user-256x256.png",
+            "url_name": "admin_users", 
+            "perm": "can_access_admin"
+        },
+        {
+            "name": "Groepen", 
+            "img": "group-256x256.png",
+            "url_name": "admin_groups", 
+            "perm": "can_access_admin"
+        },
+        {
+            "name": "Organisaties", 
+            "img": "organisatie-256x256.png",
+            "url_name": "admin_orgs", 
+            "perm": "can_access_admin"
         },
     ],
 }

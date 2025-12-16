@@ -5,31 +5,6 @@
   padding: 16px;
 }
 
-/* Header met icoon + titel */
-.birthday-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.birthday-icon {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-.birthday-header-text h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.birthday-header-text p {
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 /* Lijst met verjaardagen / agenda-items */
 .birthday-list {
   list-style: none;
@@ -86,7 +61,7 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-    word-wrap: break-word;
+  word-wrap: break-word;
   white-space: normal; 
 }
 
@@ -146,15 +121,15 @@
   border-top: 1px solid var(--border);
 }
 
+/* Extra helper class die je gebruikt in de combi */
+.agenda-section-header {
+  align-items: center;
+}
+
 .agenda-section:first-of-type {
   margin-top: 0;
   padding-top: 0;
   border-top: none;
-}
-
-/* Header per sectie, met + knop rechts */
-.agenda-section-header {
-  align-items: center;
 }
 
 /* + knop iets compacter, maar gebruikt .btn styling uit base.css */
@@ -229,7 +204,6 @@
   display: block;
   pointer-events: none; /* zodat klik altijd de button raakt */
 }
-
 
 /* Helper om dingen te verbergen (form standaard dicht) */
 .is-hidden {

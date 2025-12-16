@@ -1,78 +1,54 @@
 # core/views/admin.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
-from django.contrib import messages
 from django.db import transaction
 
 from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
 from core.models import UserProfile, Organization
+from core.tiles import build_tiles # Importeer je build_tiles functie
 
 User = get_user_model()
 
+# ==========================================
+# 1. DASHBOARD (TILES)
+# ==========================================
 @login_required
-def admin_panel(request):
+def admin_dashboard(request):
+    """
+    Landingspagina voor beheer: Toont tiles voor Users, Groepen, Orgs.
+    """
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # Zorg dat permissies in DB overeenkomen met PERM_LABELS
-    sync_custom_permissions()
+    tiles = build_tiles(request.user, group="beheer")
+    
+    context = {
+        "page_title": "Beheer",
+        "intro": "Beheer gebruikers, rechten en organisaties.",
+        "tiles": tiles,
+        # Eventueel een 'back_url' als je tiles_page.html dat ondersteunt:
+        "back_url": "home", 
+    }
+    # We gebruiken hier de generieke tiles template die je ook voor medicatiebeoordeling gebruikt
+    return render(request, "tiles_page.html", context)
 
-    # ---- Groepen (bewerken/opslaan) ----
-    editing_group = None
-    gid_get = request.GET.get("group_id")
-    if gid_get:
-        editing_group = Group.objects.filter(pk=gid_get).first()
 
-    group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
-    user_form  = SimpleUserCreateForm(prefix="user")
+# ==========================================
+# 2. USERS VIEW
+# ==========================================
+@login_required
+def admin_users(request):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
 
-    # ---- Organisatie aanmaken ----
-    if request.method == "POST" and request.POST.get("form_kind") == "org":
-        name = (request.POST.get("name") or "").strip()
-        org_type = (request.POST.get("org_type") or "").strip()
-        email = (request.POST.get("email") or "").strip()
-        email2 = (request.POST.get("email2") or "").strip()
-        phone = (request.POST.get("phone") or "").strip()
-
-        if not name:
-            messages.error(request, "Organisatienaam is verplicht.")
-            return redirect("admin_panel")
-
-        if not email:
-            messages.error(request, "E-mailadres is verplicht.")
-            return redirect("admin_panel")
-
-        # naam uniek houden
-        if Organization.objects.filter(name__iexact=name).exists():
-            messages.error(request, "Er bestaat al een organisatie met deze naam.")
-            return redirect("admin_panel")
-
-        Organization.objects.create(
-            name=name,
-            org_type=org_type,
-            email=email,              # verplicht
-            email2=email2 or "",    # optioneel
-            phone=phone or "",      # optioneel
-        )
-        messages.success(request, f"Organisatie “{name}” aangemaakt.")
-        return redirect("admin_panel")
-
-    if request.method == "POST" and request.POST.get("form_kind") == "group":
-        gid_post = request.POST.get("group_id")
-        instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
-        group_form = GroupWithPermsForm(request.POST, instance=instance, prefix="group")
-        if group_form.is_valid():
-            group_form.save()
-            messages.success(request, "Groep opgeslagen.")
-            return redirect("admin_panel")
-        messages.error(request, "Groep opslaan mislukt.")
+    user_form = SimpleUserCreateForm(prefix="user")
 
     # ---- Gebruiker aanmaken + uitnodiging sturen ----
     if request.method == "POST" and request.POST.get("form_kind") == "user_create":
@@ -87,17 +63,17 @@ def admin_panel(request):
 
             if not email:
                 messages.error(request, "E-mail is verplicht.")
-                return redirect("admin_panel")
+                return redirect("admin_users")
 
             if User.objects.filter(email__iexact=email).exists():
                 messages.error(request, "Er bestaat al een gebruiker met dit e-mailadres.")
-                return redirect("admin_panel")
+                return redirect("admin_users")
 
             user = User.objects.create(
-                username=email,          # username = email
-                first_name=first_name,   # opgeslagen in lowercase
-                last_name=last_name,     # opgeslagen in lowercase
-                email=email,             # opgeslagen in lowercase
+                username=email,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
                 is_active=True,
             )
             user.set_unusable_password()
@@ -122,7 +98,6 @@ def admin_panel(request):
                         pass
 
             try:
-                # Zet de taak pas in de queue na succesvolle DB-commit
                 transaction.on_commit(lambda: send_invite_email_task.delay(user.id))
                 messages.success(
                     request,
@@ -133,16 +108,53 @@ def admin_panel(request):
                     request,
                     f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}"
                 )
-
-            return redirect("admin_panel")
+            return redirect("admin_users")
         else:
             messages.error(request, "Gebruiker aanmaken mislukt.")
 
-    # ---- Lijsten voor de tabel(len) ----
-    groups = Group.objects.all().order_by("name")
     users = User.objects.all().select_related("profile").order_by("username")
+    groups = Group.objects.all().order_by("name")
     organizations = Organization.objects.all().order_by("name")
 
+    return render(request, "admin/users.html", {
+        "users": users,
+        "user_form": user_form,
+        "groups": groups,
+        "organizations": organizations,
+    })
+
+
+# ==========================================
+# 3. GROUPS VIEW
+# ==========================================
+@login_required
+def admin_groups(request):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    # Zorg dat permissies in DB overeenkomen met PERM_LABELS
+    sync_custom_permissions()
+
+    editing_group = None
+    gid_get = request.GET.get("group_id")
+    if gid_get:
+        editing_group = Group.objects.filter(pk=gid_get).first()
+
+    group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
+
+    # ---- Groep Opslaan ----
+    if request.method == "POST" and request.POST.get("form_kind") == "group":
+        gid_post = request.POST.get("group_id")
+        instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
+        group_form = GroupWithPermsForm(request.POST, instance=instance, prefix="group")
+        if group_form.is_valid():
+            group_form.save()
+            messages.success(request, "Groep opgeslagen.")
+            return redirect("admin_groups")
+        messages.error(request, "Groep opslaan mislukt.")
+
+    # Data voor tabel
+    groups = Group.objects.all().order_by("name")
     group_rows = []
     for g in groups:
         codes = set(g.permissions.values_list("codename", flat=True))
@@ -151,18 +163,65 @@ def admin_panel(request):
         member_count = g.user_set.count()
         group_rows.append({"group": g, "perm_labels": labels, "member_count": member_count})
 
-    return render(request, "admin/admin_panel.html", {
+    return render(request, "admin/groups.html", {
         "groups": groups,
         "group_rows": group_rows,
-        "users": users,
         "group_form": group_form,
-        "user_form": user_form,
         "editing_group": bool(editing_group),
         "editing_group_id": editing_group.id if editing_group else "",
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
+    })
+
+
+# ==========================================
+# 4. ORGANIZATIONS VIEW
+# ==========================================
+@login_required
+def admin_orgs(request):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    if request.method == "POST" and request.POST.get("form_kind") == "org":
+        name = (request.POST.get("name") or "").strip()
+        org_type = (request.POST.get("org_type") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        email2 = (request.POST.get("email2") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
+
+        if not name:
+            messages.error(request, "Organisatienaam is verplicht.")
+            return redirect("admin_orgs")
+
+        if not email:
+            messages.error(request, "E-mailadres is verplicht.")
+            return redirect("admin_orgs")
+
+        if Organization.objects.filter(name__iexact=name).exists():
+            messages.error(request, "Er bestaat al een organisatie met deze naam.")
+            return redirect("admin_orgs")
+
+        Organization.objects.create(
+            name=name,
+            org_type=org_type,
+            email=email,
+            email2=email2 or "",
+            phone=phone or "",
+        )
+        messages.success(request, f"Organisatie “{name}” aangemaakt.")
+        return redirect("admin_orgs")
+
+    organizations = Organization.objects.all().order_by("name")
+
+    return render(request, "admin/organizations.html", {
         "organizations": organizations,
     })
+
+
+# ==========================================
+# ACTIES (DELETE / UPDATE)
+# ==========================================
+# Let op de redirects: deze wijzen nu naar de specifieke pagina's!
 
 @login_required
 @require_POST
@@ -177,10 +236,10 @@ def group_delete(request, group_id: int):
             f"Kan groep “{g.name}” niet verwijderen: {count} gebruiker(s) zijn nog lid. "
             "Wijs deze gebruikers eerst een andere groep toe."
         )
-        return redirect("admin_panel")
+        return redirect("admin_groups")
     g.delete()
     messages.success(request, "Groep verwijderd.")
-    return redirect("admin_panel")
+    return redirect("admin_groups")
 
 @login_required
 @require_POST
@@ -194,7 +253,7 @@ def user_update(request, user_id: int):
         messages.success(request, "Gebruiker opgeslagen.")
     else:
         messages.error(request, "Opslaan mislukt.")
-    return redirect("admin_panel")
+    return redirect("admin_users")
 
 @login_required
 @require_POST
@@ -205,7 +264,7 @@ def user_delete(request, user_id: int):
     username = u.first_name
     u.delete()
     messages.success(request, f"Gebruiker {username} verwijderd.")
-    return redirect("admin_panel")
+    return redirect("admin_users")
 
 @login_required
 @require_POST
@@ -214,8 +273,6 @@ def org_delete(request, org_id: int):
         return HttpResponseForbidden("Geen toegang.")
 
     org = get_object_or_404(Organization, pk=org_id)
-
-    # optioneel: voorkomen dat je een organisatie verwijdert die nog gekoppeld is
     linked = UserProfile.objects.filter(organization=org).count()
     if linked > 0:
         messages.error(
@@ -224,11 +281,11 @@ def org_delete(request, org_id: int):
             f"{linked} profiel(en) zijn nog gekoppeld. "
             "Pas eerst deze gebruikers aan."
         )
-        return redirect("admin_panel")
+        return redirect("admin_orgs")
 
     org.delete()
     messages.success(request, "Organisatie verwijderd.")
-    return redirect("admin_panel")
+    return redirect("admin_orgs")
 
 @login_required
 @require_POST
@@ -243,4 +300,4 @@ def org_update(request, org_id: int):
         messages.success(request, "Organisatie opgeslagen.")
     else:
         messages.error(request, "Opslaan mislukt.")
-    return redirect("admin_panel")
+    return redirect("admin_orgs")
