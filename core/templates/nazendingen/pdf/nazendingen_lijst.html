@@ -78,7 +78,7 @@
       <h1 class="pdf-title">Nazendingen</h1>
 
       <div class="pdf-submeta">
-        <div><strong>Datum export:</strong> {{ generated_at|date:"d-m-Y" }}</div>
+        <div><strong>Datum:</strong> {{ generated_at|date:"d-m-Y" }}</div>
       </div>
 
       {% if contact_email %}
@@ -139,7 +139,7 @@
 
       <div class="footer-block">
         <div class="footer-label">Versie</div>
-        <p class="footer-item">
+        <p class="footer-item" style="display: flex; justify-content: space-between;">
         <span class="footer-strong">2</span>
         <span class="muted" style="font-style: italic;"> januari 2024</span>
         </p>

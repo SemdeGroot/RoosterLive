@@ -6,9 +6,10 @@ from django.db import models
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from ..models import Nazending, VoorraadItem
+from ..models import Nazending, VoorraadItem, Organization
 from ..forms import NazendingForm
 from core.views._helpers import can, _static_abs_path, _render_pdf
+from core.tasks import send_nazendingen_pdf_task
 
 # --- API ---
 @login_required
@@ -78,15 +79,13 @@ def nazendingen_view(request):
 
     # --- DATA OPHALEN ---
     nazendingen = Nazending.objects.select_related('voorraad_item').order_by('datum')
-    
-    # LET OP: Ik heb 'voorraad_items = VoorraadItem.objects.all()' HIER WEGGEHAALD.
-    # Reden: Je gebruikt nu de API. Als je hier .all() doet, laad je alsnog alles in.
-    # Dat maakt je pagina traag.
+    apotheken = Organization.objects.filter(org_type=Organization.ORG_TYPE_APOTHEEK).order_by('name')
 
     context = {
         "title": "Nazendingen",
         "form": form,
         "nazendingen": nazendingen,
+        "apotheken": apotheken,
         "can_upload": can_upload,
     }
 
@@ -131,3 +130,28 @@ def export_nazendingen_pdf(request):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     
     return response
+
+@login_required
+def email_nazendingen_pdf(request):
+    # 1. Check permissie
+    if not can(request.user, "can_view_nazendingen"): # Of specifieke email permissie
+        return HttpResponseForbidden("Geen toegang.")
+
+    if request.method == "POST":
+        # Haal de geselecteerde ID's op uit de select2 multiple
+        org_ids = request.POST.getlist('recipients')
+        
+        if org_ids:
+            # Converteer naar integers voor de zekerheid
+            org_ids = [int(i) for i in org_ids if i.isdigit()]
+            
+            # Start de celery task
+            send_nazendingen_pdf_task.delay(org_ids)
+            
+            messages.success(request, f"De PDF wordt op de achtergrond verstuurd naar {len(org_ids)} ontvangers.")
+        else:
+            messages.warning(request, "Geen ontvangers geselecteerd.")
+            
+        return redirect('nazendingen')
+
+    return redirect('nazendingen')

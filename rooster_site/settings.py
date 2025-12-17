@@ -299,3 +299,27 @@ LANGUAGE_CODE = 'nl-nl'
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_TZ = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        
+        # --- 2. NIET ZIEN: PDF Ruis (WeasyPrint & fontTools) ---
+        'weasyprint': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # Verbergt info, toont alleen fouten
+            'propagate': False,
+        },
+        'fontTools': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # Verbergt "Decompiling glyf table..."
+            'propagate': False,
+        },
+    },
+}

@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // 3. Activeer live search die samenwerkt met table.js
   liveSearch("nazendingSearch", "nazendingTable", "nazending-row");
 
+  // 4. NIEUW: Initialiseer de Email Modal Select2
+  initEmailSelect2();
 });
 
 /* -------------------------------------------------------
@@ -24,7 +26,6 @@ window.toggleAddSection = function() {
   section.style.display = (section.style.display === 'none') ? 'block' : 'none';
 };
 
-// Toggle de Edit-rij + Init Select2 binnen die rij
 // Toggle de Edit-rij + Init Select2 binnen die rij
 window.toggleEdit = function(id) {
   const viewRow = document.getElementById('row-' + id);
@@ -61,7 +62,59 @@ window.toggleEdit = function(id) {
 };
 
 /* -------------------------------------------------------
-   HELPERS
+   NIEUWE FUNCTIES VOOR EMAIL MODAL
+------------------------------------------------------- */
+
+window.toggleEmailModal = function() {
+    const modal = document.getElementById('emailModal');
+    if (!modal) return;
+
+    if (modal.style.display === "block") {
+        modal.style.display = "none";
+    } else {
+        modal.style.display = "block";
+        // Her-init voor breedte berekening (voor de zekerheid)
+        initEmailSelect2(); 
+    }
+};
+
+// Sluit modal als je op de achtergrond klikt
+window.onclick = function(event) {
+    const modal = document.getElementById('emailModal');
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+};
+
+window.selectAllApotheken = function() {
+    $('#id_recipients > option').prop("selected", true);
+    $('#id_recipients').trigger("change"); // Trigger change zodat Select2 UI update
+};
+
+window.deselectAllApotheken = function() {
+    $('#id_recipients').val(null).trigger("change");
+};
+
+// --- NIEUW: Init Select2 Specifiek voor de Email Modal (Multiple) ---
+function initEmailSelect2() {
+    const $select = $('#id_recipients');
+    if (!$select.length) return;
+    
+    // Voorkom dubbele init
+    if ($select.hasClass("select2-hidden-accessible")) return;
+
+    $select.select2({
+        width: '100%',
+        placeholder: "Zoek en selecteer apotheken...",
+        allowClear: true,
+        dropdownParent: $('#emailModal'), // Zorgt dat dropdown IN de modal werkt
+        closeOnSelect: false, // Dropdown blijft open zodat je er meerdere kunt aanklikken
+    });
+}
+
+
+/* -------------------------------------------------------
+   HELPERS (BESTAAND)
 ------------------------------------------------------- */
 
 // Generic Live Search (Kopieert logica van admin_panel, maar triggert table.js pagination)
@@ -103,7 +156,7 @@ function initDateMasks() {
   });
 }
 
-// Select2 Configuratie & Init
+// Select2 Configuratie & Init (De bestaande AJAX versie)
 function initSelect2($element, $dropdownParent) {
   if (!$element || !$element.length) return;
 

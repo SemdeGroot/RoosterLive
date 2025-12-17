@@ -1,23 +1,26 @@
 <!doctype html>
 <html lang="nl">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
   <body style="margin:0;padding:0;background:transparent;
               font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;">
 
-    <div style="width:100%;max-width:740px;margin:0 auto;padding:24px;text-align:left;">
+    <div style="width:100%; max-width:740px; margin:0 auto; padding:24px; text-align:left;
+                box-sizing: border-box; 
+                overflow-wrap: break-word; 
+                word-break: break-word;">
 
 
-      <!-- Logo gecentreerd -->
       <div style="text-align:center;margin-bottom:0px;">
         <img src="cid:logo" alt="Apotheek Jansen"
             width="64" height="64"
             style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;
-                    width:64px;height:64px;max-width:none;-ms-interpolation-mode:bicubic;">
+                    width:64px;height:64px;max-width:100%;-ms-interpolation-mode:bicubic;">
       </div>
 
-      <!-- Scheidingslijn -->
       <hr style="border:0;border-top:1px solid #e2e2e2;margin:16px 0;">
 
-      <!-- Inhoud -->
       <div>
         {% if content %}
           {{ content|safe }}
@@ -26,10 +29,8 @@
         {% endif %}
       </div>
 
-      <!-- Scheidingslijn -->
       <hr style="border:0;border-top:1px solid #e2e2e2;margin:16px 0;">
 
-      <!-- Footer -->
       <p style="margin:0;font-size:12px;color:#666;text-align:center;">
         Dit is een automatisch gegenereerde e-mail: antwoorden op dit bericht worden niet gelezen.
       </p>
