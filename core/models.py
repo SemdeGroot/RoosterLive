@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import Group
 from django.conf import settings
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 import json
@@ -72,6 +73,33 @@ class Roster(models.Model):
         ]
     def __str__(self):
         return f"Rooster ({self.uploaded_at:%Y-%m-%d %H})"
+    
+class StandaardInlog(models.Model):
+    """
+    Singleton model om te bepalen welke rol (Group) wordt gebruikt 
+    voor de algemene kiosk/baxter inlog.
+    """
+    standaard_rol = models.ForeignKey(
+        Group, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="standaard_inlog_config",
+        verbose_name="Standaard Rol"
+    )
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Zorgt dat er altijd maar 1 configuratie is
+        super(StandaardInlog, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        """Haalt de instellingen op, of maakt ze aan als ze nog niet bestaan."""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Configuratie Standaard Inlog"
 
 class Availability(models.Model):
     """

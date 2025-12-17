@@ -11,7 +11,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog
 
 UserModel = get_user_model()
 
@@ -60,6 +60,19 @@ class GroupWithPermsForm(forms.ModelForm):
         g.permissions.set(chosen_perms)
         return g
 
+class StandaardInlogForm(forms.ModelForm):
+    class Meta:
+        model = StandaardInlog
+        fields = ['standaard_rol']
+        widgets = {
+            'standaard_rol': forms.Select(attrs={'class': 'admin-select'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['standaard_rol'].label = "Kies de rol waarmee elke computer in de apotheek met één druk op de knop kan inloggen."
+        # Sorteer de lijst netjes op naam
+        self.fields['standaard_rol'].queryset = Group.objects.all().order_by('name')
 
 class SimpleUserCreateForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150, required=True)

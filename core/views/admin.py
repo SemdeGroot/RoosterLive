@@ -8,10 +8,10 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm
+from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization, MedicatieReviewAfdeling
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog
 from core.tiles import build_tiles
 User = get_user_model()
 
@@ -135,9 +135,27 @@ def admin_groups(request):
         return HttpResponseForbidden("Geen toegang.")
 
     # 2. Manage Check
-    can_manage = can(request.user, "can_manage_users")
+    can_manage = can(request.user, "can_manage_groups")
 
     sync_custom_permissions()
+
+    # --- STANDAARD INLOG LOGICA (NIEUW) ---
+    inlog_config = StandaardInlog.load() # Haal config op
+    
+    # We gebruiken een specifieke form_kind naam
+    if request.method == "POST" and request.POST.get("form_kind") == "standaard_inlog":
+        if not can_manage:
+            messages.error(request, "Geen rechten om standaard inlog te wijzigen.")
+            return redirect("admin_groups")
+            
+        inlog_form = StandaardInlogForm(request.POST, instance=inlog_config)
+        if inlog_form.is_valid():
+            inlog_form.save()
+            messages.success(request, "Standaard inlog rol opgeslagen.")
+            return redirect("admin_groups")
+    else:
+        inlog_form = StandaardInlogForm(instance=inlog_config)
+    # ---------------------------------------
 
     editing_group = None
     gid_get = request.GET.get("group_id")
@@ -146,9 +164,8 @@ def admin_groups(request):
 
     group_form = GroupWithPermsForm(prefix="group", instance=editing_group)
 
-    # ---- Groep Opslaan ----
+    # ---- Groep Opslaan (BESTAAND) ----
     if request.method == "POST" and request.POST.get("form_kind") == "group":
-        # 3. POST Guard
         if not can_manage:
             messages.error(request, "Je hebt geen rechten om groepen te wijzigen.")
             return redirect("admin_groups")
@@ -164,6 +181,10 @@ def admin_groups(request):
 
     groups = Group.objects.all().order_by("name")
     group_rows = []
+    
+    # Haal het ID op van de geselecteerde rol voor de template check
+    selected_kiosk_id = inlog_config.standaard_rol_id
+
     for g in groups:
         codes = set(g.permissions.values_list("codename", flat=True))
         labels = [PERM_LABELS.get(c, c) for c in codes]
@@ -175,11 +196,13 @@ def admin_groups(request):
         "groups": groups,
         "group_rows": group_rows,
         "group_form": group_form,
+        "inlog_form": inlog_form,
+        "selected_kiosk_id": selected_kiosk_id,
         "editing_group": bool(editing_group),
         "editing_group_id": editing_group.id if editing_group else "",
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
-        "can_manage": can_manage, # Doorgeven aan template
+        "can_manage": can_manage, 
     })
 
 

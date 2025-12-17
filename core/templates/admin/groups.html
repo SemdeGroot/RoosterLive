@@ -19,13 +19,14 @@
                 <img src="{% static 'img/group-256x256.png' %}" alt="" class="birthday-icon">
                 <div class="birthday-header-text">
                     <h2>Groepen beheren</h2>
-                    <p>Voeg hier groepen toe of bewerk de permissies.</p>
+                    <p>Voeg hier groepen toe, bewerk permissies en stel de standaard inlog rol in.</p>
                 </div>
                 <a href="{% url 'admin_dashboard' %}" class="btn btn-save">
-        Terug naar dashboard
-    </a>
-                </div>
-                <hr class="crud-divider">
+                    Terug naar dashboard
+                </a>
+            </div>
+            
+        <hr class="crud-divider">
 
         <h3 style="margin-top:0;">{% if editing_group %}Groep bewerken{% else %}Groep toevoegen{% endif %}</h3>
 
@@ -70,7 +71,30 @@
           </div>
         </form>
 
+        {% if can_manage %}
         <hr class="crud-divider">
+        <h3 style="margin-top:0;">Snelle Inlog Configureren</h3>
+        
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="standaard_inlog">
+            
+            <div class="form form-sticky-actions" style="padding:0;">
+                <label for="{{ inlog_form.standaard_rol.id_for_label }}">{{ inlog_form.standaard_rol.label }}</label>
+                {{ inlog_form.standaard_rol }}
+                
+                <p style="margin-top: 4px; margin-bottom: 16px; font-size: 0.9em; color: var(--muted); line-height: 1.4;">
+                    <strong>⚠️ Let op:</strong> Met deze rol en bijbehorende permissies kan <u>iedereen in de apotheek</u> (SL en LW) inloggen met 1 druk op de knop. 
+                    Geef deze rol dus <strong>niet te veel rechten</strong> (bijvoorbeeld géén toegang tot Beheer of Medicatiebeoordeling)!
+                </p>
+                
+                <button type="submit" class="btn btn-save btn-block">Instellen</button>
+            </div>
+        </form>
+        {% endif %}
+
+        <hr class="crud-divider">
+        
         <h3 style="margin-top:0;">Bestaande groepen</h3>
 
         <div class="search-bar">
@@ -92,7 +116,15 @@
               <tbody>
                 {% for row in group_rows %}
                 <tr class="group-row" id="group-row-{{ row.group.id }}">
-                  <td>{{ row.group.name }}</td>
+                  <td>
+                    {{ row.group.name }}
+                    
+                    {% if selected_kiosk_id == row.group.id %}
+                        <span style="background:#ffc107; color:#000; padding:2px 6px; border-radius:4px; font-size:0.7em; font-weight:bold; margin-left:8px; vertical-align:middle; text-transform: uppercase;">
+                            Standaard Inlog
+                        </span>
+                    {% endif %}
+                  </td>
 
                   <td class="wrap">
                     {% if row.perm_labels %}
