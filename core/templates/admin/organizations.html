@@ -81,6 +81,7 @@
                   <td class="wrap">{{ org.phone|default:"-" }}</td>
 
                   <td>
+                    {% if can_manage %}
                     <div class="actions-wrap horizontal">
                       <button type="button"
                               class="icon-btn"
@@ -110,6 +111,9 @@
                         </button>
                       </form>
                     </div>
+                    {% else %}
+                        <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                    {% endif %}
                   </td>
                 </tr>
 

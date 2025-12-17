@@ -49,6 +49,9 @@ DB_PATH = settings.BASE_DIR / "lookup.db"
 PERM_LABELS = {
     "can_access_admin":        "Mag beheer openen",
     "can_manage_users":        "Mag gebruikers beheren",
+    "can_manage_groups":              "Mag groepen beheren",
+    "can_manage_afdelingen":              "Mag afdelingen beheren",
+    "can_manage_orgs":              "Mag organisaties beheren",
     "can_view_agenda":         "Mag agenda bekijken",
     "can_upload_agenda":       "Mag agenda aanpassen",
     "can_view_roster":         "Mag rooster bekijken",
@@ -117,7 +120,7 @@ PERM_SECTIONS = [
 
     ("Openbare Apotheek", ["can_view_openbare_apo"]),
     ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
-    ("Beheer",        ["can_access_admin", "can_manage_users"]),
+    ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs"]),
 ]
 
 def sync_custom_permissions():

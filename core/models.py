@@ -11,8 +11,10 @@ class Roster(models.Model):
 
     class Meta:
         permissions = [
-            ("can_access_admin",          "Mag beheer openen"),
-            ("can_manage_users",          "Mag gebruikers beheren"),
+            ("can_access_admin",          "Mag beheer openen"),("can_manage_users",          "Mag gebruikers beheren"),
+            ("can_manage_groups",              "Mag groepen beheren"),
+            ("can_manage_afdelingen",              "Mag afdelingen beheren"),
+            ("can_manage_orgs",              "Mag organisaties beheren"),
             ("can_view_agenda",           "Mag agenda bekijken"),
             ("can_upload_agenda",         "Mag agenda uploaden"),
             ("can_view_roster",           "Mag rooster bekijken"),

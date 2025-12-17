@@ -88,32 +88,30 @@
       <div data-crud data-table="#nazendingTable" data-rows="#nazendingTable .nazending-row" data-page-size="10">
         <div class="table-scroll">
           <table class="crud-table nazending-table" id="nazendingTable">
-            <thead>
-              <tr>
-                <th class="center-col"></th>
-                <th>ZI-nummer</th>
-                <th>Geneesmiddel</th>
-                <th>Datum nazending</th>
-                <th>Nazending tot</th>
-                <th>Alternatief</th>
-                {% if can_upload %}
-                <th>Acties</th>
-                {% endif %}
-              </tr>
-            </thead>
+          <thead>
+            <tr>
+              <th class="center-col"></th>
+              <th>ZI-nummer</th>
+              <th>Geneesmiddel</th>
+              <th>Datum nazending</th>
+              <th>Nazending tot</th>
+              <th>Alternatief</th>
+              <th>Acties</th> 
+            </tr>
+          </thead>
 
             <tbody>
-              {% for item in nazendingen %}
-              <tr class="nazending-row" id="row-{{ item.id }}">
-                <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
-                <td>{{ item.voorraad_item.zi_nummer }}</td>
-                <td class="wrap">{{ item.voorraad_item.naam }}</td>
-                <td style="color: var(--muted);">{{ item.datum|date:"d-m-Y" }}</td>
-                <td style="color: var(--muted);">{{ item.nazending_tot }}</td>
-                <td class="wrap">{{ item.alternatief|default:"-" }}</td>
+            {% for item in nazendingen %}
+            <tr class="nazending-row" id="row-{{ item.id }}">
+              <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+              <td>{{ item.voorraad_item.zi_nummer }}</td>
+              <td class="wrap">{{ item.voorraad_item.naam }}</td>
+              <td style="color: var(--muted);">{{ item.datum|date:"d-m-Y" }}</td>
+              <td style="color: var(--muted);">{{ item.nazending_tot }}</td>
+              <td class="wrap">{{ item.alternatief|default:"-" }}</td>
 
+              <td>
                 {% if can_upload %}
-                <td>
                   <div class="actions-wrap horizontal">
                     <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')" aria-label="Bewerken">
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -136,20 +134,22 @@
                       </button>
                     </form>
                   </div>
-                </td>
+                {% else %}
+                  <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
                 {% endif %}
-              </tr>
+              </td>
+            </tr>
 
-              {% if can_upload %}
-              <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
-                <td colspan="7">
-                  <div class="edit-wrap">
-                    <form method="post" autocomplete="off">
-                      {% csrf_token %}
-                      <input type="hidden" name="btn_edit_nazending" value="1">
-                      <input type="hidden" name="nazending_id_edit" value="{{ item.id }}">
+            {% if can_upload %}
+            <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
+              <td colspan="7">
+                <div class="edit-wrap">
+                  <form method="post" autocomplete="off">
+                    {% csrf_token %}
+                    <input type="hidden" name="btn_edit_nazending" value="1">
+                    <input type="hidden" name="nazending_id_edit" value="{{ item.id }}">
 
-                      <div class="edit-grid nazending-edit-grid">
+                    <div class="edit-grid nazending-edit-grid">
                       <div style="grid-column: 1 / -1;"> 
                         <label class="select2-label">Geneesmiddel:</label>
                         <select name="voorraad_item" class="select2-edit" style="width:100%;">
@@ -175,24 +175,24 @@
                       </div>
                     </div>
 
-                      <div class="actions-wrap horizontal" style="margin-top:12px;">
-                        <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
-                        <button class="btn btn-save" type="submit">Opslaan</button>
-                      </div>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endif %}
+                    <div class="actions-wrap horizontal" style="margin-top:12px;">
+                      <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
+                      <button class="btn btn-save" type="submit">Opslaan</button>
+                    </div>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
 
-              {% empty %}
-              <tr>
-                <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
-                  Nog geen nazendingen gevonden.
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
+                Nog geen nazendingen gevonden.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
           </table>
         </div>
 
@@ -201,15 +201,17 @@
         </div>
       </div> 
       
+      {% if can_upload %}
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
           <a href="{% url 'nazendingen_export_pdf' %}" class="btn btn-save">
             Exporteer als PDF
           </a>
 
           <button type="button" onclick="toggleEmailModal()" class="btn btn-save">
-             Verstuur PDF naar apotheken
+            Verstuur PDF naar apotheken
           </button>
       </div>
+      {% endif %}
 
         </div>
       </div>

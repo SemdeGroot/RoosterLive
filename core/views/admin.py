@@ -21,7 +21,7 @@ User = get_user_model()
 @login_required
 def admin_dashboard(request):
     """
-    Landingspagina voor beheer: Toont tiles voor Users, Groepen, Orgs.
+    Landingspagina voor beheer.
     """
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
@@ -32,10 +32,8 @@ def admin_dashboard(request):
         "page_title": "Beheer",
         "intro": "Beheer gebruikers, rechten en organisaties.",
         "tiles": tiles,
-        # Eventueel een 'back_url' als je tiles_page.html dat ondersteunt:
         "back_url": "home", 
     }
-    # We gebruiken hier de generieke tiles template die je ook voor medicatiebeoordeling gebruikt
     return render(request, "tiles_page.html", context)
 
 
@@ -44,13 +42,22 @@ def admin_dashboard(request):
 # ==========================================
 @login_required
 def admin_users(request):
+    # 1. View Check
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
+    # 2. Manage Check
+    can_manage = can(request.user, "can_manage_users")
+
     user_form = SimpleUserCreateForm(prefix="user")
 
-    # ---- Gebruiker aanmaken + uitnodiging sturen ----
+    # ---- Gebruiker aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "user_create":
+        # 3. POST Guard
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om gebruikers toe te voegen.")
+            return redirect("admin_users")
+
         user_form = SimpleUserCreateForm(request.POST, prefix="user")
         if user_form.is_valid():
             first_name = (user_form.cleaned_data.get("first_name") or "").strip().lower()
@@ -98,15 +105,9 @@ def admin_users(request):
 
             try:
                 transaction.on_commit(lambda: send_invite_email_task.delay(user.id))
-                messages.success(
-                    request,
-                    f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden naar {email}."
-                )
+                messages.success(request, f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden.")
             except Exception as e:
-                messages.warning(
-                    request,
-                    f"Gebruiker aangemaakt, maar verzenden van de uitnodiging mislukte: {e}"
-                )
+                messages.warning(request, f"Gebruiker aangemaakt, email mislukt: {e}")
             return redirect("admin_users")
         else:
             messages.error(request, "Gebruiker aanmaken mislukt.")
@@ -120,6 +121,7 @@ def admin_users(request):
         "user_form": user_form,
         "groups": groups,
         "organizations": organizations,
+        "can_manage": can_manage, # Doorgeven aan template
     })
 
 
@@ -128,10 +130,13 @@ def admin_users(request):
 # ==========================================
 @login_required
 def admin_groups(request):
+    # 1. View Check
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # Zorg dat permissies in DB overeenkomen met PERM_LABELS
+    # 2. Manage Check
+    can_manage = can(request.user, "can_manage_users")
+
     sync_custom_permissions()
 
     editing_group = None
@@ -143,6 +148,11 @@ def admin_groups(request):
 
     # ---- Groep Opslaan ----
     if request.method == "POST" and request.POST.get("form_kind") == "group":
+        # 3. POST Guard
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om groepen te wijzigen.")
+            return redirect("admin_groups")
+
         gid_post = request.POST.get("group_id")
         instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
         group_form = GroupWithPermsForm(request.POST, instance=instance, prefix="group")
@@ -152,7 +162,6 @@ def admin_groups(request):
             return redirect("admin_groups")
         messages.error(request, "Groep opslaan mislukt.")
 
-    # Data voor tabel
     groups = Group.objects.all().order_by("name")
     group_rows = []
     for g in groups:
@@ -170,6 +179,7 @@ def admin_groups(request):
         "editing_group_id": editing_group.id if editing_group else "",
         "perm_sections": PERM_SECTIONS,
         "perm_labels": PERM_LABELS,
+        "can_manage": can_manage, # Doorgeven aan template
     })
 
 
@@ -178,10 +188,19 @@ def admin_groups(request):
 # ==========================================
 @login_required
 def admin_orgs(request):
+    # 1. View Check
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
+    # 2. Manage Check
+    can_manage = can(request.user, "can_manage_orgs")
+
     if request.method == "POST" and request.POST.get("form_kind") == "org":
+        # 3. POST Guard
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om organisaties toe te voegen.")
+            return redirect("admin_orgs")
+
         name = (request.POST.get("name") or "").strip()
         org_type = (request.POST.get("org_type") or "").strip()
         email = (request.POST.get("email") or "").strip()
@@ -214,25 +233,31 @@ def admin_orgs(request):
 
     return render(request, "admin/organizations.html", {
         "organizations": organizations,
+        "can_manage": can_manage, # Doorgeven aan template
     })
+
 
 # ==========================================
 # 5. AFDELINGEN BEHEER
 # ==========================================
 @login_required
 def admin_afdelingen(request):
-    """
-    Beheer van MedicatieReview afdelingen.
-    Top formulier = Create.
-    Tabel = List + Inline Edit.
-    """
+    # 1. View Check (specifiek voor afdelingen)
     if not can(request.user, "can_perform_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen toegang.")
 
+    # 2. Manage Check
+    can_manage = can(request.user, "can_manage_afdelingen")
+
     afdeling_form = AfdelingEditForm()
 
-    # ---- Nieuwe aanmaken (Create) ----
+    # ---- Nieuwe aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "afdeling":
+        # 3. POST Guard
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om afdelingen toe te voegen.")
+            return redirect("admin_afdelingen")
+
         afdeling_form = AfdelingEditForm(request.POST)
         if afdeling_form.is_valid():
             obj = afdeling_form.save(commit=False)
@@ -246,8 +271,6 @@ def admin_afdelingen(request):
 
     # Data ophalen
     afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
-    
-    # We hebben alle organisaties nodig voor de dropdown in de inline-edit rijen
     all_organizations = Organization.objects.filter(
         org_type=Organization.ORG_TYPE_ZORGINSTELLING
     ).order_by('name')
@@ -255,30 +278,26 @@ def admin_afdelingen(request):
     return render(request, "admin/afdelingen.html", {
         "afdelingen": afdelingen,
         "afdeling_form": afdeling_form,
-        "all_organizations": all_organizations, # Belangrijk voor de loop in HTML
+        "all_organizations": all_organizations,
+        "can_manage": can_manage, # Doorgeven aan template
     })
 
 @login_required
 @require_POST
 def afdeling_update(request, pk):
-    """
-    Verwerkt de inline edit vanuit de tabel.
-    """
-    if not can(request.user, "can_perform_medicatiebeoordeling"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_afdelingen"):
+        messages.error(request, "Geen rechten om te wijzigen.")
+        return redirect("admin_afdelingen")
 
     afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
     
-    # We vullen het formulier met de POST data en de bestaande instance
     form = AfdelingEditForm(request.POST, instance=afd)
-    
     if form.is_valid():
         obj = form.save(commit=False)
         obj.updated_by = request.user
         obj.save()
         messages.success(request, f"Afdeling '{obj.afdeling}' is bijgewerkt.")
     else:
-        # Fouten tonen via messages framework
         for field, errors in form.errors.items():
             for error in errors:
                 messages.error(request, f"Fout in {field}: {error}")
@@ -288,20 +307,20 @@ def afdeling_update(request, pk):
 # ==========================================
 # ACTIES (DELETE / UPDATE)
 # ==========================================
-# Let op de redirects: deze wijzen nu naar de specifieke pagina's!
 
 @login_required
 @require_POST
 def group_delete(request, group_id: int):
-    if not can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_groups"):
+        messages.error(request, "Geen rechten om groepen te verwijderen.")
+        return redirect("admin_groups")
+    
     g = get_object_or_404(Group, pk=group_id)
     count = g.user_set.count()
     if count > 0:
         messages.error(
             request,
-            f"Kan groep “{g.name}” niet verwijderen: {count} gebruiker(s) zijn nog lid. "
-            "Wijs deze gebruikers eerst een andere groep toe."
+            f"Kan groep “{g.name}” niet verwijderen: {count} gebruiker(s) zijn nog lid."
         )
         return redirect("admin_groups")
     g.delete()
@@ -311,8 +330,10 @@ def group_delete(request, group_id: int):
 @login_required
 @require_POST
 def user_update(request, user_id: int):
-    if not can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_users"):
+        messages.error(request, "Geen rechten om gebruikers te wijzigen.")
+        return redirect("admin_users")
+        
     u = get_object_or_404(User, pk=user_id)
     form = SimpleUserEditForm(request.POST, instance=u)
     if form.is_valid():
@@ -325,8 +346,10 @@ def user_update(request, user_id: int):
 @login_required
 @require_POST
 def user_delete(request, user_id: int):
-    if not can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_users"):
+        messages.error(request, "Geen rechten om gebruikers te verwijderen.")
+        return redirect("admin_users")
+        
     u = get_object_or_404(User, pk=user_id)
     username = u.first_name
     u.delete()
@@ -336,18 +359,14 @@ def user_delete(request, user_id: int):
 @login_required
 @require_POST
 def org_delete(request, org_id: int):
-    if not can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_orgs"):
+        messages.error(request, "Geen rechten om organisaties te verwijderen.")
+        return redirect("admin_orgs")
 
     org = get_object_or_404(Organization, pk=org_id)
     linked = UserProfile.objects.filter(organization=org).count()
     if linked > 0:
-        messages.error(
-            request,
-            f"Kan organisatie “{org.name}” niet verwijderen: "
-            f"{linked} profiel(en) zijn nog gekoppeld. "
-            "Pas eerst deze gebruikers aan."
-        )
+        messages.error(request, "Kan organisatie niet verwijderen: profielen gekoppeld.")
         return redirect("admin_orgs")
 
     org.delete()
@@ -357,8 +376,9 @@ def org_delete(request, org_id: int):
 @login_required
 @require_POST
 def org_update(request, org_id: int):
-    if not can(request.user, "can_access_admin"):
-        return HttpResponseForbidden("Geen toegang.")
+    if not can(request.user, "can_manage_orgs"):
+        messages.error(request, "Geen rechten om organisaties te wijzigen.")
+        return redirect("admin_orgs")
 
     org = get_object_or_404(Organization, pk=org_id)
     form = OrganizationEditForm(request.POST, instance=org)
@@ -371,8 +391,9 @@ def org_update(request, org_id: int):
 
 @login_required
 def delete_afdeling(request, pk):
-    if not can(request.user, "can_perform_medicatiebeoordeling"):
-        return HttpResponseForbidden()
+    if not can(request.user, "can_manage_afdelingen"):
+        messages.error(request, "Geen rechten om afdelingen te verwijderen.")
+        return redirect("admin_afdelingen")
     
     if request.method == "POST":
         afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
@@ -380,5 +401,4 @@ def delete_afdeling(request, pk):
         afd.delete()
         messages.success(request, f"Afdeling '{naam}' verwijderd.")
     
-    # Redirect nu naar de admin pagina
     return redirect("admin_afdelingen")
