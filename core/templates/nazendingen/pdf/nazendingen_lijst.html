@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Overzicht Nazendingen</title>
+
+  <style>
+    /* Kolombreedtes voor staand A4 */
+    .col-nr   { width: 5%; text-align: center; color: #666; }
+    .col-zi   { width: 12%; }
+    .col-naam { width: 33%; }
+    .col-date { width: 12%; }
+    .col-tot  { width: 12%; }
+    .col-alt  { width: 26%; }
+
+    /* FOOTER: direct onder de tabel */
+    .pdf-footer {
+      font-size: 9pt;
+      color: #444;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;   /* zelfde stijl als <hr> */
+      page-break-inside: avoid;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.6fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .footer-block {
+      line-height: 1.25;
+      padding-right: 6px;
+    }
+
+    /* Verticale lijnen tussen kolommen */
+    .footer-block:not(:last-child) {
+      border-right: 1px solid #ddd; /* zelfde kleur als hr */
+      padding-right: 18px;
+    }
+
+    .footer-label {
+    font-weight: 700;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    color: #111;
+    border-bottom: 1px solid #ddd;
+    }
+
+    .footer-item {
+      margin: 0;
+    }
+
+    .footer-strong {
+      font-weight: 700;
+      color: #111;
+    }
+
+    /* Authorisatie onder footer */
+    .authorisation {
+      margin-top: 22px;
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div class="pdf-header">
+    {% if logo_path %}
+      <img class="pdf-logo" src="file://{{ logo_path }}" alt="Logo">
+    {% endif %}
+
+    <div>
+      <h1 class="pdf-title">Nazendingen</h1>
+
+      <div class="pdf-submeta">
+        <div><strong>Datum export:</strong> {{ generated_at|date:"d-m-Y" }}</div>
+      </div>
+
+      {% if contact_email %}
+        <div class="prepared-by">
+          <span class="muted">{{ contact_email }}</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="section-title">Actueel overzicht nazendingen</div>
+
+  <!-- TABEL -->
+  <table>
+    <thead>
+      <tr>
+        <th class="col-nr"></th>
+        <th class="col-zi">ZI-nr</th>
+        <th class="col-naam">Geneesmiddel</th>
+        <th class="col-date">Datum</th>
+        <th class="col-tot">Tot</th>
+        <th class="col-alt">Alternatief</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in nazendingen %}
+        <tr>
+          <td class="col-nr">{{ forloop.counter }}</td>
+          <td class="col-zi">{{ item.voorraad_item.zi_nummer }}</td>
+          <td class="col-naam"><strong>{{ item.voorraad_item.naam }}</strong></td>
+          <td class="col-date muted">{{ item.datum|date:"d-m-Y" }}</td>
+          <td class="col-tot muted">{{ item.nazending_tot }}</td>
+          <td class="col-alt">{{ item.alternatief|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="muted" style="text-align:center; padding:20px;">
+            Geen nazendingen gevonden.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FOOTER (direct onder tabel) -->
+  <div class="pdf-footer">
+    <div class="footer-grid">
+
+      <div class="footer-block">
+        <div class="footer-label">Apotheek Jansen</div>
+        <p class="footer-item">Kwaliteitshandboek</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Documentnummer</div>
+        <p class="footer-item">F-GDS-11</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Versie</div>
+        <p class="footer-item">
+        <span class="footer-strong">2</span>
+        <span class="muted" style="font-style: italic;"> januari 2024</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AUTHORISATIE -->
+  <div class="authorisation">
+    <p style="margin-bottom: 8px; margin-top: 16px;">Goedgekeurd door,</p>
+
+    <p style="margin: 0 0 8px 0;">
+    <strong>Drs. Roel de Groot</strong>,<br>
+    <span class="muted">Specialist Openbaar Apotheker</span>
+    </p>
+
+    {% if signature_path %}
+      <img
+        src="file://{{ signature_path }}"
+        alt="Handtekening"
+        style="height:50px; display:block; margin:10px 0 0 0;"
+      >
+    {% endif %}
+  </div>
+
+</body>
+</html>

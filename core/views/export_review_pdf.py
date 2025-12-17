@@ -4,14 +4,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.staticfiles import finders
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from weasyprint import HTML, CSS
-
-from core.views._helpers import can
+from core.views._helpers import can, _static_abs_path, _render_pdf
 from core.models import (
     MedicatieReviewAfdeling,
     MedicatieReviewPatient,
@@ -34,12 +31,6 @@ class PdfPatientBlock:
 # =========================
 # Helpers
 # =========================
-def _static_abs_path(static_path: str) -> str:
-    path = finders.find(static_path)
-    if not path:
-        raise FileNotFoundError(f"Static file niet gevonden: {static_path}")
-    return path
-
 
 def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
     """
@@ -100,120 +91,6 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
         grouped_meds=grouped_meds,
         comments_lookup=comments_lookup,
     )
-
-
-def _render_pdf(html: str, *, base_url: str) -> bytes:
-    css = CSS(string="""
-        :root { --accent: #0B3D91; }  /* donkerder blauw */
-
-        @page { size: A4; margin: 14mm; }
-
-        body {
-          font-family: Arial, sans-serif;
-          font-size: 11pt;
-          color: #111;
-          background: #fff;
-        }
-
-        .pdf-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          border-bottom: 2px solid var(--accent);
-          padding-bottom: 12px;
-          margin-bottom: 14px;
-        }
-
-        .pdf-logo {
-          width: 100px;
-          height: auto;
-          object-fit: contain;
-        }
-
-        .pdf-title {
-          font-size: 20pt;
-          font-weight: 700;
-          margin: 0;
-        }
-
-        .pdf-submeta {
-          margin-top: 6px;
-          font-size: 10pt;
-          color: #444;
-          line-height: 1.4;
-        }
-
-        .prepared-by {
-          margin-top: 6px;
-          font-size: 10pt;
-        }
-
-        .section-title {
-          font-size: 13pt;
-          font-weight: 700;
-          margin: 20px 0 10px;
-          color: var(--accent);
-        }
-
-        .group-title {
-          font-size: 11pt;
-          font-weight: 700;
-          margin-top: 14px;
-          color: var(--accent);
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 8px;
-        }
-
-        th, td {
-          border: 1px solid #ddd;
-          padding: 7px 8px;
-          vertical-align: top;
-        }
-
-        th {
-          background: #f4f6fb;
-          font-weight: 700;
-        }
-
-        .muted { color: #666; }
-
-        .comment-box {
-          margin-top: 10px;
-          padding: 10px;
-          border-left: 4px solid var(--accent);
-          background: #f9faff;
-        }
-
-        .comment-label {
-          font-weight: 700;
-          margin-bottom: 4px;
-        }
-
-        .divider {
-          border-top: 1px solid #eee;
-          margin: 18px 0;
-        }
-
-        .toc-link {
-          color: var(--accent);
-          text-decoration: none;
-        }
-
-        /* Nieuw: elke patiënt op nieuwe pagina in afdeling export */
-        .patient-page {
-          page-break-before: always;
-        }
-        .patient-page.first-patient {
-          page-break-before: auto;
-        }
-    """)
-
-    return HTML(string=html, base_url=base_url).write_pdf(stylesheets=[css])
-
 
 # =========================
 # Views

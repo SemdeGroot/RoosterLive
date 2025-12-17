@@ -1,12 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import models
+from django.template.loader import render_to_string
+from django.utils import timezone
 
 from ..models import Nazending, VoorraadItem
 from ..forms import NazendingForm
-from ._helpers import can 
+from core.views._helpers import can, _static_abs_path, _render_pdf
 
 # --- API ---
 @login_required
@@ -89,3 +91,43 @@ def nazendingen_view(request):
     }
 
     return render(request, "nazendingen/index.html", context)
+
+# Export pdf
+
+@login_required
+def export_nazendingen_pdf(request):
+    # 1. Check permissies
+    if not can(request.user, "can_view_nazendingen"):
+        return HttpResponseForbidden("Geen toegang tot nazendingen.")
+
+    # 2. Data ophalen (alles, gesorteerd op datum)
+    nazendingen = Nazending.objects.select_related('voorraad_item').order_by('-datum')
+
+    # 3. Context opbouwen
+    context = {
+        "nazendingen": nazendingen,
+        "generated_at": timezone.localtime(timezone.now()),
+        "user": request.user,
+        
+        "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
+        "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+
+        "contact_email": "baxter@apotheekjansen.com",
+    }
+
+    # 4. Render HTML
+    html = render_to_string(
+        "nazendingen/pdf/nazendingen_lijst.html",
+        context,
+        request=request,
+    )
+
+    # 5. Maak PDF
+    pdf_file = _render_pdf(html, base_url=request.build_absolute_uri("/"))
+
+    # 6. Response
+    filename = f"Nazendingen_ApoJansen_{timezone.now().strftime('%d-%m-%Y')}.pdf"
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    
+    return response

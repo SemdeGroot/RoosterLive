@@ -6,7 +6,7 @@ from django.conf import settings
 from core.views.home import home
 from core.views.roster import rooster
 from core.views.voorraad import medications_view
-from core.views.nazendingen import nazendingen_view, medications_search_api
+from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf
 from core.views.news import news
 from core.views.policies import policies
 from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update
@@ -119,6 +119,7 @@ urlpatterns = [
 
     path("baxter/voorraad/", medications_view, name="medications"),
     path("baxter/nazendingen/", nazendingen_view, name="nazendingen"),
+    path('baxter/nazendingen/export-pdf', export_nazendingen_pdf, name='nazendingen_export_pdf'),
     path('api/voorraad-zoeken/', medications_search_api, name='api_voorraad_zoeken'),
 
     path("nieuws/", news, name="news"),

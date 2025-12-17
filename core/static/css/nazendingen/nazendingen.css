@@ -31,12 +31,12 @@
    1: #, 2: ZI, 3: Naam, 4: Datum, 5: Tot, 6: Alt, 7: Acties
 ------------------------------------------------------- */
 table.nazending-table {
-  --c1: 50px;   /* Index */
+  --c1: 20px;   /* Index */
   --c2: 80px;  /* ZI */
   --c3: 200px;   /* Geneesmiddel (pakt de rest) */
-  --c4: 80px;  /* Datum */
+  --c4: 120px;  /* Datum */
   --c5: 140px;  /* Tot */
-  --c6: 200px;  /* Alternatief */
+  --c6: 180px;  /* Alternatief */
   --c7: 80px;  /* Acties */
 }
 

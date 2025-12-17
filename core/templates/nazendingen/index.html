@@ -59,7 +59,7 @@
 
               <div class="nazending-grid-add" style="margin-top:15px; margin-bottom: 15px;">
                 <div>
-                  <label class="section-label">Datum</label>
+                  <label class="section-label">Datum nazending</label>
                   {{ form.datum }}
                 </div>
                 <div>
@@ -93,7 +93,7 @@
                 <th class="center-col"></th>
                 <th>ZI-nummer</th>
                 <th>Geneesmiddel</th>
-                <th>Datum</th>
+                <th>Datum nazending</th>
                 <th>Nazending tot</th>
                 <th>Alternatief</th>
                 {% if can_upload %}
@@ -160,7 +160,7 @@
                       </div>
 
                       <div>
-                        <label class="section-label">Datum:</label>
+                        <label class="section-label">Datum nazending:</label>
                         <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
                       </div>
 
@@ -199,6 +199,11 @@
         <div class="crud-more-wrap">
           <button class="btn small" type="button" data-crud-more>Toon meer</button>
         </div>
+        </div> <div style="text-align:left; margin-top: 8px;">
+          <a href="{% url 'nazendingen_export_pdf' %}" class="btn btn-save" target="_blank">
+            Exporteer als PDF
+          </a>
+      </div>
       </div>
 
     </div>
