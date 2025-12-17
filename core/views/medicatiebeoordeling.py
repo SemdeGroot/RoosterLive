@@ -224,18 +224,6 @@ def dashboard(request):
     return render(request, "tiles_page.html", context)
 
 # --- DELETE VIEWS ---
-@ip_restricted
-@login_required
-def delete_afdeling(request, pk):
-    if not can(request.user, "can_perform_medicatiebeoordeling"):
-        return HttpResponseForbidden()
-    
-    if request.method == "POST":
-        afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
-        naam = afd.afdeling
-        afd.delete()
-        messages.success(request, f"Afdeling '{naam}' verwijderd.")
-    return redirect("medicatiebeoordeling_create")
 
 @ip_restricted
 @login_required
@@ -280,154 +268,126 @@ def clear_afdeling_review(request, pk):
 @login_required
 def review_create(request):
     """
-    Formulier om nieuwe review te starten EN afdelingen te beheren.
+    Formulier om nieuwe review te starten.
     """
     if not can(request.user, "can_perform_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen rechten om uit te voeren.")
 
-    # Context data voor de lijsten
+    # Context data voor de dropdown (alleen afdelingen nodig)
     all_afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
-    all_organizations = Organization.objects.filter(org_type=Organization.ORG_TYPE_ZORGINSTELLING).order_by('name')
     
-    # Init forms
+    # Init form
     review_form = MedicatieReviewForm()
-    afdeling_form = AfdelingEditForm()
 
-    if request.method == "POST":
+    # We checken direct op de start button of gewoon POST, 
+    # omdat dit nu de enige actie op de pagina is.
+    if request.method == "POST" and "btn_start_review" in request.POST:
+        review_form = MedicatieReviewForm(request.POST)
         
-        # --- SCENARIO A: AFDELING BEHEREN (OPSLAAN) ---
-        if "btn_save_afdeling" in request.POST:
-            # Check of we een bestaande bewerken (via hidden field)
-            instance = None
-            if request.POST.get('afdeling_id_edit'):
-                instance = get_object_or_404(MedicatieReviewAfdeling, pk=request.POST.get('afdeling_id_edit'))
+        if review_form.is_valid():
+            selected_afdeling = review_form.cleaned_data['afdeling_id']
+            text = review_form.cleaned_data['medimo_text']
+            source = review_form.cleaned_data['source']
+            scope = review_form.cleaned_data['scope']
 
-            afdeling_form = AfdelingEditForm(request.POST, instance=instance)
-            if afdeling_form.is_valid():
-                obj = afdeling_form.save(commit=False)
-                if not instance:
-                    obj.created_by = request.user
-                obj.updated_by = request.user
-                obj.save()
-                
-                action = "aangepast" if instance else "aangemaakt"
-                messages.success(request, f"Afdeling '{obj.afdeling}' succesvol {action}.")
-                return redirect("medicatiebeoordeling_create") 
-            else:
-                messages.error(request, "Kon afdeling niet opslaan. Controleer de velden.")
+            result, errors = call_review_api(text, source, scope)
 
-        # --- SCENARIO B: REVIEW STARTEN ---
-        elif "btn_start_review" in request.POST:
-            review_form = MedicatieReviewForm(request.POST)
-            
-            if review_form.is_valid():
-                selected_afdeling = review_form.cleaned_data['afdeling_id']
-                text = review_form.cleaned_data['medimo_text']
-                source = review_form.cleaned_data['source']
-                scope = review_form.cleaned_data['scope']
+            if errors:
+                for e in errors: messages.error(request, e)
+            elif result:
+                parsed_naam = result.get("afdeling", "").strip()
+                selected_naam = selected_afdeling.afdeling.strip()
 
-                result, errors = call_review_api(text, source, scope)
-
-                if errors:
-                    for e in errors: messages.error(request, e)
-                elif result:
-                    parsed_naam = result.get("afdeling", "").strip()
-                    selected_naam = selected_afdeling.afdeling.strip()
-
-                    if parsed_naam.lower() != selected_naam.lower():
-                        messages.error(request, 
-                            f"⚠️ FOUT: Je selecteerde '{selected_naam}', maar de tekst is van '{parsed_naam}'."
-                        )
-                    else:
-                        # 3. Match OK -> Verwerk Data
-                        
-                        # --- STAP A: Historie veiligstellen ---
-                        history_map = {}
-                        
-                        # We halen de oude patiënten op
-                        current_patients = selected_afdeling.patienten.all().prefetch_related('comments')
-                        
-                        for old_pat in current_patients:
-                            # 1. Naam normaliseren (kleine letters, geen spaties rondom)
-                            p_naam_clean = old_pat.naam.strip().lower()
-                            
-                            # 2. Datum normaliseren naar string 'YYYY-MM-DD'
-                            p_dob_str = str(old_pat.geboortedatum) if old_pat.geboortedatum else "onbekend"
-                            
-                            # (Hier zijn de foute regels verwijderd)
-
-                            for comment in old_pat.comments.all():
-                                # We slaan op als er tekst of historie was
-                                content_to_save = ""
-                                if comment.tekst:
-                                    content_to_save += comment.tekst
-                                
-                                # Als er iets te bewaren is, stop het in de map
-                                if content_to_save:
-                                    # De sleutel is: (naam, geboortedatum, groep_id)
-                                    key = (p_naam_clean, p_dob_str, comment.jansen_group_id)
-                                    history_map[key] = content_to_save
-
-                        # --- STAP B: Database opschonen ---
-                        selected_afdeling.patienten.all().delete()
-                        selected_afdeling.updated_by = request.user
-                        selected_afdeling.save()
-
-                        # --- STAP C: Nieuwe patiënten & Comments herstellen ---
-                        patients_data = result.get("data", [])
-                        new_patients_created = 0
-                        comments_restored = 0
-                        
-                        for p_data in patients_data:
-                            # 1. Patiënt aanmaken
-                            new_pat = MedicatieReviewPatient(
-                                afdeling=selected_afdeling,
-                                naam=p_data.get("naam", "Onbekend"),
-                                geboortedatum=p_data.get("geboortedatum"),
-                                analysis_data=p_data,
-                                created_by=request.user,
-                                updated_by=request.user
-                            )
-                            new_pat.save()
-                            new_patients_created += 1
-                            
-                            # CRUCIAAL: Haal de patiënt direct vers op uit de DB.
-                            new_pat.refresh_from_db()
-                            
-                            # 2. Sleutel genereren voor lookup 
-                            n_naam_clean = new_pat.naam.strip().lower()
-                            n_dob_str = str(new_pat.geboortedatum) if new_pat.geboortedatum else "onbekend"
-
-                            # 3. Checken op historie
-                            meds = p_data.get("geneesmiddelen", [])
-                            grouped_meds = group_meds_by_jansen(meds)
-                            
-                            for group_id, group_data in grouped_meds:
-                                key = (n_naam_clean, n_dob_str, group_id)
-                                
-                                if key in history_map:
-                                    old_text = history_map[key]
-                                    
-                                    # We maken de comment aan met de oude tekst in 'historie'
-                                    MedicatieReviewComment.objects.create(
-                                        patient=new_pat,
-                                        jansen_group_id=group_id,
-                                        historie=old_text,
-                                        tekst="", # Leeg voor nieuwe input
-                                        updated_by=request.user
-                                    )
-                                    comments_restored += 1
-                        
-                        messages.success(request, f"Analyse geslaagd. {new_patients_created} patiënten verwerkt ({comments_restored} x opmerkingen uit historie toegevoegd).")
-                        return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
+                if parsed_naam.lower() != selected_naam.lower():
+                    messages.error(request, 
+                        f"⚠️ FOUT: Je selecteerde '{selected_naam}', maar de tekst is van '{parsed_naam}'."
+                    )
                 else:
-                    messages.error(request, "Geen antwoord van server.")
+                    # 3. Match OK -> Verwerk Data
+                    
+                    # --- STAP A: Historie veiligstellen ---
+                    history_map = {}
+                    
+                    # We halen de oude patiënten op
+                    current_patients = selected_afdeling.patienten.all().prefetch_related('comments')
+                    
+                    for old_pat in current_patients:
+                        # 1. Naam normaliseren (kleine letters, geen spaties rondom)
+                        p_naam_clean = old_pat.naam.strip().lower()
+                        
+                        # 2. Datum normaliseren naar string 'YYYY-MM-DD'
+                        p_dob_str = str(old_pat.geboortedatum) if old_pat.geboortedatum else "onbekend"
+
+                        for comment in old_pat.comments.all():
+                            # We slaan op als er tekst of historie was
+                            content_to_save = ""
+                            if comment.tekst:
+                                content_to_save += comment.tekst
+                            
+                            # Als er iets te bewaren is, stop het in de map
+                            if content_to_save:
+                                # De sleutel is: (naam, geboortedatum, groep_id)
+                                key = (p_naam_clean, p_dob_str, comment.jansen_group_id)
+                                history_map[key] = content_to_save
+
+                    # --- STAP B: Database opschonen ---
+                    selected_afdeling.patienten.all().delete()
+                    selected_afdeling.updated_by = request.user
+                    selected_afdeling.save()
+
+                    # --- STAP C: Nieuwe patiënten & Comments herstellen ---
+                    patients_data = result.get("data", [])
+                    new_patients_created = 0
+                    comments_restored = 0
+                    
+                    for p_data in patients_data:
+                        # 1. Patiënt aanmaken
+                        new_pat = MedicatieReviewPatient(
+                            afdeling=selected_afdeling,
+                            naam=p_data.get("naam", "Onbekend"),
+                            geboortedatum=p_data.get("geboortedatum"),
+                            analysis_data=p_data,
+                            created_by=request.user,
+                            updated_by=request.user
+                        )
+                        new_pat.save()
+                        new_patients_created += 1
+                        
+                        # CRUCIAAL: Haal de patiënt direct vers op uit de DB.
+                        new_pat.refresh_from_db()
+                        
+                        # 2. Sleutel genereren voor lookup 
+                        n_naam_clean = new_pat.naam.strip().lower()
+                        n_dob_str = str(new_pat.geboortedatum) if new_pat.geboortedatum else "onbekend"
+
+                        # 3. Checken op historie
+                        meds = p_data.get("geneesmiddelen", [])
+                        grouped_meds = group_meds_by_jansen(meds)
+                        
+                        for group_id, group_data in grouped_meds:
+                            key = (n_naam_clean, n_dob_str, group_id)
+                            
+                            if key in history_map:
+                                old_text = history_map[key]
+                                
+                                # We maken de comment aan met de oude tekst in 'historie'
+                                MedicatieReviewComment.objects.create(
+                                    patient=new_pat,
+                                    jansen_group_id=group_id,
+                                    historie=old_text,
+                                    tekst="", # Leeg voor nieuwe input
+                                    updated_by=request.user
+                                )
+                                comments_restored += 1
+                    
+                    messages.success(request, f"Analyse geslaagd. {new_patients_created} patiënten verwerkt ({comments_restored} x opmerkingen uit historie toegevoegd).")
+                    return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
+            else:
+                messages.error(request, "Geen antwoord van server.")
 
     return render(request, "medicatiebeoordeling/create.html", {
         "form": review_form,
-        "afdeling_form": afdeling_form,
         "afdelingen": all_afdelingen,
-        "organizations": all_organizations,
     })
 
 @ip_restricted

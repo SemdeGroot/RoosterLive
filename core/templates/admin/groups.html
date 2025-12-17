@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static role_tags form_extras %}
-{% block title %}Groepen Beheren{% endblock %}
-{% block header_title %}Groepen Beheren{% endblock %}
+{% block title %}Groepen beheren{% endblock %}
+{% block header_title %}Groepen beheren{% endblock %}
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
@@ -65,7 +65,7 @@
 
             <button class="btn btn-save btn-block" type="submit" style="margin-top: 20px;">Opslaan</button>
             {% if editing_group %}
-                <a href="{% url 'admin_groups' %}" class="btn btn-danger btn-block" style="text-align:center; margin-top:5px;">Annuleren</a>
+                <a href="{% url 'admin_groups' %}" class="btn btn-danger btn-block" style="text-align:center; margin-top:12px;">Annuleren</a>
             {% endif %}
           </div>
         </form>

@@ -9,7 +9,7 @@ from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view, medications_search_api
 from core.views.news import news
 from core.views.policies import policies
-from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update
+from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update
 from core.views.twofa import logout_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
@@ -140,7 +140,6 @@ urlpatterns = [
     path("medicatiebeoordeling/patient/<int:pk>/export-pdf/", export_patient_review_pdf, name="medicatiebeoordeling_patient_export_pdf"),
     path("medicatiebeoordeling/afdeling/<int:pk>/export-pdf/", export_afdeling_review_pdf, name="medicatiebeoordeling_afdeling_export_pdf"),
     # Delete urls 
-    path("medicatiebeoordeling/delete/afdeling/<int:pk>/", med_views.delete_afdeling, name="medicatiebeoordeling_delete_afdeling"),
     path('afdeling/<int:pk>/clear/', med_views.clear_afdeling_review, name='medicatiebeoordeling_clear_afdeling'),
     path("medicatiebeoordeling/delete/patient/<int:pk>/", med_views.delete_patient, name="medicatiebeoordeling_delete_patient"),
     # Reviwiew planner
@@ -152,11 +151,14 @@ urlpatterns = [
         # De beheer paginas
         path("beheer/gebruikers/", admin_users, name="admin_users"),
         path("beheer/groepen/", admin_groups, name="admin_groups"),
+        path("beheer/afdelingen/", admin_afdelingen, name="admin_afdelingen"),
         path("beheer/organisaties/", admin_orgs, name="admin_orgs"),
         # Acties (Delete/Update)
         path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
         path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
         path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete"),
+        path("beheer/afdeling/<int:pk>/delete/", delete_afdeling, name="delete_afdeling"),
+        path("beheer/afdeling/<int:pk>/update/", afdeling_update, name="afdeling_update"),
         path("beheer/org/<int:org_id>/delete/", org_delete, name="org_delete"),
         path("beheer/org/<int:org_id>/update/", org_update, name="org_update"),
 

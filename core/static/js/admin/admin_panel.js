@@ -17,6 +17,14 @@ window.toggleOrgEdit = function(id){
     : "none";
 };
 
+window.toggleAfdelingEdit = function(id){
+  const row = document.getElementById("afdeling-edit-row-" + id);
+  if(!row) return;
+  row.style.display = (row.style.display === "none" || row.style.display === "") 
+      ? "table-row" 
+      : "none";
+  };
+
 /* ---------- CONFIRM DIALOGS ---------- */
 window.confirmDelete = function(name){
   return confirm(
@@ -42,6 +50,14 @@ window.confirmOrgDelete = function(name){
   );
 };
 
+window.confirmAfdelingDelete = function(name){
+  return confirm(
+    "Weet je zeker dat je de afdeling '" +
+    (name || "deze afdeling") +
+    "' wilt verwijderen?\n\n⚠️ Alle gekoppelde patiënten en historie worden verwijderd!"
+  );
+};
+
 /* ---------- LIVE SEARCH (BEWUST EXPLICIET) ---------- */
 function liveSearch(inputId, tableId, rowClass){
   const input = document.getElementById(inputId);
@@ -64,4 +80,5 @@ document.addEventListener("DOMContentLoaded", function(){
   liveSearch("userSearch",  "userTable",  "user-row");
   liveSearch("groupSearch", "groupTable", "group-row");
   liveSearch("orgSearch",   "orgTable",   "org-row");
+  liveSearch("afdelingSearch", "afdelingTable", "afdeling-row");
 });

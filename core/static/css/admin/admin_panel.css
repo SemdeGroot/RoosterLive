@@ -125,3 +125,26 @@ table.org-table td:nth-child(2),
 table.org-table td:nth-child(3){
   overflow-wrap:anywhere; /* als je wil wrappen: zet in table.css td.wrap; maar dit werkt ook */
 }
+
+/* core/static/css/admin/admin_panel.css */
+
+/* AFDELINGEN: 4 kolommen (Afdeling, Locatie, Org, Acties) */
+table.afdeling-table {
+  --c1: 180px; /* Afdeling */
+  --c2: 150px; /* Locatie (NIEUW) */
+  --c3: 180px; /* Organisatie */
+  --c4: 120px; /* Acties */
+}
+
+/* Zorg dat tekst netjes afbreekt als het lang is */
+table.afdeling-table td:nth-child(1),
+table.afdeling-table td:nth-child(2),
+table.afdeling-table td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+/* Laatste kolom (Acties) rechts uitlijnen */
+table.afdeling-table td:nth-child(4) { 
+    text-align: right; 
+    padding-right: 10px; 
+}

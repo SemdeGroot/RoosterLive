@@ -8,12 +8,11 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm
+from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization
-from core.tiles import build_tiles # Importeer je build_tiles functie
-
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling
+from core.tiles import build_tiles
 User = get_user_model()
 
 # ==========================================
@@ -217,6 +216,74 @@ def admin_orgs(request):
         "organizations": organizations,
     })
 
+# ==========================================
+# 5. AFDELINGEN BEHEER
+# ==========================================
+@login_required
+def admin_afdelingen(request):
+    """
+    Beheer van MedicatieReview afdelingen.
+    Top formulier = Create.
+    Tabel = List + Inline Edit.
+    """
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    afdeling_form = AfdelingEditForm()
+
+    # ---- Nieuwe aanmaken (Create) ----
+    if request.method == "POST" and request.POST.get("form_kind") == "afdeling":
+        afdeling_form = AfdelingEditForm(request.POST)
+        if afdeling_form.is_valid():
+            obj = afdeling_form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
+            messages.success(request, f"Afdeling '{obj.afdeling}' aangemaakt.")
+            return redirect("admin_afdelingen")
+        else:
+            messages.error(request, "Kon afdeling niet aanmaken. Controleer de velden.")
+
+    # Data ophalen
+    afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
+    
+    # We hebben alle organisaties nodig voor de dropdown in de inline-edit rijen
+    all_organizations = Organization.objects.filter(
+        org_type=Organization.ORG_TYPE_ZORGINSTELLING
+    ).order_by('name')
+
+    return render(request, "admin/afdelingen.html", {
+        "afdelingen": afdelingen,
+        "afdeling_form": afdeling_form,
+        "all_organizations": all_organizations, # Belangrijk voor de loop in HTML
+    })
+
+@login_required
+@require_POST
+def afdeling_update(request, pk):
+    """
+    Verwerkt de inline edit vanuit de tabel.
+    """
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
+    
+    # We vullen het formulier met de POST data en de bestaande instance
+    form = AfdelingEditForm(request.POST, instance=afd)
+    
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.updated_by = request.user
+        obj.save()
+        messages.success(request, f"Afdeling '{obj.afdeling}' is bijgewerkt.")
+    else:
+        # Fouten tonen via messages framework
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(request, f"Fout in {field}: {error}")
+                
+    return redirect("admin_afdelingen")
 
 # ==========================================
 # ACTIES (DELETE / UPDATE)
@@ -301,3 +368,17 @@ def org_update(request, org_id: int):
     else:
         messages.error(request, "Opslaan mislukt.")
     return redirect("admin_orgs")
+
+@login_required
+def delete_afdeling(request, pk):
+    if not can(request.user, "can_perform_medicatiebeoordeling"):
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        afd = get_object_or_404(MedicatieReviewAfdeling, pk=pk)
+        naam = afd.afdeling
+        afd.delete()
+        messages.success(request, f"Afdeling '{naam}' verwijderd.")
+    
+    # Redirect nu naar de admin pagina
+    return redirect("admin_afdelingen")

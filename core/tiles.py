@@ -90,6 +90,12 @@ TILE_GROUPS = {
             "perm": "can_access_admin"
         },
         {
+            "name": "Afdelingen", 
+            "img": "afdeling-256x256.png",
+            "url_name": "admin_afdelingen", 
+            "perm": "can_access_admin"
+        },
+        {
             "name": "Organisaties", 
             "img": "organisatie-256x256.png",
             "url_name": "admin_orgs", 
