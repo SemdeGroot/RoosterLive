@@ -73,7 +73,7 @@
 
         {% if can_manage %}
         <hr class="crud-divider">
-        <h3 style="margin-top:0;">Snelle Inlog Configureren</h3>
+        <h3 style="margin-top:0;">Snelle Inlog Configureren (knop is nog niet geimplementeerd)</h3>
         
         <form method="post" autocomplete="off">
             {% csrf_token %}
@@ -121,7 +121,7 @@
                     
                     {% if selected_kiosk_id == row.group.id %}
                         <span style="background:#ffc107; color:#000; padding:2px 6px; border-radius:4px; font-size:0.7em; font-weight:bold; margin-left:8px; vertical-align:middle; text-transform: uppercase;">
-                            Standaard Inlog
+                            Snelle Inlog
                         </span>
                     {% endif %}
                   </td>
