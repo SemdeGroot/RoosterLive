@@ -97,7 +97,7 @@ def send_news_upload_push(uploader_first_name: str):
     # Zorg voor een fallback als de naam leeg is, en capitalize zoals gevraagd
     if uploader_first_name:
         formatted_name = uploader_first_name.capitalize()
-        body_text = f"Er is een nieuwsbericht geplaatst in de app door {formatted_name}"
+        body_text = f"Er is een nieuwsbericht geplaatst in de app door {formatted_name}."
     else:
         body_text = "Er is een nieuwsbericht geplaatst in de app."
 

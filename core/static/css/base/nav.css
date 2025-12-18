@@ -278,7 +278,7 @@
   .sidebar-top{
     display:flex;
     justify-content:flex-end;
-    padding:0 6px 4px;
+    padding:0 6px 0px;
   }
   html:not(.sidebar-open) .sidebar-top{
     justify-content:center;
