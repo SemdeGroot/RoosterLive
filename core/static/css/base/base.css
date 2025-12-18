@@ -16,7 +16,6 @@
     --danger: #6a150e;
     --danger-border: #4a1a1a;
     --danger-hover: #841c12;
-    --header-gap:18px; /* desktop header spacing */
 }
 
 *{box-sizing:border-box}
@@ -355,10 +354,7 @@ th,td{
     align-items:center;
     column-gap:16px;
     row-gap:var(--header-gap);
-    padding-top:var(--header-gap);
-    padding-bottom:var(--header-gap);
-    padding-left:24px;
-    padding-right:24px;
+    padding:20px;
   }
 
   .logo{ max-height:52px; }
@@ -583,4 +579,58 @@ textarea.form-input::placeholder{
   margin:2px 0 0;
   color:var(--muted);
   font-size:0.9rem;
+}
+
+/* Mobile: altijd 2 kolommen, maar exact dezelfde tile-verhoudingen als basis */
+@media (max-width: 480px){
+  /* iets minder content-padding zodat 2 tiles passen */
+  .content{ padding: 14px; }
+
+  /* altijd 2 kolommen */
+  .tiles{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* schaal alles uniform (zelfde verhoudingen) */
+  .tile-box{
+    padding: 14px;     /* 16 -> 14 */
+    gap: 9px;          /* 10 -> 9 */
+    min-height: 126px; /* 140 -> 126 (zelfde schaal ~0.90) */
+  }
+
+  .tile-img{
+    max-width: 72px;   /* 80 -> 72 */
+    max-height: 72px;
+  }
+
+  /* label: geen wrap */
+  .tile-name{
+    font-size: 0.86rem;     /* 0.95 -> 0.86 */
+    white-space: nowrap;    /* geen word wrap */
+    overflow: hidden;       /* voorkom overflow */
+    text-overflow: ellipsis;/* … als het niet past */
+  }
+}
+
+/* Extra klein (320–360): zelfde ratio, nóg iets kleiner */
+@media (max-width: 360px){
+  .content{ padding: 12px; }
+
+  .tiles{ gap: 8px; }
+
+  .tile-box{
+    padding: 12px;     /* 16 -> 12 */
+    gap: 8px;          /* 10 -> 8 */
+    min-height: 112px; /* 140 -> 112 (0.80) */
+  }
+
+  .tile-img{
+    max-width: 64px;   /* 80 -> 64 */
+    max-height: 64px;
+  }
+
+  .tile-name{
+    font-size: 0.76rem; /* 0.95 -> 0.76 */
+  }
 }

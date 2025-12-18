@@ -202,15 +202,25 @@
       </div> 
       
       {% if can_upload %}
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-          <a href="{% url 'nazendingen_export_pdf' %}" class="btn btn-save">
-            Exporteer als PDF
-          </a>
+<div style="
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+">
+  <a href="{% url 'nazendingen_export_pdf' %}" class="btn btn-save">
+    Exporteer als PDF
+  </a>
 
-          <button type="button" onclick="toggleEmailModal()" class="btn btn-save">
-            Verstuur PDF naar apotheken
-          </button>
-      </div>
+  <button
+    type="button"
+    onclick="toggleEmailModal()"
+    class="btn btn-save"
+    style="margin-left:auto;"
+  >
+    Verstuur PDF naar apotheken
+  </button>
+</div>
       {% endif %}
 
         </div>
