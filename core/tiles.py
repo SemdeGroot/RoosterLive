@@ -12,7 +12,7 @@ TILE_GROUPS = {
         {"name": "Baxterproductie", "img": "factory-256x256.png", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
         {"name": "Openbare Apo",    "img": "openbareapotheek-256x256.png", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
         {"name": "Instellingsapotheek", "img": "instellingsapotheek-256x256.png", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
-        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "admin_dashboard", "perm": "can_access_admin"},
+        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "beheer_tiles", "perm": "can_access_admin"},
     ],
 
     "personeel": [
@@ -38,7 +38,7 @@ TILE_GROUPS = {
        "openbare": [
         # Deze verwijst naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
-         "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+         "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner-256x256.png",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
@@ -47,7 +47,7 @@ TILE_GROUPS = {
     "instellings": [
         # Deze verwijst ook naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
-         "url_name": "medicatiebeoordeling", "perm": "can_view_medicatiebeoordeling"},
+         "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner-256x256.png",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "Portavita Check", "img": "portavita-256x256.png",
@@ -125,3 +125,49 @@ def build_tiles(user, group="home"):
             })
 
     return tiles
+
+# --- NAV TREE EXTENSIONS (non-breaking) ---
+
+def _resolve_child_group(url_name: str):
+    """
+    Bepaal of een tile children heeft.
+    Regels:
+    - eindigt op _tiles -> group = prefix (onboarding_tiles -> onboarding)
+    - url_name zelf is een TILE_GROUPS key -> group = url_name
+    """
+    if not url_name:
+        return None
+
+    if url_name.endswith("_tiles"):
+        return url_name.replace("_tiles", "")
+
+    if url_name in TILE_GROUPS:
+        return url_name
+
+    return None
+
+
+def build_nav_tree_recursive(user, root_group="home", max_depth=10):
+    """
+    Bouw een recursieve navigatieboom op basis van TILE_GROUPS.
+    Elk item krijgt: children = [...]
+    max_depth beschermt tegen loops.
+    """
+    if max_depth <= 0:
+        return []
+
+    root_items = build_tiles(user, group=root_group)
+
+    for item in root_items:
+        child_group = _resolve_child_group(item.get("url_name"))
+        if child_group:
+            # Recursief children opbouwen
+            item["children"] = build_nav_tree_recursive(
+                user,
+                root_group=child_group,
+                max_depth=max_depth - 1
+            )
+        else:
+            item["children"] = []
+
+    return root_items

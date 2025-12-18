@@ -1,0 +1,43 @@
+{% load static %}
+
+{% for item in items %}
+  {% if item.children and item.children|length > 0 %}
+    <details
+      class="nav-group nav-level-{{ level }}
+        {% for c in item.children %}
+          {% if request.resolver_match.url_name == c.url_name %}is-active{% endif %}
+        {% endfor %}
+      "
+    >
+      <summary class="nav-link nav-item--summary {% if request.resolver_match.url_name == item.url_name %}active{% endif %}">
+        <span class="nav-icon"
+              style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
+
+        <span class="nav-label">{{ item.name }}</span>
+
+        <svg class="nav-caret-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="m8 10 4 4 4-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+        </svg>
+      </summary>
+
+      <div class="nav-sub">
+        {% include "includes/nav_tree.html" with items=item.children level=level|add:1 request=request %}
+      </div>
+    </details>
+  {% else %}
+    <a href="{% url item.url_name %}"
+       class="nav-link {% if request.resolver_match.url_name == item.url_name %}active{% endif %}">
+      <span class="nav-icon"
+            style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
+
+      <span class="nav-label">{{ item.name }}</span>
+
+      <span aria-hidden="true"></span>
+    </a>
+  {% endif %}
+{% endfor %}

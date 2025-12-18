@@ -75,3 +75,27 @@ table.nazending-table {
 .select2-container--open {
   z-index: 9999;
 }
+
+/* =======================
+   Email modal sizing
+   ======================= */
+
+#emailModal .modal-content{
+  width: min(1100px, 96vw) !important;   /* breder */
+  max-width: none !important;
+
+  height: min(750px, 85vh) !important;  /* hoger */
+  max-height: 85vh !important;
+
+  margin: 4vh auto !important;          /* minder “lucht” boven, meer ruimte */
+  overflow: auto !important;            /* scroll in modal i.p.v. content krimpen */
+}
+
+/* extra: geef de select2 lijst wat vaste ruimte */
+#emailModal .select2-container{
+  width: 100% !important;
+}
+
+#emailModal .select2-selection__clear{
+  display: none !important;
+}

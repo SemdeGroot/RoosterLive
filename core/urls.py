@@ -126,7 +126,7 @@ urlpatterns = [
     path("nieuws/", news, name="news"),
     path("werkafspraken/", policies, name="policies"),
     # Tiles
-    path("medicatiebeoordeling/", med_views.dashboard, name="medicatiebeoordeling"),
+    path("medicatiebeoordeling/", med_views.dashboard, name="medicatiebeoordeling_tiles"),
     # Genereren med review
     path("medicatiebeoordeling/genereren/", med_views.review_create, name="medicatiebeoordeling_create"),
     # Oude review openen
@@ -149,7 +149,7 @@ urlpatterns = [
     path("portavita-check/", portavita_check, name="portavita-check"),
 
         # Beheer Dashboard / Landing
-        path("beheer/", admin_dashboard, name="admin_dashboard"),
+        path("beheer/", admin_dashboard, name="beheer_tiles"),
         # De beheer paginas
         path("beheer/gebruikers/", admin_users, name="admin_users"),
         path("beheer/groepen/", admin_groups, name="admin_groups"),

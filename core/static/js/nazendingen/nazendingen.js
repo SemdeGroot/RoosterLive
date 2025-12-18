@@ -106,7 +106,7 @@ function initEmailSelect2() {
     $select.select2({
         width: '100%',
         placeholder: "Zoek en selecteer apotheken...",
-        allowClear: true,
+        allowClear: false,
         dropdownParent: $('#emailModal'), // Zorgt dat dropdown IN de modal werkt
         closeOnSelect: false, // Dropdown blijft open zodat je er meerdere kunt aanklikken
     });

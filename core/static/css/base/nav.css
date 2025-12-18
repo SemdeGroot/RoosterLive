@@ -1,0 +1,348 @@
+/* static/css/base/nav.css */
+/* =========================================
+   NAV (mobile panel + desktop sidebar)
+   ========================================= */
+
+/* Desktop nav (oude top nav; compat) */
+.nav{
+  margin:0; padding:0;
+  display:none; gap:10px; flex-wrap:wrap;
+}
+.nav a, .nav .nav-btn{
+  color:var(--text); background:var(--button-color); border:1px solid var(--border);
+  padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer;
+  font:inherit; line-height:1.2; display:inline-flex; align-items:center; justify-content:center;
+  transition:background .2s ease, border-color .2s ease;
+}
+.nav a:hover, .nav .nav-btn:hover{ background:var(--button-hover); border-color:var(--accent); }
+.nav a.active{ border-color:var(--accent); background:rgba(31,75,160,.15); }
+.nav .nav-btn.nav-logout{ color: var(--logout-color); }
+.nav .nav-btn.nav-logout:hover{ background: var(--button-hover); border-color: var(--danger-border); }
+
+/* ===========================
+   MOBILE: hamburger + panel
+   =========================== */
+
+.nav-toggle{
+  display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px;
+  background:transparent; border:none; padding:8px; cursor:pointer; width:44px; height:44px;
+  border-radius:10px; transition:background .2s ease; flex-shrink:0;
+}
+.nav-toggle:hover{ background:rgba(255,255,255,.05); }
+
+.burger-line{
+  display:block; width:24px; height:2.5px; background:var(--text); border-radius:2px;
+  transition:transform .25s ease, opacity .2s ease; transform-origin:center;
+}
+.nav-toggle[aria-expanded="true"] .burger-line-1{ transform:translateY(7.5px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] .burger-line-2{ opacity:0; transform:scaleX(0); }
+.nav-toggle[aria-expanded="true"] .burger-line-3{ transform:translateY(-7.5px) rotate(-45deg); }
+
+/* Overlay & mobile panel */
+.nav-overlay{
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px);
+  z-index:1100; opacity:0; transition:opacity .25s ease;
+}
+.nav-overlay.active{ display:block; opacity:1; }
+
+.nav-panel{
+  position:fixed; top:0; right:0; bottom:0; width:min(320px,85vw);
+  background:var(--panel);
+  border-left:1px solid var(--border); box-shadow:-8px 0 40px var(--shadow);
+  padding:0; display:flex; flex-direction:column; z-index:1200;
+  transform:translateX(100%); transition:transform .25s ease;
+  overflow-y:auto;
+}
+.nav-panel.open{ transform:translateX(0); }
+
+.nav-panel-header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:20px; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.nav-panel-title{ font-size:1.3rem; font-weight:700; color:var(--text); }
+.nav-close{
+  background:transparent; border:none; color:var(--text); cursor:pointer; padding:8px;
+  display:flex; align-items:center; justify-content:center; border-radius:8px;
+  transition:background .2s ease;
+}
+.nav-close:hover{ background:rgba(255,255,255,.1); }
+
+.nav-links{ display:flex; flex-direction:column; gap:4px; padding:12px; flex:1; }
+.nav-links form{ display:contents; }
+
+/* ===========================
+   LINKS (shared mobile+desktop)
+   =========================== */
+
+.nav-link{
+  display:grid;
+  grid-template-columns: 30px 1fr 26px; /* icon / label / caret */
+  align-items:center;
+  column-gap:10px;
+
+  padding:12px 14px;
+  color:var(--text);
+  text-decoration:none;
+  border-radius:12px;
+
+  transition:background .2s ease, border-color .2s ease;
+  cursor:pointer;
+  background:transparent;
+  border:2px solid transparent;
+
+  width:100%;
+  text-align:left;
+  font:inherit;
+  font-size:1rem;
+
+  min-width:0;
+}
+
+/* summary gebruikt exact dezelfde layout */
+.nav-item--summary{
+  display:grid;
+  grid-template-columns: 30px 1fr 26px;
+  align-items:center;
+  column-gap:10px;
+}
+
+/* lege 3e kolom voor normale links zodat grid gelijk blijft */
+.nav-link > span[aria-hidden="true"]{
+  grid-column:3;
+}
+
+.nav-link.active{
+  border-color:var(--accent);
+  background:rgba(31,75,160,.15);
+}
+
+.nav-divider{ height:1px; background:var(--border); margin:12px 0; }
+
+/* Logout (kleur + hover) */
+.nav-link.nav-logout{ color:var(--logout-color); }
+@media (hover:hover) and (pointer:fine){
+  .nav-link.nav-logout:hover{
+    background:rgba(255,107,107,.1);
+    border-color:var(--danger-border);
+    color:var(--logout-color);
+  }
+}
+
+/* Hover alleen desktop */
+@media (hover:hover) and (pointer:fine){
+  .nav-link:hover{
+    background:var(--button-hover);
+    border-color:var(--accent);
+  }
+}
+/* Touch: hover uit */
+@media (hover:none) and (pointer:coarse){
+  .nav-link:hover{
+    background:transparent;
+    border-color:transparent;
+  }
+}
+
+/* icon */
+.nav-icon{
+  grid-column:1;
+  width:28px; height:28px;
+  flex-shrink:0;
+  background-image: var(--icon);
+  background-position:center;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-color:transparent;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  transition:transform .2s ease;
+}
+@media (min-width:900px){
+  .nav-icon{ width:30px; height:30px; }
+}
+
+/* ===========================
+   LABELS: ALTIJD 1 REGEL (NO WRAP) + ELLIPSIS
+   - dit stopt "Openbare Apo." op newline
+   =========================== */
+
+/* Cruciaal in grid: item mag krimpen */
+.nav-label{
+  grid-column:2;
+  min-width:0;
+  display:block;
+
+  /* Forceren: nooit naar newline */
+  white-space:nowrap !important;
+
+  /* Ellipsis als het niet past */
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  /* Extra zekerheid tegen rare break rules */
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+  hyphens:none !important;
+}
+
+/* Als er ergens per ongeluk <br> in de label zou zitten: negeren */
+.nav-label br{ display:none; }
+
+/* ===========================
+   DETAILS + caret
+   =========================== */
+
+.nav-group{ margin:0; padding:0; border:0; }
+.nav-group > summary{ list-style:none; }
+.nav-group > summary::-webkit-details-marker{ display:none; }
+
+.nav-caret-icon{
+  grid-column:3;
+  justify-self:end;
+  width:22px;
+  height:22px;
+  opacity:.82;
+  transition:transform .28s ease;
+  transform-origin:center;
+  transform:rotate(0deg); /* down */
+}
+.nav-group[open] > summary .nav-caret-icon{
+  transform:rotate(180deg);
+}
+
+/* sub-items */
+.nav-sub{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding-left:12px;
+  margin-top:2px;
+  margin-bottom:6px;
+}
+.nav-link.sub{
+  padding:10px 14px;
+  font-size:.98rem;
+  opacity:.95;
+}
+.nav-group.nav-level-2 .nav-sub { padding-left:18px; }
+.nav-group.nav-level-3 .nav-sub { padding-left:26px; }
+
+/* ===========================
+   DESKTOP sidebar layout
+   Default = collapsed; open via html.sidebar-open
+   =========================== */
+
+.sidebar{ display:none; }
+
+@media (min-width:900px){
+  .nav-toggle{ display:none !important; }
+  .nav-overlay, .nav-panel{ display:none !important; }
+
+  /* default = collapsed */
+  .app{
+    display:grid;
+    --sidebar-width:84px;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows:auto 1fr auto;
+    grid-template-areas:
+      "header header"
+      "sidebar content"
+      "footer footer";
+    min-height:100dvh;
+    transition:grid-template-columns .22s cubic-bezier(.4,0,.2,1);
+  }
+
+  html.sidebar-open .app{ --sidebar-width:290px; }
+
+  .header{ grid-area:header; }
+  .content{ grid-area:content; }
+  .footer{ grid-area:footer; }
+
+  .sidebar{
+    grid-area:sidebar;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:12px 10px;
+    border-right:1px solid var(--border);
+    background:var(--panel);
+    height:100%;
+    min-height:0;
+    align-self:stretch;
+  }
+
+  .nav{ display:none !important; }
+
+  /* minder ruimte tussen toggle en eerste icon: verlaag bottom padding */
+  .sidebar-top{
+    display:flex;
+    justify-content:flex-end;
+    padding:0 6px 4px;
+  }
+  html:not(.sidebar-open) .sidebar-top{
+    justify-content:center;
+  }
+
+  .sidebar-toggle{
+    padding:8px;
+    width:44px;
+    height:44px;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .sidebar-arrow{
+    display:block;
+    width:22px;
+    height:22px;
+    opacity:.9;
+    transition:transform .50s ease;
+    transform-origin:center;
+  }
+  html:not(.sidebar-open) .sidebar-arrow{ transform:rotate(180deg); }
+
+  .sidebar-nav{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    padding-right:2px;
+  }
+
+  .nav-bottom{
+    padding-top:10px;
+    border-top:1px solid var(--border);
+  }
+  .nav-logout-form{ display:contents; }
+
+  /* collapsed: labels + carets verbergen, icon positie blijft gelijk */
+  html:not(.sidebar-open) .sidebar .nav-label{ display:none; }
+  html:not(.sidebar-open) .sidebar .nav-caret-icon{ display:none; }
+  html:not(.sidebar-open) .sidebar .nav-sub{ padding-left:0; }
+
+  html:not(.sidebar-open) .sidebar .nav-link{
+    grid-template-columns:30px 1fr 0px;
+    column-gap:0;
+    padding-left:14px;
+    padding-right:14px;
+  }
+}
+
+/* ---- Forceer: active link blijft active (ook bij summary caret tap op mobile) ---- */
+.nav-link.active,
+.nav-link.active:active,
+.nav-link.active:focus,
+.nav-link.active:focus-visible{
+  border-color: var(--accent);
+  background: rgba(31,75,160,.15);
+}
+
+/* iOS tap highlight minder “weird” */
+summary.nav-link{
+  -webkit-tap-highlight-color: transparent;
+}

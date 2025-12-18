@@ -7,7 +7,6 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <!-- notch + goede zoom -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <title>{% block title %}{% endblock %}</title>
@@ -19,55 +18,64 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-  <!-- kleur adresbalk / titelbalk -->
   <meta name="theme-color" content="#131a24">
   <meta name="color-scheme" content="dark light" />
+<script>
+  (function () {
+    try {
+      // Always start collapsed on every page load
+      localStorage.setItem('sidebarCollapsed_v1', '1');
+    } catch {}
+    document.documentElement.classList.remove('sidebar-open');
+  })();
+</script>
 
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/nav.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/installprompt.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
 
-  <!-- Manifest + icons -->
-   <link rel="manifest" href="{% url 'manifest.json' %}">
+  <link rel="manifest" href="{% url 'manifest.json' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'pwa/icons/favicon-32x32.png' %}">
   <link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.v4.png' %}">
   <link rel="shortcut icon" href="{% static 'pwa/icons/favicon.ico' %}">
-  <!-- Splash screens ios -->
-   <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/12.9__iPad_Pro_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_11__iPhone_XR_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/10.9__iPad_Air_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/13__iPad_Pro_M4_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16__iPhone_15_Pro__iPhone_15__iPhone_14_Pro_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_17_Pro_Max__iPhone_16_Pro_Max_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.2__iPad_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/11__iPad_Pro_M4_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/12.9__iPad_Pro_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_Air_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.9__iPad_Air_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_Air_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.5__iPad_Air_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_11__iPhone_XR_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/10.2__iPad_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/8.3__iPad_Mini_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/11__iPad_Pro__10.5__iPad_Pro_landscape.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png' %}">
-<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png' %}">
+
+  {# Splash screens (ongewijzigd) #}
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/12.9__iPad_Pro_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_11__iPhone_XR_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/10.9__iPad_Air_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/13__iPad_Pro_M4_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16__iPhone_15_Pro__iPhone_15__iPhone_14_Pro_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_17_Pro_Max__iPhone_16_Pro_Max_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.2__iPad_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/11__iPad_Pro_M4_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/12.9__iPad_Pro_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_Air_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.9__iPad_Air_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_Air_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/10.5__iPad_Air_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_11__iPhone_XR_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/10.2__iPad_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="{% static 'pwa/splash_screens/8.3__iPad_Mini_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="{% static 'pwa/splash_screens/11__iPad_Pro__10.5__iPad_Pro_landscape.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png' %}">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="{% static 'pwa/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png' %}">
 
   {% block head %}{% endblock %}
 </head>
@@ -75,169 +83,166 @@
 <body>
 <div id="pull-to-refresh">
   <div class="ptr-ring">
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
-    <span class="ptr-dot"></span>
+    <span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span>
+    <span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span>
+    <span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span><span class="ptr-dot"></span>
   </div>
 </div>
-    <div class="app">
-        <header class="header">
-            <a href="{% url 'home' %}" class="logo-wrap">
-                <img class="logo" src="{% static 'img/logo.jpg' %}" alt="Logo">
-            </a>
 
-            <div class="title-wrapper">
-                <h1 class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</h1>
-            </div>
+<div class="app sidebar-collapsed">
+  <header class="header">
+    <a href="{% url 'home' %}" class="logo-wrap">
+      <img class="logo" src="{% static 'img/logo.jpg' %}" alt="Logo">
+    </a>
 
-            <!-- Hamburger knop (mobiel) -->
-            <button class="nav-toggle" id="navToggle" aria-label="Open navigatie" aria-controls="navPanel" aria-expanded="false">
-                <span class="burger-line burger-line-1"></span>
-                <span class="burger-line burger-line-2"></span>
-                <span class="burger-line burger-line-3"></span>
-            </button>
-
-            <!-- Desktop nav (onder logo/titel, wrappend) -->
-            <nav class="nav" aria-label="Hoofdmenu">
-                {% user_tiles as tiles_for_nav %}
-                {% for t in tiles_for_nav %}
-                    <a href="{% url t.url_name %}"
-                    {% if request.resolver_match.url_name == t.url_name %}class="active"{% endif %}>
-                    {{ t.name }}
-                    </a>
-                {% endfor %}
-
-                {% if request.user.is_authenticated %}
-                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-btn nav-logout">Uitloggen</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}">Login</a>
-                {% endif %}
-            </nav>
-        </header>
-
-        <!-- Overlay voor mobiel menu -->
-        <div class="nav-overlay" id="navOverlay"></div>
-
-        <!-- Mobiel paneel nav -->
-        <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
-        <div class="nav-panel-header">
-            <span class="nav-panel-title">Menu</span>
-            <button class="nav-close" id="navClose" aria-label="Sluit menu">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            </button>
-        </div>
-
-        <div class="nav-links">
-            {% user_tiles as tiles_for_nav %}
-            {% for t in tiles_for_nav %}
-            <a href="{% url t.url_name %}" 
-                class="nav-link {% if request.resolver_match.url_name == t.url_name %}active{% endif %}">
-                <span class="nav-icon" 
-                    style="--icon: url('{% static 'img/' %}{{ t.img }}')"></span>
-                <span>{{ t.name }}</span>
-            </a>
-            {% endfor %}
-
-            <div class="nav-divider"></div>
-            {% if request.user.is_authenticated %}
-                <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="nav-link nav-logout">Uitloggen</button>
-                </form>
-            {% else %}
-                <a href="{% url 'login' %}" class="nav-link">Login</a>
-            {% endif %}
-            </div>
-        </nav>
-
-        <main class="content">
-            {% for message in messages %}
-            <div class="flash flash-{{ message.tags|default:'info' }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-            {% block content %}{% endblock %}
-        </main>
-
-        <!-- Nieuwe push prompt modal -->
-        <div id="pushPrompt" class="push-modal" hidden aria-modal="true" role="dialog" aria-labelledby="pushTitle">
-        <div class="push-backdrop"></div>
-        <div class="push-card" role="document">
-            <button id="pushCloseX" class="push-close" aria-label="Sluiten">✕</button>
-            <img id="pushIcon" src="{% static 'img/notification-128x128.png' %}" alt="" class="push-icon" />
-            <h2 id="pushTitle" class="push-title">Meldingen inschakelen?</h2>
-            <p id="pushText" class="push-text">Wil je meldingen krijgen over nieuwe roosters en andere updates?</p>
-            <div class="push-actions">
-            <button id="pushAllowBtn" class="btn-primary">Ja, inschakelen</button>
-            <button id="pushDeclineBtn" class="btn-ghost">Nee, misschien later</button>
-            </div>
-        </div>
-        </div>
-        <footer class="footer">
-            <div class="footer-content">
-                &copy; {% now "Y" %} Apotheek Jansen Amersfoort&nbsp;
-                <a href="https://www.linkedin.com/company/apotheek-jansen-amersfoort/" 
-                target="_blank" rel="noopener" class="footer-linkedin">
-                    <svg viewBox="0 0 382 382" width="14" height="14" fill="var(--muted)" aria-hidden="true">
-                        <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
-                            C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
-                            H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
-                            c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
-                            s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
-                            c-5.106,0-9.246-4.14-9.246-9.246v-84.168c0-12.556,3.683-55.021-32.813-55.021c-28.309,0-34.051,29.066-35.204,42.11v97.079
-                            c0,5.106-4.139,9.246-9.246,9.246h-44.426c-5.106,0-9.246-4.14-9.246-9.246V149.593c0-5.106,4.14-9.246,9.246-9.246h44.426
-                            c5.106,0,9.246,4.14,9.246,9.246v15.655c10.497-15.753,26.097-27.912,59.312-27.912c73.552,0,73.131,68.716,73.131,106.472
-                            L341.91,330.654L341.91,330.654z"/>
-                    </svg>
-                </a>
-
-                &nbsp;&ndash;&nbsp;
-
-                Sem de Groot&nbsp;
-                <a href="https://www.linkedin.com/in/sem-de-groot-4a0318267/"
-                target="_blank" rel="noopener" class="footer-linkedin">
-                    <svg viewBox="0 0 382 382" width="14" height="14" fill="var(--muted)" aria-hidden="true">
-                        <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
-                            C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
-                            H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
-                            c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
-                            s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
-                            c-5.106,0-9.246-4.14-9.246-9.246v-84.168c0-12.556,3.683-55.021-32.813-55.021c-28.309,0-34.051,29.066-35.204,42.11v97.079
-                            c0,5.106-4.139,9.246-9.246,9.246h-44.426c-5.106,0-9.246-4.14-9.246-9.246V149.593c0-5.106,4.14-9.246,9.246-9.246h44.426
-                            c5.106,0,9.246,4.14,9.246,9.246v15.655c10.497-15.753,26.097-27.912,59.312-27.912c73.552,0,73.131,68.716,73.131,106.472
-                            L341.91,330.654L341.91,330.654z"/>
-                    </svg>
-                </a>
-            </div>
-        </footer>
-
+    <div class="title-wrapper">
+      <h1 class="title">{% block header_title %}{{ page_title|default:"Rooster" }}{% endblock %}</h1>
     </div>
-    <script>
-      window.PWA = window.PWA || {};
-      window.PWA.VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ=";
-    </script>
 
-    <script src="{% static 'js/base/base.js' %}" defer></script>
-    <script src="{% static 'js/auth/passkeys.js' %}" defer></script>
-    <script src="{% static 'js/base/installprompt.js' %}"></script>
-    <script src="{% static 'js/base/refresh.js' %}"></script>
+    <button class="nav-toggle" id="navToggle" aria-label="Open navigatie" aria-controls="navPanel" aria-expanded="false">
+      <span class="burger-line burger-line-1"></span>
+      <span class="burger-line burger-line-2"></span>
+      <span class="burger-line burger-line-3"></span>
+    </button>
+  </header>
 
-    {% block extra_js %}{% endblock %}
+  {% user_nav_tree as nav_items %}
+
+  <aside class="sidebar" aria-label="Hoofdmenu desktop">
+    <div class="sidebar-top">
+        <button class="btn sidebar-toggle" id="sidebarToggle"
+                aria-label="Klap menu in" aria-pressed="false" type="button">
+        <svg class="sidebar-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m17 16-4-4 4-4m-6 8-4-4 4-4"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Navigatie">
+    {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
+    </nav>
+
+    <div class="nav-bottom">
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post" class="nav-logout-form">
+          {% csrf_token %}
+          <button type="submit" class="nav-link nav-logout">
+            <span class="nav-icon" style="--icon: url('{% static 'img/logout-128x128.png' %}')"></span>
+            <span class="nav-label">Uitloggen</span>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </aside>
+
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
+    <div class="nav-panel-header">
+      <span class="nav-panel-title">Menu</span>
+      <button class="nav-close" id="navClose" aria-label="Sluit menu">
+        <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="nav-links">
+        {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
+
+      <div class="nav-divider"></div>
+
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="nav-link nav-logout">
+        <span class="nav-icon" style="--icon: url('{% static 'img/logout-128x128.png' %}')"></span>
+        <span class="nav-label">Uitloggen</span>
+        </button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-link">Login</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="content">
+    {% for message in messages %}
+      <div class="flash flash-{{ message.tags|default:'info' }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="pushPrompt" class="push-modal" hidden aria-modal="true" role="dialog" aria-labelledby="pushTitle">
+    <div class="push-backdrop"></div>
+    <div class="push-card" role="document">
+      <button id="pushCloseX" class="push-close" aria-label="Sluiten">✕</button>
+      <img id="pushIcon" src="{% static 'img/notification-128x128.png' %}" alt="" class="push-icon" />
+      <h2 id="pushTitle" class="push-title">Meldingen inschakelen?</h2>
+      <p id="pushText" class="push-text">Wil je meldingen krijgen over nieuwe roosters en andere updates?</p>
+      <div class="push-actions">
+        <button id="pushAllowBtn" class="btn-primary">Ja, inschakelen</button>
+        <button id="pushDeclineBtn" class="btn-ghost">Nee, misschien later</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      &copy; {% now "Y" %} Apotheek Jansen Amersfoort&nbsp;
+      <a href="https://www.linkedin.com/company/apotheek-jansen-amersfoort/"
+         target="_blank" rel="noopener" class="footer-linkedin">
+        <svg viewBox="0 0 382 382" width="14" height="14" fill="var(--muted)" aria-hidden="true">
+          <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
+              C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
+              H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
+              c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
+              s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
+              c-5.106,0-9.246-4.14-9.246-9.246v-84.168c0-12.556,3.683-55.021-32.813-55.021c-28.309,0-34.051,29.066-35.204,42.11v97.079
+              c0,5.106-4.139,9.246-9.246,9.246h-44.426c-5.106,0-9.246-4.14-9.246-9.246V149.593c0-5.106,4.14-9.246,9.246-9.246h44.426
+              c5.106,0,9.246,4.14,9.246,9.246v15.655c10.497-15.753,26.097-27.912,59.312-27.912c73.552,0,73.131,68.716,73.131,106.472
+              L341.91,330.654L341.91,330.654z"/>
+        </svg>
+      </a>
+
+      &nbsp;&ndash;&nbsp;
+
+      Sem de Groot&nbsp;
+      <a href="https://www.linkedin.com/in/sem-de-groot-4a0318267/"
+         target="_blank" rel="noopener" class="footer-linkedin">
+        <svg viewBox="0 0 382 382" width="14" height="14" fill="var(--muted)" aria-hidden="true">
+          <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
+              C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
+              H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
+              c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
+              s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
+              c-5.106,0-9.246-4.14-9.246-9.246v-84.168c0-12.556,3.683-55.021-32.813-55.021c-28.309,0-34.051,29.066-35.204,42.11v97.079
+              c0,5.106-4.139,9.246-9.246,9.246h-44.426c-5.106,0-9.246-4.14-9.246-9.246V149.593c0-5.106,4.14-9.246,9.246-9.246h44.426
+              c5.106,0,9.246,4.14,9.246,9.246v15.655c10.497-15.753,26.097-27.912,59.312-27.912c73.552,0,73.131,68.716,73.131,106.472
+              L341.91,330.654L341.91,330.654z"/>
+        </svg>
+      </a>
+    </div>
+  </footer>
+</div>
+
+<script>
+  window.PWA = window.PWA || {};
+  window.PWA.VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ=";
+</script>
+
+<script src="{% static 'js/base/nav.js' %}" defer></script>
+<script src="{% static 'js/base/base.js' %}" defer></script>
+<script src="{% static 'js/auth/passkeys.js' %}" defer></script>
+<script src="{% static 'js/base/installprompt.js' %}"></script>
+<script src="{% static 'js/base/refresh.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>

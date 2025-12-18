@@ -1,83 +1,3 @@
-// ---------- NAV / MOBIEL PANEEL ----------
-const toggleBtn = document.getElementById('navToggle');
-const panel = document.getElementById('navPanel');
-const overlay = document.getElementById('navOverlay');
-const closeBtn = document.getElementById('navClose');
-
-if (toggleBtn && panel && overlay) {
-  const preventScroll = () => { document.body.style.overflow = 'hidden'; };
-  const allowScroll = () => { document.body.style.overflow = ''; };
-
-  const open = () => {
-    panel.hidden = false;
-    overlay.classList.add('active');
-    requestAnimationFrame(() => { panel.classList.add('open'); });
-    toggleBtn.setAttribute('aria-expanded', 'true');
-    toggleBtn.setAttribute('aria-label', 'Sluit navigatie');
-    preventScroll();
-  };
-
-  const close = () => {
-    panel.classList.remove('open');
-    overlay.classList.remove('active');
-    toggleBtn.setAttribute('aria-expanded', 'false');
-    toggleBtn.setAttribute('aria-label', 'Open navigatie');
-    allowScroll();
-    setTimeout(() => { panel.hidden = true; }, 250);
-  };
-
-  const isOpen = () => toggleBtn.getAttribute('aria-expanded') === 'true';
-
-  toggleBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    isOpen() ? close() : open();
-  });
-
-  if (closeBtn) closeBtn.addEventListener('click', close);
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isOpen()) {
-      close();
-      toggleBtn.focus();
-    }
-  });
-
-  overlay.addEventListener('click', close);
-
-  document.addEventListener('click', (e) => {
-    if (!isOpen()) return;
-    if (!panel.contains(e.target) && !toggleBtn.contains(e.target)) close();
-  });
-
-  panel.querySelectorAll('.nav-link').forEach(el => {
-    el.addEventListener('click', () => { if (isOpen()) close(); });
-  });
-
-  const mq = window.matchMedia('(min-width: 901px)');
-  mq.addEventListener('change', (e) => { if (e.matches && isOpen()) close(); });
-
-  // Focus trap
-  panel.addEventListener('keydown', (e) => {
-    if (e.key !== 'Tab' || !isOpen()) return;
-    const focusableElements = panel.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    if (!firstElement || !lastElement) return;
-
-    if (e.shiftKey) {
-      if (document.activeElement === firstElement) {
-        e.preventDefault();
-        lastElement.focus();
-      }
-    } else {
-      if (document.activeElement === lastElement) {
-        e.preventDefault();
-        firstElement.focus();
-      }
-    }
-  });
-}
-
 // ---------- WEB PUSH INIT (mobiel + modaal) ----------
 const VAPID =
   (window.PWA && window.PWA.VAPID_PUBLIC_KEY) ||
@@ -116,7 +36,6 @@ const VAPID =
 
   async function registerSW() {
     try {
-      // Zeker weten dat we v12 pakken
       const reg = await navigator.serviceWorker.register('/service_worker.v18.js');
       return (await navigator.serviceWorker.ready) || reg;
     } catch (e) {
@@ -171,9 +90,7 @@ const VAPID =
     if (!VAPID) return false;
     if (!onHttps) return false;
     if (!pushSupported) return false;
-    // LET OP: hier returnen we false als permission al granted is, 
-    // daarom hebben we straks de silentSync functie nodig.
-    if (Notification.permission === 'granted') return false; 
+    if (Notification.permission === 'granted') return false;
     if (Notification.permission === 'denied') return false;
     if (!isMobileUA) return false;
     if (isIOS) return isStandalone;
@@ -220,39 +137,31 @@ const VAPID =
     closePushModal();
   }
 
-  // ---- Silent Sync functie voor herstelacties ----
   window.silentPushSync = async function() {
-  if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
-  
-  try {
-    const reg = await registerSW();
-    if (!reg) return;
+    if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
 
-    // 1. Haal de oude subscription op
-    const oldSub = await reg.pushManager.getSubscription();
-    
-    // 2. Als die er is: VERWIJDER HEM EERST (Cruciaal!)
-    if (oldSub) {
+    try {
+      const reg = await registerSW();
+      if (!reg) return;
+
+      const oldSub = await reg.pushManager.getSubscription();
+      if (oldSub) {
         console.log('[push] Oude subscription gevonden, verwijderen voor force refresh...');
         await oldSub.unsubscribe();
+      }
+
+      const newSub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: b64ToUint8Array(VAPID),
+      });
+
+      await saveSubscription(newSub);
+      console.log('[push] Force refresh succesvol uitgevoerd.');
+    } catch(e) {
+      console.warn('[push] silent sync (force refresh) failed', e);
     }
+  };
 
-    // 3. Maak nu een gloednieuwe subscription aan met de juiste VAPID key
-    const newSub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: b64ToUint8Array(VAPID),
-    });
-
-    // 4. Stuur de nieuwe, frisse data naar de server
-    await saveSubscription(newSub);
-    console.log('[push] Force refresh succesvol uitgevoerd.');
-
-  } catch(e) {
-    console.warn('[push] silent sync (force refresh) failed', e);
-  }
-};
-
-  // ---- Promise-achtige prompt voor serial use ----
   window.offerPushPrompt = async function () {
     try { if (!canOfferPush()) return; } catch { return; }
     return new Promise((resolve) => {
@@ -268,7 +177,6 @@ const VAPID =
       const esc = (e)=>{ if (e.key === 'Escape') { onDecl(); window.removeEventListener('keydown', esc); } };
       window.addEventListener('keydown', esc);
 
-      // Contextuele tekst (rest blijft hetzelfde)
       if (!onHttps) {
         textEl && (textEl.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.');
       } else if (isIOS && !isStandalone) {
@@ -287,41 +195,31 @@ const VAPID =
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
 
-  // BUMP DE VERSIE HIERONDER NAAR v2
-  const doneKey = 'onboardingPushFixed_v3'; 
+  const doneKey = 'onboardingPushFixed_v3';
   const done = localStorage.getItem(doneKey) === '1';
-  
-  // Voer dit ook uit als het NIET standalone is als je wilt testen in de browser, 
-  // maar voor productie is je check op isStandalone prima.
+
   if (!isStandalone || done) return;
 
   (async () => {
-    // Situatie 1: Gebruiker heeft al 'granted' -> FORCE REFRESH
     if (Notification.permission === 'granted' && typeof window.silentPushSync === 'function') {
       console.log('[onboarding] Permission granted, force refresh van keys...');
       await window.silentPushSync();
-    }
-    // Situatie 2: Gebruiker moet nog kiezen (nieuwe gebruikers)
-    else if (typeof window.offerPushPrompt === 'function') {
+    } else if (typeof window.offerPushPrompt === 'function') {
       try { await window.offerPushPrompt(); } catch {}
     }
 
-    // Markeer als gedaan
     try { localStorage.setItem(doneKey, '1'); } catch {}
   })();
 })();
 
 // ---------- SERVICE WORKER REGISTRATIE + CLEANUP VIA ?cleanup=1 ----------
-
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     (async () => {
       try {
-        // 1) Normaal gewoon registreren
         const reg = await navigator.serviceWorker.register('/service_worker.v18.js');
         console.log('[sw] Geregistreerd met scope:', reg.scope);
 
-        // 2) Optioneel: cleanup-truc via ?cleanup=1
         const url = new URL(window.location.href);
         const shouldCleanup = url.searchParams.get('sw_cleanup') === '1';
 
@@ -333,7 +231,6 @@ if ('serviceWorker' in navigator) {
             readyReg.active.postMessage({ type: 'FULL_SW_CLEANUP' });
           }
 
-          // query-param uit de URL halen en pagina opnieuw laden
           url.searchParams.delete('sw_cleanup');
           window.location.replace(url.toString());
         }

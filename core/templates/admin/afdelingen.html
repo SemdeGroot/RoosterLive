@@ -22,7 +22,7 @@
                     <h2>Afdelingen beheren</h2>
                     <p>Voeg hier afdelingen toe of bewerk de gegevens.</p>
                 </div>
-                <a href="{% url 'admin_dashboard' %}" class="btn btn-save">
+                <a href="{% url 'beheer_tiles' %}" class="btn btn-save">
                     Terug naar dashboard
                 </a>
             </div>
@@ -38,7 +38,7 @@
             
             <div class="admin-grid" style="margin-bottom: 12px;">
                 <div>
-                    <label for="{{ afdeling_form.afdeling.id_for_label }}">Afdelingsnaam (zorg dat deze overeenkomt met Medimo):</label>
+                    <label for="{{ afdeling_form.afdeling.id_for_label }}">Afdelingsnaam (zorg dat deze overeenkomt met Medimo!):</label>
                     {{ afdeling_form.afdeling }}
                 </div>
                 <div>
@@ -144,7 +144,7 @@
 
                         <div class="edit-grid">
                             <div>
-                                <label>Afdelingsnaam (zorg dat deze overeenkomt met Medimo):</label>
+                                <label>Afdelingsnaam (zorg dat deze overeenkomt met Medimo!):</label>
                                 <input class="admin-input" type="text" name="afdeling" 
                                        value="{{ afd.afdeling }}" required style="margin-top:6px;">
                             </div>
