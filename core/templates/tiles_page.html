@@ -13,7 +13,7 @@
 
   <div class="tiles">
     {% for t in tiles %}
-      <a href="{% url t.url_name %}" class="tile" aria-label="{{ t.name }}">
+      <a href="{% url t.url_name %}" class="tile" aria-label="{{ t.name }}" data-haptic>
         <div class="tile-box">
           <div class="tile-icon">
             <img src="{% static 'img/' %}{{ t.img }}" alt="{{ t.name }}" class="tile-img">

@@ -9,7 +9,10 @@
         {% endfor %}
       "
     >
-      <summary class="nav-link nav-item--summary {% if request.resolver_match.url_name == item.url_name %}active{% endif %}">
+      <summary
+        class="nav-link nav-item--summary {% if request.resolver_match.url_name == item.url_name %}active{% endif %}"
+        data-haptic
+      >
         <span class="nav-icon"
               style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
 
@@ -31,7 +34,9 @@
     </details>
   {% else %}
     <a href="{% url item.url_name %}"
-       class="nav-link {% if request.resolver_match.url_name == item.url_name %}active{% endif %}">
+       class="nav-link {% if request.resolver_match.url_name == item.url_name %}active{% endif %}"
+       data-haptic
+    >
       <span class="nav-icon"
             style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
 

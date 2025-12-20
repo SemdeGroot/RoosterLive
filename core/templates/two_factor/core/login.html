@@ -31,7 +31,7 @@
       <label for="{{ form.password.id_for_label }}">Wachtwoord</label>
       {{ form.password }}
 
-      <button type="submit">{% trans "Inloggen" %}</button>
+      <button type="submit" data-haptic>{% trans "Inloggen" %}</button>
 
       <!-- Passkey status message (geen ruimte totdat JS 'm toont) -->
       <p id="passkeyStatus"
@@ -65,7 +65,7 @@
         {{ form.token }}
       {% endif %}
 
-      <button type="submit">{% trans "Bevestigen" %}</button>
+      <button type="submit" data-haptic>{% trans "Bevestigen" %}</button>
 
       <p class="forgot-password forgot-password--center">
         <a href="#" data-action="2fa"
