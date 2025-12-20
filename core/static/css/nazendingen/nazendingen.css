@@ -31,13 +31,13 @@
    1: #, 2: ZI, 3: Naam, 4: Datum, 5: Tot, 6: Alt, 7: Acties
 ------------------------------------------------------- */
 table.nazending-table {
-  --c1: 20px;   /* Index */
-  --c2: 80px;  /* ZI */
+  --c1: 10px;   /* Index */
+  --c2: 110px;  /* ZI */
   --c3: 200px;   /* Geneesmiddel (pakt de rest) */
-  --c4: 120px;  /* Datum */
+  --c4: 140px;  /* Datum */
   --c5: 140px;  /* Tot */
   --c6: 180px;  /* Alternatief */
-  --c7: 80px;  /* Acties */
+  --c7: 90px;  /* Acties */
 }
 
 /* Mobiel tweak: forceer min-width zodat scrollen werkt */

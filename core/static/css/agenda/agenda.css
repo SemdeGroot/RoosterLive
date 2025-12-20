@@ -114,24 +114,6 @@
   margin-top: 4px;
 }
 
-/* Secties binnen dezelfde card */
-.agenda-section {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-/* Extra helper class die je gebruikt in de combi */
-.agenda-section-header {
-  align-items: center;
-}
-
-.agenda-section:first-of-type {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
-}
-
 /* + knop iets compacter, maar gebruikt .btn styling uit base.css */
 .agenda-plus-btn {
   margin-left: auto;

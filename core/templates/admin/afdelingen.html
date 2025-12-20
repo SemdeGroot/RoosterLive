@@ -38,7 +38,7 @@
             
             <div class="admin-grid" style="margin-bottom: 12px;">
                 <div>
-                    <label for="{{ afdeling_form.afdeling.id_for_label }}">Afdelingsnaam (zorg dat deze overeenkomt met Medimo!):</label>
+                    <label for="{{ afdeling_form.afdeling.id_for_label }}">Afdelingsnaam (zelfde als in Medimo!):</label>
                     {{ afdeling_form.afdeling }}
                 </div>
                 <div>
@@ -77,7 +77,7 @@
         <h3 style="margin-top:0;">Bestaande afdelingen</h3>
 
         <div class="search-bar">
-          <input type="text" id="afdelingSearch" placeholder="Zoek op afdeling, locatie of organisatie…">
+          <input type="text" id="afdelingSearch" placeholder="Zoek op afdeling, locatie of organisatie…" class="admin-input">
         </div>
 
         <div data-crud data-table="#afdelingTable" data-rows="#afdelingTable .afdeling-row" data-page-size="10">
@@ -144,7 +144,7 @@
 
                         <div class="edit-grid">
                             <div>
-                                <label>Afdelingsnaam (zorg dat deze overeenkomt met Medimo!):</label>
+                                <label>Afdelingsnaam (zelfde als in Medimo!):</label>
                                 <input class="admin-input" type="text" name="afdeling" 
                                        value="{{ afd.afdeling }}" required style="margin-top:6px;">
                             </div>

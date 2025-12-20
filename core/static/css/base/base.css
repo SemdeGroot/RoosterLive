@@ -90,6 +90,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   max-width:100%;
   position:relative;
 }
+.card-inner{padding:16px}
 
 /* Egale blauwe streep die de rand overschrijft */
 .card::before{
@@ -579,6 +580,53 @@ textarea.form-input::placeholder{
   margin:2px 0 0;
   color:var(--muted);
   font-size:0.9rem;
+}
+/* Secties binnen dezelfde card */
+.agenda-section {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+/* Extra helper class die je gebruikt in de combi */
+.agenda-section-header {
+  align-items: center;
+}
+
+.agenda-section:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+@media (max-width: 720px){
+  .birthday-header{
+    flex-wrap: wrap;
+  }
+
+  /* Zet de actions-wrapper op een eigen regel */
+  .birthday-header > .header-actions{
+    flex: 0 0 100%;
+    width: 100%;
+    margin-left: 0;     /* override desktop "naar rechts duwen" */
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column; /* elke knop op nieuwe regel */
+    gap: 10px;
+  }
+
+  /* Losse button/link direct in de header ook op eigen regel */
+  .birthday-header > .btn{
+    flex: 0 0 100%;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    display: block;
+  }
+
+  /* Buttons binnen header-actions: 100% breed */
+  .birthday-header > .header-actions .btn{
+    width: 100%;
+    display: block;
+  }
 }
 
 /* Mobile: altijd 2 kolommen, maar exact dezelfde tile-verhoudingen als basis */

@@ -4,7 +4,6 @@
 .admin-wrap{margin-top:18px}
 .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
-.card-inner{padding:16px}
 
 /* =========================
    PERMISSIONS
@@ -147,4 +146,53 @@ table.afdeling-table td:nth-child(3) {
 table.afdeling-table td:nth-child(4) { 
     text-align: right; 
     padding-right: 10px; 
+}
+
+/* ---- Mobile fit fixes (admin) ---- */
+.admin-wrap,
+.admin-wrap .card,
+.admin-wrap .card-inner {
+  max-width: 100%;
+  min-width: 0;               /* laat kinderen krimpen i.p.v. card oprekken */
+  box-sizing: border-box;
+}
+
+/* Zorg dat scroll-container echt scrollt en niet de card mee oprekt */
+.admin-wrap .table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+}
+
+/* Form controls altijd binnen viewport */
+.admin-wrap input,
+.admin-wrap select,
+.admin-wrap textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Mobiel: forceer horizontale overflow zodat .table-scroll kan scrollen */
+@media (max-width: 900px) {
+
+  /* USERS: 70 + 120 + 120 + 160 + 140 + 120 = 730 */
+  table.user-table {
+    min-width: 760px;  /* + marge voor padding/borders */
+  }
+
+  /* GROUPS: 180 + 200 + 90 + 120 = 590 */
+  table.group-table {
+    min-width: 620px;
+  }
+
+  /* ORGS: 150 + 220 + 120 + 115 = 605 */
+  table.org-table {
+    min-width: 640px;
+  }
+
+  /* AFDELINGEN: 180 + 150 + 180 + 120 = 630 */
+  table.afdeling-table {
+    min-width: 680px; /* iets ruimer, acties/spacing */
+  }
 }
