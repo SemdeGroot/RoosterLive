@@ -47,7 +47,7 @@ def admin_users(request):
         return HttpResponseForbidden("Geen toegang.")
 
     # 2. Manage Check
-    can_manage = can(request.user, "can_manage_users")
+    can_manage = can(request.user, "can_manage_groups")
 
     user_form = SimpleUserCreateForm(prefix="user")
 
