@@ -32,70 +32,11 @@
 .page { border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; }
 .page img { display:block; width:100%; height:auto; }
 
-/* --- Week picker (identiek aan personeelsdashboard) --- */
-.week-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-/* gebruik je bestaande .btn/.btn-icon uit base.css */
-.btn-icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
-
-.week-picker { position: relative; display: inline-block; }
-.week-picker-btn {
-  display: flex; align-items: center; gap: 8px;
-  min-width: 260px; justify-content: center;
-}
-.week-picker-btn[aria-expanded="true"] .wp-caret { transform: rotate(180deg); }
-.wp-caret { display: flex; align-items: center; justify-content: center; line-height: 0; transition: transform .15s ease; }
-.wp-caret svg { display: block; }
-
-/* Belangrijk: absolute + z-index zodat dropdown onafhankelijk is van de content eronder */
-.week-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 340px;
-  max-height: 280px;
-  overflow: auto;
-  background: #0f1620;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  padding: 6px;
-  z-index: 30;
-}
-
-.week-option {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer;
-}
-.week-option:hover, .week-option:focus {
-  background: #1a2432; outline: none !important; box-shadow: none; border: none;
-}
-.week-option.is-active { border: 1px solid var(--accent); }
-.week-option small { color: var(--muted); }
-
-@media (max-width: 640px) {
-  .week-picker-btn { min-width: 220px; }
-  .week-controls { justify-content: center; }
-}
-
+/* --- Alleen rooster-specifieke uitzonderingen voor de weekpicker dropdown --- */
 /* voorkom afknippen door wrappers: zet overflow zichtbaar op de directe ouders */
 /* Rooster: weekpicker mag buiten de card vallen */
-#roosterRoot {
-  overflow: visible;
-}
-
-.week-picker {
-  overflow: visible;
-}
+#roosterRoot { overflow: visible; }
+.week-picker { overflow: visible; }
 
 /* Blauwe balk binnen de kaart houden voor deze card */
 #roosterRoot::before {

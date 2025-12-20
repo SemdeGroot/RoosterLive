@@ -346,3 +346,177 @@
 summary.nav-link{
   -webkit-tap-highlight-color: transparent;
 }
+
+/* === Date navigator === */
+
+/* =========================================================
+   Date navigation / week picker (shared)
+   Gebruikt door: mijnbeschikbaarheid, personeelsdashboard, rooster, etc.
+   ========================================================= */
+
+.week-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:12px 0;
+  flex-wrap:wrap;            /* desktop mag wrappen (zoals nu) */
+}
+
+.btn-icon{
+  width:44px;
+  height:44px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+}
+
+.week-picker{
+  position:relative;
+  display:inline-block;
+  flex:0 1 auto;
+  min-width:0;               /* belangrijk zodat hij op mobile kan krimpen */
+}
+
+.week-picker-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  min-width:260px;
+  max-width:100%;
+  min-height:44px;
+
+  /* belangrijk voor 1-line gedrag van de inhoud */
+  white-space:nowrap;
+}
+
+.wp-label{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;    /* als header_title lang is -> ... */
+  min-width:0;
+}
+
+.week-picker-btn[aria-expanded="true"] .wp-caret{ transform:rotate(180deg); }
+
+.wp-caret{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:0;
+  transition:transform .15s ease;
+  vertical-align:middle;
+  flex:0 0 auto;
+}
+
+.wp-caret svg{ display:block; }
+
+/* Dropdown */
+.week-menu{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%);
+
+  /* responsive dropdown: niet buiten viewport duwen */
+  min-width:min(340px, calc(100vw - 16px));
+  max-width:calc(100vw - 16px);
+
+  max-height:280px;
+  overflow:auto;
+
+  background:#0f1620;
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  padding:6px;
+
+  z-index:1000; /* 1 waarde overal (niet per pagina anders) */
+}
+
+.week-option{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.week-option:hover,
+.week-option:focus{
+  background:#1a2432;
+  outline:none !important;
+  box-shadow:none;
+  border:none;
+}
+
+.week-option.is-active{ border:1px solid var(--accent); }
+.week-option small{ color:var(--muted); }
+
+/* Daterange label (gebruik je al op meerdere plekken) */
+.availability-daterange{
+  color:var(--muted);
+  font-weight:500;
+  font-size:1.1rem;
+  text-align:center;
+  margin-bottom:12px;
+}
+
+/* =========================================================
+   Mobile: forced 1-line + compacter
+   ========================================================= */
+@media (max-width:640px){
+  .week-controls{
+    flex-wrap:nowrap;
+    gap:10px;             
+    justify-content:center;
+  }
+
+  /* Icon knoppen iets groter */
+  .btn-icon{
+    width:40px;
+    height:40px;
+  }
+  .btn-icon svg{
+    width:22px; 
+    height:22px;        
+  }
+
+  /* Middenknop: netjes om tekst heen */
+  .week-picker{
+    flex:0 1 auto;
+    min-width:0;
+  }
+
+  .week-picker-btn{
+    width:auto;
+    min-width:0;
+    min-height:40px;
+    padding:0 20px; 
+    gap:8px;
+    white-space:nowrap;
+
+    /* safety: zodat het altijd op 1 regel past */
+    max-width:calc(100vw - 140px);
+  }
+
+  .wp-label{
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:1rem;  
+  }
+
+  .wp-caret svg{
+    width:18px;
+    height:18px;
+  }
+  
+}

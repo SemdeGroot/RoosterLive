@@ -1,12 +1,28 @@
 /* --- Tabel strak en uitgelijnd --- */
 .availability-wrap { overflow-x: auto; }
-.availability-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+
+.availability-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
 .availability-table colgroup col:first-child { width: 44%; }
 .availability-table colgroup col:nth-child(2),
 .availability-table colgroup col:nth-child(3) { width: 28%; }
-.availability-table thead th { padding: 12px 14px; text-align: center; font-weight: 700; }
+
+.availability-table thead th {
+  padding: 12px 14px;
+  text-align: center;
+  font-weight: 700;
+}
 .availability-table thead th:first-child { text-align: left; }
-.availability-table tbody td { padding: 12px 14px; vertical-align: middle; }
+
+.availability-table tbody td {
+  padding: 12px 14px;
+  vertical-align: middle;
+}
 .availability-table tbody td:nth-child(2),
 .availability-table tbody td:nth-child(3) { text-align: center; }
 
@@ -17,80 +33,16 @@
 .weekday-title small { color: var(--muted); font-weight: 500; }
 
 .availability-table input[type="checkbox"]{
-  width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
 }
-
-/* --- Controls (nieuwe gecombineerde week-picker) --- */
-.week-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;  /* links uitgelijnd desktop */
-  gap: 12px;
-  margin-top: 12px; 
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-/* Gebruik je globale .btn uit base.css — niet opnieuw stijlen! */
-.btn-icon { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
-
-.week-picker { position: relative; display: inline-block;}
-.week-picker-btn {
-  display: flex; align-items: center; gap: 8px;
-  min-width: 260px; justify-content: center;
-}
-.week-picker-btn[aria-expanded="true"] .wp-caret { transform: rotate(180deg); }
-.wp-caret {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: transform .15s ease;
-  vertical-align: middle;
-}
-
-.wp-caret svg {
-  display: block; /* voorkomt dat de SVG op de tekst-baseline zweeft */
-}
-
-.week-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 340px;   /* breder dan knop */
-  max-height: 280px;
-  overflow: auto;
-  background: #0f1620;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  padding: 6px;
-  z-index: 200000;
-}
-
-.week-option {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer;
-}
-.week-option:hover, .week-option:focus {
-  background: #1a2432; outline: none !important; box-shadow: none; border: none;
-}
-.week-option.is-active { border: 1px solid var(--accent); }
-.week-option small { color: var(--muted); }
-
-.availability-daterange { color: var(--muted); font-weight: 500; font-size: 1.1rem; text-align: center;}
 
 @media (max-width: 640px) {
   .weekday-title { flex-direction: column; gap: 0; }
-  .week-picker-btn { min-width: 220px; }
-  .week-controls { justify-content: center; }
 }
 
-.form h3 {
-  text-align: center;
-}
+.form h3 { text-align: center; }
 
-*:focus-visible {
-  outline: none !important;
-}
+*:focus-visible { outline: none !important; }
