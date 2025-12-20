@@ -294,7 +294,6 @@ th,td{
   box-shadow:0 10px 28px var(--shadow);
 }
 
-.tile-img{ max-width:80px; max-height:80px; display:block; object-fit:contain; }
 .tile-name{ color:var(--text); font-weight:600; text-align:center; font-size:0.95rem; }
 
 @media (hover: none) and (pointer: coarse){
@@ -341,7 +340,7 @@ th,td{
   .title{ font-size:1.5rem; }
   .tiles{ grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
   .tile-box{ padding:18px; min-height:160px; }
-  .tile-img{ max-width:100px; max-height:100px; }
+  .tile-img{ max-width:120px; max-height:120px; }
 }
 
 /* Desktop: header as grid with equal vertical spacing */
@@ -366,7 +365,7 @@ th,td{
 
   .tiles{ grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
   .tile-box{ padding:18px; min-height:180px; }
-  .tile-img{ max-width:120px; max-height:120px; }
+  .tile-img{ width:140px; height:140px; }
   .tile-name{ font-size:1rem; }
 }
 
@@ -648,8 +647,8 @@ textarea.form-input::placeholder{
   }
 
   .tile-img{
-    max-width: 72px;
-    max-height: 72px;
+    width: 80px;
+    height: 80px;
   }
 
   /* label: geen wrap */
@@ -674,8 +673,8 @@ textarea.form-input::placeholder{
   }
 
   .tile-img{
-    max-width: 64px;
-    max-height: 64px;
+    width: 70px;
+    height: 70px;
   }
 
   .tile-name{

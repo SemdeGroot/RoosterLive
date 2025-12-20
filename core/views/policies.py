@@ -199,7 +199,7 @@ def policies(request):
             "name": "Baxterproductie",
             "permissions": "can_view_baxter",
             "category": "baxter",
-            "image": "factory-256x256.png",
+            "image": "factory.svg",
             "workafspraken": baxter_items,
             "form": baxter_form
         })
@@ -215,7 +215,7 @@ def policies(request):
             "name": "Instellingsapotheek",
             "permissions": "can_view_instellings_apo",
             "category": "instelling",
-            "image": "instellingsapotheek-256x256.png",
+            "image": "instellingsapotheek.svg",
             "workafspraken": instelling_items,
             "form": instelling_form
         })
@@ -231,7 +231,7 @@ def policies(request):
             "name": "Openbare Apo",
             "permissions": "can_view_openbare_apo",
             "category": "openbare",
-            "image": "openbareapotheek-256x256.png",
+            "image": "openbareapo.svg",
             "workafspraken": openbare_items,
             "form": openbare_form
         })

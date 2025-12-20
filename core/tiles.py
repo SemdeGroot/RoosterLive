@@ -9,15 +9,15 @@ TILE_GROUPS = {
         {"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
         {"name": "Onboarding", "img": "onboarding-256x256.png", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
         {"name": "Personeel", "img": "personeel-256x256.png", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
-        {"name": "Baxterproductie", "img": "factory-256x256.png", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
-        {"name": "Openbare Apo",    "img": "openbareapotheek-256x256.png", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
-        {"name": "Instellingsapotheek", "img": "instellingsapotheek-256x256.png", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
-        {"name": "Beheer", "img": "beheer-256x256.png", "url_name": "beheer_tiles", "perm": "can_access_admin"},
+        {"name": "Baxterproductie", "img": "factory.svg", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
+        {"name": "Openbare Apo",    "img": "openbareapo.svg", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
+        {"name": "Instellingsapotheek", "img": "instellingsapotheek.svg", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
+        {"name": "Beheer", "img": "beheer.svg", "url_name": "beheer_tiles", "perm": "can_access_admin"},
     ],
 
     "personeel": [
         {"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
-        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "onboarding": [
@@ -79,25 +79,25 @@ TILE_GROUPS = {
     "beheer": [
         {
             "name": "Gebruikers", 
-            "img": "user-256x256.png",
+            "img": "user.svg",
             "url_name": "admin_users", 
             "perm": "can_access_admin"
         },
         {
             "name": "Groepen", 
-            "img": "group-256x256.png",
+            "img": "group.svg",
             "url_name": "admin_groups", 
             "perm": "can_access_admin"
         },
         {
             "name": "Afdelingen", 
-            "img": "afdeling-256x256.png",
+            "img": "afdeling.svg",
             "url_name": "admin_afdelingen", 
             "perm": "can_access_admin"
         },
         {
             "name": "Organisaties", 
-            "img": "organisatie-256x256.png",
+            "img": "organisatie.svg",
             "url_name": "admin_orgs", 
             "perm": "can_access_admin"
         },
