@@ -1,7 +1,6 @@
 /* core/static/css/admin/admin_panel.css */
 
 /* layout */
-.admin-wrap{margin-top:18px}
 .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media (max-width:1100px){.admin-grid{grid-template-columns:1fr}}
 

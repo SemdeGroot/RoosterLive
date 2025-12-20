@@ -599,6 +599,7 @@ textarea.form-input::placeholder{
 @media (max-width: 720px){
   .birthday-header{
     flex-wrap: wrap;
+    row-gap: 10px; 
   }
 
   /* Zet de actions-wrapper op een eigen regel */
