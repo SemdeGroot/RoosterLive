@@ -129,7 +129,7 @@
         <form action="{% url 'logout' %}" method="post" class="nav-logout-form">
           {% csrf_token %}
           <button type="submit" class="nav-link nav-logout">
-            <span class="nav-icon" style="--icon: url('{% static 'img/logout-128x128.png' %}')"></span>
+            <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
             <span class="nav-label">Uitloggen</span>
           </button>
         </form>
@@ -160,7 +160,7 @@
         <form action="{% url 'logout' %}" method="post">
           {% csrf_token %}
           <button type="submit" class="nav-link nav-logout">
-        <span class="nav-icon" style="--icon: url('{% static 'img/logout-128x128.png' %}')"></span>
+        <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
         <span class="nav-label">Uitloggen</span>
         </button>
         </form>

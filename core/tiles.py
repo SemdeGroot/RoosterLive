@@ -4,11 +4,11 @@ from core.views._helpers import can
 TILE_GROUPS = {
     "home": [
         {"name": "Agenda", "img": "agenda.svg", "url_name": "agenda", "perm": "can_view_agenda"},
-        {"name": "Nieuws", "img": "nieuws-256x256.png", "url_name": "news", "perm": "can_view_news"},
+        {"name": "Nieuws", "img": "news.svg", "url_name": "news", "perm": "can_view_news"},
         {"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster", "perm": "can_view_roster"},
-        {"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
-        {"name": "Onboarding", "img": "onboarding-256x256.png", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
-        {"name": "Personeel", "img": "personeel-256x256.png", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
+        {"name": "Beschikbaarheid", "img": "beschikbaarheid.svg", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
+        {"name": "Onboarding", "img": "onboarding.svg", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
+        {"name": "Personeel", "img": "personeel.svg", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
         {"name": "Baxterproductie", "img": "factory.svg", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
         {"name": "Openbare Apo",    "img": "openbareapo.svg", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
         {"name": "Instellingsapotheek", "img": "instellingsapotheek.svg", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
@@ -23,7 +23,7 @@ TILE_GROUPS = {
     "onboarding": [
         {"name": "Wie is wie?", "img": "who_is_who-256x256.png", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
         {"name": "Formulieren", "img": "forms-256x256.png", "url_name": "forms", "perm": "can_view_forms"},
-        {"name": "Checklist", "img": "checklist-256x256.png", "url_name": "checklist", "perm": "can_view_checklist"},
+        {"name": "Checklist", "img": "checklist.svg", "url_name": "checklist", "perm": "can_view_checklist"},
     ],
 
     "baxter": [
@@ -65,13 +65,13 @@ TILE_GROUPS = {
         },
         {
             "name": "Historie",
-            "img": "history-256x256.png",
+            "img": "history.svg",
             "url_name": "medicatiebeoordeling_list",
             "perm": "can_view_medicatiebeoordeling"
         },
         {
             "name": "Instellingen",
-            "img": "reviewsettings-256x256.png",
+            "img": "reviewsettings.svg",
             "url_name": "medicatiebeoordeling_settings", # Placeholder URL
             "perm": "can_perform_medicatiebeoordeling"
         },
