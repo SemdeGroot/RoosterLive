@@ -6,6 +6,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/mijnbeschikbaarheid/mijnbeschikbaarheid.css' %}">
+  <script src="/static/js/base/haptic_feedback.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -15,7 +16,7 @@
 
     <!-- Weeknavigatie -->
     <div class="week-controls">
-      <button id="prevWeekBtn"
+      <button data-haptic="" id="prevWeekBtn"
               class="btn btn-icon"
               {% if not has_prev %}disabled aria-disabled="true"{% endif %}
               data-target="{{ prev_monday|date:'Y-m-d' }}"
@@ -24,7 +25,7 @@
       </button>
 
       <div class="week-picker">
-      <button id="weekPickerBtn"
+      <button data-haptic id="weekPickerBtn"
               class="btn week-picker-btn"
               aria-haspopup="listbox"
               aria-expanded="false"
@@ -53,7 +54,7 @@
         </div>
       </div>
 
-    <button id="nextWeekBtn"
+    <button data-haptic id="nextWeekBtn"
             class="btn btn-icon"
             {% if not has_next %}disabled aria-disabled="true"{% endif %}
             data-target="{{ next_monday|date:'Y-m-d' }}"
@@ -94,7 +95,7 @@
       </div>
 
       <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-        <button type="submit" class="btn">Opslaan</button>
+        <button type="submit" class="btn" data-haptic>Opslaan</button>
       </div>
     </form>
   </div>
