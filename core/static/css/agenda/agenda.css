@@ -21,7 +21,7 @@
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--panel-2);
-  position: relative; /* nodig voor absoluut gepositioneerd kruisje */
+  position: relative;
 }
 
 /* Vandaag: accent-rand + witte gloed */
@@ -36,7 +36,7 @@
 .birthday-main {
   display: flex;
   justify-content: space-between;
-  align-items: center;      /* badge verticaal gecentreerd tov hele entry */
+  align-items: center;
   gap: 12px;
 }
 
@@ -44,8 +44,8 @@
 .birthday-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;                 /* vaste afstand tussen naam en meta */
-  min-width: 0;             /* flexbox-fix zodat tekst kan wrappen */
+  gap: 2px;
+  min-width: 0;
 }
 
 /* Naam */
@@ -62,13 +62,13 @@
   gap: 6px;
   flex-wrap: wrap;
   word-wrap: break-word;
-  white-space: normal; 
+  white-space: normal;
 }
 
 /* Rechter kolom (datum of badge) */
 .birthday-right {
   display: flex;
-  align-items: center;      /* centreert datum/badge verticaal */
+  align-items: center;
 }
 
 /* Datum (niet jarig) */
@@ -87,7 +87,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;        /* iets groter mag */
+  padding: 6px 14px;
   border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
@@ -114,24 +114,6 @@
   margin-top: 4px;
 }
 
-/* + knop iets compacter, maar gebruikt .btn styling uit base.css */
-.agenda-plus-btn {
-  margin-left: auto;
-  min-width: 0;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  font-size: 20px;
-  font-weight: 600;
-  background: var(--accent);
-  border: 1px solid var(--accent);
-}
-
-.agenda-plus-btn:hover {
-  background: var(--button-hover-blue);
-  border: 1px solid var(--accent);   /* border hetzelfde houden */
-}
-
 /* Inline form onder header */
 .agenda-inline-form {
   margin-top: 4px;
@@ -143,51 +125,57 @@
   font-size: 0.9rem;
   color: var(--muted);
   white-space: normal;
-  word-wrap: break-word; 
-}
-
-/* ===== Delete-kruisje rechtsboven in de li ===== */
-
-/* Het delete-form zelf moet geen ruimte innemen */
-.agenda-delete-form {
-  position: absolute;
-  top: 1px;      /* net als spacing van je card */
-  right: 1px;    /* strak tegen de rand */
-  margin: 0;
-  padding: 0;
-  z-index: 3;    /* boven inhoud */
-}
-
-/* Rode knop, klein vierkant */
-.agenda-delete-btn {
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border-radius: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* override: btn uit base.css heeft min-width etc. */
-  min-width: 0;
-  background: var(--danger);
-}
-
-.agenda-delete-btn:hover {
-  background: var(--danger-hover);
-  border: 1px solid var(--danger-border);   /* border hetzelfde houden */
-}
-
-/* SVG klein en gecentreerd */
-.agenda-delete-btn svg {
-  width: 14px;
-  height: 14px;
-  display: block;
-  pointer-events: none; /* zodat klik altijd de button raakt */
+  word-wrap: break-word;
 }
 
 /* Helper om dingen te verbergen (form standaard dicht) */
 .is-hidden {
   display: none;
+}
+
+/* ===== Actie-buttons naast agenda item ===== */
+
+.agenda-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.agenda-item-row .birthday-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ===== Actie-buttons responsive: desktop horizontaal, mobiel verticaal ===== */
+
+.agenda-actions {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+
+  /* desktop default: naast elkaar */
+  flex-direction: row;
+}
+
+@media (max-width: 640px) {
+  .agenda-actions {
+    /* mobiel: onder elkaar */
+    flex-direction: column;
+    align-items: flex-end; /* blijft rechts uitlijnen */
+  }
+}
+
+.agenda-item-row {
+  display: flex;
+  align-items: center;   /* <-- dit is de key */
+  gap: 10px;
+}
+
+.agenda-actions form {
+  margin: 0;
+  padding: 0;
+}
+
+.agenda-edit-form {
+  margin-top: 10px;
 }

@@ -74,7 +74,9 @@ def agenda(request):
     new_general_form = AgendaItemForm(prefix="general")
     new_outing_form = AgendaItemForm(prefix="outing")
 
-    # Verwijderen van items via kruisje
+    open_edit_id = None
+
+    # Verwijderen van items
     if request.method == "POST" and "delete_item" in request.POST:
         if not can(request.user, "can_upload_agenda"):
             return HttpResponseForbidden("Geen toegang.")
@@ -84,7 +86,34 @@ def agenda(request):
         ).delete()
         return redirect("agenda")
 
-    # Toevoegen van items via inline forms
+    # Bewerken van items (GEEN push)
+    if request.method == "POST" and "edit_item" in request.POST:
+        if not can(request.user, "can_upload_agenda"):
+            return HttpResponseForbidden("Geen toegang.")
+
+        try:
+            item_id = int(request.POST.get("edit_item"))
+        except (TypeError, ValueError):
+            return redirect("agenda")
+
+        item = AgendaItem.objects.filter(id=item_id).first()
+        if not item:
+            return redirect("agenda")
+
+        open_edit_id = item_id
+
+        edit_form = AgendaItemForm(
+            request.POST,
+            prefix=f"edit-{item_id}",
+            instance=item,
+        )
+
+        if edit_form.is_valid():
+            edit_form.save()
+            return redirect("agenda")
+        # bij errors: we renderen pagina opnieuw en houden edit open (open_edit_id)
+
+    # Toevoegen van items via inline forms (MET push)
     if request.method == "POST" and "add_category" in request.POST:
         if not can(request.user, "can_upload_agenda"):
             return HttpResponseForbidden("Geen toegang.")
@@ -104,23 +133,53 @@ def agenda(request):
             item.category = category  # hier zetten we de categorie
             item.created_by = request.user
             item.save()
-            
+
             send_agenda_uploaded_push_task.delay(category)
             return redirect("agenda")
         # Als form niet valid is: we laten de pagina vallen naar render(),
         # met een gebonden form inclusief errors. Form blijft open (zie template).
 
     # Querysets voor agenda-items
-    general_items = (
+    general_qs = (
         AgendaItem.objects
         .filter(category="general", date__gte=today)
         .order_by("date")
     )
-    outing_items = (
+    outing_qs = (
         AgendaItem.objects
         .filter(category="outing", date__gte=today)
         .order_by("date")
     )
+
+    # Edit forms per item
+    general_rows = []
+    for item in general_qs:
+        if open_edit_id == item.id and request.method == "POST" and "edit_item" in request.POST:
+            # Gebruik de bound form met errors (gemaakt in edit branch)
+            edit_form = AgendaItemForm(
+                request.POST,
+                prefix=f"edit-{item.id}",
+                instance=item,
+            )
+        else:
+            edit_form = AgendaItemForm(prefix=f"edit-{item.id}", instance=item)
+        general_rows.append((item, edit_form))
+
+    outing_rows = []
+    for item in outing_qs:
+        if open_edit_id == item.id and request.method == "POST" and "edit_item" in request.POST:
+            edit_form = AgendaItemForm(
+                request.POST,
+                prefix=f"edit-{item.id}",
+                instance=item,
+            )
+        else:
+            edit_form = AgendaItemForm(prefix=f"edit-{item.id}", instance=item)
+        outing_rows.append((item, edit_form))
+
+    # Voor de bestaande checks in template
+    general_items = [i for i, _ in general_rows]
+    outing_items = [i for i, _ in outing_rows]
 
     # Verjaardagen (zoals je al had, incl. caching)
     four_weeks_later = today + timedelta(days=28)
@@ -180,9 +239,16 @@ def agenda(request):
         "today": today,
         "four_weeks_later": four_weeks_later,
         "birthdays": birthdays,
+
         "general_items": general_items,
         "outing_items": outing_items,
+
+        "general_rows": general_rows,
+        "outing_rows": outing_rows,
+
         "new_general_form": new_general_form,
         "new_outing_form": new_outing_form,
+
+        "open_edit_id": open_edit_id,
     }
     return render(request, "agenda/index.html", context)

@@ -24,6 +24,7 @@
         <h2>Algemeen</h2>
         <p>Algemene agenda</p>
       </div>
+
       {% if perms.core.can_upload_agenda %}
         <button
           type="button"
@@ -43,72 +44,163 @@
         id="agenda-form-general"
         class="form agenda-inline-form {% if not new_general_form.errors %}is-hidden{% endif %}"
         method="post"
+        autocomplete="off"
+        data-lock-submit="1"
       >
         {% csrf_token %}
         <input type="hidden" name="add_category" value="general">
         {{ new_general_form.non_field_errors }}
 
+        <label for="{{ new_general_form.title.id_for_label }}">Titel (max 50 karakters):</label>
         {{ new_general_form.title.errors }}
         {{ new_general_form.title }}
 
+        <label for="{{ new_general_form.description.id_for_label }}">Beschrijving (max 100 karakters):</label>
         {{ new_general_form.description.errors }}
         {{ new_general_form.description }}
 
+        <label for="{{ new_general_form.date.id_for_label }}">Datum:</label>
         {{ new_general_form.date.errors }}
-        {{ new_general_form.date }}
+        <input
+          type="text"
+          id="{{ new_general_form.date.id_for_label }}"
+          name="{{ new_general_form.date.html_name }}"
+          class="js-date"
+          placeholder="dd-mm-jjjj"
+          inputmode="numeric"
+          autocomplete="off"
+          value="{{ new_general_form.date.value|default_if_none:'' }}"
+        >
 
-        <button type="submit" class="btn">
-          Opslaan
-        </button>
+        <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+          <button
+            type="button"
+            class="btn btn-danger js-cancel-form"
+            data-target="#agenda-form-general"
+          >
+            Annuleren
+          </button>
+
+          <button type="submit" class="btn btn-save" data-submit-btn>
+            Opslaan
+          </button>
+        </div>
       </form>
     {% endif %}
 
     {% if general_items %}
       <ul class="birthday-list agenda-list">
-        {% for item in general_items %}
+        {% for item, edit_form in general_rows %}
           <li class="birthday-item">
-            {% if perms.core.can_upload_agenda %}
-              <form method="post" class="agenda-delete-form">
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  name="delete_item"
-                  value="{{ item.id }}"
-                  class="btn btn-danger agenda-delete-btn"
-                  title="Verwijderen"
-                  aria-label="Verwijderen"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </form>
-            {% endif %}
+            <div class="agenda-item-row">
+              <div class="birthday-main">
+                <div class="birthday-left">
+                  <span class="birthday-name">{{ item.title }}</span>
+                  <div class="birthday-meta">
+                    <span class="agenda-description">{{ item.description }}</span>
+                  </div>
+                </div>
 
-            <div class="birthday-main">
-              <div class="birthday-left">
-                <span class="birthday-name">{{ item.title }}</span>
-                <div class="birthday-meta">
-                  <span class="agenda-description">{{ item.description }}</span>
+                <div class="birthday-right">
+                  <span class="birthday-date">
+                    {{ item.date|date:"d-m-Y" }}
+                  </span>
                 </div>
               </div>
 
-              <div class="birthday-right">
-                <span class="birthday-date">
-                  {{ item.date|date:"d-m-Y" }}
-                </span>
-              </div>
+              {% if perms.core.can_upload_agenda %}
+                <div class="agenda-actions">
+                  <button
+                    type="button"
+                    class="icon-btn js-toggle-form"
+                    data-target="#agenda-edit-general-{{ item.id }}"
+                    aria-expanded="{% if open_edit_id == item.id %}true{% else %}false{% endif %}"
+                    aria-controls="agenda-edit-general-{{ item.id }}"
+                    title="Bewerken"
+                    aria-label="Bewerken"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </button>
+
+                  <form method="post" class="agenda-delete-form" data-lock-submit="1">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      name="delete_item"
+                      value="{{ item.id }}"
+                      class="icon-btn danger"
+                      title="Verwijderen"
+                      aria-label="Verwijderen"
+                      data-submit-btn
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
             </div>
+
+            {% if perms.core.can_upload_agenda %}
+              <form
+                id="agenda-edit-general-{{ item.id }}"
+                class="form agenda-inline-form agenda-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
+                method="post"
+                autocomplete="off"
+                data-lock-submit="1"
+              >
+                {% csrf_token %}
+                <input type="hidden" name="edit_item" value="{{ item.id }}">
+                <input type="hidden" name="edit_category" value="general">
+                {{ edit_form.non_field_errors }}
+
+                <label for="{{ edit_form.title.id_for_label }}">Titel (max 50 karakters):</label>
+                {{ edit_form.title.errors }}
+                {{ edit_form.title }}
+
+                <label for="{{ edit_form.description.id_for_label }}">Beschrijving (max 100 karakters):</label>
+                {{ edit_form.description.errors }}
+                {{ edit_form.description }}
+
+                <label for="{{ edit_form.date.id_for_label }}">Datum:</label>
+                {{ edit_form.date.errors }}
+                <input
+                  type="text"
+                  id="{{ edit_form.date.id_for_label }}"
+                  name="{{ edit_form.date.html_name }}"
+                  class="js-date"
+                  placeholder="dd-mm-jjjj"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  value="{% if edit_form.is_bound %}{{ edit_form.date.value|default_if_none:'' }}{% else %}{{ item.date|date:'d-m-Y' }}{% endif %}"
+                >
+
+                <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+                  <button
+                    type="button"
+                    class="btn btn-danger js-cancel-form"
+                    data-target="#agenda-edit-general-{{ item.id }}"
+                  >
+                    Annuleren
+                  </button>
+
+                  <button type="submit" class="btn btn-save" data-submit-btn>
+                    Opslaan
+                  </button>
+                </div>
+              </form>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
@@ -131,6 +223,7 @@
         <h2>Uitjes</h2>
         <p>Geplande uitjes</p>
       </div>
+
       {% if perms.core.can_upload_agenda %}
         <button
           type="button"
@@ -140,7 +233,7 @@
           aria-controls="agenda-form-outing"
           title="Uitje toevoegen"
         >
-        Toevoegen
+          Toevoegen
         </button>
       {% endif %}
     </div>
@@ -150,72 +243,163 @@
         id="agenda-form-outing"
         class="form agenda-inline-form {% if not new_outing_form.errors %}is-hidden{% endif %}"
         method="post"
+        autocomplete="off"
+        data-lock-submit="1"
       >
         {% csrf_token %}
         <input type="hidden" name="add_category" value="outing">
         {{ new_outing_form.non_field_errors }}
 
+        <label for="{{ new_outing_form.title.id_for_label }}">Titel (max 50 karakters):</label>
         {{ new_outing_form.title.errors }}
         {{ new_outing_form.title }}
 
+        <label for="{{ new_outing_form.description.id_for_label }}">Beschrijving (max 100 karakters):</label>
         {{ new_outing_form.description.errors }}
         {{ new_outing_form.description }}
 
+        <label for="{{ new_outing_form.date.id_for_label }}">Datum:</label>
         {{ new_outing_form.date.errors }}
-        {{ new_outing_form.date }}
+        <input
+          type="text"
+          id="{{ new_outing_form.date.id_for_label }}"
+          name="{{ new_outing_form.date.html_name }}"
+          class="js-date"
+          placeholder="dd-mm-jjjj"
+          inputmode="numeric"
+          autocomplete="off"
+          value="{{ new_outing_form.date.value|default_if_none:'' }}"
+        >
 
-        <button type="submit" class="btn">
-          Opslaan
-        </button>
+        <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+          <button
+            type="button"
+            class="btn btn-danger js-cancel-form"
+            data-target="#agenda-form-outing"
+          >
+            Annuleren
+          </button>
+
+          <button type="submit" class="btn btn-save" data-submit-btn>
+            Opslaan
+          </button>
+        </div>
       </form>
     {% endif %}
 
     {% if outing_items %}
       <ul class="birthday-list agenda-list">
-        {% for item in outing_items %}
+        {% for item, edit_form in outing_rows %}
           <li class="birthday-item">
-            {% if perms.core.can_upload_agenda %}
-              <form method="post" class="agenda-delete-form">
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  name="delete_item"
-                  value="{{ item.id }}"
-                  class="btn btn-danger agenda-delete-btn"
-                  title="Verwijderen"
-                  aria-label="Verwijderen"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </form>
-            {% endif %}
+            <div class="agenda-item-row">
+              <div class="birthday-main">
+                <div class="birthday-left">
+                  <span class="birthday-name">{{ item.title }}</span>
+                  <div class="birthday-meta">
+                    <span class="agenda-description">{{ item.description }}</span>
+                  </div>
+                </div>
 
-            <div class="birthday-main">
-              <div class="birthday-left">
-                <span class="birthday-name">{{ item.title }}</span>
-                <div class="birthday-meta">
-                  <span class="agenda-description">{{ item.description }}</span>
+                <div class="birthday-right">
+                  <span class="birthday-date">
+                    {{ item.date|date:"d-m-Y" }}
+                  </span>
                 </div>
               </div>
 
-              <div class="birthday-right">
-                <span class="birthday-date">
-                  {{ item.date|date:"d-m-Y" }}
-                </span>
-              </div>
+              {% if perms.core.can_upload_agenda %}
+                <div class="agenda-actions">
+                  <button
+                    type="button"
+                    class="icon-btn js-toggle-form"
+                    data-target="#agenda-edit-outing-{{ item.id }}"
+                    aria-expanded="{% if open_edit_id == item.id %}true{% else %}false{% endif %}"
+                    aria-controls="agenda-edit-outing-{{ item.id }}"
+                    title="Bewerken"
+                    aria-label="Bewerken"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </button>
+
+                  <form method="post" class="agenda-delete-form" data-lock-submit="1">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      name="delete_item"
+                      value="{{ item.id }}"
+                      class="icon-btn danger"
+                      title="Verwijderen"
+                      aria-label="Verwijderen"
+                      data-submit-btn
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
             </div>
+
+            {% if perms.core.can_upload_agenda %}
+              <form
+                id="agenda-edit-outing-{{ item.id }}"
+                class="form agenda-inline-form agenda-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
+                method="post"
+                autocomplete="off"
+                data-lock-submit="1"
+              >
+                {% csrf_token %}
+                <input type="hidden" name="edit_item" value="{{ item.id }}">
+                <input type="hidden" name="edit_category" value="outing">
+                {{ edit_form.non_field_errors }}
+
+                <label for="{{ edit_form.title.id_for_label }}">Titel (max 50 karakters):</label>
+                {{ edit_form.title.errors }}
+                {{ edit_form.title }}
+
+                <label for="{{ edit_form.description.id_for_label }}">Beschrijving (max 100 karakters):</label>
+                {{ edit_form.description.errors }}
+                {{ edit_form.description }}
+
+                <label for="{{ edit_form.date.id_for_label }}">Datum:</label>
+                {{ edit_form.date.errors }}
+                <input
+                  type="text"
+                  id="{{ edit_form.date.id_for_label }}"
+                  name="{{ edit_form.date.html_name }}"
+                  class="js-date"
+                  placeholder="dd-mm-jjjj"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  value="{% if edit_form.is_bound %}{{ edit_form.date.value|default_if_none:'' }}{% else %}{{ item.date|date:'d-m-Y' }}{% endif %}"
+                >
+
+                <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+                  <button
+                    type="button"
+                    class="btn btn-danger js-cancel-form"
+                    data-target="#agenda-edit-outing-{{ item.id }}"
+                  >
+                    Annuleren
+                  </button>
+
+                  <button type="submit" class="btn btn-save" data-submit-btn>
+                    Opslaan
+                  </button>
+                </div>
+              </form>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
@@ -286,15 +470,16 @@
   </div>
 </div>
 
-{# IMask voor dd-mm-jjjj + toggle logica #}
+{# IMask + toggle/cancel blijven zoals je had #}
 <script src="https://unpkg.com/imask"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Toggle inline forms via + knop
+    // Toggle forms
     document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var targetSelector = btn.getAttribute("data-target");
         if (!targetSelector) return;
+
         var form = document.querySelector(targetSelector);
         if (!form) return;
 
@@ -305,6 +490,22 @@
           var firstField = form.querySelector("input, textarea");
           if (firstField) firstField.focus();
         }
+      });
+    });
+
+    // Annuleren
+    document.querySelectorAll(".js-cancel-form").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetSelector = btn.getAttribute("data-target");
+        if (!targetSelector) return;
+
+        var form = document.querySelector(targetSelector);
+        if (!form) return;
+
+        form.classList.add("is-hidden");
+
+        var toggleBtn = document.querySelector('.js-toggle-form[data-target="' + targetSelector + '"]');
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
       });
     });
 
@@ -323,5 +524,5 @@
       });
     });
   });
-</script> 
+</script>
 {% endblock %}

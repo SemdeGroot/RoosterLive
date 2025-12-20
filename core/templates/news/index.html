@@ -25,16 +25,17 @@
         <h2>Nieuws</h2>
         <p>Klik op de items om te openen.</p>
       </div>
+
       {% if perms.core.can_upload_news %}
         <button
           type="button"
-          class="btn agenda-plus-btn js-toggle-form"
+          class="btn btn-save js-toggle-form"
           data-target="#news-form"
           aria-expanded="false"
           aria-controls="news-form"
           title="Nieuwsbericht toevoegen"
         >
-          +
+          Toevoegen
         </button>
       {% endif %}
     </div>
@@ -45,94 +46,197 @@
         class="form agenda-inline-form {% if not form.errors %}is-hidden{% endif %}"
         method="post"
         enctype="multipart/form-data"
+        autocomplete="off"
+        data-lock-submit="1"
       >
         {% csrf_token %}
+        <input type="hidden" name="add_news" value="1">
         {{ form.non_field_errors }}
 
+        <label for="{{ form.title.id_for_label }}">Titel (max 50 karakters):</label>
         {{ form.title.errors }}
         {{ form.title }}
 
+        <label for="{{ form.short_description.id_for_label }}">Korte beschrijving (max 100 karakters):</label>
         {{ form.short_description.errors }}
         {{ form.short_description }}
 
+        <label for="{{ form.description.id_for_label }}">Beschrijving:</label>
         {{ form.description.errors }}
         {{ form.description }}
 
+        <label for="{{ form.file.id_for_label }}">Bestand:</label>
         {{ form.file.errors }}
         <div class="news-file-wrapper">
           {{ form.file }}
           <label for="{{ form.file.id_for_label }}" class="btn">
             Bestand kiezen
           </label>
-          <span class="news-file-name" id="news-file-name"></span>
+          <span class="news-file-name" data-file-name></span>
         </div>
 
         <p class="small-text" style="margin-top:4px;">
           <em>Optioneel: selecteer een PDF of afbeelding (PNG, JPEG of JPG) met een maximale bestandsgrootte van 25 MB. Nieuws wordt automatisch verwijderd na 6 maanden.</em>
         </p>
 
-        <button type="submit" class="btn">
-          Opslaan
-        </button>
+        <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+          <button
+            type="button"
+            class="btn btn-danger js-cancel-form"
+            data-target="#news-form"
+          >
+            Annuleren
+          </button>
 
+          <button type="submit" class="btn btn-save" data-submit-btn>
+            Opslaan
+          </button>
+        </div>
       </form>
     {% endif %}
 
     {% if news_items %}
       <ul class="birthday-list agenda-list news-list">
-        {% for item in news_items %}
-          <li class="birthday-item news-item">
-            {% if perms.core.can_upload_news %}
-              <form method="post" class="agenda-delete-form news-delete-form">
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  name="delete_item"
-                  value="{{ item.id }}"
-                  class="btn btn-danger agenda-delete-btn"
-                  title="Verwijderen"
-                  aria-label="Verwijderen"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+        {% for item, edit_form in news_rows %}
+          <li
+            class="birthday-item news-item"
+            data-news-item="{{ item.id }}"
+            data-has-file="{% if item.has_file %}1{% else %}0{% endif %}"
+          >
+            <div class="agenda-item-row">
+              {# header (altijd zichtbaar): titel + datum #}
+              <div class="birthday-main">
+                <div class="birthday-left">
+                  <span class="birthday-name">{{ item.title }}</span>
+                  {% if item.short_description %}
+                    <div class="birthday-meta">
+                      <span class="agenda-description">
+                        {{ item.short_description }}
+                      </span>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="birthday-right">
+                  <span class="birthday-date">
+                    {{ item.date|date:"d-m-Y" }}
+                  </span>
+                </div>
+              </div>
+
+              {% if perms.core.can_upload_news %}
+                <div class="agenda-actions" data-stop-toggle>
+                  <button
+                    type="button"
+                    class="icon-btn js-toggle-form"
+                    data-target="#news-edit-{{ item.id }}"
+                    aria-expanded="{% if open_edit_id == item.id %}true{% else %}false{% endif %}"
+                    aria-controls="news-edit-{{ item.id }}"
+                    title="Bewerken"
+                    aria-label="Bewerken"
                   >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </button>
+
+                  <form method="post" class="agenda-delete-form news-delete-form" data-stop-toggle data-lock-submit="1">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      name="delete_item"
+                      value="{{ item.id }}"
+                      class="icon-btn danger"
+                      title="Verwijderen"
+                      aria-label="Verwijderen"
+                      data-submit-btn
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if perms.core.can_upload_news %}
+              <form
+                id="news-edit-{{ item.id }}"
+                class="form agenda-inline-form news-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
+                method="post"
+                enctype="multipart/form-data"
+                autocomplete="off"
+                data-stop-toggle
+                data-lock-submit="1"
+              >
+                {% csrf_token %}
+                <input type="hidden" name="edit_item" value="{{ item.id }}">
+                {{ edit_form.non_field_errors }}
+
+                <label for="{{ edit_form.title.id_for_label }}">Titel (max 50 karakters):</label>
+                {{ edit_form.title.errors }}
+                {{ edit_form.title }}
+
+                <label for="{{ edit_form.short_description.id_for_label }}">Korte beschrijving (max 100 karakters):</label>
+                {{ edit_form.short_description.errors }}
+                {{ edit_form.short_description }}
+
+                <label for="{{ edit_form.description.id_for_label }}">Beschrijving:</label>
+                {{ edit_form.description.errors }}
+                {{ edit_form.description }}
+
+                <label for="{{ edit_form.file.id_for_label }}">Bestand:</label>
+                {{ edit_form.file.errors }}
+                <div class="news-file-wrapper">
+                  {{ edit_form.file }}
+                  <label for="{{ edit_form.file.id_for_label }}" class="btn">
+                    Bestand kiezen
+                  </label>
+                  <span class="news-file-name" data-file-name></span>
+
+                  <span class="news-current-file">
+                    Huidig bestand:
+                    {% if item.original_filename %}
+                      {{ item.original_filename }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </span>
+                </div>
+
+                <p class="small-text" style="margin-top:4px;">
+                  <em>Optioneel: selecteer een nieuw bestand om het huidige te vervangen. Kies een PDF of afbeelding (PNG, JPEG of JPG) met een maximale bestandsgrootte van 25 MB. Nieuws wordt automatisch verwijderd na 6 maanden.</em>
+                </p>
+
+                <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+                  <button
+                    type="button"
+                    class="btn btn-danger js-cancel-form"
+                    data-target="#news-edit-{{ item.id }}"
+                  >
+                    Annuleren
+                  </button>
+
+                  <button type="submit" class="btn btn-save" data-submit-btn>
+                    Opslaan
+                  </button>
+                </div>
               </form>
             {% endif %}
 
-            {# header (altijd zichtbaar): titel + datum #}
-            <div class="birthday-main">
-              <div class="birthday-left">
-                <span class="birthday-name">{{ item.title }}</span>
-                {% if item.short_description %}
-                  <div class="birthday-meta">
-                    <span class="agenda-description">
-                      {{ item.short_description }}
-                    </span>
-                  </div>
-                {% endif %}
-              </div>
-              <div class="birthday-right">
-                <span class="birthday-date">
-                  {{ item.date|date:"d-m-Y" }}
-                </span>
-              </div>
-            </div>
-
-            {# body (inklapbaar): volledige tekst + media #}
+            {# body (inklapbaar): volledige tekst + media (LAZY) #}
             <div
               id="news-body-{{ item.id }}"
               class="news-body is-hidden"
+              data-stop-toggle
             >
               {% if item.description %}
                 <div class="news-description">
@@ -141,15 +245,12 @@
               {% endif %}
 
               {% if item.has_file %}
-                <div class="news-media">
-                  {% if item.is_pdf %}
-                    {% for url in item.page_urls %}
-                      <img src="{{ url }}" alt="Nieuws PDF pagina">
-                    {% endfor %}
-                  {% else %}
-                    <img src="{{ item.file_url }}" alt="Nieuws afbeelding">
-                  {% endif %}
-                </div>
+                <div
+                  class="news-media"
+                  data-media-host
+                  data-item-id="{{ item.id }}"
+                  data-loaded="0"
+                ></div>
               {% endif %}
             </div>
           </li>

@@ -223,6 +223,40 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   margin-top:8px;
 }
 
+
+/* -------------------------------------------------------
+   ICON BUTTONS (edit/delete)
+------------------------------------------------------- */
+.icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px;
+  width:32px;
+  height:32px;
+
+  border-radius:10px;
+  border:1px solid var(--accent);
+  background:var(--accent);
+  color:var(--text);
+  cursor:pointer;
+  transition:background .2s ease, border-color .2s ease;
+}
+.icon-btn:hover{
+  background:var(--button-hover-blue);
+}
+.icon-btn svg{ display:block; }
+
+.icon-btn.danger{
+  background:var(--danger);
+  border-color:var(--danger-border);
+  color:#fff;
+}
+.icon-btn.danger:hover{
+  background:var(--danger-hover);
+  border-color:var(--danger-border);
+}
+
 /* Form fields (file input uitgezonderd) */
 .form{ padding:16px; max-width:100%; }
 .form input:not([type="file"]),
@@ -237,6 +271,11 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   margin:6px 0 12px;
   font-size:16px;
 }
+textarea{
+  resize: vertical !important;
+  max-width: 100%;
+}
+
 
 /* Uploadknop terug naar OS-default */
 input[type="file"]{

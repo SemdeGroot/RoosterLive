@@ -74,39 +74,6 @@ table.crud-table :is(th,td):nth-child(10){ width:var(--c10, auto); }
 }
 
 /* -------------------------------------------------------
-   ICON BUTTONS (edit/delete)
-------------------------------------------------------- */
-.icon-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px;
-  width:32px;
-  height:32px;
-
-  border-radius:10px;
-  border:1px solid var(--accent);
-  background:var(--accent);
-  color:var(--text);
-  cursor:pointer;
-  transition:background .2s ease, border-color .2s ease;
-}
-.icon-btn:hover{
-  background:var(--button-hover-blue);
-}
-.icon-btn svg{ display:block; }
-
-.icon-btn.danger{
-  background:var(--danger);
-  border-color:var(--danger-border);
-  color:#fff;
-}
-.icon-btn.danger:hover{
-  background:var(--danger-hover);
-  border-color:var(--danger-border);
-}
-
-/* -------------------------------------------------------
    INLINE EDIT ROW (stabiel: geen compress)
 ------------------------------------------------------- */
 tr.edit-row td{

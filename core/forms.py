@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
@@ -431,23 +432,30 @@ class AgendaItemForm(forms.ModelForm):
 
     class Meta:
         model = AgendaItem
-        fields = ["title", "description", "date"]  # category NIET opnemen
+        fields = ["title", "description", "date"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # === Plaatshouders ===
         self.fields["title"].widget.attrs.setdefault("placeholder", "Titel (max 50 karakters)")
         self.fields["description"].widget.attrs.setdefault("placeholder", "Korte beschrijving (max 100 karakters)")
         self.fields["description"].widget.attrs.setdefault("rows", 2)
 
-        # === HTML max length ===
         self.fields["title"].widget.attrs["maxlength"] = 50
         self.fields["description"].widget.attrs["maxlength"] = 100
 
-        # === Django server-side validators ===
         self.fields["title"].validators.append(MaxLengthValidator(50))
         self.fields["description"].validators.append(MaxLengthValidator(100))
+
+    def clean_date(self):
+        d = self.cleaned_data.get("date")
+        if not d:
+            return d
+
+        today = timezone.localdate()
+        if d < today:
+            raise ValidationError("Datum mag niet in het verleden liggen.")
+        return d
 
 class NewsItemForm(forms.ModelForm):
     MAX_FILE_SIZE_MB = 25  # limiet gelijk aan nginx

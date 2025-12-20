@@ -252,7 +252,7 @@ else:
     }
 
 # === Sessies ===
-SESSION_COOKIE_AGE = 60 * 60 * 8  # 8 uur
+SESSION_COOKIE_AGE = 60 * 60 * 10  # 10 uur
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = False
 

@@ -41,7 +41,7 @@ TILE_GROUPS = {
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "instellings": [
@@ -52,7 +52,7 @@ TILE_GROUPS = {
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "Portavita Check", "img": "portavita.svg",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
-        {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     # De subtiles voor Medicatiebeoordeling
