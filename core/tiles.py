@@ -4,8 +4,8 @@ from core.views._helpers import can
 TILE_GROUPS = {
     "home": [
         {"name": "Agenda", "img": "agenda.svg", "url_name": "agenda", "perm": "can_view_agenda"},
-        {"name": "Nieuws", "img": "news.svg", "url_name": "news", "perm": "can_view_news"},
-        {"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster", "perm": "can_view_roster"},
+        {"name": "Nieuws", "img": "nieuws.svg", "url_name": "news", "perm": "can_view_news"},
+        {"name": "Rooster", "img": "rooster.svg", "url_name": "rooster", "perm": "can_view_roster"},
         {"name": "Beschikbaarheid", "img": "beschikbaarheid.svg", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
         {"name": "Onboarding", "img": "onboarding.svg", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
         {"name": "Personeel", "img": "personeel.svg", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
@@ -16,22 +16,22 @@ TILE_GROUPS = {
     ],
 
     "personeel": [
-        {"name": "Teamdashboard", "img": "personeel_dashboard-256x256.png", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
+        {"name": "Teamdashboard", "img": "teamdashboard.svg", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "onboarding": [
-        {"name": "Wie is wie?", "img": "who_is_who-256x256.png", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
-        {"name": "Formulieren", "img": "forms-256x256.png", "url_name": "forms", "perm": "can_view_forms"},
+        {"name": "Wie is wie?", "img": "wieiswie.svg", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
+        {"name": "Formulieren", "img": "formulieren.svg", "url_name": "forms", "perm": "can_view_forms"},
         {"name": "Checklist", "img": "checklist.svg", "url_name": "checklist", "perm": "can_view_checklist"},
     ],
 
     "baxter": [
         {"name": "Voorraad",        "img": "voorraad.svg", "url_name": "medications",              "perm": "can_view_av_medications"},
         {"name": "Nazendingen",     "img": "nazendingen.svg",     "url_name": "nazendingen",              "perm": "can_view_av_nazendingen"},
-        {"name": "Omzettingslijst", "img": "omzettingslijst-256x256.png", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
+        {"name": "Omzettingslijst", "img": "omzettingslijst.svg", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
         {"name": "Geen levering",   "img": "no-delivery.svg",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
-        {"name": "STS halfjes",     "img": "pill_half-256x256.png",       "url_name": "baxter_sts_halfjes",       "perm": "can_view_baxter_sts_halfjes"},
+        {"name": "STS halfjes",     "img": "sts_halfjes.svg",       "url_name": "baxter_sts_halfjes",       "perm": "can_view_baxter_sts_halfjes"},
         {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
     ],
 
@@ -48,9 +48,9 @@ TILE_GROUPS = {
         # Deze verwijst ook naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review Planner", "img": "reviewplanner-256x256.png",
+        {"name": "Review Planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "Portavita Check", "img": "portavita-256x256.png",
+        {"name": "Portavita Check", "img": "portavita.svg",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
         {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
@@ -59,7 +59,7 @@ TILE_GROUPS = {
     "medicatiebeoordeling": [
         {
             "name": "Nieuwe Review",
-            "img": "createreview-256x256.png",
+            "img": "createreview.svg",
             "url_name": "medicatiebeoordeling_create",
             "perm": "can_perform_medicatiebeoordeling"
         },
