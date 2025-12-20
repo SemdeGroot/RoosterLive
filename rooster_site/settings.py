@@ -159,6 +159,8 @@ CACHES = {
     }
 }
 
+RATELIMIT_USE_CACHE = "default"
+
 # === Celery ===
 CELERY_TASK_ALWAYS_EAGER = False  # True voor sync testen (dev-only)
 CELERY_TASK_TIME_LIMIT = 60
