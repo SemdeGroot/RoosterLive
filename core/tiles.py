@@ -3,7 +3,7 @@ from core.views._helpers import can
 
 TILE_GROUPS = {
     "home": [
-        {"name": "Agenda", "img": "agenda-256x256.png", "url_name": "agenda", "perm": "can_view_agenda"},
+        {"name": "Agenda", "img": "agenda.svg", "url_name": "agenda", "perm": "can_view_agenda"},
         {"name": "Nieuws", "img": "nieuws-256x256.png", "url_name": "news", "perm": "can_view_news"},
         {"name": "Rooster", "img": "rooster-256x256.png", "url_name": "rooster", "perm": "can_view_roster"},
         {"name": "Beschikbaarheid", "img": "beschikbaarheid-256x256.png", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
@@ -27,26 +27,26 @@ TILE_GROUPS = {
     ],
 
     "baxter": [
-        {"name": "Voorraad",        "img": "medicijn_zoeken-256x256.png", "url_name": "medications",              "perm": "can_view_av_medications"},
-        {"name": "Nazendingen",     "img": "nazendingen-256x256.png",     "url_name": "nazendingen",              "perm": "can_view_av_nazendingen"},
+        {"name": "Voorraad",        "img": "voorraad.svg", "url_name": "medications",              "perm": "can_view_av_medications"},
+        {"name": "Nazendingen",     "img": "nazendingen.svg",     "url_name": "nazendingen",              "perm": "can_view_av_nazendingen"},
         {"name": "Omzettingslijst", "img": "omzettingslijst-256x256.png", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
-        {"name": "Geen levering",   "img": "no-delivery-256x256.png",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
+        {"name": "Geen levering",   "img": "no-delivery.svg",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
         {"name": "STS halfjes",     "img": "pill_half-256x256.png",       "url_name": "baxter_sts_halfjes",       "perm": "can_view_baxter_sts_halfjes"},
-        {"name": "Laatste potten",  "img": "pills-bottle-256x256.png",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
+        {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
     ],
 
        "openbare": [
         # Deze verwijst naar de dashboard view
-        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review Planner", "img": "reviewplanner-256x256.png",
+        {"name": "Review Planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "Werkafspraken", "img": "afspraken-256x256.png", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
     "instellings": [
         # Deze verwijst ook naar de dashboard view
-        {"name": "Medicatiereview", "img": "medicatiebeoordeling-256x256.png",
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner-256x256.png",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
