@@ -5,7 +5,7 @@ TILE_GROUPS = {
     "home": [
         {"name": "Agenda", "img": "agenda.svg", "url_name": "agenda", "perm": "can_view_agenda"},
         {"name": "Nieuws", "img": "nieuws.svg", "url_name": "news", "perm": "can_view_news"},
-        {"name": "Rooster", "img": "rooster.svg", "url_name": "rooster", "perm": "can_view_roster"},
+        {"name": "Rooster", "img": "rooster_large.svg", "url_name": "rooster", "perm": "can_view_roster"},
         {"name": "Beschikbaarheid", "img": "beschikbaarheid.svg", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
         {"name": "Onboarding", "img": "onboarding.svg", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
         {"name": "Personeel", "img": "personeel.svg", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
