@@ -15,7 +15,7 @@
 
     <!-- Weeknavigatie -->
     <div class="week-controls">
-      <button data-haptic="" id="prevWeekBtn"
+      <button id="prevWeekBtn"
               class="btn btn-icon"
               {% if not has_prev %}disabled aria-disabled="true"{% endif %}
               data-target="{{ prev_monday|date:'Y-m-d' }}"
@@ -24,7 +24,7 @@
       </button>
 
       <div class="week-picker">
-      <button data-haptic id="weekPickerBtn"
+      <button id="weekPickerBtn"
               class="btn week-picker-btn"
               aria-haspopup="listbox"
               aria-expanded="false"
@@ -53,7 +53,7 @@
         </div>
       </div>
 
-    <button data-haptic id="nextWeekBtn"
+    <button id="nextWeekBtn"
             class="btn btn-icon"
             {% if not has_next %}disabled aria-disabled="true"{% endif %}
             data-target="{{ next_monday|date:'Y-m-d' }}"

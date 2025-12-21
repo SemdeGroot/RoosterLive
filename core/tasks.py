@@ -31,7 +31,7 @@ def send_nazendingen_pdf_task(self, organization_ids):
     from core.utils.nazending_mail import send_single_nazending_email
 
     # 1. Instellingen & Data
-    contact_email = "baxter@apotheekjansen.com"
+    contact_email = "baxterezorg@apotheekjansen.com"
     nazendingen = Nazending.objects.select_related('voorraad_item').order_by('-datum')
     
     # 2. Context

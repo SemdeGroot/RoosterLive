@@ -20,14 +20,14 @@
             class="btn btn-icon"
             {% if not has_prev %}disabled aria-disabled="true"{% endif %}
             data-target="{{ prev_monday|date:'Y-m-d' }}"
-            aria-label="Vorige week" data-haptic>
+            aria-label="Vorige week">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
     </button>
 
     <div class="week-picker">
-      <button data-haptic type="button" id="weekPickerBtn"
+      <button type="button" id="weekPickerBtn"
               class="btn week-picker-btn"
               aria-haspopup="listbox"
               aria-expanded="false"
@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <button data-haptic type="button" id="nextWeekBtn"
+    <button type="button" id="nextWeekBtn"
             class="btn btn-icon"
             {% if not has_next %}disabled aria-disabled="true"{% endif %}
             data-target="{{ next_monday|date:'Y-m-d' }}"
@@ -98,8 +98,8 @@
       </div>
 
       <div class="u-actions">
-        <button class="btn" type="submit" id="uploadBtn" disabled data-haptic>Uploaden</button>
-        <button type="button" class="btn" id="clearBtn" style="display:none;" data-haptic>Wissen</button>
+        <button class="btn" type="submit" id="uploadBtn" disabled>Uploaden</button>
+        <button type="button" class="btn" id="clearBtn" style="display:none;" >Wissen</button>
       </div>
     </form>
   {% endif %}

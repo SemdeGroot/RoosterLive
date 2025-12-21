@@ -111,7 +111,7 @@ def export_nazendingen_pdf(request):
         "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
         "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
 
-        "contact_email": "baxter@apotheekjansen.com",
+        "contact_email": "baxterezorg@apotheekjansen.com",
     }
 
     # 4. Render HTML
