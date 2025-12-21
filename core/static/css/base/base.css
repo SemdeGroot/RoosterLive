@@ -3,6 +3,7 @@
     --panel:     #131a24;   
     --panel-2:   #101720; 
     --text:      #e6edf3;
+    --text-button:      #e6edf3;
     --muted:     #9fb2c8;
     --border:    #223144;   
     --shadow:    rgba(0,0,0,.52);
@@ -203,6 +204,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .btn-danger{
   background-color:var(--danger) !important;
   border-color:var(--danger-border) !important;
+  color:var(--text-button) !important;
 }
 .btn-danger:hover{
   border-color:var(--danger-border) !important;
@@ -212,7 +214,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .btn-save{
   background-color:var(--accent) !important;
   border-color:var(--accent) !important;
-  color:var(--text) !important;
+  color:var(--text-button) !important;
   font-weight:600;
 }
 .btn-save:hover{ background-color:var(--button-hover-blue) !important; }
@@ -238,7 +240,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   border-radius:10px;
   border:1px solid var(--accent);
   background:var(--accent);
-  color:var(--text);
+  color:var(--text-button);
   cursor:pointer;
   transition:background .2s ease, border-color .2s ease;
 }
@@ -250,7 +252,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .icon-btn.danger{
   background:var(--danger);
   border-color:var(--danger-border);
-  color:#fff;
+  color:var(--text-button);
 }
 .icon-btn.danger:hover{
   background:var(--danger-hover);
@@ -263,7 +265,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 .form select,
 .form textarea{
   width:100%;
-  background:#0f141a;
+  background: var(--panel-2);
   color:var(--text);
   border:1px solid var(--border);
   padding:10px 12px;
@@ -343,6 +345,20 @@ th,td{
   }
 }
 
+/* Voeg deze container toe aan je globale CSS */
+.tile-icon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Zorg dat images in de tiles altijd een blok zijn */
+.tile-img {
+  display: block;
+  object-fit: contain;
+}
+
 
 /* Footer */
 .footer{
@@ -377,9 +393,22 @@ th,td{
   .header{ padding:14px 20px; gap:16px; }
   .logo{ max-height:44px; }
   .title{ font-size:1.5rem; }
-  .tiles{ grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+  
+  .tiles{ 
+    /* Verlaag de min-width van 200px naar 160px of 150px */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    gap: 16px; 
+  }
+  
   .tile-box{ padding:18px; min-height:160px; }
-  .tile-img{ max-width:120px; max-height:120px; }
+  
+  .tile-img{ 
+    /* Gebruik hier ook weer width ipv max-width voor Android */
+    width: 120px; 
+    height: 120px; 
+    display: block;
+    margin: 0 auto;
+  }
 }
 
 /* Desktop: header as grid with equal vertical spacing */
@@ -456,8 +485,8 @@ th,td{
   position:relative;
   margin:6vh auto 0;
   max-width:420px;
-  background:#111;
-  color:#fff;
+  background:var(--bg);
+  color:var(--text);
   border-radius:16px;
   padding:24px;
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
@@ -465,7 +494,7 @@ th,td{
 
 .push-icon{ width:64px; height:64px; display:block; margin:8px auto 12px; }
 .push-title{ margin:0 0 8px; font-size:1.25rem; text-align:center; }
-.push-text{ margin:0 0 16px; color:#ccc; text-align:center; }
+.push-text{ margin:0 0 16px; color:var(--text); text-align:center; }
 
 .push-actions{ display:grid; gap:10px; grid-template-columns:1fr; }
 .btn-primary{ padding:12px 16px; border-radius:10px; border:0; background:#22c55e; color:#08110a; font-weight:700; }
@@ -669,30 +698,28 @@ textarea.form-input::placeholder{
 }
 
 /* Mobile: altijd 2 kolommen, maar exact dezelfde tile-verhoudingen als basis */
-@media (max-width: 480px){
-  /* iets minder content-padding zodat 2 tiles passen */
-  .content{ padding: 14px; }
+@media (max-width: 480px) {
+  .content { padding: 14px; }
 
-  /* altijd 2 kolommen */
-  .tiles{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .tiles {
+    /* Minimaal 130px zorgt dat er op 360-480px altijd 2 kolommen staan */
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 10px;
   }
 
-  /* schaal alles uniform (zelfde verhoudingen) */
-  .tile-box{
+  .tile-box {
     padding: 14px;
     gap: 9px; 
     min-height: 126px;
   }
 
-  .tile-img{
+  .tile-img {
     width: 80px;
     height: 80px;
+    display: block;
   }
 
-  /* label: geen wrap */
-  .tile-name{
+  .tile-name {
     font-size: 0.86rem;
     white-space: nowrap; 
     overflow: hidden;  
@@ -701,23 +728,53 @@ textarea.form-input::placeholder{
 }
 
 /* Extra klein (320–360): zelfde ratio, nóg iets kleiner */
-@media (max-width: 360px){
-  .content{ padding: 12px; }
+@media (max-width: 360px) {
+  .content { padding: 12px; }
 
-  .tiles{ gap: 8px; }
+  .tiles { 
+    /* Zelfs op hele kleine schermen (320px) passen er 2 van 120px */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px; 
+  }
 
-  .tile-box{
+  .tile-box {
     padding: 12px;     
     gap: 8px;       
     min-height: 112px;
   }
 
-  .tile-img{
+  .tile-img {
     width: 70px;
     height: 70px;
+    display: block;
   }
 
-  .tile-name{
+  .tile-name {
     font-size: 0.76rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 599px) {
+  .tiles {
+    /* auto-fill laat een 3e kolom toe als het past (> 450px ongeveer) */
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 12px;
+  }
+
+  .tile-box {
+    padding: 15px;
+    gap: 10px;
+    min-height: 142px; 
+  }
+
+  .tile-img {
+    width: 90px; /* Cruciaal voor Android visibility */
+    height: 90px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .tile-name {
+    font-size: 0.9rem;
   }
 }
