@@ -30,7 +30,7 @@ def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path
       <p style="margin:0 0 12px 0;">
         Heeft u vragen naar aanleiding van dit overzicht? Neem dan gerust contact op via: 
         <a href="mailto:{contact_email}" style="color:#072a72; font-weight:600;">{contact_email}</a>, 
-        bel 033-4616442 of reageer direct op deze e-mail.
+        bel 033-8700000 (optie 2) of reageer direct op deze e-mail.
       </p>
 
       <p style="margin:0 0 12px 0;">
@@ -55,7 +55,7 @@ def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path
         "Hierbij ontvangt u het actuele overzicht van de geneesmiddelen die momenteel in nazending zijn. "
         "Deze middelen kunnen wij helaas niet in de medicatierol leveren.\n\n"
         "In het overzicht vindt u per middel het eventuele alternatief en de verwachte datum dat het weer leverbaar is. \n\n"
-        f"Heeft u vragen? Neem contact op via: {contact_email}, bel 033-4616442 of reageer op deze e-mail.\n\n"
+        f"Heeft u vragen? Neem contact op via: {contact_email}, bel 033-8700000 (optie 2) of reageer op deze e-mail.\n\n"
         "Met vriendelijke groet,\n\n"
         "Het Bestellingen Team van Apotheek Jansen"
     )
