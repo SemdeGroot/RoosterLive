@@ -77,7 +77,7 @@ table.crud-table :is(th,td):nth-child(10){ width:var(--c10, auto); }
    INLINE EDIT ROW (stabiel: geen compress)
 ------------------------------------------------------- */
 tr.edit-row td{
-  background:var(--panel-2);
+  background:var(--panel);
   padding:0;
   white-space:normal;
   overflow:visible;

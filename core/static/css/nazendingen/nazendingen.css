@@ -11,7 +11,7 @@
 }
 
 .add-section-panel {
-  background-color: var(--panel-2); /* Iets afwijkende achtergrond */
+  background-color: var(--panel); /* Iets afwijkende achtergrond */
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 15px;
