@@ -346,7 +346,6 @@ summary.nav-link{
   -webkit-tap-highlight-color: transparent;
 }
 
-/* === Date navigator === */
 
 /* =========================================================
    Date navigation / week picker (shared)
@@ -475,7 +474,6 @@ summary.nav-link{
     gap: 6px;          /* Iets kleinere gap tussen knoppen */
     justify-content: center;
     width: 100%;
-    overflow: hidden;  /* Veiligheid tegen uitsteken */
   }
 
   /* Icon knoppen compacter maken */
@@ -513,7 +511,6 @@ summary.nav-link{
   .wp-label {
     min-width: 0;
     flex: 0 1 auto;    /* Laat de tekst krimpen indien nodig */
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.9rem; /* Iets kleiner font voor betere fit */

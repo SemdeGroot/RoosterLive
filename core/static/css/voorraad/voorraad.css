@@ -34,3 +34,12 @@
   flex:1; background:var(--panel-2); border:1px solid var(--border);
   border-radius:8px; color:var(--text); padding:8px 10px; font-size:.95rem;
 }
+
+/* Mobiel: forceer horizontale overflow zodat .table-scroll kan scrollen */
+@media (max-width: 900px) {
+
+  #medTable {
+    min-width: 800px; 
+    display: table; /* Zorg dat de tabel zich als tabel blijft gedragen */
+  }
+}
