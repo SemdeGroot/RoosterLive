@@ -1,0 +1,12 @@
+/* static/css/policies/policies.css */
+
+/* Werkafspraken gebruikt news-styling; dit is alleen een kleine aanvulling. */
+.policy-item {
+  cursor: pointer;
+}
+
+/* Zorg dat de uitklap-body dezelfde "is-hidden wins" regel houdt (news.css heeft dit al),
+   maar we herhalen het veilig. */
+.news-body.is-hidden {
+  display: none !important;
+}

@@ -7,6 +7,7 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
   <link rel="stylesheet" href="{% static 'css/news/news.css' %}">
+  <link rel="stylesheet" href="{% static 'css/policies/policies.css' %}">
   <script src="{% static 'js/policies/policies.js' %}" defer></script>
 {% endblock %}
 
@@ -14,149 +15,247 @@
 <div class="card birthdays-card">
 
   {% for category in categories %}
-  <div class="agenda-section">
-    <div class="birthday-header agenda-section-header">
-      <img
-        src="{% static 'img/' %}{{ category.image }}"
-        alt="{{ category.name }}"
-        class="birthday-icon"
-      >
-      <div class="birthday-header-text">
-        <h2>{{ category.name }}</h2>
-        <p>Klik op de items om te openen.</p>
-      </div>
-      {% if perms.core.can_upload_werkafspraken %}
-        <button
-          type="button"
-          class="btn agenda-plus-btn js-toggle-form"
-          data-target="#werkafspraken-form-{{ category.category }}"
-          aria-expanded="false"
-          aria-controls="werkafspraken-form-{{ category.category }}"
-          title="Werkafspraak toevoegen"
+    <div class="agenda-section">
+      <div class="birthday-header agenda-section-header">
+        <img
+          src="{% static 'img/' %}{{ category.image }}"
+          alt="{{ category.name }}"
+          class="birthday-icon"
         >
-          +
-        </button>
+        <div class="birthday-header-text">
+          <h2>{{ category.name }}</h2>
+          <p>Klik op de items om te openen.</p>
+        </div>
+
+        {% if perms.core.can_upload_werkafspraken %}
+          <button
+            type="button"
+            class="btn btn-save js-toggle-form"
+            data-target="#werkafspraken-form-{{ category.category }}"
+            aria-expanded="false"
+            aria-controls="werkafspraken-form-{{ category.category }}"
+            title="Werkafspraak toevoegen"
+          >
+            Toevoegen
+          </button>
+        {% endif %}
+      </div>
+
+      {% if perms.core.can_upload_werkafspraken %}
+        <form
+          id="werkafspraken-form-{{ category.category }}"
+          class="form agenda-inline-form {% if not category.form.errors %}is-hidden{% endif %}"
+          method="post"
+          enctype="multipart/form-data"
+          autocomplete="off"
+          data-lock-submit="1"
+          data-stop-toggle
+        >
+          {% csrf_token %}
+          <input type="hidden" name="add_item" value="{{ category.category }}">
+          {{ category.form.non_field_errors }}
+
+          {# category field hidden (prefix-proof) #}
+          <div style="display:none;">
+            {{ category.form.category }}
+          </div>
+
+          <label for="{{ category.form.title.id_for_label }}">Titel (max 50 karakters):</label>
+          {{ category.form.title.errors }}
+          {{ category.form.title }}
+
+          <label for="{{ category.form.short_description.id_for_label }}">Korte beschrijving (max 100 karakters):</label>
+          {{ category.form.short_description.errors }}
+          {{ category.form.short_description }}
+
+          <label for="{{ category.form.file.id_for_label }}">Bestand:</label>
+          {{ category.form.file.errors }}
+          <div class="news-file-wrapper">
+            {{ category.form.file }}
+            <label for="{{ category.form.file.id_for_label }}" class="btn">
+              Bestand kiezen
+            </label>
+            <span class="news-file-name" data-file-name></span>
+          </div>
+
+          <p class="small-text" style="margin-top:4px;">
+            <em>Optioneel: selecteer een PDF (max 25 MB).</em>
+          </p>
+
+          <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+            <button
+              type="button"
+              class="btn btn-danger js-cancel-form"
+              data-target="#werkafspraken-form-{{ category.category }}"
+            >
+              Annuleren
+            </button>
+
+            <button type="submit" class="btn btn-save" data-submit-btn>
+              Opslaan
+            </button>
+          </div>
+        </form>
       {% endif %}
-    </div>
 
-    {% if perms.core.can_upload_werkafspraken %}
-      <form
-        id="werkafspraken-form-{{ category.category }}"
-        class="form agenda-inline-form {% if not category.form.errors %}is-hidden{% endif %}"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        {% csrf_token %}
-        {{ category.form.non_field_errors }}
+      {% if category.items %}
+        <ul class="birthday-list agenda-list news-list">
+          {% for item, edit_form in category.rows %}
+            <li
+              class="birthday-item news-item policy-item"
+              data-policy-item="{{ item.id }}"
+              data-has-file="{% if item.has_file %}1{% else %}0{% endif %}"
+              data-category="{{ item.category }}"
+            >
+              <div class="agenda-item-row">
+                <div class="birthday-main">
+                  <div class="birthday-left">
+                    <span class="birthday-name">{{ item.title }}</span>
+                    {% if item.short_description %}
+                      <div class="birthday-meta">
+                        <span class="agenda-description">
+                          {{ item.short_description }}
+                        </span>
+                      </div>
+                    {% endif %}
+                  </div>
 
-        {# Render category field als hidden #}
-        <div style="display:none;">
-          {{ category.form.category }}
-        </div>
+                  {# GEEN DATUM TONEN #}
+                </div>
 
-        {{ category.form.title.errors }}
-        {{ category.form.title }}
+                {% if perms.core.can_upload_werkafspraken %}
+                  <div class="agenda-actions" data-stop-toggle>
+                    <button
+                      type="button"
+                      class="icon-btn js-toggle-form"
+                      data-target="#werkafspraken-edit-{{ item.id }}"
+                      aria-expanded="{% if open_edit_id == item.id %}true{% else %}false{% endif %}"
+                      aria-controls="werkafspraken-edit-{{ item.id }}"
+                      title="Bewerken"
+                      aria-label="Bewerken"
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
 
-        {{ category.form.short_description.errors }}
-        {{ category.form.short_description }}
-
-        {{ category.form.file.errors }}
-        <div class="news-file-wrapper">
-          {{ category.form.file }}
-          <label for="{{ category.form.file.id_for_label }}" class="btn">
-            Bestand kiezen
-          </label>
-          <span class="news-file-name" id="werkafspraken-file-name-{{ category.category }}"></span>
-        </div>
-
-        <p class="small-text" style="margin-top:4px;">
-          <em>Selecteer een PDF met een maximale bestandsgrootte van 25 MB.</em>
-        </p>
-
-        <button type="submit" class="btn btn-save">
-          Opslaan
-        </button>
-
-      </form>
-    {% endif %}
-
-    {% if category.workafspraken %}
-      <ul class="birthday-list agenda-list news-list">
-        {% for item in category.workafspraken %}
-          <li class="birthday-item news-item">
-            {% if perms.core.can_upload_werkafspraken %}
-              <form method="post" class="agenda-delete-form news-delete-form">
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  name="delete_item"
-                  value="{{ item.id }}"
-                  class="btn btn-danger agenda-delete-btn"
-                  title="Verwijderen"
-                  aria-label="Verwijderen"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </form>
-            {% endif %}
-
-            {# header (altijd zichtbaar): titel #}
-            <div class="birthday-main">
-              <div class="birthday-left">
-                <span class="birthday-name">{{ item.title }}</span>
-                {% if item.short_description %}
-                  <div class="birthday-meta">
-                    <span class="agenda-description">
-                      {{ item.short_description }}
-                    </span>
+                    <form method="post" class="agenda-delete-form policy-delete-form" data-stop-toggle>
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        name="delete_item"
+                        value="{{ item.id }}"
+                        class="icon-btn danger"
+                        title="Verwijderen"
+                        aria-label="Verwijderen"
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
                   </div>
                 {% endif %}
               </div>
-              <div class="birthday-right">
-                <span class="birthday-date">
-                  {{ item.created_at|date:"d-m-Y" }}
-                </span>
-              </div>
-            </div>
 
-            {# body (inklapbaar): PDF preview #}
-            <div
-              id="werkafspraak-body-{{ item.id }}"
-              class="news-body is-hidden"
-            >
-              {% if item.has_file %}
-                <div class="news-media">
-                  {% if item.is_pdf %}
-                    {% for url in item.page_urls %}
-                      <img src="{{ url }}" alt="Werkafspraak PDF pagina">
-                    {% endfor %}
-                  {% endif %}
-                </div>
+              {% if perms.core.can_upload_werkafspraken %}
+                <form
+                  id="werkafspraken-edit-{{ item.id }}"
+                  class="form agenda-inline-form policy-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  autocomplete="off"
+                  data-stop-toggle
+                  data-lock-submit="1"
+                >
+                  {% csrf_token %}
+                  <input type="hidden" name="edit_item" value="{{ item.id }}">
+                  {{ edit_form.non_field_errors }}
+
+                  {# category hidden (prefix-proof) #}
+                  <div style="display:none;">
+                    {{ edit_form.category }}
+                  </div>
+
+                  <label for="{{ edit_form.title.id_for_label }}">Titel (max 50 karakters):</label>
+                  {{ edit_form.title.errors }}
+                  {{ edit_form.title }}
+
+                  <label for="{{ edit_form.short_description.id_for_label }}">Korte beschrijving (max 100 karakters):</label>
+                  {{ edit_form.short_description.errors }}
+                  {{ edit_form.short_description }}
+
+                  <label for="{{ edit_form.file.id_for_label }}">Bestand:</label>
+                  {{ edit_form.file.errors }}
+                  <div class="news-file-wrapper">
+                    {{ edit_form.file }}
+                    <label for="{{ edit_form.file.id_for_label }}" class="btn">
+                      Bestand kiezen
+                    </label>
+                    <span class="news-file-name" data-file-name></span>
+
+                    <span class="news-current-file">
+                      Huidig bestand:
+                      {% if item.original_filename %}
+                        {{ item.original_filename }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </span>
+                  </div>
+
+                  <p class="small-text" style="margin-top:4px;">
+                    <em>Optioneel: selecteer een nieuwe PDF om het huidige bestand te vervangen (max 25 MB).</em>
+                  </p>
+
+                  <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
+                    <button
+                      type="button"
+                      class="btn btn-danger js-cancel-form"
+                      data-target="#werkafspraken-edit-{{ item.id }}"
+                    >
+                      Annuleren
+                    </button>
+
+                    <button type="submit" class="btn btn-save" data-submit-btn>
+                      Opslaan
+                    </button>
+                  </div>
+                </form>
               {% endif %}
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="birthday-empty">
-        Nog geen werkafspraken in deze categorie.
-      </p>
-    {% endif %}
-  </div>
+
+              <div
+                id="werkafspraak-body-{{ item.id }}"
+                class="news-body is-hidden"
+                data-stop-toggle
+              >
+                {% if item.has_file %}
+                  <div
+                    class="news-media"
+                    data-media-host
+                    data-item-id="{{ item.id }}"
+                    data-loaded="0"
+                  ></div>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="birthday-empty">
+          Nog geen werkafspraken in deze categorie.
+        </p>
+      {% endif %}
+    </div>
   {% endfor %}
 
 </div>
-
 {% endblock %}
