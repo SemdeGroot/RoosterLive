@@ -610,10 +610,11 @@ class MedicatieReviewForm(forms.Form):
 class AfdelingEditForm(forms.ModelForm):
     class Meta:
         model = MedicatieReviewAfdeling
-        fields = ['organisatie', 'afdeling', 'locatie', 'email', 'email2', 'telefoon']
+        fields = ['organisatie', 'afdeling', 'code', 'locatie', 'email', 'email2', 'telefoon']
         widgets = {
             'organisatie': forms.Select(attrs={'class': 'admin-input'}),
             'afdeling': forms.TextInput(attrs={'class': 'admin-input'}),
+            'code': forms.TextInput(attrs={'class': 'admin-input'}),
             'locatie': forms.TextInput(attrs={'class': 'admin-input'}),
             'email': forms.EmailInput(attrs={'class': 'admin-input'}),
             'email2': forms.EmailInput(attrs={'class': 'admin-input'}),

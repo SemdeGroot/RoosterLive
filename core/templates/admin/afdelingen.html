@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <script src="{% static 'js/base/table.js' %}" defer></script>
   <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
-
 {% endblock %}
 
 {% block content %}
@@ -42,31 +41,40 @@
                     {{ afdeling_form.afdeling }}
                 </div>
                 <div>
-                    <label for="{{ afdeling_form.organisatie.id_for_label }}">Overkoepelende zorginstelling:</label>
-                    {{ afdeling_form.organisatie }}
+                    <label for="{{ afdeling_form.code.id_for_label }}">Code (max. 10 tekens):</label>
+                    {{ afdeling_form.code }}
                 </div>
             </div>
             
             <div class="admin-grid" style="margin-bottom: 12px;">
-                 <div>
+                <div>
+                    <label for="{{ afdeling_form.organisatie.id_for_label }}">Overkoepelende zorginstelling:</label>
+                    {{ afdeling_form.organisatie }}
+                </div>
+                <div>
                      <label for="{{ afdeling_form.locatie.id_for_label }}">Locatie:</label>
                      {{ afdeling_form.locatie }}
                 </div>
+            </div>
+
+            <div class="admin-grid" style="margin-bottom: 12px;">
                 <div>
                     <label for="{{ afdeling_form.telefoon.id_for_label }}">Telefoon (optioneel):</label>
                     {{ afdeling_form.telefoon }}
+                </div>
+                <div>
+                    <label for="{{ afdeling_form.email.id_for_label }}">E-mail (optioneel):</label>
+                    {{ afdeling_form.email }}
                 </div>
             </div>
 
             <div class="admin-grid">
                 <div>
-                    <label for="{{ afdeling_form.email.id_for_label }}">E-mail (optioneel):</label>
-                    {{ afdeling_form.email }}
-                </div>
-                <div>
                     <label for="{{ afdeling_form.email2.id_for_label }}">E-mail 2 (optioneel):</label>
                     {{ afdeling_form.email2 }}
                 </div>
+                <div>
+                    </div>
             </div>
 
             <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">Toevoegen</button>
@@ -77,7 +85,7 @@
         <h3 style="margin-top:0;">Bestaande afdelingen</h3>
 
         <div class="search-bar">
-          <input type="text" id="afdelingSearch" placeholder="Zoek op afdeling, locatie of organisatie…" class="admin-input">
+          <input type="text" id="afdelingSearch" placeholder="Zoek op afdeling, code, locatie of organisatie…" class="admin-input">
         </div>
 
         <div data-crud data-table="#afdelingTable" data-rows="#afdelingTable .afdeling-row" data-page-size="10">
@@ -86,6 +94,7 @@
               <thead>
                 <tr>
                   <th>Afdeling</th>
+                  <th>Code</th>
                   <th>Locatie</th>
                   <th>Zorginstelling</th>
                   <th>Acties</th>
@@ -96,6 +105,7 @@
                 {% for afd in afdelingen %}
                 <tr class="afdeling-row" id="afdeling-row-{{ afd.id }}">
                   <td style="font-weight: 600;">{{ afd.afdeling }}</td>
+                  <td>{{ afd.code|default:"-" }}</td>
                   <td>{{ afd.locatie|default:"-" }}</td>
                   <td>{{ afd.organisatie.name|default:"-" }}</td>
 
@@ -137,7 +147,7 @@
                 </tr>
 
                 <tr id="afdeling-edit-row-{{ afd.id }}" class="edit-row" style="display:none;">
-                  <td colspan="4">
+                  <td colspan="5">
                     <div class="edit-wrap">
                       <form method="post" action="{% url 'afdeling_update' afd.id %}">
                         {% csrf_token %}
@@ -147,6 +157,11 @@
                                 <label>Afdelingsnaam (zelfde als in Medimo!):</label>
                                 <input class="admin-input" type="text" name="afdeling" 
                                        value="{{ afd.afdeling }}" required style="margin-top:6px;">
+                            </div>
+                            <div>
+                                <label>Code (max. 10 tekens):</label>
+                                <input class="admin-input" type="text" name="code" 
+                                       value="{{ afd.code|default:'' }}" maxlength="10" style="margin-top:6px;">
                             </div>
                             <div>
                                 <label>Overkoepelende zorginstelling:</label>

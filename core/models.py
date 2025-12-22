@@ -403,6 +403,7 @@ class MedicatieReviewAfdeling(models.Model):
     )
     
     afdeling = models.CharField("Naam afdeling", max_length=255)
+    code = models.CharField("Code", max_length=10, blank=True)
     locatie = models.CharField("Locatie", max_length=255)
     
     # Optionele contactgegevens
