@@ -45,9 +45,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // === Submit lock / timeout (hufter-proof) ===
-  // - voorkomt dubbel submitten
-  // - disable submit buttons
-  // - fallback: na 10s unlocken als page niet redirect
   document.querySelectorAll('form[data-lock-submit="1"]').forEach(function (form) {
     form.addEventListener("submit", function (event) {
       if (form.dataset.submitted === "1") {
@@ -63,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       setTimeout(function () {
-        // Alleen unlocken als user nog op dezelfde pagina zit
         if (document.body.contains(form)) {
           btns.forEach(function (b) {
             b.disabled = false;
@@ -120,12 +116,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // === Inklappen/uitklappen van nieuwsitems ===
-  // De hele .news-item (li) is klikbaar,
-  // behalve:
-  //   - .js-toggle-form (toevoegen/edit buttons)
-  //   - delete-form
-  //   - alles met data-stop-toggle
-  //   - de uitgeklapte .news-body (zodat je in de tekst/afbeeldingen kunt klikken zonder te togglen)
   document.querySelectorAll(".news-item").forEach(function (item) {
     var body = item.querySelector(".news-body");
     if (!body) return;
@@ -134,29 +124,20 @@ document.addEventListener("DOMContentLoaded", function () {
       var expanded = item.classList.toggle("news-item--expanded");
       body.classList.toggle("is-hidden", !expanded);
 
-      // bij openen: lazy load media (pas 1x)
       if (expanded) {
         loadMediaIfNeeded(item);
       }
     }
 
     item.addEventListener("click", function (event) {
-      // klik op toggle/edit/add knoppen → NIET togglen
       if (event.target.closest(".js-toggle-form")) return;
-
-      // klik op delete-form → NIET togglen
       if (event.target.closest(".news-delete-form")) return;
-
-      // klik in de body (uitgeklapt deel) → NIET togglen
       if (event.target.closest(".news-body")) return;
-
-      // klik op elementen die expliciet stop-toggle zijn → NIET togglen
       if (event.target.closest("[data-stop-toggle]")) return;
 
       toggleItem();
     });
 
-    // Toetsenbord: Enter/Spatie op de li
     item.setAttribute("tabindex", "0");
     item.addEventListener("keydown", function (event) {
       if (event.key === "Enter" || event.key === " ") {
@@ -187,8 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // === Filename tonen naast de upload-knop (add + alle edit forms) ===
-  // Werkt met spans: <span class="news-file-name" data-file-name></span>
+  // === Filename tonen ===
   document.querySelectorAll("form").forEach(function (form) {
     var fileInput = form.querySelector('input[type="file"]');
     var fileNameSpan = form.querySelector("[data-file-name]");

@@ -114,55 +114,6 @@ button{
   width:100%;
 }
 
-/* Flash-overlay boven content */
-.flash{
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  margin-bottom: 12px;
-  background: rgba(204, 59, 59, 0.15);
-  border-left: 4px solid var(--danger);
-  color: #ffb3b3;
-  padding: 12px 18px;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  text-align: left;
-  z-index: 2;
-
-  /* Tekstinstellingen */
-  white-space: normal;        /* laat tekst afbreken op nieuwe regel */
-  overflow-wrap: break-word;  /* breek lange woorden indien nodig */
-  word-break: break-word;
-
-  opacity: 0;
-  animation: flash-show 0.3s ease-out forwards,
-             flash-hide 0.3s ease-in 4.5s forwards;
-}
-
-/* Succes (groen) */
-.flash-success {
-  border-left-color: #1f7a3e;
-  background: rgba(59, 204, 89, 0.15);
-  color: #bfe4c8;
-}
-
-/* Foutmelding (rood) */
-.flash-error {
-  border-left-color: #a01f1f;
-  color: #f2c7c7;
-}
-
-/* Animaties */
-@keyframes flash-show {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes flash-hide {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-10px); }
-}
-
 /* Icon visibility tweaks bij wachtwoordvelden */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear { filter: invert(1); }
@@ -409,6 +360,32 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 .login-box form input + input         { margin-top:20px !important; }  /* input → volgende input */
 .login-box form input[type="password"] + button,
 .login-box form input[type="text"] + button { margin-top:22px !important; } /* input → button terug naar standaard */
+
+/* ---------- Flash Message Auth Extension ---------- */
+
+/* Zoek dit blok in login.css en pas aan: */
+.flash {
+  position: absolute;
+  top: auto;
+  bottom: 100%;       
+  left: 0;            /* Verander van 18px naar 0 voor volledige breedte */
+  right: 0;           /* Verander van 18px naar 0 voor volledige breedte */
+  margin-bottom: 12px; 
+  z-index: 10;
+  text-align: left;
+  
+  /* Optioneel: als je de box-radius van de card wilt volgen */
+  border-radius: 10px; 
+}
+
+@media (max-width: 768px) {
+  .flash {
+    /* Op mobiel: zorg dat hij exact de breedte van de login-box vult */
+    left: 0;
+    right: 0;
+    margin-bottom: 10px;
+  }
+}
 
 .passkey-skip-btn {
   display: inline-block;

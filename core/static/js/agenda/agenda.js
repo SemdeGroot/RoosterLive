@@ -1,9 +1,7 @@
 // static/js/agenda/agenda.js
 document.addEventListener("DOMContentLoaded", function () {
-  // === Submit lock / timeout (hufter-proof) ===
-  // - voorkomt dubbel submitten
-  // - disable submit buttons
-  // - fallback: na 10s unlocken als page niet redirect
+  
+  // === Submit lock / timeout (Alleen voor formulieren met data-lock-submit="1") ===
   document.querySelectorAll('form[data-lock-submit="1"]').forEach(function (form) {
     form.addEventListener("submit", function (event) {
       if (form.dataset.submitted === "1") {
@@ -19,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       setTimeout(function () {
-        // Alleen unlocken als user nog op dezelfde pagina zit
         if (document.body.contains(form)) {
           btns.forEach(function (b) {
             b.disabled = false;
@@ -31,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // === Bevestiging voor verwijderen van agenda-items ===
+  // === Bevestiging voor verwijderen (Zonder lock-logica) ===
   document.querySelectorAll(".agenda-delete-form").forEach(function (form) {
     form.addEventListener("submit", function (event) {
       const title =
@@ -47,14 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         " wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!";
 
       if (!confirm(message)) {
-        // unlock weer, anders blijft knop disabled na annuleren
-        form.dataset.submitted = "0";
-        form.querySelectorAll("[data-submit-btn]").forEach(function (b) {
-          b.disabled = false;
-          b.removeAttribute("aria-disabled");
-        });
-
-        event.preventDefault();
+        event.preventDefault(); // Annuleert alleen de submit
       }
     });
   });

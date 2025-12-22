@@ -1,4 +1,3 @@
-# core/views/news.py
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -34,16 +33,11 @@ MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 
 
 def _delete_news_files(rel_path: str, file_hash: str | None) -> None:
-    """
-    Verwijdert het fysieke nieuwsbestand (PDF/afbeelding) + bijbehorende cache (voor PDF).
-    Werkt in DEV (filesystem) en PROD (S3 via default_storage).
-    """
     if not rel_path:
         return
 
     ext = Path(rel_path).suffix.lower()
 
-    # === DEV / lokaal ===
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
         abs_path = MEDIA_ROOT / rel_path
         try:
@@ -51,14 +45,12 @@ def _delete_news_files(rel_path: str, file_hash: str | None) -> None:
         except Exception:
             pass
 
-        # Cache voor PDF op basis van hash
         if ext == ".pdf" and file_hash:
             cache_path = CACHE_NEWS_DIR / file_hash
             if cache_path.exists():
                 shutil.rmtree(cache_path, ignore_errors=True)
         return
 
-    # === PROD / S3 ===
     try:
         default_storage.delete(rel_path)
     except Exception:
@@ -93,14 +85,9 @@ def _cleanup_expired_news(now: datetime) -> int:
 
 
 def _list_cached_pdf_png_urls(file_hash: str) -> list[str]:
-    """
-    Geeft bestaande PNG cache URLs terug (gesorteerd).
-    Verwacht dat de cache al is gemaakt bij upload/edit.
-    """
     if not file_hash:
         return []
 
-    # DEV / lokaal
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
         folder = CACHE_NEWS_DIR / file_hash
         if not folder.exists():
@@ -108,7 +95,6 @@ def _list_cached_pdf_png_urls(file_hash: str) -> list[str]:
         files = sorted([p.name for p in folder.glob("page_*.png")])
         return [f"{settings.MEDIA_URL}cache/news/{file_hash}/{name}" for name in files]
 
-    # PROD / S3
     base = f"cache/news/{file_hash}"
     try:
         _dirs, files = default_storage.listdir(base)
@@ -120,10 +106,6 @@ def _list_cached_pdf_png_urls(file_hash: str) -> list[str]:
 
 
 def _ensure_pdf_cache_exists(rel_path: str, file_hash: str | None) -> str | None:
-    """
-    Zorgt dat PDF-cache PNG's bestaan (server-side bij upload/edit).
-    Geeft (mogelijk nieuwe) hash terug.
-    """
     if not rel_path:
         return file_hash
 
@@ -131,12 +113,9 @@ def _ensure_pdf_cache_exists(rel_path: str, file_hash: str | None) -> str | None
     if ext != ".pdf":
         return file_hash
 
-    # Als er al cache is -> niks doen
     if file_hash and _list_cached_pdf_png_urls(file_hash):
         return file_hash
 
-    # Anders: render nu (bijv. migratie/legacy)
-    # (Je wilde dit niet tijdens openen, maar dit is tijdens opslaan/edit pad of fallback)
     try:
         if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
             abs_path = MEDIA_ROOT / rel_path
@@ -153,11 +132,6 @@ def _ensure_pdf_cache_exists(rel_path: str, file_hash: str | None) -> str | None
 
 @login_required
 def news_media(request, item_id: int):
-    """
-    Lazy endpoint:
-    - Afbeelding: URL van het bestand
-    - PDF: lijst van cached PNG URLs (geen render hier)
-    """
     if not can(request.user, "can_view_news"):
         return HttpResponseForbidden("Geen toegang.")
 
@@ -221,7 +195,6 @@ def news(request):
         if edit_form.is_valid():
             uploaded_file = edit_form.cleaned_data.get("file")
 
-            # Update tekstvelden
             item.title = edit_form.cleaned_data["title"]
             item.short_description = edit_form.cleaned_data.get("short_description", "")
             item.description = edit_form.cleaned_data.get("description", "")
@@ -235,7 +208,6 @@ def news(request):
                     base_name="news",
                 )
 
-                # Render PDF->PNG meteen bij opslaan (zodat openklikken alleen lazy-load is)
                 h2 = _ensure_pdf_cache_exists(rel_path, h)
                 if h2:
                     h = h2
@@ -243,15 +215,12 @@ def news(request):
                 item.file_path = rel_path
                 item.file_hash = h
                 item.original_filename = uploaded_file.name
-
                 item.save()
 
-                # Oude file + cache verwijderen NA succesvolle save
                 if old_rel_path:
                     _delete_news_files(old_rel_path, old_hash)
 
             else:
-                # Geen nieuw bestand: bestandgegevens blijven intact
                 item.original_filename = old_original
                 item.save()
 
@@ -264,7 +233,7 @@ def news(request):
                 for err in file_errors:
                     messages.error(request, err)
             else:
-                messages.error(request, "Het nieuwsformulier bevat fouten. Controleer de invoer.")
+                messages.error(request, "Het nieuwsformulier bevat fouten.")
 
     # ADD
     if request.method == "POST" and "add_news" in request.POST:
@@ -289,7 +258,6 @@ def news(request):
                 )
                 original_name = uploaded_file.name
 
-                # Render PDF->PNG meteen bij opslaan
                 h2 = _ensure_pdf_cache_exists(rel_path, h)
                 if h2:
                     h = h2
@@ -313,12 +281,10 @@ def news(request):
                 for err in file_errors:
                     messages.error(request, err)
             else:
-                messages.error(request, "Het nieuwsformulier bevat fouten. Controleer de invoer.")
+                messages.error(request, "Het nieuwsformulier bevat fouten.")
 
-    # GET: GEEN media rendering/listing meer hier
-    items = list(NewsItem.objects.all())  # ordering via Meta in model
+    items = list(NewsItem.objects.all())
 
-    # Edit forms per item (zelfde patroon als agenda)
     news_rows = []
     for it in items:
         if open_edit_id == it.id and request.method == "POST" and "edit_item" in request.POST:
@@ -329,7 +295,6 @@ def news(request):
             )
         else:
             edit_form = NewsItemForm(prefix=f"edit-{it.id}")
-            # initial vullen vanuit model
             edit_form.fields["title"].initial = it.title
             edit_form.fields["short_description"].initial = it.short_description
             edit_form.fields["description"].initial = it.description

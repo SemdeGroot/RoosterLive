@@ -86,67 +86,84 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   z-index:2;
 }
 
-/* ---------- Flash messages ---------- */
-/* Flash als overlay binnen de content, zonder layout shift */
-.content > .flash{
-  position:absolute;
-  top:4px;
-  left:18px;
-  right:18px;
-  z-index:900;
-  margin:0;
-  width:auto;
+/* ---------- Centraal Flash Messages Systeem ---------- */
 
-  border-left:3px solid var(--border);
-  padding:10px 16px;
-  border-radius:10px;
-  background:#0f141a;
-  color:var(--text);
+/* ---------- Centraal Flash Messages Systeem (base.css) ---------- */
 
-  white-space:normal;
-  overflow-wrap:break-word;
-  word-break:break-word;
+.flash {
+  position: absolute;
+  /* Desktop standaard */
+  top: 18px; 
+  left: 18px;
+  right: 18px;
+  z-index: 9999;
+  margin: 0;
+  width: auto;
 
-  opacity:0;
+  border-left: 5px solid var(--flash-border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #1a1f26; 
+  color: var(--text-button) !important;
+
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+
+  opacity: 0;
   animation: flash-show 0.3s ease-out forwards,
              flash-hide 0.3s ease-in 4.5s forwards;
 }
 
-@keyframes flash-show{
-  from{ opacity:0; transform: translateY(-10px); }
-  to  { opacity:1; transform: translateY(0); }
-}
-@keyframes flash-hide{
-  from{ opacity:1; transform: translateY(0); }
-  to  { opacity:0; transform: translateY(-10px); }
-}
-
-/* Succes (groen) */
-.content > .flash-success{
-  border-left-color:#1f7a3e;
-  background:#0f1a12;
-  color:#bfe4c8;
+/* Media Query voor Mobile: Match de marges van de cards/content */
+@media (max-width: 480px) {
+  .flash {
+    top: 14px;   /* Matcht .content { padding: 14px; } */
+    left: 14px;
+    right: 14px;
+  }
 }
 
-/* Foutmelding (rood) */
-.content > .flash-error{
-  border-left-color:#a01f1f;
-  background:#1a0f0f;
-  color:#f2c7c7;
+@media (max-width: 360px) {
+  .flash {
+    top: 12px;   /* Matcht .content { padding: 12px; } */
+    left: 12px;
+    right: 12px;
+  }
 }
 
-/* Waarschuwing (geel/oranje) */
-.content > .flash-warning{
-  border-left-color:#b38900;
-  background:#1a1608;
-  color:#f3e2b2;
+/* Specifieke status kleuren - Iets donkerder maar herkenbaar van kleur */
+
+/* Succes (Groen - Diep bosgroen) */
+.flash-success {
+  --flash-border: #22c55e; /* Felle rand voor accent */
+  background: #14532d !important; 
+  color: var(--text-button) !important;
 }
 
-/* Informatief (blauw) */
-.content > .flash-info{
-  border-left-color:var(--accent);
-  background: rgba(31, 75, 160, 0.12);
-  color:#d5e0f7;
+/* Foutmelding (Rood - Donker robijnrood) */
+.flash-error, .flash-danger {
+  --flash-border: #ef4444; /* Felle rand voor accent */
+  background: #7f1d1d !important;
+  color: var(--text-button) !important;
+}
+
+/* Info (Blauw - Diep marineblauw) */
+.flash-info {
+  --flash-border: #3b82f6; /* Felle rand voor accent */
+  background: var(--accent) !important;
+  color: var(--text-button) !important;
+}
+
+@keyframes flash-show {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flash-hide {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
 }
 
 /* ---------- Buttons ---------- */
@@ -287,57 +304,132 @@ th,td{
   vertical-align:middle;
   word-wrap:break-word;
 }
+/* --- Tiles --- */
 
-/* Tiles */
-.tiles{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
-.tile{ display:block; text-decoration:none; color:inherit; }
-.tile:visited{ color:inherit; }
-
-.tile-box{
-  background:var(--button-color);
-  border:1px solid var(--border);
-  border-radius:14px;
-  box-shadow:0 6px 20px var(--shadow);
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  min-height:140px;
-  transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
+.tiles { 
+  display: grid; 
+  /* 130px is de best-practice voor 2 kolommen op 320px schermen */
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); 
+  gap: 10px; /* Iets kleinere gap op mobiel geeft meer ruimte aan de box zelf */
 }
 
-.tile-box:hover{
-  background:var(--button-hover);
-  border-color:var(--accent);
-  box-shadow:0 10px 28px var(--shadow);
-}
+.tile { display: block; text-decoration: none; color: inherit; }
 
-.tile-name{ color:var(--text); font-weight:600; text-align:center; font-size:0.95rem; }
-
-@media (hover: none) and (pointer: coarse){
-  .tile-box:hover{
-    background:var(--button-color);
-    border-color:var(--border);
-    box-shadow:0 6px 20px var(--shadow);
-  }
-}
-
-/* Voeg deze container toe aan je globale CSS */
-.tile-icon {
-  width: 100%;
+/* BASIS STYLING (De kleinste telefoons: 320px - 360px) */
+.tile-box {
+  background: var(--button-color);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px var(--shadow);
+  
+  padding: 10px; /* Compacte padding voor kleine schermen */
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 6px;      /* Iets kleinere gap tussen icon en tekst */
+  min-height: 115px; /* Iets lager voor de 320px range */
+  
+  transition: all .2s ease;
 }
 
-/* Zorg dat images in de tiles altijd een blok zijn */
 .tile-img {
-  display: block;
+  /* Icoon iets kleiner voor 320px-360px range */
+  width: 65px; 
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tile-img svg, .tile-img img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
+.tile-name { 
+  color: var(--text); 
+  font-weight: 600; 
+  text-align: center; 
+  font-size: 0.8rem; /* Iets kleiner font voor balans op 320px */
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* HOVER (Alleen muis) */
+.tile-box:hover {
+  background: var(--button-hover);
+  border-color: var(--accent);
+  box-shadow: 0 10px 28px var(--shadow);
+}
+
+/* --- MEDIA QUERIES VOOR OPSCHALEN --- */
+
+/* Vanaf 360px/380px: Jouw "goed werkende" maten herstellen */
+@media (min-width: 360px) {
+  .tiles { gap: 12px; }
+  .tile-box { 
+    padding: 12px; 
+    min-height: 125px; 
+    gap: 8px;
+  }
+  .tile-img { width: 80px; height: 80px; }
+  .tile-name { font-size: 0.85rem; }
+}
+
+/* TABLET (480px - 900px) */
+@media (min-width: 480px) {
+  .tiles { 
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px; 
+  }
+  .tile-box { 
+    min-height: 150px; 
+    padding: 16px;
+    gap: 10px;
+  }
+  .tile-img { 
+    width: 110px; 
+    height: 110px; 
+  }
+  .tile-name { font-size: 0.95rem; }
+}
+
+/* DESKTOP (900px+) - Jouw EXACTE waarden */
+@media (min-width: 900px) {
+  .tiles { 
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+    gap: 18px; 
+  }
+  .tile-box { 
+    min-height: 180px; 
+    padding: 18px;
+    gap: 10px;
+  }
+  .tile-img { 
+    width: 140px; 
+    height: 140px; 
+  }
+  .tile-name { font-size: 1rem; }
+}
+
+/* TOUCH FIX */
+@media (hover: none) and (pointer: coarse) {
+  .tile-box:hover {
+    background: var(--button-color);
+    border-color: var(--border);
+    box-shadow: 0 6px 20px var(--shadow);
+  }
+}
+
+/* EXTRA: Onder 320px pas naar 1 kolom */
+@media (max-width: 319px) {
+  .tiles { grid-template-columns: 1fr; }
+}
 
 /* Footer */
 .footer{
@@ -673,87 +765,5 @@ textarea.form-input::placeholder{
   .birthday-header > .header-actions .btn{
     width: 100%;
     display: block;
-  }
-}
-
-/* Mobile: altijd 2 kolommen, maar exact dezelfde tile-verhoudingen als basis */
-@media (max-width: 480px) {
-  .content { padding: 14px; }
-
-  .tiles {
-    /* Minimaal 130px zorgt dat er op 360-480px altijd 2 kolommen staan */
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px;
-  }
-
-  .tile-box {
-    padding: 14px;
-    gap: 9px; 
-    min-height: 126px;
-  }
-
-  .tile-img {
-    width: 80px;
-    height: 80px;
-    display: block;
-  }
-
-  .tile-name {
-    font-size: 0.86rem;
-    white-space: nowrap; 
-    overflow: hidden;  
-    text-overflow: ellipsis;
-  }
-}
-
-/* Extra klein (320–360): zelfde ratio, nóg iets kleiner */
-@media (max-width: 360px) {
-  .content { padding: 12px; }
-
-  .tiles { 
-    /* Zelfs op hele kleine schermen (320px) passen er 2 van 120px */
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px; 
-  }
-
-  .tile-box {
-    padding: 12px;     
-    gap: 8px;       
-    min-height: 112px;
-  }
-
-  .tile-img {
-    width: 70px;
-    height: 70px;
-    display: block;
-  }
-
-  .tile-name {
-    font-size: 0.76rem;
-  }
-}
-
-@media (min-width: 481px) and (max-width: 599px) {
-  .tiles {
-    /* auto-fill laat een 3e kolom toe als het past (> 450px ongeveer) */
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-    gap: 12px;
-  }
-
-  .tile-box {
-    padding: 15px;
-    gap: 10px;
-    min-height: 142px; 
-  }
-
-  .tile-img {
-    width: 90px; /* Cruciaal voor Android visibility */
-    height: 90px;
-    display: block;
-    margin: 0 auto;
-  }
-
-  .tile-name {
-    font-size: 0.9rem;
   }
 }

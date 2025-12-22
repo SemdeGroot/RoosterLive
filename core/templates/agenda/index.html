@@ -127,12 +127,12 @@
                     </svg>
                   </button>
 
-                  <form method="post" class="agenda-delete-form" data-lock-submit="1">
+                  <form method="post" class="agenda-delete-form">
                     {% csrf_token %}
                     <button
                       type="submit"
-                      name="delete_item"
                       value="{{ item.id }}"
+                      name="delete_item"
                       class="icon-btn danger"
                       title="Verwijderen"
                       aria-label="Verwijderen"
@@ -326,12 +326,12 @@
                     </svg>
                   </button>
 
-                  <form method="post" class="agenda-delete-form" data-lock-submit="1">
+                  <form method="post" class="agenda-delete-form">
                     {% csrf_token %}
                     <button
                       type="submit"
-                      name="delete_item"
                       value="{{ item.id }}"
+                      name="delete_item"
                       class="icon-btn danger"
                       title="Verwijderen"
                       aria-label="Verwijderen"

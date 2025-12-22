@@ -26,8 +26,8 @@
   <meta name="color-scheme" content="dark light" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
   <style>
     body.ptr-panel-bg {
@@ -101,18 +101,20 @@
   <main class="login-app">
     <div class="login-box">
 
+    {% if messages %}
+      {% for message in messages %}
+        <div class="flash flash-{{ message.tags|default:'info' }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
     {% block login_header_image %}
     {% static 'img/logo.jpg' as static_logo %}
     <div class="logo-wrap default-logo">
         <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
     </div>
     {% endblock %}
-
-    {% for m in messages %}
-      <div class="flash {% if m.tags %}flash-{{ m.tags }}{% endif %}">
-        {{ m }}
-      </div>
-    {% endfor %}
 
       {% block content %}{% endblock %}
 

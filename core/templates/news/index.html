@@ -104,7 +104,6 @@
             data-has-file="{% if item.has_file %}1{% else %}0{% endif %}"
           >
             <div class="agenda-item-row">
-              {# header (altijd zichtbaar): titel + datum #}
               <div class="birthday-main">
                 <div class="birthday-left">
                   <span class="birthday-name">{{ item.title }}</span>
@@ -142,7 +141,7 @@
                     </svg>
                   </button>
 
-                  <form method="post" class="agenda-delete-form news-delete-form" data-stop-toggle data-lock-submit="1">
+                  <form method="post" class="agenda-delete-form news-delete-form" data-stop-toggle>
                     {% csrf_token %}
                     <button
                       type="submit"
@@ -151,7 +150,6 @@
                       class="icon-btn danger"
                       title="Verwijderen"
                       aria-label="Verwijderen"
-                      data-submit-btn
                     >
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                            stroke="currentColor" stroke-width="2"
@@ -232,7 +230,6 @@
               </form>
             {% endif %}
 
-            {# body (inklapbaar): volledige tekst + media (LAZY) #}
             <div
               id="news-body-{{ item.id }}"
               class="news-body is-hidden"
