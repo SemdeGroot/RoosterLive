@@ -4,7 +4,10 @@
 {% block header_title %}{{ title }}{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/voorraad/voorraad.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="{% static 'js/voorraad/voorraad.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -25,10 +28,8 @@
         </svg>
       </div>
       <div class="dz-text">
-        <div class="dz-title">Sleep je voorraad bestand hierheen of klik om te kiezen. Zorg dat kolom 1 de ZI-nummers bevat en kolom 2 de medicijnnamen</div>
-        <div class="dz-hint">
-          Alleen .csv / .xlsx / .xls - Het nieuwe bestand vervangt automatisch het oude <strong>zodra je op Uploaden klikt.</strong>
-        </div>
+        <div class="dz-title">Sleep je voorraad bestand (.csv of .xlsx.) hierheen of klik om te kiezen.</div>
+        <div class="dz-hint">Zorg dat <strong>kolom 1 de ZI-nummers</strong> bevat en <strong>kolom 2 de medicijnnamen.</strong></div>
       </div>
     </div>
 
@@ -44,30 +45,32 @@
   {% endif %}
 
   <div class="search-row">
-    <input id="medSearch" type="text" placeholder="Typ om te zoeken...">
+    <input id="medSearch" type="text" placeholder="Typ om te zoeken..." class="admin-input">
   </div>
 
   {% if rows %}
-    <div class="table-wrap">
-      <table class="manage-table" id="medTable">
-        <thead>
-          <tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-            <tr>{% for cell in r %}<td>{{ cell }}</td>{% endfor %}</tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <div data-crud data-table="#medTable" data-page-size="20">
+      
+      <div class="table-scroll">
+        <table class="manage-table crud-table" id="medTable">
+          <thead>
+            <tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr class="med-row">{% for cell in r %}<td>{{ cell }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-    <div class="table-footer">
-      <button type="button" class="toggle-btn" id="medToggle" style="display:none;">Toon meer</button>
+      <div class="crud-more-wrap">
+        <button type="button" class="btn" data-crud-more>Toon meer</button>
+      </div>
+      
     </div>
   {% else %}
     <p style="color:var(--muted); margin:8px 0 0;">Nog geen bestand geüpload.</p>
   {% endif %}
 </div>
-
-<script src="{% static 'js/voorraad/voorraad.js' %}" defer></script>
 {% endblock %}

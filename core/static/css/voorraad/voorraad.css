@@ -19,32 +19,18 @@
 .file-meta { margin-top:8px; color:var(--muted); }
 .file-name { color:var(--text); font-weight:600; }
 .u-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; align-items:center; }
-.btn.ghost { background: var(--button-color); }
 
-/* Zoekveld */
+/* --- KOLOMBREEDTES INSTELEN --- */
+#medTable {
+  --c1: 120px; /* ZI-nummer */
+  --c2: 350px; /* Medicijn naam (lekker breed) */
+}
+
+/* Zorg dat de zoekbalk uit voorraad.css goed aansluit op de card */
 .search-row {
   display:flex; align-items:center; margin:16px 0 8px; gap:10px;
 }
-.search-row label { min-width:70px; }
 .search-row input {
   flex:1; background:var(--panel-2); border:1px solid var(--border);
   border-radius:8px; color:var(--text); padding:8px 10px; font-size:.95rem;
 }
-.search-row input:focus { outline:none; box-shadow:none; border-color:var(--accent); }
-
-/* Tabel en knop */
-.table-wrap { overflow:auto; }
-table.manage-table { min-width:600px; }
-
-.table-footer { display:flex; justify-content:center; margin-top:10px; }
-
-.toggle-btn{
-  background:var(--button);
-  border:1px solid var(--border);
-  color:var(--text);
-  padding:7px 12px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:all .15s;
-}
-.toggle-btn:hover{ background:var(--button-hover); border-color:var(--accent); }
