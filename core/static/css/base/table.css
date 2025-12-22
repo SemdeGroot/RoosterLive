@@ -113,7 +113,7 @@ tr.edit-row td{
 .admin-input,.admin-select{
   width:100%;
   max-width:100%;
-  background:#0f141a;
+  background: var(--bg);
   color:var(--text);
   border:1px solid var(--border);
   border-radius:8px;
@@ -131,7 +131,7 @@ tr.edit-row td{
 }
 .search-bar input{
   flex:1;
-  background:#0f141a;
+  background:var(--bg);
   color:var(--text);
   border:1px solid var(--border);
   border-radius:8px;

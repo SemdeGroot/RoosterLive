@@ -92,7 +92,7 @@
   border-radius: 8px;
   margin-bottom: 12px;
   border-left: 4px solid #ccc;
-  background-color: rgba(0,0,0,0.02);
+  background-color: var(--bg);
 }
 .logic-rule-box.type-AND { 
   border-left-color: #28a745;
@@ -129,28 +129,28 @@
 .btn-add-and {
   background-color: #198754;
   border: 1px solid #198754;
-  color: #ffffff;
+  color: var(--text-button);
   margin-bottom: 20px;
   transition: all 0.2s ease;
 }
 .btn-add-and:hover {
   background-color: #146c43;
   border-color: #146c43;
-  color: #ffffff;
+  color: var(--text-button);
 }
 
 /* Rode NOT-knop */
 .btn-add-not {
   background-color: #dc3545;
   border: 1px solid #dc3545;
-  color: #ffffff;
+  color: var(--text-button);
   margin-bottom: 20px;
   transition: all 0.2s ease;
 }
 .btn-add-not:hover {
   background-color: #b02a37;
   border-color: #b02a37;
-  color: #ffffff;
+  color: var(--text-button);
 }
 
 /* Zoekbalk boven de vragen */

@@ -22,7 +22,7 @@
                 <h2>Medicatiebeoordeling Historie</h2>
                 <p>Zoek door afdelingen of specifieke patiënten.</p>
             </div>
-            <a href="{% url 'medicatiebeoordeling_create' %}" class="btn">Nieuwe Analyse</a>
+            <a href="{% url 'medicatiebeoordeling_create' %}" class="btn btn-save">Nieuwe Analyse</a>
         </div>
 
         <h3 class="jansen-title" style="margin-top:20px;">Afdelingen</h3>
@@ -68,7 +68,7 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <a href="{% url 'medicatiebeoordeling_afdeling_detail' afd.pk %}" class="btn" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
+                            <a href="{% url 'medicatiebeoordeling_afdeling_detail' afd.pk %}" class="btn btn-save" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
                             
                             <form method="post" action="{% url 'medicatiebeoordeling_clear_afdeling' afd.pk %}" onsubmit="return confirm('Weet je zeker dat je de review van {{ afd.afdeling }} wilt wissen? De afdeling zelf blijft in het systeem.');" style="margin:0;">
                                 {% csrf_token %}
@@ -145,7 +145,7 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <a href="{% url 'medicatiebeoordeling_patient_detail' pat.pk %}" class="btn" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
+                            <a href="{% url 'medicatiebeoordeling_patient_detail' pat.pk %}" class="btn btn-save" style="padding:6px 10px; font-size:0.85rem;">Bekijk</a>
                             
                             <form method="post" action="{% url 'medicatiebeoordeling_delete_patient' pat.pk %}" onsubmit="return confirm('Weet je zeker dat je patiënt {{ pat.naam }} wilt verwijderen?');" style="margin:0;">
                                 {% csrf_token %}

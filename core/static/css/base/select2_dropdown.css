@@ -12,7 +12,7 @@
 
 /* 2. De Input Box (Het veld waar je op klikt) */
 .select2-container--default .select2-selection--single {
-    background-color: #0f141a !important; 
+    background-color: var(--bg) !important; 
     border: 1px solid var(--border) !important; /* Altijd muted */
     border-radius: 10px !important;
     height: 48px !important;
@@ -124,7 +124,7 @@
 }
 
 .select2-search__field {
-    background-color: #0f141a !important;
+    background-color: var(--bg) !important;
     color: var(--text) !important;
     border: 1px solid var(--accent) !important;
     border-radius: 8px !important;
@@ -163,7 +163,7 @@
 
 /* A. DE CONTAINER */
 .select2-container--default .select2-selection--multiple {
-    background-color: #0f141a !important; 
+    background-color: var(--bg) !important; 
     border: 1px solid var(--border) !important; 
     border-radius: 10px !important;
     min-height: 52px !important; 
@@ -217,7 +217,7 @@
 /* Focus op zoekveld */
 .select2-container--default.select2-container--focus .select2-selection--multiple .select2-search--inline .select2-search__field {
     border-color: var(--accent) !important;
-    background-color: #0f141a !important;
+    background-color: var(--bg) !important;
 }
 
 .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field::placeholder {

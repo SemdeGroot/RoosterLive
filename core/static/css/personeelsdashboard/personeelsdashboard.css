@@ -71,7 +71,7 @@ table.matrix td {
 }
 
 table.matrix thead th {
-  background: #121a23;
+  background: var(--bg);
   font-weight: 700;
 }
 
@@ -96,7 +96,7 @@ table.matrix tbody td:nth-child(2) {
   gap:.4rem;
   padding:6px 10px;
   border-radius:999px;
-  background:#17212b;
+  background:var(--bg);
   border:1px solid var(--border);
   color:var(--text);
   transition:background .2s ease, border-color .2s ease;

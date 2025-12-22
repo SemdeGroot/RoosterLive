@@ -14,7 +14,7 @@
     <div class="agenda-section">
         <div class="birthday-header agenda-section-header">
 
-        <img src="{% static 'img/department-128x128.png' %}" 
+        <img src="{% static 'img/afdeling.svg' %}" 
             alt="Afdeling icoon" 
             class="birthday-icon">
 
@@ -92,7 +92,7 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn" style="padding:6px 12px; font-size: 0.9em;">
+                            <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn btn-save" style="padding:6px 12px; font-size: 0.9em;">
                                 Bekijk
                             </a>
                             <form method="post" action="{% url 'medicatiebeoordeling_delete_patient' patient.pk %}" onsubmit="return confirm('Weet je zeker dat je patiënt {{ patient.naam }} wilt verwijderen?');" style="margin:0;">

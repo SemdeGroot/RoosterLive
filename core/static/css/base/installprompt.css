@@ -40,7 +40,7 @@
   border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #000;
+  background: var(--panel-2);
 }
 
 .ios-app-icon img {
@@ -148,8 +148,8 @@
 
 .android-install-actions .android-install-cta {
   width: 100%;
-  background: var(--accent);        /* #072a72 */
-  color: #fff;
+  background: var(--accent); 
+  color: var(--text);
   border: 1px solid var(--border);  /* zelfde als inputs */
   padding: 12px;
   border-radius: 10px;

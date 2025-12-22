@@ -17,7 +17,7 @@
   flex:0 0 auto;
   width:36px; height:36px; border-radius:10px;
   display:flex; align-items:center; justify-content:center;
-  background:#13223f; color:#cfe0ff; border:1px solid #223355;
+  background:var(--bg); color:var(--text); border:1px solid var(--border);
 }
 .dz-text { display:flex; flex-direction:column; gap:4px; }
 .dz-title { color:var(--text); font-weight:600; line-height:1.1; }
@@ -29,7 +29,7 @@
 
 /* Pagina-grid */
 .pages { display:grid; gap:12px; }
-.page { border:1px solid var(--border); border-radius:12px; background:#0a0f14; overflow:hidden; }
+.page { border:1px solid var(--border); border-radius:12px; background:var(--bg); overflow:hidden; }
 .page img { display:block; width:100%; height:auto; }
 
 /* --- Alleen rooster-specifieke uitzonderingen voor de weekpicker dropdown --- */

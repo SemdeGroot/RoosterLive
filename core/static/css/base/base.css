@@ -574,10 +574,10 @@ th,td{
 
 .push-close{
   position:absolute; top:8px; right:8px;
-  border:0; background:transparent; color:#aaa;
+  border:0; background:transparent; color:var(--text);
   font-size:18px; cursor:pointer;
 }
-.push-close:hover{ color:#fff; }
+.push-close:hover{ color:var(--button-hover); }
 
 /* Verwijder standaard focus-outline van modale knoppen */
 .btn-primary:focus,
@@ -594,8 +594,8 @@ th,td{
 .coachmark{ position:fixed; inset:0; pointer-events:none; z-index:1102; }
 .coach-bubble{
   position:absolute;
-  background:#111;
-  color:#fff;
+  background:var(--panel-2);
+  color:var(--text);
   padding:10px 12px;
   border-radius:12px;
   box-shadow:0 8px 24px rgba(0,0,0,0.35);
@@ -619,7 +619,7 @@ th,td{
     left:50%;
     transform: translateX(-50%);
     bottom:74px;
-    border-top-color:#111;
+    border-top-color:var(--panel-2);
     border-width:10px 10px 0 10px;
   }
 }
@@ -633,7 +633,7 @@ th,td{
   #iosCoachmark .coach-arrow{
     top:44px;
     right:64px;
-    border-right-color:#111;
+    border-right-color:var(--panel-2);
     border-width:10px 0 10px 10px;
   }
 }
@@ -648,7 +648,7 @@ th,td{
 .ios-visuals img{
   width:100%;
   border-radius:12px;
-  border:1px solid #2a2a2a;
+  border:1px solid var(--border);
 }
 
 /* Steps lijst netjes */

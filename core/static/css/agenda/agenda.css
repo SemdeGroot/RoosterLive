@@ -90,7 +90,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--text-button);
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1;
