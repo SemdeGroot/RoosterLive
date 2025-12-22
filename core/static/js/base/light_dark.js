@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modeSwitches = document.querySelectorAll('.mode-switch-input');
     const htmlElement = document.documentElement;
 
-    // Initialiseer checkbox status
+    // 1. Initialiseer checkbox status voor ALLE switches
     const currentTheme = localStorage.getItem('theme') || 'dark';
     modeSwitches.forEach(sw => {
         sw.checked = (currentTheme === 'light');
@@ -13,9 +13,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modeSwitches.forEach(modeSwitch => {
         modeSwitch.addEventListener('change', function () {
-            const newTheme = this.checked ? 'light' : 'dark';
+            const isChecked = this.checked;
+            const newTheme = isChecked ? 'light' : 'dark';
             
-            // Zet het attribuut op <html> (CSS doet de rest)
+            // SYNCHRONISATIE: Zet alle andere switches ook op dezelfde status
+            modeSwitches.forEach(sw => {
+                if (sw !== this) sw.checked = isChecked;
+            });
+
+            // Zet het attribuut op <html>
             htmlElement.setAttribute('data-theme', newTheme);
             
             // Sla op in localStorage
@@ -27,28 +33,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function updateMetaTags() {
-        // 1. Zoek alle bestaande theme-color tags en verwijder ze
-        // Dit dwingt de browser om de nieuwe tag die we zo maken te 'zien' als de enige waarheid
+        // Verwijder oude meta tags
         const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
         existingMetas.forEach(meta => meta.remove());
 
-        // 2. Bepaal de juiste kleur uit CSS variabelen
-        const htmlElement = document.documentElement;
+        // Bepaal de juiste kleur uit CSS variabelen
         const isLogin = document.body.classList.contains('login-page');
         const variableName = isLogin ? '--theme-meta-login' : '--theme-meta-base';
         
-        // Zorg dat we de berekende kleur echt te pakken hebben
-        const themeColor = getComputedStyle(htmlElement).getPropertyValue(variableName).trim();
+        // Gebruik een kleine timeout om de browser de kans te geven de CSS variabelen 
+        // van het nieuwe thema eerst te berekenen
+        setTimeout(() => {
+            const themeColor = getComputedStyle(htmlElement).getPropertyValue(variableName).trim();
 
-        // 3. Maak een gloednieuwe meta tag aan
-        const newMeta = document.createElement('meta');
-        newMeta.name = "theme-color";
-        newMeta.content = themeColor;
-        
-        // Optioneel: voeg een ID toe voor de volgende ronde (hoeft niet per se met de querySelectorAll hierboven)
-        newMeta.id = "meta-theme-color"; 
-        
-        document.getElementsByTagName('head')[0].appendChild(newMeta);
-    
+            if (themeColor) {
+                const newMeta = document.createElement('meta');
+                newMeta.name = "theme-color";
+                newMeta.content = themeColor;
+                newMeta.id = "meta-theme-color"; 
+                document.head.appendChild(newMeta);
+            }
+        }, 50);
     }
 });

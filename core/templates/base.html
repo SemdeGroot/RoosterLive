@@ -129,66 +129,89 @@
   {% user_nav_tree as nav_items %}
 
   <aside class="sidebar" aria-label="Hoofdmenu desktop">
-    <div class="sidebar-top">
-        <button class="btn sidebar-toggle" id="sidebarToggle"
-                aria-label="Klap menu in" aria-pressed="false" type="button">
-        <svg class="sidebar-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="m17 16-4-4 4-4m-6 8-4-4 4-4"
-                fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </button>
-    </div>
+  <div class="sidebar-top">
+    <button class="btn sidebar-toggle" id="sidebarToggle" aria-label="Klap menu in" aria-pressed="false" type="button">
+      <svg class="sidebar-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m17 16-4-4 4-4m-6 8-4-4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+  </div>
 
-    <nav class="sidebar-nav" aria-label="Navigatie">
+  <nav class="sidebar-nav" aria-label="Navigatie">
     {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
-    </nav>
+  </nav>
 
-    <div class="nav-bottom">
-      {% if request.user.is_authenticated %}
-        <form action="{% url 'logout' %}" method="post" class="nav-logout-form">
-          {% csrf_token %}
-          <button type="submit" class="nav-link nav-logout">
-            <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
-            <span class="nav-label">Uitloggen</span>
-          </button>
-        </form>
-      {% endif %}
+  <div class="nav-bottom">
+    <div class="mode-switch-item">
+      <div class="mode-switch-icon-col">
+        <label class="mode-switch-container">
+          <input type="checkbox" id="modeSwitch" class="mode-switch-input">
+          <span class="mode-switch-slider">
+            <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </span>
+        </label>
+      </div>
+      <span class="nav-label">Thema aanpassen</span>
     </div>
-  </aside>
+
+    <div class="nav-divider"></div>
+
+    {% if request.user.is_authenticated %}
+      <form action="{% url 'logout' %}" method="post" class="nav-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="nav-link nav-logout">
+          <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
+          <span class="nav-label">Uitloggen</span>
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</aside>
 
   <div class="nav-overlay" id="navOverlay"></div>
 
   <nav class="nav-panel" id="navPanel" hidden aria-label="Hoofdmenu mobiel">
-    <div class="nav-panel-header">
-      <span class="nav-panel-title">Menu</span>
-      <button class="nav-close" id="navClose" aria-label="Sluit menu">
-        <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+  <div class="nav-panel-header">
+    <span class="nav-panel-title">Menu</span>
+    <button class="nav-close" id="navClose" aria-label="Sluit menu">
+      <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="nav-links">
+    {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
+
+    <div class="mode-switch-item">
+      <div class="mode-switch-icon-col">
+        <label class="mode-switch-container">
+          <input type="checkbox" id="modeSwitchMobile" class="mode-switch-input">
+          <span class="mode-switch-slider">
+            <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </span>
+        </label>
+      </div>
+      <span class="nav-label">Thema aanpassen</span>
     </div>
 
-    <div class="nav-links">
-        {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
-      <div class="nav-divider"></div>
+    <div class="nav-divider"></div>
 
-      {% if request.user.is_authenticated %}
-        <form action="{% url 'logout' %}" method="post">
-          {% csrf_token %}
-          <button type="submit" class="nav-link nav-logout" data-haptic>
-        <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
-        <span class="nav-label">Uitloggen</span>
+    {% if request.user.is_authenticated %}
+      <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="nav-link nav-logout" data-haptic>
+          <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
+          <span class="nav-label">Uitloggen</span>
         </button>
-        </form>
-      {% else %}
-        <a href="{% url 'login' %}" class="nav-link">Login</a>
-      {% endif %}
-        
-    </div>
-  </nav>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-link">Login</a>
+    {% endif %}
+  </div>
+</nav>
 
   <main class="content">
     {% for message in messages %}
