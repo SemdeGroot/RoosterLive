@@ -1,0 +1,52 @@
+/* Let op! als je hier een kleur aanpast moet je dit ook doen in offline.html en maintenance.html! (en cache busting service worker / cloudfront!) */
+
+/* Standaard: Dark Mode (Alle variabelen) */
+:root {
+    /* Kleuren die veranderen in light mode */
+    --bg: #0d131b;   
+    --panel: #131a24;   
+    --panel-2: #101720; 
+    --tiles: #1e2a37;
+    --text: #e6edf3;
+    --text-button: #e6edf3;
+    --muted: #9fb2c8;
+    --border: #223144;   
+    --shadow: rgba(0,0,0,.52);
+    --button-color: #17212b;
+    --button-hover: #1f2d3d;
+    --logout-color: #ff6b6b;
+    --danger: #6a150e;
+    --danger-hover: #841c12;
+
+    /* Kleuren die hetzelfde blijven in beide modi */
+    --accent: #072a72; 
+    --ios-accent: #007AFF;
+    --button-hover-blue: #0a317f;
+    --button-hovermain: #1f2d3d;
+    --danger-border: #4a1a1a;
+
+    /* Meta theme-color variabelen voor de browser balk (voor JS) */
+    --theme-meta-base: var(--panel);      /* base.html kleur */
+    --theme-meta-login: var(--bg);     /* _base.html kleur */
+}
+
+/* Light Mode overschrijvingen */
+[data-theme='light'] {
+    --bg: #D4D9E6;
+    --panel: #E3E8F0;
+    --panel-2: #D1D8E6;
+    --tiles: #F2F6FB;
+    --text: #000000;
+    --muted: #2F3B46;
+    --border: #BCC7D2;
+    --shadow: rgba(0, 0, 0, 0.05);
+    --button-color: #BCC7D2;
+    --button-hover: #A6B5C3;
+    --logout-color: #D85D5D;
+    --danger: #9B2D28;
+    --danger-hover: #B55D51;
+
+    /* Meta theme-color variabelen voor light mode */
+    --theme-meta-base: var(--panel);      /* base.html kleur */
+    --theme-meta-login: var(--bg);     /* _base.html kleur */
+}

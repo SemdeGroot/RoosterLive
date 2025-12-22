@@ -1,10 +1,3 @@
-:root {
-    --bg:        #0d131b;
-    --panel:     #131a24;   
-    --muted:     #9fb2c8;
-    --accent:    #072a72; 
-}
-
 /* Pull-to-refresh container */
 #pull-to-refresh {
   --ptr-translate: 0px;

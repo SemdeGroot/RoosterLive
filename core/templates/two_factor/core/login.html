@@ -8,9 +8,9 @@
       <img src="{% static 'img/2factor.svg' %}" alt="2FA" class="twofa-image">
     </div>
   {% else %}
-    <div class="logo-wrap default-logo">
+    <div class="logo-wrap-login default-logo">
       {% static 'img/logo.jpg' as static_logo %}
-      <img class="logo" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
+      <img class="logo-login" src="{% firstof logo_url static_logo %}" alt="Apotheek Jansen">
     </div>
   {% endif %}
 {% endblock %}
@@ -25,13 +25,13 @@
 
     {# STAP 1: username + password #}
     {% if form.username and form.password %}
-      <label for="{{ form.username.id_for_label }}">Voornaam / E-mail</label>
+      <label class="section-label" for="{{ form.username.id_for_label }}">Voornaam / E-mail</label>
       {{ form.username }}
 
-      <label for="{{ form.password.id_for_label }}">Wachtwoord</label>
+      <label class="section-label" for="{{ form.password.id_for_label }}">Wachtwoord</label>
       {{ form.password }}
 
-      <button type="submit" data-haptic>{% trans "Inloggen" %}</button>
+      <button class="btn btn-save" type="submit" style="padding: 12px;" data-haptic>{% trans "Inloggen" %}</button>
 
       <!-- Passkey status message (geen ruimte totdat JS 'm toont) -->
       <p id="passkeyStatus"
@@ -58,14 +58,14 @@
       </p>
 
       {% if form.otp_token %}
-        <label for="{{ form.otp_token.id_for_label }}">6-cijferige code</label>
+        <label class="section-label" for="{{ form.otp_token.id_for_label }}">6-cijferige code</label>
         {{ form.otp_token }}
       {% else %}
-        <label for="{{ form.token.id_for_label }}">6-cijferige code</label>
+        <label class="section-label" for="{{ form.token.id_for_label }}">6-cijferige code</label>
         {{ form.token }}
       {% endif %}
 
-      <button type="submit" data-haptic>{% trans "Bevestigen" %}</button>
+      <button class="btn btn-save" type="submit" style="padding: 12px;" data-haptic>{% trans "Bevestigen" %}</button>
 
       <p class="forgot-password forgot-password--center">
         <a href="#" data-action="2fa"

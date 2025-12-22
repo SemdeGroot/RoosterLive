@@ -428,7 +428,7 @@ summary.nav-link{
   max-height:280px;
   overflow:auto;
 
-  background:#0f1620;
+  background:var(--panel);
   border:1px solid var(--border);
   border-radius:10px;
   box-shadow:0 8px 24px rgba(0,0,0,.3);
@@ -449,7 +449,7 @@ summary.nav-link{
 
 .week-option:hover,
 .week-option:focus{
-  background:#1a2432;
+  background: var(--button-hover);
   outline:none !important;
   box-shadow:none;
   border:none;
@@ -519,4 +519,71 @@ summary.nav-link{
     height:18px;
   }
   
+}
+
+.mode-switch-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 54px;
+    height: 28px;
+    cursor: pointer;
+    margin-left: 4px;
+    margin-bottom: 8px;
+    margin-top: 4px;
+}
+
+.mode-switch-input { opacity: 0; width: 0; height: 0; }
+
+.mode-switch-slider {
+    position: absolute;
+    inset: 0;
+    /* Gebruikt je secundaire paneelkleur voor de track */
+    background-color: var(--panel-2); 
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+}
+
+.mode-switch-slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    /* De bal krijgt de hoofdkleur van de achtergrond */
+    background-color: var(--text);
+    border-radius: 50%;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 5;
+}
+
+.mode-switch-input:checked + .mode-switch-slider::before {
+    transform: translateX(26px);
+}
+
+/* Iconen positionering en kleur */
+.sun-icon, .moon-icon {
+    width: 14px;
+    height: 14px;
+    z-index: 2;
+    stroke: var(--text); /* Gebruikt de variabele voor kleur */
+    fill: none;
+    transition: opacity 0.3s ease, stroke 0.3s ease;
+}
+
+/* Icoon kleuren via variabelen */
+.mode-switch-input:checked + .mode-switch-slider .sun-icon { 
+    opacity: 1; 
+    stroke: #ff9e00; /* De zon krijgt je accentkleur */
+}
+
+.mode-switch-input:not(:checked) + .mode-switch-slider .moon-icon { 
+    opacity: 1; 
+    stroke: var(--muted); /* De maan krijgt je muted kleur */
 }

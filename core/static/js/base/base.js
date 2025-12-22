@@ -10,20 +10,14 @@ const VAPID =
 (function(){
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
 
-  const ua = navigator.userAgent || "";
-  const isIOS = /iPad|iPhone|iPod/.test(ua);
-  const isAndroid = /Android/.test(ua);
-  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
   const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
-  const pushSupported = 'PushManager' in window;
 
   const modal   = document.getElementById('pushPrompt');
   const btnAllow = document.getElementById('pushAllowBtn');
   const btnDecl  = document.getElementById('pushDeclineBtn');
   const btnCloseX= document.getElementById('pushCloseX');
-  const textEl   = document.getElementById('pushText');
 
   function b64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -36,10 +30,10 @@ const VAPID =
 
   async function registerSW() {
     try {
-      const reg = await navigator.serviceWorker.register('/service_worker.v18.js');
-      return (await navigator.serviceWorker.ready) || reg;
+      await navigator.serviceWorker.register('/service_worker.v18.js');
+      return await navigator.serviceWorker.ready;
     } catch (e) {
-      console.warn('[push] SW registratie faalde:', e);
+      console.warn('[push] SW ready-check faalde:', e);
       return null;
     }
   }
@@ -50,24 +44,21 @@ const VAPID =
   }
 
   async function getDeviceHash() {
-    const ua = navigator.userAgent || "";
-    const platform = navigator.platform || "";
-    const vendor = navigator.vendor || "";
-    const lang = navigator.language || "";
-    const hw = [screen.width, screen.height, screen.colorDepth, navigator.hardwareConcurrency || 0].join('x');
-    const touch = navigator.maxTouchPoints || 0;
-    const data = [ua, platform, vendor, lang, hw, touch].join('|');
-
+    const data = [
+      navigator.userAgent,
+      navigator.platform,
+      navigator.language,
+      [screen.width, screen.height, screen.colorDepth].join('x'),
+      navigator.maxTouchPoints || 0
+    ].join('|');
     const enc = new TextEncoder().encode(data);
     const buf = await crypto.subtle.digest('SHA-256', enc);
-    const bytes = Array.from(new Uint8Array(buf));
-    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   async function saveSubscription(sub) {
     try {
       const device_hash = await getDeviceHash();
-      const ua = navigator.userAgent || "";
       await fetch('/api/push/subscribe/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
@@ -75,141 +66,122 @@ const VAPID =
         body: JSON.stringify({
           subscription: sub,
           device_hash,
-          user_agent: ua,
+          user_agent: navigator.userAgent,
           replace: true
         }),
       });
-      console.log('[push] Subscription succesvol gesynchroniseerd met server');
+      console.log('[push] Sync met server geslaagd');
     } catch (e) {
-      console.warn('[push] opslaan subscription faalde:', e);
+      console.warn('[push] Sync met server faalde:', e);
     }
   }
 
-  function canOfferPush() {
-    if (!modal || !btnAllow || !btnDecl) return false;
-    if (!VAPID) return false;
-    if (!onHttps) return false;
-    if (!pushSupported) return false;
-    if (Notification.permission === 'granted') return false;
-    if (Notification.permission === 'denied') return false;
-    if (!isMobileUA) return false;
-    if (isIOS) return isStandalone;
-    if (isAndroid) return true;
-    return false;
-  }
-
-  function openPushModal() {
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(() => btnAllow && btnAllow.focus());
-  }
-  function closePushModal() {
-    modal.setAttribute('aria-hidden', 'true');
-    modal.hidden = true;
-  }
-
-  async function subscribeFlow() {
-    if (!VAPID) { alert('VAPID sleutel ontbreekt.'); return; }
-    if (!onHttps) { alert('Notificaties vereisen HTTPS.'); return; }
-
-    const reg = await registerSW();
-    if (!reg) {
-      alert('Service worker kon niet worden geregistreerd.');
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      closePushModal();
-      return;
-    }
-
-    const existing = await reg.pushManager.getSubscription();
-    const sub = existing || await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: b64ToUint8Array(VAPID),
-    });
-    await saveSubscription(sub);
-    closePushModal();
-  }
-
-  function declineFlow() {
-    closePushModal();
-  }
-
-  window.silentPushSync = async function() {
+  // DE MOTOR: Silent Sync met 24-uurs debounce
+  window.silentPushSync = async function(forceNew = false) {
     if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
 
     try {
       const reg = await registerSW();
       if (!reg) return;
 
-      const oldSub = await reg.pushManager.getSubscription();
-      if (oldSub) {
-        console.log('[push] Oude subscription gevonden, verwijderen voor force refresh...');
-        await oldSub.unsubscribe();
+      let sub = await reg.pushManager.getSubscription();
+      
+      const lastSyncKey = 'lastPushSyncTimestamp';
+      const lastSync = localStorage.getItem(lastSyncKey);
+      const nu = Date.now();
+      const eenDag = 24 * 60 * 60 * 1000;
+
+      // Skip POST als alles up-to-date is en recent gesynct
+      if (sub && !forceNew && lastSync && (nu - parseInt(lastSync) < eenDag)) {
+        console.debug('[push] Sync overgeslagen: recent nog uitgevoerd.');
+        return; 
       }
 
-      const newSub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: b64ToUint8Array(VAPID),
-      });
+      // Hersubscribe als token weg is (data gewist) of geforceerd
+      if (!sub || forceNew) {
+        console.log('[push] Herstel of nieuwe sub aanvraag...');
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: b64ToUint8Array(VAPID),
+        });
+      }
+      
+      await saveSubscription(sub);
+      localStorage.setItem(lastSyncKey, nu.toString());
 
-      await saveSubscription(newSub);
-      console.log('[push] Force refresh succesvol uitgevoerd.');
     } catch(e) {
-      console.warn('[push] silent sync (force refresh) failed', e);
+      console.warn('[push] silentPushSync faalde:', e);
     }
   };
 
-  window.offerPushPrompt = async function () {
-    try { if (!canOfferPush()) return; } catch { return; }
-    return new Promise((resolve) => {
-      const done = () => { closePushModal(); resolve(); };
-      const onAllow = () => { Promise.resolve(subscribeFlow()).finally(done); };
-      const onDecl  = () => { declineFlow(); done(); };
+  async function subscribeFlow() {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await window.silentPushSync(true);
+    }
+    closePushModal();
+  }
 
-      btnAllow && (btnAllow.onclick = onAllow);
-      btnDecl  && (btnDecl.onclick  = onDecl);
-      btnCloseX&& (btnCloseX.onclick= onDecl);
-      const backdrop = modal ? modal.querySelector('.push-backdrop') : null;
-      if (backdrop) backdrop.addEventListener('click', onDecl, { once:true });
-      const esc = (e)=>{ if (e.key === 'Escape') { onDecl(); window.removeEventListener('keydown', esc); } };
-      window.addEventListener('keydown', esc);
-
-      if (!onHttps) {
-        textEl && (textEl.textContent = 'Open deze app via HTTPS om notificaties te kunnen inschakelen.');
-      } else if (isIOS && !isStandalone) {
-        textEl && (textEl.textContent = 'Installeer de app op je beginscherm om notificaties te ontvangen.');
-      } else {
-        textEl && (textEl.textContent = 'Wil je meldingen ontvangen? Zo blijf je direct op de hoogte bij een nieuw rooster, belangrijke updates of andere nieuwtjes.');
-      }
-
-      openPushModal();
-    });
+  window.offerPushPrompt = function() {
+    if (!modal || Notification.permission !== 'default' || !isStandalone) return;
+    btnAllow && (btnAllow.onclick = subscribeFlow);
+    btnDecl && (btnDecl.onclick = closePushModal);
+    btnCloseX && (btnCloseX.onclick = closePushModal);
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
   };
+
+  function closePushModal() {
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    modal.hidden = true;
+  }
 })();
 
-// ---------- ONBOARDING ORCHESTRATOR: alleen PUSH ----------
+// ---------- DE SLIMME ORCHESTRATOR ----------
 (function () {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
 
-  const doneKey = 'onboardingPushFixed_v3';
-  const done = localStorage.getItem(doneKey) === '1';
+  let isChecking = false;
 
-  if (!isStandalone || done) return;
-
-  (async () => {
-    if (Notification.permission === 'granted' && typeof window.silentPushSync === 'function') {
-      console.log('[onboarding] Permission granted, force refresh van keys...');
-      await window.silentPushSync();
-    } else if (typeof window.offerPushPrompt === 'function') {
-      try { await window.offerPushPrompt(); } catch {}
+  async function runPushHealthCheck() {
+    if (!isStandalone || isChecking) return;
+    isChecking = true;
+    try {
+      if (Notification.permission === 'granted') {
+        // Probeert te syncen; de 24-uurs timer in de functie beslist of het echt nodig is
+        await window.silentPushSync().catch(() => {}); 
+      } 
+      else if (Notification.permission === 'default') {
+        const doneKey = 'onboardingPush_v4';
+        if (localStorage.getItem(doneKey) !== '1') {
+          if (typeof window.offerPushPrompt === 'function') {
+            window.offerPushPrompt();
+            localStorage.setItem(doneKey, '1');
+          }
+        }
+      }
+    } finally {
+      isChecking = false;
     }
+  }
 
-    try { localStorage.setItem(doneKey, '1'); } catch {}
-  })();
+  // Uitvoeren bij laden
+  if (document.readyState === 'complete') {
+    runPushHealthCheck();
+  } else {
+    window.addEventListener('load', runPushHealthCheck);
+  }
+
+  // Herstel-check bij app-switch (iOS vriendelijk)
+  let visibilityTimeout;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      clearTimeout(visibilityTimeout);
+      visibilityTimeout = setTimeout(runPushHealthCheck, 1000);
+    }
+  });
 })();
 
 // ---------- SERVICE WORKER REGISTRATIE + CLEANUP VIA ?cleanup=1 ----------

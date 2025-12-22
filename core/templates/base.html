@@ -6,8 +6,16 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" />  
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+ <link rel="stylesheet" href="{% static 'css/base/colors.css' %}">
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      })();
+    </script>
+    <script src="{% static 'js/base/light_dark.js' %}" defer></script>
 
   <title>{% block title %}{% endblock %}</title>
 
@@ -16,10 +24,10 @@
   <meta name="apple-mobile-web-app-title" content="Apo Jansen" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-  <meta name="theme-color" content="#131a24">
-  <meta name="color-scheme" content="dark light" />
+  <meta id="meta-theme-color" name="theme-color" content="#131a24" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#E3E8F0" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
 <script>
   (function () {
     try {
@@ -29,7 +37,6 @@
     document.documentElement.classList.remove('sidebar-open');
   })();
 </script>
-
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/nav.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/installprompt.css' %}">
@@ -154,7 +161,6 @@
 
     <div class="nav-links">
         {% include "includes/nav_tree.html" with items=nav_items level=1 request=request %}
-
       <div class="nav-divider"></div>
 
       {% if request.user.is_authenticated %}
@@ -168,6 +174,7 @@
       {% else %}
         <a href="{% url 'login' %}" class="nav-link">Login</a>
       {% endif %}
+        
     </div>
   </nav>
 
@@ -237,7 +244,6 @@
   window.PWA = window.PWA || {};
   window.PWA.VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ=";
 </script>
-
 <script src="{% static 'js/base/nav.js' %}" defer></script>
 <script src="{% static 'js/base/base.js' %}" defer></script>
 <script src="{% static 'js/auth/passkeys.js' %}" defer></script>

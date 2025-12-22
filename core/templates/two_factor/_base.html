@@ -4,6 +4,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <link rel="stylesheet" href="{% static 'css/base/colors.css' %}">
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <script src="{% static 'js/base/light_dark.js' %}" defer></script>
   <title>Login | Apo Jansen</title>
 
   <meta name="description" content="Apo Jansen" />
@@ -11,14 +19,15 @@
   <meta name="apple-mobile-web-app-title" content="Apo Jansen" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
   <!-- kleur adresbalk / titelbalk -->
-  <meta name="theme-color" content="#0d131b">
+  <meta id="meta-theme-color" name="theme-color" content="#0d131b" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#D4D9E6" media="(prefers-color-scheme: light)">
   <meta name="color-scheme" content="dark light" />
 
   <!-- CSS -->
   <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
   <style>
     body.ptr-panel-bg {
@@ -71,7 +80,7 @@
 
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="login-page">
   <div id="pull-to-refresh">
   <div class="ptr-ring">
     <span class="ptr-dot"></span>
@@ -110,7 +119,7 @@
     </div>
     
   </main>
-
+  <script src="{% static 'js/base/light_dark.js' %}" defer></script>
   <script src="{% static 'js/auth/login.js' %}"></script>
   <script src="{% static 'js/auth/passkeys.js' %}"></script>
   <script src="{% static 'js/base/refresh.js' %}"></script>
