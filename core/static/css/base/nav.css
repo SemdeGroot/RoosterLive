@@ -468,57 +468,74 @@ summary.nav-link{
 }
 
 /* =========================================================
-   Mobile: forced 1-line + compacter
+   Mobile: forced 1-line + compacter (Gerepareerd)
    ========================================================= */
 @media (max-width:640px){
-  .week-controls{
-    flex-wrap:nowrap;
-    gap:10px;             
-    justify-content:center;
+  .week-controls {
+    flex-wrap: nowrap; /* Nooit wrappen op mobile */
+    gap: 6px;          /* Iets kleinere gap tussen knoppen */
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;  /* Veiligheid tegen uitsteken */
   }
 
-  /* Icon knoppen iets groter */
-  .btn-icon{
-    width:40px;
-    height:40px;
-  }
-  .btn-icon svg{
-    width:22px; 
-    height:22px;        
+  /* Icon knoppen compacter maken */
+  .btn-icon {
+    width: 38px;       /* Iets smaller om ruimte te winnen */
+    height: 38px;
+    padding: 0;
+    flex: 0 0 38px;    /* Voorkomen dat de pijltjes krimpen */
   }
 
-  /* Middenknop: netjes om tekst heen */
-  .week-picker{
-    flex:0 1 auto;
-    min-width:0;
+  .btn-icon svg {
+    width: 20px; 
+    height: 20px;        
   }
 
-  .week-picker-btn{
-    width:auto;
-    min-width:0;
-    min-height:40px;
-    padding:0 20px; 
-    gap:8px;
-    white-space:nowrap;
-
-    /* safety: zodat het altijd op 1 regel past */
-    max-width:calc(100vw - 140px);
+  /* Middenknop: Maximaal flexibel */
+  .week-picker {
+    flex: 1 1 auto;    /* Laat de picker de restruimte vullen */
+    min-width: 0;
+    display: flex;
+    justify-content: center;
   }
 
-  .wp-label{
-    min-width:0;
-    max-width:100%;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    font-size:1rem;  
+  .week-picker-btn {
+    width: 100%;       /* Vul de beschikbare flex-ruimte */
+    min-width: 0;      /* Cruciaal voor tekst-afkapping */
+    min-height: 38px;
+    padding: 0 8px;    /* Minder padding aan zijkanten wint veel ruimte */
+    gap: 4px;          /* Minder ruimte tussen tekst en pijltje */
+    
+    /* Belangrijk: Geen vaste breedtes gebruiken, maar restruimte vullen */
+    max-width: 100%; 
   }
 
-  .wp-caret svg{
-    width:18px;
-    height:18px;
+  .wp-label {
+    min-width: 0;
+    flex: 0 1 auto;    /* Laat de tekst krimpen indien nodig */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem; /* Iets kleiner font voor betere fit */
+    font-weight: 600;
   }
-  
+
+  .wp-caret {
+    flex: 0 0 auto;    /* Pijltje mag nooit krimpen */
+  }
+
+  .wp-caret svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Extra tweak voor de allerkleinste schermen (<340px) */
+@media (max-width:340px) {
+  .week-controls { gap: 4px; }
+  .wp-label { font-size: 0.85rem; }
+  .week-picker-btn { padding: 0 4px; }
 }
 
 .mode-switch-container {

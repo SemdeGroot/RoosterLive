@@ -6,9 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
   <link rel="stylesheet" href="{% static 'css/base/colors.css' %}">
   <script>
-    (function () {
+    (function() {
+      // 1. Thema bepalen en zetten
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
+
+      // 2. Direct de theme-color zetten (komt overeen met --bg)
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      
+      let meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', color);
     })();
   </script>
   <script src="{% static 'js/base/light_dark.js' %}" defer></script>

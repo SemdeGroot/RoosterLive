@@ -49,8 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
         newMeta.id = "meta-theme-color"; 
         
         document.getElementsByTagName('head')[0].appendChild(newMeta);
-        
-        // Debug log om in je console te checken of hij echt verandert
-        console.log(`PWA Theme Color geüpdatet naar: ${themeColor}`);
+    
     }
 });

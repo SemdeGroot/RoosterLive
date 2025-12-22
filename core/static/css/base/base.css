@@ -304,6 +304,7 @@ th,td{
   vertical-align:middle;
   word-wrap:break-word;
 }
+
 /* --- Tiles --- */
 
 .tiles { 
@@ -317,7 +318,7 @@ th,td{
 
 /* BASIS STYLING (De kleinste telefoons: 320px - 360px) */
 .tile-box {
-  background: var(--button-color);
+  background: var(--tiles);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 6px 20px var(--shadow);
@@ -417,10 +418,10 @@ th,td{
   .tile-name { font-size: 1rem; }
 }
 
-/* TOUCH FIX */
+/* no hover on mobile tiles */
 @media (hover: none) and (pointer: coarse) {
   .tile-box:hover {
-    background: var(--button-color);
+    background: var(--tiles);
     border-color: var(--border);
     box-shadow: 0 6px 20px var(--shadow);
   }
