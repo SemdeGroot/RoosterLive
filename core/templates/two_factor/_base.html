@@ -4,26 +4,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  
   <link rel="stylesheet" href="{% static 'css/base/colors.css' %}">
+
   <script>
     (function() {
-      // 1. Thema bepalen en zetten
+      // Bepaal thema vanuit localStorage
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
 
-      // 2. Direct de theme-color zetten (komt overeen met --bg)
+      // Gebruik de specifieke kleuren voor deze pagina
       const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
       
-      let meta = document.querySelector('meta[name="theme-color"]');
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', color);
+      // Maak de meta tag aan met ID (zodat light_dark.js hem herkent)
+      let meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.id = 'meta-theme-color';
+      meta.content = color;
+      document.head.appendChild(meta);
     })();
   </script>
+
   <script src="{% static 'js/base/light_dark.js' %}" defer></script>
+  
   <title>Login | Apo Jansen</title>
 
   <meta name="description" content="Apo Jansen" />
@@ -31,11 +34,6 @@
   <meta name="apple-mobile-web-app-title" content="Apo Jansen" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-
-  <!-- kleur adresbalk / titelbalk -->
-  <meta id="meta-theme-color" name="theme-color" content="#0d131b" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#D4D9E6" media="(prefers-color-scheme: light)">
-  <meta name="color-scheme" content="dark light" />
 
   <!-- CSS -->
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">

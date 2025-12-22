@@ -20,6 +20,11 @@
   <meta name="color-scheme" content="dark light">
 
   <style>
+    * {
+      -webkit-tap-highlight-color: transparent; /* Verwijder de zwarte/doorzichtige highlight bij touch */
+      outline: none !important; /* Verwijder de outline bij focus (standaard bij klikken op links en knoppen) */
+      box-shadow: none !important; /* Verwijder box-shadow effect bij klikken */
+    }
     body {
       margin: 0; padding: 24px; font-family: -apple-system, sans-serif;
       background: var(--bg); color: var(--text); text-align: center;

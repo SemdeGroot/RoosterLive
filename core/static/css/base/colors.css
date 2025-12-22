@@ -26,8 +26,8 @@
     --danger-border: #4a1a1a;
 
     /* Meta theme-color variabelen voor de browser balk (voor JS) */
-    --theme-meta-base: var(--panel);      /* base.html kleur */
-    --theme-meta-login: var(--bg);     /* _base.html kleur */
+    --theme-meta-base: #131a24;      /* base.html kleur */
+    --theme-meta-login: #0d131b;     /* _base.html kleur */
 }
 
 /* Light Mode overschrijvingen */
@@ -47,6 +47,6 @@
     --danger-hover: #B55D51;
 
     /* Meta theme-color variabelen voor light mode */
-    --theme-meta-base: var(--panel);      /* base.html kleur */
-    --theme-meta-login: var(--bg);     /* _base.html kleur */
+    --theme-meta-base: #E3E8F0;      /* base.html kleur */
+    --theme-meta-login: #D4D9E6;     /* _base.html kleur */
 }

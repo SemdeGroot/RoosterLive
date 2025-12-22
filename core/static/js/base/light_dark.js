@@ -2,57 +2,59 @@ document.addEventListener('DOMContentLoaded', function () {
     const modeSwitches = document.querySelectorAll('.mode-switch-input');
     const htmlElement = document.documentElement;
 
-    // 1. Initialiseer checkbox status voor ALLE switches
+    // 1. Initialiseer checkbox status bij laden
+    // (Het thema zelf is al gezet door het script in de <head>)
     const currentTheme = localStorage.getItem('theme') || 'dark';
     modeSwitches.forEach(sw => {
         sw.checked = (currentTheme === 'light');
     });
 
-    // Update meta tags bij laden
-    updateMetaTags();
-
+    // 2. Event listeners voor de switches
     modeSwitches.forEach(modeSwitch => {
         modeSwitch.addEventListener('change', function () {
             const isChecked = this.checked;
             const newTheme = isChecked ? 'light' : 'dark';
             
-            // SYNCHRONISATIE: Zet alle andere switches ook op dezelfde status
+            // Synchroniseer alle switches op de pagina (bijv. mobiel en desktop menu)
             modeSwitches.forEach(sw => {
                 if (sw !== this) sw.checked = isChecked;
             });
 
-            // Zet het attribuut op <html>
+            // Update HTML attribuut en LocalStorage
             htmlElement.setAttribute('data-theme', newTheme);
-            
-            // Sla op in localStorage
             localStorage.setItem('theme', newTheme);
 
-            // Update de adresbalk kleur
-            updateMetaTags();
+            // Update de adresbalk kleur direct
+            updateMetaTags(newTheme);
         });
     });
 
-    function updateMetaTags() {
-        // Verwijder oude meta tags
-        const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
-        existingMetas.forEach(meta => meta.remove());
-
-        // Bepaal de juiste kleur uit CSS variabelen
-        const isLogin = document.body.classList.contains('login-page');
-        const variableName = isLogin ? '--theme-meta-login' : '--theme-meta-base';
+    /**
+     * Past de theme-color meta tag aan.
+     * We gebruiken hardcoded waardes die matchen met je CSS variabelen 
+     * om vertraging door 'getComputedStyle' te voorkomen.
+     */
+    function updateMetaTags(theme) {
+        let meta = document.getElementById('meta-theme-color');
         
-        // Gebruik een kleine timeout om de browser de kans te geven de CSS variabelen 
-        // van het nieuwe thema eerst te berekenen
-        setTimeout(() => {
-            const themeColor = getComputedStyle(htmlElement).getPropertyValue(variableName).trim();
+        // Mocht de meta tag niet bestaan, maak hem aan
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.id = 'meta-theme-color';
+            meta.name = 'theme-color';
+            document.head.appendChild(meta);
+        }
 
-            if (themeColor) {
-                const newMeta = document.createElement('meta');
-                newMeta.name = "theme-color";
-                newMeta.content = themeColor;
-                newMeta.id = "meta-theme-color"; 
-                document.head.appendChild(newMeta);
-            }
-        }, 50);
+        // Bepaal de kleur op basis van thema en pagina type
+        const isLogin = document.body.classList.contains('login-page');
+        let themeColor;
+
+        if (theme === 'dark') {
+            themeColor = isLogin ? '#131a24' : '#131a24'; // Pas aan indien login anders moet zijn
+        } else {
+            themeColor = isLogin ? '#E3E8F0' : '#E3E8F0'; // Pas aan indien login anders moet zijn
+        }
+
+        meta.setAttribute('content', themeColor);
     }
 });

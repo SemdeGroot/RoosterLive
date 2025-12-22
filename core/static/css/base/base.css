@@ -7,6 +7,13 @@ html,body{
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
   overflow-x:hidden
 }
+/* Verwijder standaard tap-highlight en klik box op alle elementen */
+* {
+  -webkit-tap-highlight-color: transparent; /* Verwijder de zwarte/doorzichtige highlight bij touch */
+  outline: none !important; /* Verwijder de outline bij focus (standaard bij klikken op links en knoppen) */
+  box-shadow: none !important; /* Verwijder box-shadow effect bij klikken */
+}
+
 html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 
 /* App container */
@@ -309,33 +316,50 @@ th,td{
 
 .tiles { 
   display: grid; 
-  /* 130px is de best-practice voor 2 kolommen op 320px schermen */
   grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); 
-  gap: 10px; /* Iets kleinere gap op mobiel geeft meer ruimte aan de box zelf */
+  gap: 10px; 
 }
 
 .tile { display: block; text-decoration: none; color: inherit; }
+.tile:visited { color: inherit; }
 
-/* BASIS STYLING (De kleinste telefoons: 320px - 360px) */
 .tile-box {
   background: var(--tiles);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 6px 20px var(--shadow);
   
-  padding: 10px; /* Compacte padding voor kleine schermen */
+  padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;      /* Iets kleinere gap tussen icon en tekst */
-  min-height: 115px; /* Iets lager voor de 320px range */
+  gap: 6px;
+  min-height: 115px;
   
-  transition: all .2s ease;
+  transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* De hover effecten (staan standaard aan voor alles) */
+.tile-box:hover {
+  background: var(--button-hover);
+  border-color: var(--accent);
+  box-shadow: 0 10px 28px var(--shadow);
+}
+
+/* DE RESET: Dit is de methode uit je oude base.css die de hover op mobiel sloopt */
+@media (hover: none) and (pointer: coarse) {
+  .tile-box:hover {
+    background: var(--tiles);
+    border-color: var(--border);
+    box-shadow: 0 6px 20px var(--shadow);
+  }
+}
+
+/* Iconen & Afbeeldingen */
 .tile-img {
-  /* Icoon iets kleiner voor 320px-360px range */
   width: 65px; 
   height: 65px;
   display: flex;
@@ -354,23 +378,16 @@ th,td{
   color: var(--text); 
   font-weight: 600; 
   text-align: center; 
-  font-size: 0.8rem; /* Iets kleiner font voor balans op 320px */
+  font-size: 0.8rem;
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* HOVER (Alleen muis) */
-.tile-box:hover {
-  background: var(--button-hover);
-  border-color: var(--accent);
-  box-shadow: 0 10px 28px var(--shadow);
-}
+/* --- MEDIA QUERIES VOOR OPSCHALEN (JOUW ORIGINELE MATEN) --- */
 
-/* --- MEDIA QUERIES VOOR OPSCHALEN --- */
-
-/* Vanaf 360px/380px: Jouw "goed werkende" maten herstellen */
+/* Vanaf 360px */
 @media (min-width: 360px) {
   .tiles { gap: 12px; }
   .tile-box { 
@@ -393,14 +410,11 @@ th,td{
     padding: 16px;
     gap: 10px;
   }
-  .tile-img { 
-    width: 110px; 
-    height: 110px; 
-  }
+  .tile-img { width: 110px; height: 110px; }
   .tile-name { font-size: 0.95rem; }
 }
 
-/* DESKTOP (900px+) - Jouw EXACTE waarden */
+/* DESKTOP (900px+) */
 @media (min-width: 900px) {
   .tiles { 
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
@@ -411,23 +425,11 @@ th,td{
     padding: 18px;
     gap: 10px;
   }
-  .tile-img { 
-    width: 140px; 
-    height: 140px; 
-  }
+  .tile-img { width: 140px; height: 140px; }
   .tile-name { font-size: 1rem; }
 }
 
-/* no hover on mobile tiles */
-@media (hover: none) and (pointer: coarse) {
-  .tile-box:hover {
-    background: var(--tiles);
-    border-color: var(--border);
-    box-shadow: 0 6px 20px var(--shadow);
-  }
-}
-
-/* EXTRA: Onder 320px pas naar 1 kolom */
+/* Hele kleine schermen */
 @media (max-width: 319px) {
   .tiles { grid-template-columns: 1fr; }
 }

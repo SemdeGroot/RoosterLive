@@ -16,6 +16,11 @@
   </script>
   <meta name="color-scheme" content="dark light">
   <style>
+    * {
+  -webkit-tap-highlight-color: transparent; /* Verwijder de zwarte/doorzichtige highlight bij touch */
+  outline: none !important; /* Verwijder de outline bij focus (standaard bij klikken op links en knoppen) */
+  box-shadow: none !important; /* Verwijder box-shadow effect bij klikken */
+}
     :root {
       --bg: #0d131b; --panel-2: #101720; --muted: #9fb2c8; --accent: #072a72; 
       --text: #e6edf3; --border: #223144; --button-color: #17212b; --button-hover: #1f2d3d;
