@@ -25,7 +25,7 @@ def ip_restricted(view_func):
     def _wrapped_view(request, *args, **kwargs):
         # Haal de toegestane IP's op uit settings.py
         # Gebruik een lege lijst als fallback als de setting ontbreekt
-        allowed_ips = getattr(settings, 'ALLOWED_MEDICATIEREVIEW_IPS', [])
+        allowed_ips = getattr(settings, 'ALLOWED_PHARMACY_NETWORKS', [])
         
         user_ip = get_client_ip(request)
 

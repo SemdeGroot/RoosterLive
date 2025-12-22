@@ -33,6 +33,16 @@
 
       <button class="btn btn-save" type="submit" style="padding: 12px;" data-haptic>{% trans "Inloggen" %}</button>
 
+      {# --- Kiosk inlog --- #}
+    {% if show_kiosk_login %}
+        <button type="submit" 
+                form="kiosk_form" 
+                class="btn" 
+                style="padding: 12px;" >
+          {% trans "Log in met het standaardaccount" %}
+        </button>
+    {% endif %}
+
       <!-- Passkey status message (geen ruimte totdat JS 'm toont) -->
       <p id="passkeyStatus"
          class="passkey-message"
@@ -90,5 +100,12 @@
       </div>
     </div>
   </form>
+
+  {% if show_kiosk_login %}
+  {# Dit formulier wordt getriggerd door de knop hierboven #}
+  <form id="kiosk_form" method="post" action="{% url 'kiosk_login' %}">
+    {% csrf_token %}
+  </form>
+  {% endif %}
 
 {% endblock %}

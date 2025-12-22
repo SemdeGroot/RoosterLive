@@ -13,19 +13,35 @@
 
   <script>
     (function() {
-      // Bepaal thema
+      // 1. Dit script voorkomt flashing etc
+      // 1. Thema & Meta-color initialisatie
       const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      const doc = document.documentElement;
+      doc.setAttribute('data-theme', savedTheme);
 
-      // Bepaal kleur (match deze met je CSS --panel of --theme-meta-base)
       const color = (savedTheme === 'dark') ? '#131a24' : '#E3E8F0';
-      
-      // Maak de meta tag aan (met ID zodat light_dark.js hem kan vinden)
       let meta = document.createElement('meta');
       meta.name = 'theme-color';
       meta.id = 'meta-theme-color';
       meta.content = color;
       document.head.appendChild(meta);
+
+      // 2. Sidebar status forceren
+      try {
+        localStorage.setItem('sidebarCollapsed_v1', '1');
+      } catch {}
+      doc.classList.remove('sidebar-open');
+
+      // 3. Switch observer
+      const observer = new MutationObserver((mutations, obs) => {
+        const switchInput = document.querySelector('.mode-switch-input');
+        if (switchInput) {
+          switchInput.checked = (savedTheme === 'light');
+          obs.disconnect();
+        }
+      });
+
+      observer.observe(doc, { childList: true, subtree: true });
     })();
   </script>
 
@@ -39,15 +55,6 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   
-<script>
-  (function () {
-    try {
-      // Always start collapsed on every page load
-      localStorage.setItem('sidebarCollapsed_v1', '1');
-    } catch {}
-    document.documentElement.classList.remove('sidebar-open');
-  })();
-</script>
   <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/nav.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/installprompt.css' %}">

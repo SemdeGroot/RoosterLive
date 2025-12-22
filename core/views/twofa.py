@@ -6,7 +6,7 @@ from two_factor.utils import get_otpauth_url, totp_digits
 from core.forms import IdentifierAuthenticationForm, MyAuthenticationTokenForm, MyTOTPDeviceForm 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login as auth_login, get_user_model
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils.translation import gettext as _
@@ -19,7 +19,8 @@ from binascii import unhexlify
 from two_factor.utils import get_otpauth_url, totp_digits
 from urllib.parse import quote, urlencode
 from urllib.parse import quote as urlquote  # voor veilige next= urls
-from core.models import WebAuthnPasskey
+from core.models import WebAuthnPasskey, StandaardInlog
+from core.utils.network import is_in_pharmacy_network
 from core.views._helpers import is_mobile_request
 
 class CustomSetupView(SetupView):
@@ -188,9 +189,56 @@ class CustomLoginView(TwoFALoginView):
 
         return super().render(form=form, **kwargs)
     
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # Check of we de snelle inlog knop moeten tonen
+        ctx['show_kiosk_login'] = is_in_pharmacy_network(self.request)
+        return ctx
+    
 @login_required
 @require_POST
 def logout_view(request):
     logout(request)
     messages.info(request, "Je bent uitgelogd.")
     return redirect(reverse("two_factor:login"))
+
+from django.contrib.auth import login, get_user_model
+from core.models import StandaardInlog
+from core.utils.network import is_in_pharmacy_network
+
+@require_POST
+def kiosk_login_view(request):
+    # We importeren deze hier lokaal om circulaire imports te voorkomen
+    from core.utils.network import is_in_pharmacy_network
+    from core.models import StandaardInlog
+    
+    if not is_in_pharmacy_network(request):
+        messages.error(request, _("Toegang geweigerd: Je zit niet op het apotheek netwerk."))
+        return redirect(reverse("two_factor:login"))
+
+    config = StandaardInlog.load()
+    if not config or not config.standaard_rol:
+        messages.error(request, _("Kiosk-modus is niet geconfigureerd in de admin."))
+        return redirect(reverse("two_factor:login"))
+
+    User = get_user_model()
+    kiosk_user, _ = User.objects.get_or_create(
+        username="apotheek_kiosk",
+        defaults={
+            'first_name': 'Apotheek', 
+            'last_name': 'Algemeen',
+            'is_active': True
+        }
+    )
+    
+    # Koppel de rol
+    kiosk_user.groups.set([config.standaard_rol])
+
+    # HIER GING HET MIS: We gebruiken nu auth_login i.p.v. login
+    auth_login(request, kiosk_user, backend='django.contrib.auth.backends.ModelBackend')
+    
+    # Markeer sessie voor de 2FA library
+    request.session['otp_device_id'] = None 
+    request.session['two_factor_auth_complete'] = True
+    
+    return redirect(reverse("home"))

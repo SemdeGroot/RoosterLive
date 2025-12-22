@@ -29,6 +29,9 @@ class Enforce2FAMiddleware(MiddlewareMixin):
         user = getattr(request, "user", None)
         if not (user and user.is_authenticated):
             return  # niet ingelogd -> niets afdwingen
+        
+        if user.username == "apotheek_kiosk":
+            return # Sla 2FA controle over voor de algemene computer
 
         # Heeft gebruiker al een (bevestigd) device? Dan niets afdwingen
         if default_device(user):

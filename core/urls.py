@@ -10,7 +10,7 @@ from core.views.nazendingen import nazendingen_view, medications_search_api, exp
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
 from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update
-from core.views.twofa import logout_view
+from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
 from core.views import push as push_views
@@ -51,6 +51,7 @@ urlpatterns = [
     path("baxter/", baxter_tiles, name="baxter_tiles"),
     path("openbare-apotheek/", openbare_tiles, name="openbare_tiles"),
     path("instellingsapotheek/", instellings_tiles, name="instellings_tiles"),
+    path("kiosk-login/", kiosk_login_view, name="kiosk_login"),
     path("logout/", logout_view, name="logout"),
     path("accounts/password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path("accounts/set-password/<uidb64>/<token>/", CustomPasswordConfirmView.as_view(), name="set_password"),

@@ -7,7 +7,11 @@
 <div class="card" style="padding:16px;">
     <h3 style="margin-top:0;">
     {% if user.is_authenticated %}
-        Welkom, {{ user.first_name|default:user.username|capfirst }}! Kies hieronder wat je wilt bekijken.
+        {% if user.username == "apotheek_kiosk" %}
+          Welkom! Kies hieronder wat je wilt bekijken. Je bent nu ingelogd met het standaardaccount.
+        {% else %}
+            Welkom, {{ user.first_name|default:user.username|capfirst }}! Kies hieronder wat je wilt bekijken.
+        {% endif %}
     {% else %}
         Welkom! Kies hieronder wat je wilt bekijken.
     {% endif %}

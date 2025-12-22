@@ -292,9 +292,9 @@ else:
 
 MEDICATIEREVIEW_API_KEY = os.getenv("MEDICATIEREVIEW_API_KEY")
 
-ALLOWED_MEDICATIEREVIEW_IPS = [
-    "127.0.0.1",      # Localhost (voor development)
-    "37.9.216.65",
+ALLOWED_PHARMACY_NETWORKS = [
+    "127.0.0.1",   # Localhost (voor development)
+    "37.9.216.65", # Het IP van Apo Jansen
 ]
 
 LANGUAGE_CODE = 'nl-nl'
