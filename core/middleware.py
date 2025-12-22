@@ -14,7 +14,7 @@ SAFE_URLNAMES = {
 
 SAFE_PATH_PREFIXES = (
     "/static/", "/media/", "/favicon.ico",
-    "/service_worker.v18.js", "/__reload__/",
+    "/service_worker.v19.js", "/__reload__/",
     "/manifest.json",
 )
 
