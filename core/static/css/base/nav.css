@@ -545,10 +545,10 @@ summary.nav-link{
 .mode-switch-item {
     display: grid;
     grid-template-columns: 30px 1fr; /* Exacte match met icon kolom */
-    column-gap: 20px;
+    column-gap: 24px;
     align-items: center;
     /* padding: Top Right Bottom Left */
-    padding: 4px 14px 10px 14px;
+    padding: 8px 14px 14px 14px;
     width: 100%;
     background: transparent;
     border: none;

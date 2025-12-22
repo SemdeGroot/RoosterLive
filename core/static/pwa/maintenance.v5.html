@@ -8,19 +8,21 @@
     (function() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      const color = (savedTheme === 'light') ? '#D4D9E6' : '#0d131b';
-      const meta = document.createElement('meta');
-      meta.name = "theme-color"; meta.content = color;
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      let meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.id = 'meta-theme-color';
+      meta.content = color;
       document.head.appendChild(meta);
     })();
   </script>
   <meta name="color-scheme" content="dark light">
   <style>
     * {
-  -webkit-tap-highlight-color: transparent; /* Verwijder de zwarte/doorzichtige highlight bij touch */
-  outline: none !important; /* Verwijder de outline bij focus (standaard bij klikken op links en knoppen) */
-  box-shadow: none !important; /* Verwijder box-shadow effect bij klikken */
-}
+      -webkit-tap-highlight-color: transparent;
+      outline: none !important;
+      box-shadow: none !important;
+    }
     :root {
       --bg: #0d131b; --panel-2: #101720; --muted: #9fb2c8; --accent: #072a72; 
       --text: #e6edf3; --border: #223144; --button-color: #17212b; --button-hover: #1f2d3d;
@@ -36,6 +38,7 @@
       background: var(--bg); color: var(--text); text-align: center;
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; min-height: 100vh; box-sizing: border-box;
+      padding-bottom: 60px; /* Optische correctie voor PWA statusbar */
     }
     .card {
       width: 100%; max-width: 360px; padding: 32px 24px; background: var(--panel-2);
