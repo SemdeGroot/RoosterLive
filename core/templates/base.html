@@ -13,8 +13,7 @@
 
   <script>
     (function() {
-      // 1. Dit script voorkomt flashing etc
-      // 1. Thema & Meta-color initialisatie
+      // 1. Thema & Meta-color initialisatie (Onveranderd)
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const doc = document.documentElement;
       doc.setAttribute('data-theme', savedTheme);
@@ -26,22 +25,37 @@
       meta.content = color;
       document.head.appendChild(meta);
 
-      // 2. Sidebar status forceren
+      // 2. Sidebar status (Onveranderd)
       try {
         localStorage.setItem('sidebarCollapsed_v1', '1');
       } catch {}
       doc.classList.remove('sidebar-open');
 
-      // 3. Switch observer
-      const observer = new MutationObserver((mutations, obs) => {
-        const switchInput = document.querySelector('.mode-switch-input');
-        if (switchInput) {
-          switchInput.checked = (savedTheme === 'light');
-          obs.disconnect();
+      // 3. Verbeterde Switch observer voor meerdere switches
+      const isLight = (savedTheme === 'light');
+      
+      const observer = new MutationObserver((mutations) => {
+        const switches = document.querySelectorAll('.mode-switch-input');
+        
+        switches.forEach(sw => {
+          // Alleen aanpassen als de status nog niet overeenkomt 
+          // Dit voorkomt onnodige acties
+          if (sw.checked !== isLight) {
+            sw.checked = isLight;
+          }
+        });
+
+        // We stoppen pas als de pagina klaar is met laden, 
+        // zodat we zeker weten dat we zowel desktop als mobile hebben gehad.
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          observer.disconnect();
         }
       });
 
       observer.observe(doc, { childList: true, subtree: true });
+
+      // Extra veiligheid: stop observer als DOM klaar is
+      window.addEventListener('DOMContentLoaded', () => observer.disconnect());
     })();
   </script>
 
