@@ -95,12 +95,14 @@
   background-color: var(--bg);
 }
 .logic-rule-box.type-AND { 
-  border-left-color: #28a745;
-  background-color: rgba(40, 167, 69, 0.04);
+  border-left-color: #22c55e;
+  background-color: #14532d;
+  color: var(--text-button); /* Zorg voor goed contrast op de donkere achtergrond */
 }
 .logic-rule-box.type-AND_NOT { 
-  border-left-color: #dc3545;
-  background-color: rgba(220, 53, 69, 0.04);
+  border-left-color: #ef4444;
+  background-color: #7f1d1d;
+  color: var(--text-button);
 }
 
 .rule-header { 

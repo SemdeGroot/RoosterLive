@@ -87,7 +87,7 @@
                             <!-- Delete-knop netjes in de header, links van caret -->
                             <button
                                 type="button"
-                                class="btn question-delete-btn"
+                                class="btn question-delete-btn btn-danger"
                                 onclick="removeRow('{{ q_uid }}')"
                                 title="Vraag verwijderen"
                                 aria-label="Vraag verwijderen"
@@ -211,7 +211,7 @@
                                             <span style="color:#28a745;">✅ Vereiste Combinatie</span>
                                             <button
                                                 type="button"
-                                                class="btn question-delete-btn question-rule-delete-btn"
+                                                class="btn question-delete-btn question-rule-delete-btn btn-danger"
                                                 onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')"
                                                 title="Regel verwijderen"
                                                 aria-label="Regel verwijderen"
@@ -252,7 +252,7 @@
                                             <span style="color:#dc3545;">⛔ MAAR NIET (Uitsluiten)</span>
                                             <button
                                                 type="button"
-                                                class="btn question-delete-btn question-rule-delete-btn"
+                                                class="btn question-delete-btn question-rule-delete-btn btn-danger"
                                                 onclick="removeRule('{{ q_uid }}', '{{ r_uid }}')"
                                                 title="Regel verwijderen"
                                                 aria-label="Regel verwijderen"
@@ -328,7 +328,7 @@
             <div class="birthday-right">
                 <button
                     type="button"
-                    class="btn question-delete-btn"
+                    class="btn question-delete-btn btn-danger"
                     onclick="removeRow('__QID__')"
                     title="Vraag verwijderen"
                     aria-label="Vraag verwijderen"
@@ -410,7 +410,7 @@
             <span style="color:#28a745; font-weight:800;">✅ Vereiste Combinatie</span>
             <button
                 type="button"
-                class="btn question-delete-btn question-rule-delete-btn"
+                class="btn question-delete-btn question-rule-delete-btn btn-danger"
                 onclick="removeRule('__QID__', '__RID__')"
                 title="Regel verwijderen"
                 aria-label="Regel verwijderen"
@@ -439,7 +439,7 @@
             <span style="color:#dc3545; font-weight:800;">⛔ MAAR NIET (Uitsluiten)</span>
             <button
                 type="button"
-                class="btn question-delete-btn question-rule-delete-btn"
+                class="btn question-delete-btn question-rule-delete-btn btn-danger"
                 onclick="removeRule('__QID__', '__RID__')"
                 title="Regel verwijderen"
                 aria-label="Regel verwijderen"
