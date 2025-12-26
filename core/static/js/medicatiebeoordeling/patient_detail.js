@@ -1,5 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
+    let formDirty = false;
 
+    // 1. Luister op document-niveau naar ELKE input
+    // Dit werkt altijd, zelfs als de selector 'form' faalt
+    document.addEventListener('input', function (e) {
+        if (e.target.closest('form')) {
+            formDirty = true;
+        }
+    });
+
+    // 2. Vlag uitzetten bij verzenden
+    document.addEventListener('submit', function (e) {
+        formDirty = false;
+    });
+
+    // 3. Specifieke afvanging voor de Terug-knop via de class of ID
+    document.addEventListener('click', function (e) {
+        // We kijken of de klik op de terug-knop was (via ID of de btn-danger class)
+        const isBackBtn = e.target.id === 'backBtn' || e.target.closest('#backBtn');
+        
+        if (isBackBtn && formDirty) {
+            const confirmLeave = confirm("Je hebt onopgeslagen wijzigingen. Wil je de pagina verlaten?");
+            if (!confirmLeave) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }
+    });
+
+    // 4. Tab sluiten / Browser navigatie
+    window.addEventListener('beforeunload', function (e) {
+        if (formDirty) {
+            e.preventDefault();
+            e.returnValue = ''; 
+        }
+    });
+    
   // ==========================================
   // 1. BUILD TEXT (per Jansen categorie)
   //    - met medicatie: (optioneel titel) + middelen + opmerkingen
