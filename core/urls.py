@@ -24,6 +24,7 @@ from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
 from core.views.ziekmelden import ziekmelden
 from core.views.urendoorgeven import urendoorgeven
+from core.views.diensten import diensten
 from core.views.onboarding_forms import forms
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
@@ -111,6 +112,7 @@ urlpatterns = [
 
     path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
     path("personeel/teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
+    path("personeel/diensten/", diensten, name="diensten"),
     path("personeel/urendoorgeven/", urendoorgeven, name="urendoorgeven"),
     path("personeel/ziekmelden/", ziekmelden, name="ziekmelden"),
     path("onboarding/wieiswie/", whoiswho, name="whoiswho"),

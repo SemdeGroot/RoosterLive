@@ -72,9 +72,10 @@ PERM_LABELS = {
     "can_view_onboarding":     "Mag Onboarding openen",
     # Personeel
     "can_view_personeel":      "Mag Personeel openen",
+    # Diensten
+    "can_view_diensten":       "Mag Diensten bekijken",
     # Uren doorgeven
-    "can_view_urendoorgeven":       "Mag Uren Doorgeven bekijken",
-    "can_edit_urendoorgeven":       "Mag uren doorgeven",
+    "can_view_urendoorgeven":       "Mag uren doorgeven",
     # Ziek melden
     "can_view_ziekmelden":       "Mag Ziek Melden bekijken",
     "can_edit_ziekmelden":       "Mag personeel ziek melden",
@@ -110,7 +111,7 @@ PERM_SECTIONS = [
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
 
-    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard", "can_view_urendoorgeven", "can_edit_urendoorgeven", "can_view_ziekmelden", "can_edit_ziekmelden", "can_view_policies", "can_upload_werkafspraken"]),
+    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard", "can_view_diensten", "can_view_urendoorgeven", "can_view_ziekmelden", "can_edit_ziekmelden", "can_view_policies", "can_upload_werkafspraken"]),
 
     ("Onboarding", [
         "can_view_onboarding", "can_view_whoiswho", "can_edit_whoiswho","can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),

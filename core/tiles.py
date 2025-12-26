@@ -17,6 +17,7 @@ TILE_GROUPS = {
 
     "personeel": [
         {"name": "Teamdashboard", "img": "teamdashboard.svg", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
+        {"name": "Diensten", "img": "rooster_small.svg", "url_name": "diensten", "perm": "can_view_diensten"},
         {"name": "Uren Doorgeven", "img": "uren_doorgeven.svg", "url_name": "urendoorgeven", "perm": "can_view_urendoorgeven"},
         {"name": "Ziek Melden", "img": "ziek.svg", "url_name": "ziekmelden", "perm": "can_view_ziekmelden"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
