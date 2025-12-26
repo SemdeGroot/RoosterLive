@@ -44,7 +44,8 @@
     --button-hover: #A6B5C3;
     --logout-color: #D85D5D;
     --danger: #9B2D28;
-    --danger-hover: #B55D51;
+    --danger-hover: #AF332E;
+    --danger-border: #892823;
 
     /* Meta theme-color variabelen voor light mode */
     --theme-meta-base: #E3E8F0;      /* base.html kleur */
