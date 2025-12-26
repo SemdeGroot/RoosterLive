@@ -35,7 +35,7 @@ TILE_GROUPS = {
         {"name": "Omzettingslijst", "img": "omzettingslijst.svg", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
         {"name": "Geen levering",   "img": "no-delivery.svg",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
         {"name": "STS halfjes",     "img": "sts_halfjes.svg",       "url_name": "baxter_sts_halfjes",       "perm": "can_view_baxter_sts_halfjes"},
-        {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "baxter_laatste_potten",    "perm": "can_view_baxter_laatste_potten"},
+        {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "laatstepotten",    "perm": "can_view_baxter_laatste_potten"},
     ],
 
        "openbare": [

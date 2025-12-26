@@ -113,3 +113,31 @@ def send_news_uploaded_push_task(self, uploader_first_name):
 def send_agenda_uploaded_push_task(self, category):
     from core.utils.push import send_agenda_upload_push
     send_agenda_upload_push(category)
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_laatste_pot_push_task(self, item_naam):
+    from core.utils.push import send_laatste_pot_push
+    send_laatste_pot_push(item_naam)
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3, rate_limit='10/s')
+def send_laatste_pot_email_task(self, item_naam: str):
+    from django.contrib.auth import get_user_model
+    from core.utils.laatstepotten_mail import send_laatste_pot_email
+    from core.views._helpers import can
+    
+    User = get_user_model()
+    
+    # Filter alle actieve gebruikers die de bestel-permissie hebben
+    users = User.objects.filter(is_active=True)
+    recipients = [u for u in users if can(u, "can_perform_bestellingen")]
+
+    for user in recipients:
+        if user.email:
+            try:
+                send_laatste_pot_email(
+                    to_email=user.email,
+                    first_name=user.first_name or "Collega",
+                    item_naam=item_naam,
+                )
+            except Exception:
+                pass 

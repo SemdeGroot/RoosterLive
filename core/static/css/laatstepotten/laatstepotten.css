@@ -1,0 +1,20 @@
+/* Kolom breedtes: 1: #, 2: ZI, 3: Naam, 4: Datum, 5: Acties */
+table.laatstepotten-table {
+  --c1: 40px;   /* Index */
+  --c2: 120px;  /* ZI */
+  --c3: auto;   /* Naam (vult aan) */
+  --c4: 150px;  /* Datum */
+  --c5: 100px;  /* Acties */
+}
+
+.laatstepotten-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .laatstepotten-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}

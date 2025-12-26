@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot
 
 UserModel = get_user_model()
 
@@ -676,3 +676,23 @@ class NazendingForm(forms.ModelForm):
         self.fields['datum'].input_formats = ['%d-%m-%Y']
         # Queryset optimalisatie voor de dropdown
         self.fields['voorraad_item'].queryset = VoorraadItem.objects.all()
+
+class LaatstePotForm(forms.ModelForm):
+    class Meta:
+        model = LaatstePot
+        fields = ['voorraad_item', 'datum']
+        widgets = {
+            'voorraad_item': forms.Select(attrs={'class': 'select2-single', 'style': 'width: 100%'}),
+            'datum': forms.TextInput(attrs={
+                'class': 'admin-input js-date', 
+                'placeholder': 'dd-mm-jjjj'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['datum'].input_formats = ['%d-%m-%Y']
+        self.fields['voorraad_item'].queryset = VoorraadItem.objects.all()
+
+        if not self.instance.pk:
+            self.initial['datum'] = timezone.now().strftime('%d-%m-%Y')

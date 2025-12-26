@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/laatstepotten/laatstepotten.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="card card-inner">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/laatstepotten.svg' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Laatste Potten</h2>
+        <p>Meld hier wanneer de laatste pot van een Baxter item is aangebroken.</p>
+      </div>
+
+      {% if can_edit %}
+      <div class="header-actions">
+        <button type="button" class="btn btn-save" onclick="toggleAddSection()">Toevoegen</button>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+      
+      {% if can_edit %}
+      <div id="addSection" style="display:none;" class="add-section-panel">
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          <input type="hidden" name="btn_add" value="1">
+          <label class="select2-label">Zoek item</label>
+          {{ form.voorraad_item }}
+          
+          <div style="margin-top:15px; margin-bottom:15px;">
+            <label class="section-label">Datum aangebroken</label>
+            {{ form.datum }}
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
+            <button type="submit" class="btn btn-save">Opslaan & Melden bij Bestellers</button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <div class="search-bar">
+        <input type="text" id="potSearch" placeholder="Zoek op naam of ZI..." class="admin-input">
+      </div>
+
+      <div data-crud data-table="#potTable" data-rows=".pot-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table laatstepotten-table" id="potTable">
+            <thead>
+              <tr>
+                <th class="center-col"></th>
+                <th>ZI-nummer</th>
+                <th>Geneesmiddel</th>
+                <th>Datum</th>
+                <th>Acties</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr class="pot-row" id="row-{{ item.id }}">
+                <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+                <td>{{ item.voorraad_item.zi_nummer }}</td>
+                <td class="wrap"><strong>{{ item.voorraad_item.naam }}</strong></td>
+                <td>{{ item.datum|date:"d-m-Y" }}</td>
+                <td>
+                  {% if can_edit %}
+                  <div class="actions-wrap horizontal">
+                    <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </button>
+                    <form method="post" onsubmit="return confirm('Verwijderen?');" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="btn_delete" value="1">
+                      <input type="hidden" name="item_id" value="{{ item.id }}">
+                      <button class="icon-btn danger" type="submit">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      </button>
+                    </form>
+                  </div>
+                  {% endif %}
+                </td>
+              </tr>
+
+              {% if can_edit %}
+              <tr id="edit-row-{{ item.id }}" style="display:none;">
+                <td colspan="5">
+                  <form method="post" class="edit-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="btn_edit" value="1">
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <div class="laatstepotten-edit-grid" style="grid-template-columns: 1fr;">
+                      <div>
+                        <label class="section-label">Geneesmiddel:</label>
+                        <select name="voorraad_item" class="select2-edit">
+                          <option value="{{ item.voorraad_item.zi_nummer }}" selected>{{ item.voorraad_item.naam }}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="section-label">Datum aangebroken:</label>
+                        <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
+                      </div>
+                    </div>
+                    <div class="actions-wrap horizontal" style="margin-top:10px;">
+                      <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
+                      <button type="submit" class="btn btn-save">Opslaan</button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://unpkg.com/imask"></script>
+<script src="{% static 'js/nazendingen/nazendingen.js' %}"></script>
+<script>
+  // Hergebruik de search logic van nazendingen
+  document.addEventListener("DOMContentLoaded", function() {
+    liveSearch("potSearch", "potTable", "pot-row");
+  });
+</script>
+{% endblock %}

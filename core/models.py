@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import Group
 from django.conf import settings
+from django.utils import timezone
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 import json
 
@@ -567,3 +568,19 @@ class Nazending(models.Model):
 
     def __str__(self):
         return f"{self.datum} - {self.voorraad_item.naam}"
+    
+class LaatstePot(models.Model):
+    voorraad_item = models.ForeignKey(
+        'VoorraadItem', 
+        on_delete=models.CASCADE, 
+        related_name='laatste_potten',
+        verbose_name="Geneesmiddel"
+    )
+    datum = models.DateField(default=timezone.now, verbose_name="Datum melding")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-datum", "-created_at"]
+        verbose_name = "Laatste Pot"
+        verbose_name_plural = "Laatste Potten"

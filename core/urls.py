@@ -31,7 +31,7 @@ from core.views.baxter import baxter_tiles
 from core.views.omzettingslijst import omzettingslijst
 from core.views.no_delivery import no_delivery
 from core.views.sts_halfjes import sts_halfjes
-from core.views.laatste_potten import laatste_potten
+from core.views.laatstepotten import laatstepotten
 from core.views.openbare import openbare_tiles
 from core.views.instellings import instellings_tiles
 from core.views.reviewplanner import reviewplanner
@@ -113,16 +113,16 @@ urlpatterns = [
     path("beschikbaarheid/", mijnbeschikbaarheid_view, name="mijnbeschikbaarheid"),
     path("personeel/teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
     path("personeel/diensten/", diensten, name="diensten"),
-    path("personeel/urendoorgeven/", urendoorgeven, name="urendoorgeven"),
-    path("personeel/ziekmelden/", ziekmelden, name="ziekmelden"),
-    path("onboarding/wieiswie/", whoiswho, name="whoiswho"),
+    path("personeel/uren-doorgeven/", urendoorgeven, name="urendoorgeven"),
+    path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
+    path("onboarding/wie-is-wie/", whoiswho, name="whoiswho"),
     path("onboarding/formulieren/", forms, name="forms"),
     path("onboarding/checklist/", checklist, name="checklist"),
 
     path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),
     path("baxter/geen-levering/", no_delivery, name="baxter_no_delivery"),
     path("baxter/sts-halfjes/", sts_halfjes, name="baxter_sts_halfjes"),
-    path("baxter/laatste-potten/", laatste_potten, name="baxter_laatste_potten"),
+    path("baxter/laatste-potten/", laatstepotten, name="laatstepotten"),
 
     path("baxter/voorraad/", medications_view, name="medications"),
     path("baxter/nazendingen/", nazendingen_view, name="nazendingen"),

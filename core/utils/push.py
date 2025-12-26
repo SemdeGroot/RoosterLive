@@ -178,3 +178,32 @@ def send_agenda_upload_push(category: str):
             # Subscription ongeldig → opruimen
             if status in (404, 410, 403):
                 s.delete()
+
+def send_laatste_pot_push(item_naam: str):
+    payload = {
+        "title": "Laatste pot aangebroken!",
+        "body": f"Middel: {item_naam}. Controleer of er besteld moet worden.",
+        "url": "/laatste-potten/",
+        "tag": "laatste-pot-update",
+    }
+
+    subs = PushSubscription.objects.select_related("user").all()
+    # Filter op de specifieke permissie voor bestellingen
+    eligible_subs = [s for s in subs if can(s.user, "can_perform_bestellingen")]
+
+    for s in eligible_subs:
+        claims = _build_vapid_claims(s.endpoint)
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+            if status in (404, 410, 403):
+                s.delete()
