@@ -1,54 +1,73 @@
- /* --- Beschikbaarheid-stijl (ongewijzigd) --- */
-.availability-wrap { overflow-x: auto; }
-
-.availability-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: fixed;
-}
-
-.availability-table colgroup col:first-child { width: 44%; }
-.availability-table colgroup col:nth-child(2),
-.availability-table colgroup col:nth-child(3) { width: 28%; }
-
-.availability-table thead th {
-  padding: 12px 14px;
-  text-align: center;
-  font-weight: 700;
-}
-.availability-table thead th:first-child { text-align: left; }
-
-.availability-table tbody td {
-  padding: 12px 14px;
-  vertical-align: middle;
-}
-.availability-table tbody td:nth-child(2),
-.availability-table tbody td:nth-child(3) { text-align: center; }
-
-.availability-table tbody tr { border-bottom: 1px solid var(--border); }
-.availability-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
-
-.weekday-title { display: flex; gap: .6rem; align-items: baseline; }
-.weekday-title small { color: var(--muted); font-weight: 500; }
-
-.availability-table input[type="checkbox"]{
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-
-@media (max-width: 640px) {
-  .weekday-title { flex-direction: column; gap: 0; }
-}
-
+/* --- Bestaande basis (gelaten waar mogelijk) --- */
 .form h3 { text-align: center; }
-
 *:focus-visible { outline: none !important; }
 
-/* --- Matrix: niet comprimeren + horizontaal scrollen --- */
-.matrix-wrap {
+/* =========================================================
+   Layout
+   ========================================================= */
+.personeelsdashboard-wrap { width: 100%; }
+
+.pd-main-grid{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 980px){
+  .pd-main-grid{ grid-template-columns: 1fr; }
+}
+
+/* Controlbar: dag links, week center, rechts spacer */
+.pd-controlbar{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.pd-daypicker{
+  justify-self: start;
+  display: flex;
+  align-items: center;
+}
+
+.pd-select{
+  width: 260px;
+  max-width: 100%;
+}
+
+.pd-weekcenter{
+  justify-self: center;
+  text-align: center;
+}
+
+.pd-right-spacer{
+  justify-self: end;
+}
+
+/* Datum onder week picker gecentreerd */
+.availability-daterange{
+  margin-top: 8px;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Subtitles */
+.pd-subtitle{
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Search bar (aansluiten op admin-styling) */
+.search-bar{ margin: 0 0 12px 0; }
+
+/* =========================================================
+   Matrix: panel background overal gelijk, geen zebra
+   ========================================================= */
+.matrix-wrap{
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
@@ -56,52 +75,145 @@
   overscroll-behavior: contain;
 }
 
-table.matrix {
+/* Tabel als “panel” */
+table.matrix{
   width: 100%;
-  border-collapse: collapse;
   table-layout: fixed;
-  min-width: 1100px; /* forceer horizontale scroll op small screens */
-}
+  border-collapse: collapse;
 
-table.matrix th,
-table.matrix td {
+  /* overal dezelfde achtergrond als panel */
+  background: var(--panel, var(--bg));
   border: 1px solid var(--border);
+
+  min-width: 620px;
+}
+
+/* Overal dezelfde achtergrond (ook head) */
+table.matrix thead th,
+table.matrix tbody td{
+  background: transparent;
+}
+
+/* algemene cell styling */
+table.matrix th,
+table.matrix td{
+  padding: 10px 10px;
+  vertical-align: middle;
   text-align: center;
-  padding: 8px;
+  border-bottom: 1px solid var(--border);
 }
 
-table.matrix thead th {
-  background: var(--bg);
-  font-weight: 700;
+/* Head mag niet afwijkend kleuren */
+table.matrix thead th{
+  font-weight: 800;
+  border-bottom: 1px solid var(--border);
 }
 
-table.matrix tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
+/* kolombreedtes */
+.col-group { width: 32%; }
+.col-name  { width: 22%; }
+.col-slot  { width: 15.33%; }
 
-/* Eerste 2 kolommen gecentreerd + niet wrappen */
-table.matrix thead th:nth-child(1),
-table.matrix tbody td:nth-child(1),
-table.matrix thead th:nth-child(2),
-table.matrix tbody td:nth-child(2) {
-  text-align: center;
-  white-space: nowrap;
-  min-width: 160px;
+/* Tekstcellen: wrap aan */
+.cell-wrap{
+  text-align: left;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  line-height: 1.2;
+  font-weight: 600;
 }
 
-.avail-pill { height: 26px; border-radius: 8px; background: transparent; }
-.avail-pill.available { background: #0b3a21; border: 1px solid #178a3a; }
+/* =========================================================
+    GRID  
+   ========================================================= */
+.no-vlines{
+  border-left: none !important;
+  border-right: none !important;
+}
 
+/* Slot cells: behouden borders rondom */
+.slot-head,
+.slot-cell{
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+/* In collapse kan dit soms dubbel lijken; dit houdt het strak */
+table.matrix th.slot-head:first-of-type,
+table.matrix td.slot-cell:first-of-type{
+  border-left: 1px solid var(--border);
+}
+
+/* =========================================================
+   Sort badges
+   ========================================================= */
 .slot-badge{
   display:inline-flex;
   align-items:center;
-  gap:.4rem;
+  justify-content:center;
+  gap:.35rem;
   padding:6px 10px;
   border-radius:999px;
-  background:var(--bg);
-  border:1px solid var(--border);
-  color:var(--text);
-  transition:background .2s ease, border-color .2s ease;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background .2s ease, border-color .2s ease;
   user-select:none;
+  cursor:pointer;
+  white-space: nowrap;
+  font-weight: 700;
 }
 
-.slot-badge:hover { background:#1f2d3d; border-color:var(--accent); }
-.slot-badge.active { border-color:var(--accent); }
+.slot-badge small{
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.slot-badge:hover{ background:#1f2d3d; border-color:var(--accent); }
+.slot-badge.active{ border-color:var(--accent); }
+
+/* =========================================================
+   Rechthoeken (oranje standaard)
+   ========================================================= */
+.avail-rect{
+  width: 36px;
+  height: 20px;
+  border-radius: 6px;
+  margin: 0 auto;
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.14);
+}
+
+.avail-rect.available{
+  background: #f59e0b;      /* oranje */
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245,158,11,0.18);
+}
+
+/* Mobile: controlbar stacken */
+@media (max-width: 720px){
+  .pd-controlbar{
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    gap: 12px;
+  }
+
+  .pd-daypicker{
+    justify-self: start;
+  }
+
+  .pd-weekcenter{
+    justify-self: start;
+    text-align: left;
+  }
+
+  .availability-daterange{
+    text-align: left;
+  }
+
+  .pd-right-spacer{ display: none; }
+}
