@@ -17,7 +17,7 @@ from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as med_views
-from core.views.export_review_pdf import export_patient_review_pdf, export_afdeling_review_pdf
+from core.views.export_review_pdf import export_afdeling_review_pdf
 from core.views import review_settings as med_settings
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
@@ -148,7 +148,6 @@ urlpatterns = [
     path("medicatiebeoordeling/afdeling/<int:pk>/", med_views.afdeling_detail, name="medicatiebeoordeling_afdeling_detail"),
     path("medicatiebeoordeling/patient/<int:pk>/", med_views.patient_detail, name="medicatiebeoordeling_patient_detail"),
     # Export pdf
-    path("medicatiebeoordeling/patient/<int:pk>/export-pdf/", export_patient_review_pdf, name="medicatiebeoordeling_patient_export_pdf"),
     path("medicatiebeoordeling/afdeling/<int:pk>/export-pdf/", export_afdeling_review_pdf, name="medicatiebeoordeling_afdeling_export_pdf"),
     # Delete urls 
     path('afdeling/<int:pk>/clear/', med_views.clear_afdeling_review, name='medicatiebeoordeling_clear_afdeling'),

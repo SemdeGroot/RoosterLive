@@ -1,20 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.template.loader import render_to_string
 
 # Imports van jouw helpers, forms en models
-from core.views._helpers import can
+from core.views._helpers import can, _static_abs_path, _render_pdf
 from core.tiles import build_tiles
 from core.forms import MedicatieReviewForm, AfdelingEditForm
 from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, Organization
 from core.services.medicatiereview_api import call_review_api
 from core.utils.medication import group_meds_by_jansen
 from core.decorators import ip_restricted
+from core.views.export_review_pdf import _build_patient_block
 
 # --- HELPER FUNCTIE (Voor JSON API) ---
 def format_dutch_user_name(user):
@@ -413,7 +415,14 @@ def patient_detail(request, pk):
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden()
 
-    patient = get_object_or_404(MedicatieReviewPatient, pk=pk)
+    # Gebruik select_related en prefetch voor betere performance bij export
+    patient = (
+        MedicatieReviewPatient.objects
+        .select_related("afdeling")
+        .prefetch_related("comments")
+        .get(pk=pk)
+    )
+    
     analysis = patient.analysis_data 
     meds = analysis.get("geneesmiddelen", [])
     vragen = analysis.get("analyses", {}).get("standaardvragen", [])
@@ -426,27 +435,19 @@ def patient_detail(request, pk):
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
+        # Stap A: Opslaan van alle wijzigingen
         for group_id, group_data in grouped_meds:
             key_tekst = f"comment_{group_id}"
             key_historie = f"historie_{group_id}"
             
-            # We bereiden de data voor die we willen opslaan
-            defaults_data = {
-                "updated_by": request.user
-            }
+            defaults_data = {"updated_by": request.user}
 
-            # 1. Haal de 'nieuwe' opmerking op
             if key_tekst in request.POST:
                 defaults_data["tekst"] = request.POST.get(key_tekst, "").strip()
 
-            # 2. Haal de 'historie' op (als die in het formulier zat)
-            # Als het veld niet in de HTML stond (omdat de if-check faalde), 
-            # wordt dit overgeslagen en blijft de historie in de DB intact.
             if key_historie in request.POST:
                 defaults_data["historie"] = request.POST.get(key_historie, "").strip()
 
-            # Opslaan (Update of Create)
-            # Let op: update_or_create kijkt naar 'patient' en 'jansen_group_id' om de rij te vinden
             MedicatieReviewComment.objects.update_or_create(
                 patient=patient,
                 jansen_group_id=group_id,
@@ -460,6 +461,37 @@ def patient_detail(request, pk):
         afdeling.updated_by = request.user
         afdeling.save()
 
+        # Stap B: Check of we ook moeten exporteren
+        if request.POST.get("action") == "save_export":
+            # We bouwen het blok opnieuw op met de zojuist opgeslagen data
+            # Importeer _build_patient_block, _render_pdf en _static_abs_path bovenin je bestand!
+            
+            # Ververs patient object om nieuwe comments mee te nemen
+            patient.refresh_from_db()
+            block = _build_patient_block(patient)
+
+            context = {
+                "block": block,
+                "prepared_by_user": request.user,
+                "prepared_by_email": "instellingen@apotheekjansen.com",
+                "generated_at": timezone.localtime(timezone.now()),
+                "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
+                "title": "Medicatiebeoordeling",
+            }
+
+            html = render_to_string(
+                "medicatiebeoordeling/pdf/patient_review_pdf.html",
+                context,
+                request=request,
+            )
+
+            pdf = _render_pdf(html, base_url=request.build_absolute_uri("/"))
+
+            resp = HttpResponse(pdf, content_type="application/pdf")
+            resp["Content-Disposition"] = f'attachment; filename="medicatiebeoordeling_{patient.naam}.pdf"'
+            return resp
+
+        # Standaard redirect na alleen opslaan
         messages.success(request, "Opmerkingen en historie opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
@@ -467,19 +499,13 @@ def patient_detail(request, pk):
     
     # 2. Haal bestaande comments op
     db_comments = patient.comments.all()
-    
-    # BELANGRIJK: We mappen nu naar het OBJECT, niet alleen de tekst string
-    # Zodat we straks in de template zowel obj.historie als obj.tekst hebben.
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    # 3. Injecteer Standaardvragen (in MEMORY, in het 'tekst' veld)
+    # 3. Injecteer Standaardvragen (in MEMORY)
     med_to_group = {}
     for gid, gdata in grouped_meds:
         for m in gdata['meds']:
             med_to_group[m['clean']] = gid
-
-    # Lijst bijhouden van gemaakte tijdelijke objecten voor de template
-    # (Als er nog geen DB comment is, maar wel een vraag, moeten we een 'fake' object maken)
 
     for vraag_item in vragen:
         middelen_str = vraag_item.get("betrokken_middelen", "")
@@ -494,22 +520,19 @@ def patient_detail(request, pk):
         if target_group_id:
             vraag_tekst = f"{vraag_item['vraag']}"
             
-            # Check of er al een comment object is in onze lookup
             if target_group_id in comments_lookup:
                 existing_comment = comments_lookup[target_group_id]
-                # Voeg vraag toe aan tekst als hij er nog niet staat
-                if vraag_tekst not in existing_comment.tekst:
+                if vraag_tekst not in (existing_comment.tekst or ""):
                     if existing_comment.tekst:
                         existing_comment.tekst += "\n" + vraag_tekst
                     else:
                         existing_comment.tekst = vraag_tekst
             else:
-                # Maak een tijdelijk object (niet saven, alleen voor weergave)
                 temp_comment = MedicatieReviewComment(
                     patient=patient,
                     jansen_group_id=target_group_id,
                     tekst=vraag_tekst,
-                    historie="" # Geen historie want nieuw object
+                    historie=""
                 )
                 comments_lookup[target_group_id] = temp_comment
 
