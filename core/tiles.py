@@ -17,6 +17,7 @@ TILE_GROUPS = {
 
     "personeel": [
         {"name": "Teamdashboard", "img": "teamdashboard.svg", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
+        {"name": "Ziek Melden", "img": "ziek.svg", "url_name": "ziekmelden", "perm": "can_view_ziekmelden"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 

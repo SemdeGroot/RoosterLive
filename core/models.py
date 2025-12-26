@@ -37,6 +37,9 @@ class Roster(models.Model):
             ("can_view_onboarding",     "Mag Onboarding openen"),
             # Personeel
             ("can_view_personeel",      "Mag Personeel openen"),
+            # Ziek melden
+            ("can_view_ziekmelden",       "Mag Ziek Melden bekijken"),
+            ("can_edit_ziekmelden",       "Mag personeel ziek melden"),
             # Wie is wie?
             ("can_view_whoiswho",       "Mag Wie is wie? bekijken"),
             ("can_edit_whoiswho",       "Mag Wie is wie? aanpassen"),
