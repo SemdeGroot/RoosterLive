@@ -9,6 +9,6 @@ def urendoorgeven(request):
     if not can(request.user, "can_view_urendoorgeven"):
         return HttpResponseForbidden("Je hebt geen toegang tot deze pagina.")
 
-    return render(request, "ziekmelden/index.html", {
+    return render(request, "urendoorgeven/index.html", {
         "page_title": "Uren Doorgeven",
     })
