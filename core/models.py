@@ -117,7 +117,7 @@ class Availability(models.Model):
     date = models.DateField(db_index=True)
     morning = models.BooleanField(default=False)
     afternoon = models.BooleanField(default=False)
-    evening = models.BooleanField(default=False) # Nieuw veld
+    evening = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -126,6 +126,74 @@ class Availability(models.Model):
 
     def __str__(self):
         return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon} a:{self.evening})"
+    
+class Location(models.Model):
+    """
+    Physical places where a task can take place.
+    """
+    name = models.CharField(max_length=100, unique=True)
+    
+    class Meta:
+        verbose_name_plural = "Locations"
+
+    def __str__(self):
+        return self.name
+
+
+class Task(models.Model):
+    """
+    Defines what needs to be done, linked to a Location model.
+    """
+    name = models.CharField(max_length=100)
+    location = models.ForeignKey(
+        Location, 
+        on_delete=models.PROTECT, 
+        related_name="tasks"
+    )
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Tasks"
+
+    def __str__(self):
+        return f"{self.name} ({self.location.name})"
+
+
+class Shift(models.Model):
+    """
+    Links a user to a specific task at a specific time (date + period).
+    """
+    PERIOD_CHOICES = [
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon'),
+        ('evening', 'Evening'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="shifts"
+    )
+    task = models.ForeignKey(
+        Task, 
+        on_delete=models.PROTECT, 
+        related_name="shifts"
+    )
+    date = models.DateField(db_index=True)
+    period = models.CharField(
+        max_length=10, 
+        choices=PERIOD_CHOICES,
+        db_index=True
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "date", "period")
+        ordering = ["date", "period"]
+
+    def __str__(self):
+        return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task})"
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")
