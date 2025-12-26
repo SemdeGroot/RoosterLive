@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Laatste Potten{% endblock %}
-{% block header_title %}Laatste Potten{% endblock %}
+{% block title %}STS Halfjes{% endblock %}
+{% block header_title %}STS Halfjes{% endblock %}
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
-  <link rel="stylesheet" href="{% static 'css/laatstepotten/laatstepotten.css' %}">
+  <link rel="stylesheet" href="{% static 'css/stshalfjes/stshalfjes.css' %}">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
   <script src="{% static 'js/base/table.js' %}" defer></script>
@@ -16,10 +16,10 @@
 <div class="card card-inner">
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
-      <img src="{% static 'img/laatstepotten.svg' %}" alt="" class="birthday-icon">
+      <img src="{% static 'img/sts_halfjes.svg' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
-        <h2>Laatste Potten</h2>
-        <p>Meld hier wanneer de laatste pot van een geneesmiddel is aangebroken.</p>
+        <h2>STS Halfjes</h2>
+        <p>Meld hier geneesmiddelen die onnodig gehalveerd worden bij de STS afdeling.</p>
       </div>
 
       {% if can_edit %}
@@ -36,45 +36,53 @@
         <form method="post" autocomplete="off">
           {% csrf_token %}
           <input type="hidden" name="btn_add" value="1">
-          <label class="select2-label">Zoek item</label>
-          {{ form.voorraad_item }}
           
-          <div style="margin-top:15px; margin-bottom:15px;">
-            <label class="section-label">Datum aangebroken</label>
-            {{ form.datum }}
+          <div class="stshalfjes-edit-grid" style="margin-bottom: 15px;">
+            <div>
+              <label class="select2-label">Item dat gehalveerd wordt</label>
+              {{ form.item_gehalveerd }}
+            </div>
+            <div>
+              <label class="select2-label">Alternatief (lagere sterkte)</label>
+              {{ form.item_alternatief }}
+            </div>
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:10px;">
             <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
-            <button type="submit" class="btn btn-save">Opslaan & Melden bij Bestellers</button>
+            <button type="submit" class="btn btn-save">Opslaan</button>
           </div>
         </form>
       </div>
       {% endif %}
 
       <div class="search-bar">
-        <input type="text" id="potSearch" placeholder="Zoek op naam of ZI-nummer..." class="admin-input">
+        <input type="text" id="stsSearch" placeholder="Zoek op naam of ZI-nummer..." class="admin-input">
       </div>
 
-      <div data-crud data-table="#potTable" data-rows=".pot-row" data-page-size="10">
+      <div data-crud data-table="#stsTable" data-rows=".sts-row" data-page-size="10">
         <div class="table-scroll">
-          <table class="crud-table laatstepotten-table" id="potTable">
+          <table class="crud-table stshalfjes-table" id="stsTable">
             <thead>
               <tr>
                 <th class="center-col"></th>
-                <th>ZI-nummer</th>
-                <th>Geneesmiddel</th>
-                <th>Datum</th>
+                <th>Wordt gehalveerd</th>
+                <th>Alternatief beschikbaar</th>
                 <th>Acties</th>
               </tr>
             </thead>
             <tbody>
               {% for item in items %}
-              <tr class="pot-row" id="row-{{ item.id }}">
+              <tr class="sts-row" id="row-{{ item.id }}">
                 <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
-                <td>{{ item.voorraad_item.zi_nummer }}</td>
-                <td class="wrap"><strong>{{ item.voorraad_item.naam }}</strong></td>
-                <td>{{ item.datum|date:"d-m-Y" }}</td>
+                <td class="wrap">
+                  <strong>{{ item.item_gehalveerd.naam }}</strong><br>
+                  <small>ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</small>
+                </td>
+                <td class="wrap" style="color: var(--success-color);">
+                  <strong>{{ item.item_alternatief.naam }}</strong><br>
+                  <small>ZI-nummer: {{ item.item_alternatief.zi_nummer }}</small>
+                </td>
                 <td>
                   {% if can_edit %}
                   <div class="actions-wrap horizontal">
@@ -96,21 +104,27 @@
 
               {% if can_edit %}
               <tr id="edit-row-{{ item.id }}" style="display:none;">
-                <td colspan="5">
+                <td colspan="4">
                   <form method="post" class="edit-wrap">
                     {% csrf_token %}
                     <input type="hidden" name="btn_edit" value="1">
                     <input type="hidden" name="item_id" value="{{ item.id }}">
-                    <div class="laatstepotten-edit-grid">
+                    <div class="stshalfjes-edit-grid">
                       <div>
-                        <label class="section-label">Geneesmiddel:</label>
-                        <select name="voorraad_item" class="select2-edit">
-                          <option value="{{ item.voorraad_item.zi_nummer }}" selected>{{ item.voorraad_item.naam }}</option>
+                        <label class="section-label">Huidig (halveren):</label>
+                        <select name="item_gehalveerd" class="select2-edit">
+                          <option value="{{ item.item_gehalveerd.zi_nummer }}" selected>
+                            {{ item.item_gehalveerd.naam }}
+                          </option>
                         </select>
                       </div>
                       <div>
-                        <label class="section-label">Datum aangebroken:</label>
-                        <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
+                        <label class="section-label">Alternatief:</label>
+                        <select name="item_alternatief" class="select2-edit">
+                          <option value="{{ item.item_alternatief.zi_nummer }}" selected>
+                            {{ item.item_alternatief.naam }}
+                          </option>
+                        </select>
                       </div>
                     </div>
                     <div class="actions-wrap horizontal" style="margin-top:10px;">
@@ -134,13 +148,46 @@
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://unpkg.com/imask"></script>
 <script src="{% static 'js/nazendingen/nazendingen.js' %}"></script>
 <script src="{% static 'js/base/confirm_delete.js' %}"></script>
+
 <script>
-  // Hergebruik de search logic van nazendingen
   document.addEventListener("DOMContentLoaded", function() {
-    liveSearch("potSearch", "potTable", "pot-row");
+    liveSearch("stsSearch", "stsTable", "sts-row");
+    
+    // Initialiseer AJAX Select2 voor de add-sectie (identiek aan laatstepotten)
+    initSelect2($('#id_item_gehalveerd'));
+    initSelect2($('#id_item_alternatief'));
   });
+
+  // Toggle logica identiek aan laatstepotten
+  function toggleEdit(id) {
+    const viewRow = document.getElementById('row-' + id);
+    const editRow = document.getElementById('edit-row-' + id);
+
+    if (!viewRow || !editRow) return;
+
+    if (editRow.style.display === 'none') {
+      viewRow.style.display = 'none';
+      editRow.style.display = 'table-row';
+
+      const $selects = $(editRow).find('.select2-edit');
+      $selects.each(function() {
+        if (!$(this).hasClass("select2-hidden-accessible")) {
+          initSelect2($(this), $('body')); 
+        }
+      });
+    } else {
+      viewRow.style.display = 'table-row';
+      editRow.style.display = 'none';
+      $(editRow).find('.select2-edit').select2('close');
+    }
+  }
+
+  function toggleAddSection() {
+    const section = document.getElementById('addSection');
+    if (!section) return;
+    section.style.display = (section.style.display === 'none') ? 'block' : 'none';
+  }
 </script>
 {% endblock %}

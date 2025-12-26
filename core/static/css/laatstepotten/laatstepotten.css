@@ -9,12 +9,19 @@ table.laatstepotten-table {
 
 .laatstepotten-edit-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
 @media (max-width: 600px) {
   .laatstepotten-edit-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Mobiel tweak: forceer min-width zodat scrollen werkt */
+@media (max-width: 900px) {
+  table.nazending-table {
+    min-width: 700px;
   }
 }

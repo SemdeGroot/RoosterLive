@@ -577,10 +577,36 @@ class LaatstePot(models.Model):
         verbose_name="Geneesmiddel"
     )
     datum = models.DateField(default=timezone.now, verbose_name="Datum melding")
-    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-datum", "-created_at"]
         verbose_name = "Laatste Pot"
         verbose_name_plural = "Laatste Potten"
+
+    def __str__(self):
+        # Gebruik self. om naar het gekoppelde item te verwijzen
+        return f"{self.voorraad_item.naam} ({self.datum})"
+
+class STSHalfje(models.Model):
+    item_gehalveerd = models.ForeignKey(
+        'VoorraadItem', 
+        on_delete=models.CASCADE, 
+        related_name='sts_gehalveerd',
+        verbose_name="Geneesmiddel dat gehalveerd wordt"
+    )
+    item_alternatief = models.ForeignKey(
+        'VoorraadItem', 
+        on_delete=models.CASCADE, 
+        related_name='sts_alternatieven',
+        verbose_name="Alternatieve sterkte"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "STS Halfje"
+        verbose_name_plural = "STS Halfjes"
+
+    def __str__(self):
+        return f"{self.item_gehalveerd.naam} -> {self.item_alternatief.naam}"

@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje
 
 UserModel = get_user_model()
 
@@ -696,3 +696,26 @@ class LaatstePotForm(forms.ModelForm):
 
         if not self.instance.pk:
             self.initial['datum'] = timezone.now().strftime('%d-%m-%Y')
+
+class STSHalfjeForm(forms.ModelForm):
+    class Meta:
+        model = STSHalfje
+        fields = ['item_gehalveerd', 'item_alternatief']
+        widgets = {
+            'item_gehalveerd': forms.Select(attrs={
+                'class': 'select2-single', 
+                'style': 'width: 100%',
+                'data-placeholder': 'Zoek geneesmiddel dat gehalveerd wordt op naam of ZI-nummer...'
+            }),
+            'item_alternatief': forms.Select(attrs={
+                'class': 'select2-single', 
+                'style': 'width: 100%',
+                'data-placeholder': 'Zoek het lagere sterkte alternatief op naam of ZI-nummer...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Queryset ophalen voor beide velden, identiek aan laatste potten
+        self.fields['item_gehalveerd'].queryset = VoorraadItem.objects.all()
+        self.fields['item_alternatief'].queryset = VoorraadItem.objects.all()
