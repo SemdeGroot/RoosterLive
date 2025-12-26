@@ -31,6 +31,7 @@ class Roster(models.Model):
             ("can_upload_werkafspraken",  "Mag Werkafspraken uploaden"),
             ("can_send_beschikbaarheid",  "Mag Beschikbaarheid doorgeven"),
             ("can_view_beschikbaarheidsdashboard", "Mag Beschikbaarheid Personeel bekijken"),
+            ("can_edit_beschikbaarheidsdashboard", "Mag diensten toewijzen"),
             ("can_view_medicatiebeoordeling",           "Mag Medicatiebeoordeling bekijken"),
             ("can_perform_medicatiebeoordeling",         "Mag Medicatiebeoordeling uitvoeren"),
             # Onboarding
@@ -67,6 +68,7 @@ class Roster(models.Model):
             # Laatste potten
             ("can_view_baxter_laatste_potten",  "Mag laatste potten bekijken"),
             ("can_edit_baxter_laatste_potten",  "Mag laatste potten aanpassen"),
+            ("can_perform_bestellingen",  "Krijgt een melding bij aanpassing laatste potten"),
             # Apotheek tiles
             ("can_view_openbare_apo",    "Mag Openbare apotheek-tegel zien"),
             ("can_view_instellings_apo", "Mag Instellingsapotheek-tegel zien"),
