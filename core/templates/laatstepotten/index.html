@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Laatste Potten{% endblock %}
+{% block header_title %}Laatste Potten{% endblock %}
+
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/laatstepotten/laatstepotten.css' %}">
@@ -16,7 +19,7 @@
       <img src="{% static 'img/laatstepotten.svg' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
         <h2>Laatste Potten</h2>
-        <p>Meld hier wanneer de laatste pot van een Baxter item is aangebroken.</p>
+        <p>Meld hier wanneer de laatste pot van een geneesmiddel is aangebroken.</p>
       </div>
 
       {% if can_edit %}
@@ -50,7 +53,7 @@
       {% endif %}
 
       <div class="search-bar">
-        <input type="text" id="potSearch" placeholder="Zoek op naam of ZI..." class="admin-input">
+        <input type="text" id="potSearch" placeholder="Zoek op naam of ZI-nummer..." class="admin-input">
       </div>
 
       <div data-crud data-table="#potTable" data-rows=".pot-row" data-page-size="10">

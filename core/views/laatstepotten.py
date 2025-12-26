@@ -64,7 +64,7 @@ def laatstepotten(request):
                 send_laatste_pot_email_task.delay(item_naam)
                 
                 messages.success(request, f"Melding opgeslagen. Bestellers zijn per push en e-mail geïnformeerd.")
-                return redirect('laatste_potten')
+                return redirect('laatstepotten')
             else:
                 messages.error(request, "Controleer de invoer van het formulier.")
 
