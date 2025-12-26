@@ -10,6 +10,7 @@ from core.views.nazendingen import nazendingen_view, medications_search_api, exp
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
 from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update
+from core.views.profiel import profiel
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view
@@ -155,22 +156,23 @@ urlpatterns = [
     # Reviwiew planner
     path("reviewplanner/", reviewplanner, name="reviewplanner"),
     path("portavita-check/", portavita_check, name="portavita-check"),
-
-        # Beheer Dashboard / Landing
-        path("beheer/", admin_dashboard, name="beheer_tiles"),
-        # De beheer paginas
-        path("beheer/gebruikers/", admin_users, name="admin_users"),
-        path("beheer/groepen/", admin_groups, name="admin_groups"),
-        path("beheer/afdelingen/", admin_afdelingen, name="admin_afdelingen"),
-        path("beheer/organisaties/", admin_orgs, name="admin_orgs"),
-        # Acties (Delete/Update)
-        path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
-        path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
-        path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete"),
-        path("beheer/afdeling/<int:pk>/delete/", delete_afdeling, name="delete_afdeling"),
-        path("beheer/afdeling/<int:pk>/update/", afdeling_update, name="afdeling_update"),
-        path("beheer/org/<int:org_id>/delete/", org_delete, name="org_delete"),
-        path("beheer/org/<int:org_id>/update/", org_update, name="org_update"),
+    # Profiel
+    path("profiel/", profiel, name="profiel"),
+    # Beheer Dashboard / Landing
+    path("beheer/", admin_dashboard, name="beheer_tiles"),
+    # De beheer paginas
+    path("beheer/gebruikers/", admin_users, name="admin_users"),
+    path("beheer/groepen/", admin_groups, name="admin_groups"),
+    path("beheer/afdelingen/", admin_afdelingen, name="admin_afdelingen"),
+    path("beheer/organisaties/", admin_orgs, name="admin_orgs"),
+    # Acties (Delete/Update)
+    path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
+    path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
+    path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete"),
+    path("beheer/afdeling/<int:pk>/delete/", delete_afdeling, name="delete_afdeling"),
+    path("beheer/afdeling/<int:pk>/update/", afdeling_update, name="afdeling_update"),
+    path("beheer/org/<int:org_id>/delete/", org_delete, name="org_delete"),
+    path("beheer/org/<int:org_id>/update/", org_update, name="org_update"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),

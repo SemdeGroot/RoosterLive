@@ -12,6 +12,7 @@ TILE_GROUPS = {
         {"name": "Baxterproductie", "img": "factory.svg", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
         {"name": "Openbare Apo",    "img": "openbareapo.svg", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
         {"name": "Instellingsapotheek", "img": "instellingsapotheek.svg", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
+        {"name": "Profiel", "img": "user.svg", "url_name": "profiel", "perm": "can_access_profiel"},
         {"name": "Beheer", "img": "beheer.svg", "url_name": "beheer_tiles", "perm": "can_access_admin"},
     ],
 

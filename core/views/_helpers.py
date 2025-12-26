@@ -48,6 +48,7 @@ DB_PATH = settings.BASE_DIR / "lookup.db"
 # ===== PERM LABELS =====
 PERM_LABELS = {
     "can_access_admin":        "Mag beheer openen",
+    "can_access_profiel":        "Mag profiel aanpassen",
     "can_manage_users":        "Mag gebruikers beheren",
     "can_manage_groups":              "Mag groepen beheren",
     "can_manage_afdelingen":              "Mag afdelingen beheren",
@@ -129,6 +130,7 @@ PERM_SECTIONS = [
 
     ("Openbare Apotheek", ["can_view_openbare_apo"]),
     ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
+    ("Profiel",        ["can_access_profiel"]),
     ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs"]),
 ]
 
