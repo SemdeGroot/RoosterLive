@@ -8,9 +8,11 @@
   table-layout: fixed;
 }
 
-.availability-table colgroup col:first-child { width: 44%; }
+/* 4 kolommen van 25% */
+.availability-table colgroup col:first-child { width: 25%; }
 .availability-table colgroup col:nth-child(2),
-.availability-table colgroup col:nth-child(3) { width: 28%; }
+.availability-table colgroup col:nth-child(3),
+.availability-table colgroup col:nth-child(4) { width: 25%; }
 
 .availability-table thead th {
   padding: 12px 14px;
@@ -19,12 +21,22 @@
 }
 .availability-table thead th:first-child { text-align: left; }
 
+/* Tijden op een nieuwe regel */
+.availability-table thead th small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
 .availability-table tbody td {
   padding: 12px 14px;
   vertical-align: middle;
 }
 .availability-table tbody td:nth-child(2),
-.availability-table tbody td:nth-child(3) { text-align: center; }
+.availability-table tbody td:nth-child(3),
+.availability-table tbody td:nth-child(4) { text-align: center; }
 
 .availability-table tbody tr { border-bottom: 1px solid var(--border); }
 .availability-table tbody tr:nth-child(odd) { background: rgba(255,255,255,0.02); }
@@ -39,8 +51,56 @@
   accent-color: var(--accent);
 }
 
+/* --- Footer & Hints Styling --- */
+.availability-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16px;
+  gap: 10px !important;
+}
+
+.availability-hints p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  max-width: 600px;
+}
+
+.availability-hints p span {
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* --- Mobiele aanpassingen --- */
 @media (max-width: 640px) {
   .weekday-title { flex-direction: column; gap: 0; }
+  
+  .availability-table thead th {
+    font-size: 0.8rem;
+    padding: 10px 4px;
+  }
+  
+  .availability-table thead th small {
+    font-size: 0.65rem;
+  }
+
+  /* Footer op mobile: knop onderaan en hints bovenaan */
+  .availability-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .availability-footer .actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .availability-hints p {
+    font-size: 0.75rem;
+  }
 }
 
 .form h3 { text-align: center; }

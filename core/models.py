@@ -113,14 +113,11 @@ class StandaardInlog(models.Model):
         return "Configuratie Standaard Inlog"
 
 class Availability(models.Model):
-    """
-    Bewaart beschikbaarheid per gebruiker per datum (ma-vr),
-    met twee tijdvakken: ochtend/middag.
-    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availabilities")
     date = models.DateField(db_index=True)
     morning = models.BooleanField(default=False)
     afternoon = models.BooleanField(default=False)
+    evening = models.BooleanField(default=False) # Nieuw veld
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -128,7 +125,7 @@ class Availability(models.Model):
         ordering = ["date"]
 
     def __str__(self):
-        return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon})"
+        return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon} a:{self.evening})"
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")

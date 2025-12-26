@@ -57,7 +57,7 @@ def mijnbeschikbaarheid_view(request):
         monday = min_monday
 
     monday = _clamp_week(monday, min_monday, max_monday)
-    week_end = monday + timedelta(days=4)
+    week_end = monday + timedelta(days=5)
 
     # Navigatie (alleen tussen huidige week en +6 maanden)
     prev_raw = monday - timedelta(weeks=1)
@@ -68,21 +68,23 @@ def mijnbeschikbaarheid_view(request):
     next_monday = next_raw if has_next else max_monday
 
     # Ma–vr
-    days = [monday + timedelta(days=i) for i in range(5)]
+    days = [monday + timedelta(days=i) for i in range(6)]
 
     if request.method == "POST":
         redirect_to = request.POST.get("redirect_to_monday")
         for d in days:
             key_m = f"morning_{d.isoformat()}"
             key_a = f"afternoon_{d.isoformat()}"
+            key_e = f"evening_{d.isoformat()}"
             morning = key_m in request.POST
             afternoon = key_a in request.POST
+            evening = key_e in request.POST
 
             if morning or afternoon:
                 Availability.objects.update_or_create(
                     user=request.user,
                     date=d,
-                    defaults={"morning": morning, "afternoon": afternoon},
+                    defaults={"morning": morning, "afternoon": afternoon, "evening": evening},
                 )
             else:
                 Availability.objects.filter(user=request.user, date=d).delete()
@@ -110,6 +112,7 @@ def mijnbeschikbaarheid_view(request):
             "date": d,
             "morning": bool(av and av.morning),
             "afternoon": bool(av and av.afternoon),
+            "evening": bool(av and av.evening),
         })
 
     # Dropdown: huidige week → +6 maanden
@@ -119,7 +122,7 @@ def mijnbeschikbaarheid_view(request):
         week_options.append({
             "value": cur.isoformat(),
             "start": cur,
-            "end": cur + timedelta(days=4),
+            "end": cur + timedelta(days=5),
             "iso_week": cur.isocalendar()[1],
             "iso_year": cur.isocalendar()[0],
         })

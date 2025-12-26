@@ -71,30 +71,48 @@
       <input type="hidden" id="redirectToMonday" name="redirect_to_monday" value="">
 
       <div class="availability-wrap">
-        <table class="availability-table" aria-label="Beschikbaarheid maandag t/m vrijdag">
-          <colgroup><col /><col /><col /></colgroup>
-          <thead>
-            <tr><th>Dag</th><th>Ochtend</th><th>Middag</th></tr>
-          </thead>
-          <tbody>
-            {% for r in rows %}
-              <tr>
-                <td>
-                  <div class="weekday-title">
-                    <strong>{{ r.date|date:"l"|capfirst }}</strong>
-                    <small>{{ r.date|date:"d-m-Y" }}</small>
-                  </div>
-                </td>
-                <td><input type="checkbox" name="morning_{{ r.date|date:'Y-m-d' }}" {% if r.morning %}checked{% endif %}></td>
-                <td><input type="checkbox" name="afternoon_{{ r.date|date:'Y-m-d' }}" {% if r.afternoon %}checked{% endif %}></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <table class="availability-table" aria-label="Beschikbaarheid maandag t/m zaterdag">
+        <colgroup>
+          <col style="width: 25%;" />
+          <col style="width: 25%;" />
+          <col style="width: 25%;" />
+          <col style="width: 25%;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Dag</th>
+            <th>Ochtend <small>09:00 - 13:00*</small></th>
+            <th>Middag <small>13:00 - 17:30*</small></th>
+            <th>Avond <small>18:00 - 20:00**</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>
+                <div class="weekday-title">
+                  <strong>{{ r.date|date:"D"|capfirst }}</strong>
+                  <small>{{ r.date|date:"d-m" }}</small>
+                </div>
+              </td>
+              <td><input type="checkbox" name="morning_{{ r.date|date:'Y-m-d' }}" {% if r.morning %}checked{% endif %}></td>
+              <td><input type="checkbox" name="afternoon_{{ r.date|date:'Y-m-d' }}" {% if r.afternoon %}checked{% endif %}></td>
+              <td><input type="checkbox" name="evening_{{ r.date|date:'Y-m-d' }}" {% if r.evening %}checked{% endif %}></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-        <button type="submit" class="btn btn-save" data-haptic>Opslaan</button>
+      <div class="availability-footer">
+        <div class="availability-hints">
+          <p><span>*</span> Als je zowel een ochtend als middagdienst hebt is er een half uur lunchpauze. Ook zijn er twee koffiepauzes.</p>
+          <p><span>**</span> De avond en zaterdag worden niet standaard ingeroosterd, alleen bij speciale gelegenheden zoals feestdagen. Je krijgt dan een hogere vergoeding.</p>
+        </div>
+        
+        <div class="actions">
+          <button type="submit" class="btn btn-save" data-haptic>Opslaan</button>
+        </div>
       </div>
     </form>
   </div>
