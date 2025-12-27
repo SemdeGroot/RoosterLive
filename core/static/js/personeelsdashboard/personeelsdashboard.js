@@ -4,7 +4,6 @@
     const url = new URL(window.location.href);
     if (targetISO) url.searchParams.set('monday', targetISO);
     else url.searchParams.delete('monday');
-    // ✅ behoud day idx
     window.location.href = url.toString();
   }
 

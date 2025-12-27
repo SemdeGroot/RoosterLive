@@ -7,10 +7,11 @@
    ========================================================= */
 .personeelsdashboard-wrap { width: 100%; }
 
+/* 50/50 verdeling links/rechts */
 .pd-main-grid{
   margin-top: 14px;
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
@@ -31,11 +32,19 @@
   justify-self: start;
   display: flex;
   align-items: center;
+  gap: 10px;
 }
+
+/* Label styling komt uit jouw bestaande .section-label (niet hier overschrijven) */
 
 .pd-select{
   width: 260px;
   max-width: 100%;
+
+  /* gevraagde background */
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .pd-weekcenter{
@@ -128,7 +137,7 @@ table.matrix thead th{
 }
 
 /* =========================================================
-    GRID  
+    GRID
    ========================================================= */
 .no-vlines{
   border-left: none !important;
@@ -148,42 +157,68 @@ table.matrix td.slot-cell:first-of-type{
   border-left: 1px solid var(--border);
 }
 
+/* Geef slot-cellen iets minder padding zodat de “rechthoek” meer vult */
+table.matrix td.slot-cell{
+  padding: 6px; /* margin tot de lijnen */
+}
+table.matrix th.slot-head{
+  padding: 8px 6px;
+}
+
 /* =========================================================
-   Sort badges
+   Sort badges -> echte buttons met .btn + newline count
    ========================================================= */
 .slot-badge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:.35rem;
-  padding:6px 10px;
-  border-radius:999px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;      /* newline effect */
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
+
   transition: background .2s ease, border-color .2s ease;
-  user-select:none;
-  cursor:pointer;
+  user-select: none;
   white-space: nowrap;
   font-weight: 700;
 }
 
-.slot-badge small{
-  font-weight: 700;
-  color: var(--muted);
+.slot-badge .slot-label{
+  line-height: 1.1;
 }
 
-.slot-badge:hover{ background:#1f2d3d; border-color:var(--accent); }
-.slot-badge.active{ border-color:var(--accent); }
+.slot-badge .slot-count{
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* hover/active */
+.slot-badge:hover{
+  background: #1f2d3d;
+  border-color: var(--accent);
+}
+.slot-badge.active{
+  border-color: var(--accent);
+}
 
 /* =========================================================
-   Rechthoeken (oranje standaard)
+   Rechthoeken (oranje standaard) - meer “vullend”
    ========================================================= */
 .avail-rect{
-  width: 36px;
-  height: 20px;
-  border-radius: 6px;
-  margin: 0 auto;
+  width: 100%;        /* vult de hele cel (minus padding van .slot-cell) */
+  height: 26px;       /* hoger zodat het meer “vult” */
+  border-radius: 7px; /* rechthoek met afgeronde hoeken */
+  margin: 0;          /* spacing komt uit td padding */
+  box-sizing: border-box;
+
   background: transparent;
   border: 2px solid rgba(255,255,255,0.14);
 }

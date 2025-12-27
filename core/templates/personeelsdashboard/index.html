@@ -6,7 +6,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/personeelsdashboard/personeelsdashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -19,8 +19,9 @@
 
       <div class="pd-controlbar">
 
-        <!-- Links: dagpicker (zonder label) -->
+        <!-- Links: dagpicker (met label) -->
         <div class="pd-daypicker">
+          <label for="dayPicker" class="section-label">Dag</label>
           <select id="dayPicker" class="admin-select pd-select" aria-label="Selecteer dag">
             {% for opt in day_options %}
               <option value="{{ opt.idx }}" {% if opt.idx == selected_day_idx %}selected{% endif %}>
@@ -148,19 +149,24 @@
                 <th class="no-vlines">Voornaam</th>
 
                 <th class="slot-head">
-                  <span class="slot-badge" data-slot="{{ selected_day_ctx.iso }}|morning">
-                    Ochtend <small>({{ selected_day_ctx.morning_count }})</small>
-                  </span>
+                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|morning">
+                    <span class="slot-label">Ochtend</span>
+                    <span class="slot-count">({{ selected_day_ctx.morning_count }})</span>
+                  </button>
                 </th>
+
                 <th class="slot-head">
-                  <span class="slot-badge" data-slot="{{ selected_day_ctx.iso }}|afternoon">
-                    Middag <small>({{ selected_day_ctx.afternoon_count }})</small>
-                  </span>
+                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|afternoon">
+                    <span class="slot-label">Middag</span>
+                    <span class="slot-count">({{ selected_day_ctx.afternoon_count }})</span>
+                  </button>
                 </th>
+
                 <th class="slot-head">
-                  <span class="slot-badge" data-slot="{{ selected_day_ctx.iso }}|evening">
-                    Avond <small>({{ selected_day_ctx.evening_count }})</small>
-                  </span>
+                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|evening">
+                    <span class="slot-label">Avond</span>
+                    <span class="slot-count">({{ selected_day_ctx.evening_count }})</span>
+                  </button>
                 </th>
               </tr>
             </thead>
