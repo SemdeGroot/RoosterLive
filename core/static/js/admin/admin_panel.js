@@ -25,6 +25,38 @@ window.toggleAfdelingEdit = function(id){
       : "none";
   };
 
+window.toggleLocationEdit = function(id){
+  const row = document.getElementById("location-edit-row-" + id);
+  if(!row) return;
+  row.style.display = (row.style.display === "none" || row.style.display === "")
+    ? "table-row"
+    : "none";
+};
+
+window.toggleTaskEdit = function(id){
+  const row = document.getElementById("task-edit-row-" + id);
+  if(!row) return;
+  row.style.display = (row.style.display === "none" || row.style.display === "")
+    ? "table-row"
+    : "none";
+};
+
+window.confirmLocationDelete = function(name){
+  return confirm(
+    "Weet je zeker dat je de locatie '" +
+    (name || "deze locatie") +
+    "' wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!"
+  );
+};
+
+window.confirmTaskDelete = function(name){
+  return confirm(
+    "Weet je zeker dat je de taak '" +
+    (name || "deze taak") +
+    "' wilt verwijderen?\n\n⚠️ Deze actie kan niet ongedaan worden gemaakt!"
+  );
+};
+
 /* ---------- CONFIRM DIALOGS ---------- */
 window.confirmDelete = function(name){
   return confirm(
@@ -81,4 +113,6 @@ document.addEventListener("DOMContentLoaded", function(){
   liveSearch("groupSearch", "groupTable", "group-row");
   liveSearch("orgSearch",   "orgTable",   "org-row");
   liveSearch("afdelingSearch", "afdelingTable", "afdeling-row");
+  liveSearch("locationSearch", "locationTable", "location-row");
+  liveSearch("taskSearch", "taskTable", "task-row");
 });

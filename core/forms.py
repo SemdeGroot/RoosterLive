@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task
 
 UserModel = get_user_model()
 
@@ -646,6 +646,36 @@ class AfdelingEditForm(forms.ModelForm):
         self.fields['organisatie'].required = True
         self.fields['afdeling'].required = True
         self.fields['locatie'].required = True
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ["name"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Bijv. Spacelab",
+            }),
+        }
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["name", "location", "description"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Bijv. Ontstrippen",
+            }),
+            "location": forms.Select(attrs={
+                "class": "admin-select",
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-input",
+                "rows": 3,
+                "placeholder": "Beschrijf hier kort wat de taak inhoudt...",
+            }),
+        }
 
 class NazendingForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% load static role_tags form_extras %}
+{% block title %}Taken beheren{% endblock %}
+{% block header_title %}Taken beheren{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-wrap">
+  <div class="card">
+    <div class="card-inner">
+
+      <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/taken.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+          <h2>Taken beheren</h2>
+          <p>Beheer locaties en taken (taken zijn gekoppeld aan een locatie).</p>
+        </div>
+        <a href="{% url 'beheer_tiles' %}" class="btn btn-save">
+          Terug naar dashboard
+        </a>
+      </div>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           LOCATIE TOEVOEGEN
+      ========================== -->
+      <h3 style="margin-top:0;">Locatie toevoegen</h3>
+
+      <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="form_kind" value="location">
+
+        <div class="form form-sticky-actions" style="padding:0;">
+          <div class="admin-grid" style="margin-bottom: 12px;">
+            <div>
+              <label for="{{ location_form.name.id_for_label }}">Locatienaam:</label>
+              {{ location_form.name }}
+            </div>
+            <div></div>
+          </div>
+
+          <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
+            Toevoegen
+          </button>
+        </div>
+      </form>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           BESTAANDE LOCATIES
+      ========================== -->
+      <h3 style="margin-top:0;">Bestaande locaties</h3>
+
+      <div class="search-bar">
+        <input type="text" id="locationSearch" placeholder="Zoek op locatie…" class="admin-input">
+      </div>
+
+      <div data-crud data-table="#locationTable" data-rows="#locationTable .location-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table compact location-table" id="locationTable">
+            <thead>
+              <tr>
+                <th>Locatie</th>
+                <th>Acties</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for loc in locations %}
+              <tr class="location-row" id="location-row-{{ loc.id }}">
+                <td style="font-weight: 600;">{{ loc.name }}</td>
+                <td>
+                  {% if can_manage %}
+                  <div class="actions-wrap horizontal">
+                    <button type="button"
+                            class="icon-btn"
+                            onclick="toggleLocationEdit('{{ loc.id }}')"
+                            aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+
+                    <form method="post"
+                          action="{% url 'delete_location' loc.id %}"
+                          onsubmit="return confirmLocationDelete('{{ loc.name|escapejs }}');">
+                      {% csrf_token %}
+                      <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                  {% else %}
+                    <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                  {% endif %}
+                </td>
+              </tr>
+
+              <tr id="location-edit-row-{{ loc.id }}" class="edit-row" style="display:none;">
+                <td colspan="2">
+                  <div class="edit-wrap">
+                    <form method="post" action="{% url 'location_update' loc.id %}">
+                      {% csrf_token %}
+
+                      <div class="edit-grid">
+                        <div>
+                          <label>Locatienaam:</label>
+                          <input class="admin-input" type="text" name="name"
+                                 value="{{ loc.name }}" required style="margin-top:6px;">
+                        </div>
+                      </div>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px;">
+                        <button class="btn btn-save" type="submit">Opslaan</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleLocationEdit('{{ loc.id }}')">
+                          Annuleren
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="crud-more-wrap">
+          <button class="btn small" type="button" data-crud-more>Toon meer</button>
+        </div>
+      </div>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           TAAK TOEVOEGEN
+      ========================== -->
+      <h3 style="margin-top:0;">Taak toevoegen</h3>
+
+      <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="form_kind" value="task">
+
+        <div class="form form-sticky-actions" style="padding:0;">
+
+          <div class="admin-grid" style="margin-bottom: 12px;">
+            <div>
+              <label for="{{ task_form.name.id_for_label }}">Taaknaam:</label>
+              {{ task_form.name }}
+            </div>
+            <div>
+              <label for="{{ task_form.location.id_for_label }}">Locatie:</label>
+              {{ task_form.location }}
+            </div>
+          </div>
+
+          <div class="admin-grid" style="margin-bottom: 12px;">
+            <div style="grid-column: 1 / -1;">
+              <label for="{{ task_form.description.id_for_label }}">Omschrijving (optioneel):</label>
+              {{ task_form.description }}
+            </div>
+          </div>
+
+          <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
+            Toevoegen
+          </button>
+        </div>
+      </form>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           BESTAANDE TAKEN
+      ========================== -->
+      <h3 style="margin-top:0;">Bestaande taken</h3>
+
+      <div class="search-bar">
+        <input type="text" id="taskSearch" placeholder="Zoek op taak, locatie of omschrijving…" class="admin-input">
+      </div>
+
+      <div data-crud data-table="#taskTable" data-rows="#taskTable .task-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table compact task-table" id="taskTable">
+            <thead>
+              <tr>
+                <th>Taak</th>
+                <th>Locatie</th>
+                <th>Omschrijving</th>
+                <th>Acties</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for t in tasks %}
+              <tr class="task-row" id="task-row-{{ t.id }}">
+                <td style="font-weight:600;">{{ t.name }}</td>
+                <td>{{ t.location.name }}</td>
+                <td>{{ t.description|default:"-" }}</td>
+
+                <td>
+                  {% if can_manage %}
+                  <div class="actions-wrap horizontal">
+                    <button type="button"
+                            class="icon-btn"
+                            onclick="toggleTaskEdit('{{ t.id }}')"
+                            aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+
+                    <form method="post"
+                          action="{% url 'delete_task' t.id %}"
+                          onsubmit="return confirmTaskDelete('{{ t.name|escapejs }}');">
+                      {% csrf_token %}
+                      <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                  {% else %}
+                    <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                  {% endif %}
+                </td>
+              </tr>
+
+              <tr id="task-edit-row-{{ t.id }}" class="edit-row" style="display:none;">
+                <td colspan="4">
+                  <div class="edit-wrap">
+                    <form method="post" action="{% url 'task_update' t.id %}">
+                      {% csrf_token %}
+
+                      <div class="edit-grid">
+                        <div>
+                          <label>Taaknaam:</label>
+                          <input class="admin-input" type="text" name="name"
+                                 value="{{ t.name }}" required style="margin-top:6px;">
+                        </div>
+
+                        <div>
+                          <label>Locatie:</label>
+                          <select name="location" class="admin-select" required style="margin-top:6px;">
+                            {% for loc in locations %}
+                              <option value="{{ loc.id }}" {% if t.location_id == loc.id %}selected{% endif %}>
+                                {{ loc.name }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+
+                        <div style="grid-column: 1 / -1;">
+                          <label>Omschrijving (optioneel):</label>
+                          <textarea name="description" class="admin-input" rows="3" style="margin-top:6px;">{{ t.description|default:'' }}</textarea>
+                        </div>
+                      </div>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px;">
+                        <button class="btn btn-save" type="submit">Opslaan</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleTaskEdit('{{ t.id }}')">
+                          Annuleren
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="crud-more-wrap">
+          <button class="btn small" type="button" data-crud-more>Toon meer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -7,11 +7,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 
-from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm
+from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task
 from core.tiles import build_tiles
 User = get_user_model()
 
@@ -425,3 +426,145 @@ def delete_afdeling(request, pk):
         messages.success(request, f"Afdeling '{naam}' verwijderd.")
     
     return redirect("admin_afdelingen")
+
+# ==========================================
+# 6. TAKEN + LOCATIES BEHEER
+# ==========================================
+@login_required
+def admin_taken(request):
+    # 1. View Check
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    # 2. Manage Check
+    can_manage = can(request.user, "can_manage_tasks")
+
+    location_form = LocationForm()
+    task_form = TaskForm()
+
+    # ---- Nieuwe locatie aanmaken ----
+    if request.method == "POST" and request.POST.get("form_kind") == "location":
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om locaties toe te voegen.")
+            return redirect("admin_taken")
+
+        location_form = LocationForm(request.POST)
+        if location_form.is_valid():
+            obj = location_form.save()
+            messages.success(request, f"Locatie '{obj.name}' aangemaakt.")
+            return redirect("admin_taken")
+        messages.error(request, "Kon locatie niet aanmaken. Controleer de velden.")
+
+    # ---- Nieuwe taak aanmaken ----
+    if request.method == "POST" and request.POST.get("form_kind") == "task":
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om taken toe te voegen.")
+            return redirect("admin_taken")
+
+        task_form = TaskForm(request.POST)
+        if task_form.is_valid():
+            obj = task_form.save()
+            messages.success(request, f"Taak '{obj.name}' aangemaakt.")
+            return redirect("admin_taken")
+        messages.error(request, "Kon taak niet aanmaken. Controleer de velden.")
+
+    locations = Location.objects.all().order_by("name")
+    tasks = Task.objects.select_related("location").order_by("name", "location__name")
+
+    return render(request, "admin/taken.html", {
+        "locations": locations,
+        "tasks": tasks,
+        "location_form": location_form,
+        "task_form": task_form,
+        "can_manage": can_manage,
+    })
+
+
+@login_required
+@require_POST
+def location_update(request, pk):
+    if not can(request.user, "can_manage_tasks"):
+        messages.error(request, "Geen rechten om te wijzigen.")
+        return redirect("admin_taken")
+
+    loc = get_object_or_404(Location, pk=pk)
+
+    name = (request.POST.get("name") or "").strip()
+    if not name:
+        messages.error(request, "Locatienaam is verplicht.")
+        return redirect("admin_taken")
+
+    # Uniek check
+    if Location.objects.filter(name__iexact=name).exclude(pk=loc.pk).exists():
+        messages.error(request, "Er bestaat al een locatie met deze naam.")
+        return redirect("admin_taken")
+
+    loc.name = name
+    loc.save(update_fields=["name"])
+    messages.success(request, f"Locatie '{loc.name}' is bijgewerkt.")
+    return redirect("admin_taken")
+
+
+@login_required
+@require_POST
+def task_update(request, pk):
+    if not can(request.user, "can_manage_tasks"):
+        messages.error(request, "Geen rechten om te wijzigen.")
+        return redirect("admin_taken")
+
+    t = get_object_or_404(Task, pk=pk)
+
+    name = (request.POST.get("name") or "").strip()
+    location_id = request.POST.get("location")
+    description = (request.POST.get("description") or "").strip()
+
+    if not name:
+        messages.error(request, "Taaknaam is verplicht.")
+        return redirect("admin_taken")
+
+    if not location_id:
+        messages.error(request, "Locatie is verplicht.")
+        return redirect("admin_taken")
+
+    loc = get_object_or_404(Location, pk=location_id)
+
+    t.name = name
+    t.location = loc
+    t.description = description or None
+    t.save()
+
+    messages.success(request, f"Taak '{t.name}' is bijgewerkt.")
+    return redirect("admin_taken")
+
+
+@login_required
+@require_POST
+def delete_location(request, pk):
+    if not can(request.user, "can_manage_tasks"):
+        messages.error(request, "Geen rechten om locaties te verwijderen.")
+        return redirect("admin_taken")
+
+    loc = get_object_or_404(Location, pk=pk)
+    naam = loc.name
+
+    try:
+        loc.delete()
+        messages.success(request, f"Locatie '{naam}' verwijderd.")
+    except ProtectedError:
+        messages.error(request, "Kan locatie niet verwijderen: er zijn nog taken aan gekoppeld.")
+
+    return redirect("admin_taken")
+
+
+@login_required
+@require_POST
+def delete_task(request, pk):
+    if not can(request.user, "can_manage_tasks"):
+        messages.error(request, "Geen rechten om taken te verwijderen.")
+        return redirect("admin_taken")
+
+    t = get_object_or_404(Task, pk=pk)
+    naam = t.name
+    t.delete()
+    messages.success(request, f"Taak '{naam}' verwijderd.")
+    return redirect("admin_taken")

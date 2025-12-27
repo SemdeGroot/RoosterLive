@@ -18,6 +18,7 @@ class Roster(models.Model):
             ("can_manage_groups",              "Mag groepen beheren"),
             ("can_manage_afdelingen",              "Mag afdelingen beheren"),
             ("can_manage_orgs",              "Mag organisaties beheren"),
+            ("can_manage_tasks",              "Mag taken beheren"),
             ("can_view_agenda",           "Mag agenda bekijken"),
             ("can_upload_agenda",         "Mag agenda uploaden"),
             ("can_view_roster",           "Mag rooster bekijken"),

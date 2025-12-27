@@ -180,4 +180,26 @@ table.afdeling-table {
   table.afdeling-table {
     min-width: 750px; /* iets ruimer, acties/spacing */
   }
+
+    table.location-table{
+    min-width: 520px;
+  }
+
+  table.task-table{
+    min-width: 880px;
+  }
+}
+
+/* LOCATIONS: 2 kolommen */
+table.location-table{
+  --c1: 260px; /* Locatie */
+  --c2: 120px; /* Acties */
+}
+
+/* TASKS: 4 kolommen */
+table.task-table{
+  --c1: 220px; /* Taak */
+  --c2: 180px; /* Locatie */
+  --c3: 320px; /* Omschrijving */
+  --c4: 120px; /* Acties */
 }

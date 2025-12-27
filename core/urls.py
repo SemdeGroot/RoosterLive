@@ -9,7 +9,7 @@ from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf, email_nazendingen_pdf
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
-from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update
+from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task
 from core.views.profiel import profiel
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
@@ -165,6 +165,7 @@ urlpatterns = [
     path("beheer/groepen/", admin_groups, name="admin_groups"),
     path("beheer/afdelingen/", admin_afdelingen, name="admin_afdelingen"),
     path("beheer/organisaties/", admin_orgs, name="admin_orgs"),
+    path("beheer/taken/", admin_taken, name="admin_taken"),
     # Acties (Delete/Update)
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
     path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
@@ -173,6 +174,10 @@ urlpatterns = [
     path("beheer/afdeling/<int:pk>/update/", afdeling_update, name="afdeling_update"),
     path("beheer/org/<int:org_id>/delete/", org_delete, name="org_delete"),
     path("beheer/org/<int:org_id>/update/", org_update, name="org_update"),
+    path("beheer/taken/location/<int:pk>/update/", location_update, name="location_update"),
+    path("beheer/taken/task/<int:pk>/update/", task_update, name="task_update"),
+    path("beheer/taken/location/<int:pk>/delete/", delete_location, name="delete_location"),
+    path("beheer/taken/task/<int:pk>/delete/", delete_task, name="delete_task"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
