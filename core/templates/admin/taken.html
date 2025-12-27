@@ -39,13 +39,16 @@
         <input type="hidden" name="form_kind" value="location">
 
         <div class="form form-sticky-actions" style="padding:0;">
-          <div class="admin-grid" style="margin-bottom: 12px;">
-            <div>
-              <label for="{{ location_form.name.id_for_label }}">Locatienaam:</label>
-              {{ location_form.name }}
-            </div>
-            <div></div>
-          </div>
+        <div class="admin-grid" style="margin-bottom: 12px;">
+        <div>
+            <label for="{{ location_form.name.id_for_label }}">Locatienaam:</label>
+            {{ location_form.name }}
+        </div>
+        <div>
+            <label for="{{ location_form.address.id_for_label }}">Adres (optioneel):</label>
+            {{ location_form.address }}
+        </div>
+        </div>
 
           <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
             Toevoegen
@@ -70,6 +73,7 @@
             <thead>
               <tr>
                 <th>Locatie</th>
+                <th>Adres</th>
                 <th>Acties</th>
               </tr>
             </thead>
@@ -78,6 +82,7 @@
               {% for loc in locations %}
               <tr class="location-row" id="location-row-{{ loc.id }}">
                 <td style="font-weight: 600;">{{ loc.name }}</td>
+                <td>{{ loc.address|default:"-" }}</td>
                 <td>
                   {% if can_manage %}
                   <div class="actions-wrap horizontal">
@@ -116,18 +121,25 @@
               </tr>
 
               <tr id="location-edit-row-{{ loc.id }}" class="edit-row" style="display:none;">
-                <td colspan="2">
+                <td colspan="3">
                   <div class="edit-wrap">
                     <form method="post" action="{% url 'location_update' loc.id %}">
                       {% csrf_token %}
 
-                      <div class="edit-grid">
-                        <div>
-                          <label>Locatienaam:</label>
-                          <input class="admin-input" type="text" name="name"
-                                 value="{{ loc.name }}" required style="margin-top:6px;">
-                        </div>
-                      </div>
+                <div class="edit-grid">
+                <div>
+                    <label>Locatienaam:</label>
+                    <input class="admin-input" type="text" name="name"
+                        value="{{ loc.name }}" required style="margin-top:6px;">
+                </div>
+
+                <div>
+                    <label>Adres (optioneel):</label>
+                    <input class="admin-input" type="text" name="address"
+                        value="{{ loc.address|default:'' }}" style="margin-top:6px;">
+                </div>
+                </div>
+
 
                       <div class="actions-wrap horizontal" style="margin-top:12px;">
                         <button class="btn btn-save" type="submit">Opslaan</button>

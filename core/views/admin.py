@@ -490,19 +490,23 @@ def location_update(request, pk):
     loc = get_object_or_404(Location, pk=pk)
 
     name = (request.POST.get("name") or "").strip()
+    address = (request.POST.get("address") or "").strip()
+
     if not name:
         messages.error(request, "Locatienaam is verplicht.")
         return redirect("admin_taken")
 
-    # Uniek check
     if Location.objects.filter(name__iexact=name).exclude(pk=loc.pk).exists():
         messages.error(request, "Er bestaat al een locatie met deze naam.")
         return redirect("admin_taken")
 
     loc.name = name
-    loc.save(update_fields=["name"])
+    loc.address = address
+    loc.save(update_fields=["name", "address"])
+
     messages.success(request, f"Locatie '{loc.name}' is bijgewerkt.")
     return redirect("admin_taken")
+
 
 
 @login_required

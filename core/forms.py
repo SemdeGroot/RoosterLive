@@ -650,11 +650,15 @@ class AfdelingEditForm(forms.ModelForm):
 class LocationForm(forms.ModelForm):
     class Meta:
         model = Location
-        fields = ["name"]
+        fields = ["name", "address"]
         widgets = {
             "name": forms.TextInput(attrs={
                 "class": "admin-input",
-                "placeholder": "Bijv. Spacelab",
+                "placeholder": "Bijv. Openbare Apotheek",
+            }),
+            "address": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Adres - bijv. Liendertseweg 32",
             }),
         }
 

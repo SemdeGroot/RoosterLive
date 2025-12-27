@@ -133,6 +133,7 @@ class Location(models.Model):
     Physical places where a task can take place.
     """
     name = models.CharField(max_length=100, unique=True)
+    address = models.CharField(max_length=255, blank=True, default="")
     
     class Meta:
         verbose_name_plural = "Locations"
