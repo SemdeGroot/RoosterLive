@@ -7,7 +7,6 @@
    ========================================================= */
 .personeelsdashboard-wrap { width: 100%; }
 
-/* 50/50 verdeling links/rechts */
 .pd-main-grid{
   margin-top: 14px;
   display: grid;
@@ -20,7 +19,6 @@
   .pd-main-grid{ grid-template-columns: 1fr; }
 }
 
-/* Controlbar: dag links, week center, rechts spacer */
 .pd-controlbar{
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -31,13 +29,10 @@
 .pd-daypicker{
   justify-self: start;
   display: flex;
-  align-items: center;
   flex-direction: column;
-  align-items: flex-start; 
+  align-items: flex-start;
   gap: 4px;
 }
-
-/* Label styling komt uit jouw bestaande .section-label (niet hier overschrijven) */
 
 .pd-select{
   width: 100%;
@@ -53,7 +48,6 @@
   justify-self: end;
 }
 
-/* Datum onder week picker gecentreerd */
 .availability-daterange{
   margin-top: 8px;
   color: var(--muted);
@@ -61,17 +55,15 @@
   text-align: center;
 }
 
-/* Subtitles */
 .pd-subtitle{
   color: var(--muted);
   font-size: 0.95rem;
 }
 
-/* Search bar (aansluiten op admin-styling) */
 .search-bar{ margin: 0 0 12px 0; }
 
 /* =========================================================
-   Matrix: panel background overal gelijk, geen zebra
+   Matrix
    ========================================================= */
 .matrix-wrap{
   width: 100%;
@@ -81,24 +73,19 @@
   overscroll-behavior: contain;
 }
 
-/* Tabel als “panel” */
 table.matrix{
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-
-  /* overal dezelfde achtergrond als panel */
   background: var(--panel, var(--bg));
   border: 1px solid var(--border);
 }
 
-/* Overal dezelfde achtergrond (ook head) */
 table.matrix thead th,
 table.matrix tbody td{
   background: transparent;
 }
 
-/* algemene cell styling */
 table.matrix th,
 table.matrix td{
   padding: 10px 10px;
@@ -107,18 +94,15 @@ table.matrix td{
   border-bottom: 1px solid var(--border);
 }
 
-/* Head mag niet afwijkend kleuren */
 table.matrix thead th{
   font-weight: 800;
   border-bottom: 1px solid var(--border);
 }
 
-/* kolombreedtes */
 .col-group { width: 46%; }
 .col-name  { width: 30%; }
 .col-slot  { width: 8%; }
 
-/* Tekstcellen: wrap aan */
 .cell-wrap{
   text-align: left;
   white-space: normal;
@@ -131,42 +115,27 @@ table.matrix thead th{
   font-weight: 600;
 }
 
-/* =========================================================
-    GRID
-   ========================================================= */
 .no-vlines{
   border-left: none !important;
   border-right: none !important;
 }
 
-/* Slot cells: behouden borders rondom */
 .slot-head,
 .slot-cell{
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
 }
 
-/* In collapse kan dit soms dubbel lijken; dit houdt het strak */
-table.matrix th.slot-head:first-of-type,
-table.matrix td.slot-cell:first-of-type{
-  border-left: 1px solid var(--border);
-}
-
-/* Geef slot-cellen iets minder padding zodat de “rechthoek” meer vult */
-table.matrix td.slot-cell{
-  padding: 6px; /* margin tot de lijnen */
-}
-table.matrix th.slot-head{
-  padding: 8px 6px;
-}
+table.matrix td.slot-cell{ padding: 6px; }
+table.matrix th.slot-head{ padding: 8px 6px; }
 
 /* =========================================================
-   Sort badges -> echte buttons met .btn + newline count
+   Sort badges
    ========================================================= */
 .slot-badge{
   width: 100%;
   display: flex;
-  flex-direction: column;      /* newline effect */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
@@ -180,17 +149,11 @@ table.matrix th.slot-head{
   font-weight: 700;
 }
 
-.slot-badge .slot-label{
-  line-height: 1.1;
-}
-
 .slot-badge .slot-count{
-  line-height: 1.1;
-  font-weight: 700;
   color: var(--muted);
   font-size: 0.9rem;
+  font-weight: 700;
 }
-
 
 .slot-badge.active{
   border-color: var(--accent);
@@ -198,35 +161,337 @@ table.matrix th.slot-head{
 }
 
 /* =========================================================
-   Rechthoeken (oranje standaard) - meer “vullend”
+   Availability rectangles
    ========================================================= */
 .avail-rect{
-  width: 100%;        /* vult de hele cel (minus padding van .slot-cell) */
-  height: 26px;       /* hoger zodat het meer “vult” */
-  border-radius: 7px; /* rechthoek met afgeronde hoeken */
-  margin: 0;          /* spacing komt uit td padding */
+  width: 100%;
+  height: 26px;
+  border-radius: 7px;
+  margin: 0;
   box-sizing: border-box;
-
   background: transparent;
   border: 2px solid rgba(255,255,255,0.14);
 }
 
 .avail-rect.available{
-  background: #f59e0b;      /* oranje */
+  background: #f59e0b;
   border-color: #f59e0b;
   box-shadow: 0 0 0 4px rgba(245,158,11,0.18);
+  cursor: pointer;
 }
 
-/* Mobile: controlbar stacken */
+/* Selected (blue outline) */
+.avail-rect.is-selected{
+  box-shadow:
+    0 0 0 4px rgba(59,130,246,0.28),
+    0 0 0 2px rgba(59,130,246,0.35) inset;
+  border-color: #3b82f6 !important;
+}
+
+/* Concept */
+.avail-rect.is-concept{
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(34,197,94,0.25),
+      rgba(34,197,94,0.25) 6px,
+      rgba(34,197,94,0.45) 6px,
+      rgba(34,197,94,0.45) 12px
+    );
+  border-color: rgba(34,197,94,0.95) !important;
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+  cursor: pointer;
+}
+
+/* Accepted */
+.avail-rect.is-accepted{
+  background: rgba(34,197,94,0.90);
+  border-color: rgba(34,197,94,1) !important;
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+  cursor: pointer;
+}
+
+/* =========================================================
+   Action panel
+   ========================================================= */
+.pd-actionpanel{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pd-ap-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-ap-summary{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pd-pill{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pd-pill-label{
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pd-pill-value{
+  font-weight: 900;
+}
+
+.pd-ap-section{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pd-sec-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-sec-title{
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pd-sec-meta{
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pd-list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pd-empty{
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  background: rgba(255,255,255,0.03);
+}
+
+.pd-item{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-item--assigned{
+  background: rgba(59,130,246,0.06);
+}
+
+.pd-item--existing{
+  background: rgba(34,197,94,0.05);
+}
+
+.pd-item-main{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pd-item-title{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pd-item-sub{
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pd-item-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* jouw icon-btn styling bestaat al elders; hier alleen alignment fix */
+.pd-item-actions .icon-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.pd-mini-select{
+  min-width: 160px;
+}
+
+.pd-icon-btn{
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.pd-chip{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+}
+
+.pd-chip--status{
+  text-transform: lowercase;
+}
+
+.pd-chip--concept{
+  border-color: rgba(34,197,94,0.35);
+  background: rgba(34,197,94,0.10);
+}
+
+.pd-chip--accepted{
+  border-color: rgba(34,197,94,0.55);
+  background: rgba(34,197,94,0.18);
+}
+
+/* Tabs */
+.pd-tabs{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pd-tab{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.pd-tab.is-active{
+  border-color: var(--accent);
+  background: rgba(59,130,246,0.08);
+}
+
+.pd-tab-count{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-weight: 900;
+}
+
+.pd-panel{
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pd-task-grid{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pd-task-row{
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pd-task-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pd-task-name{
+  font-weight: 900;
+}
+
+.pd-task-count{
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-weight: 900;
+}
+
+.pd-task-items{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* staging */
+.pd-staging{
+  margin-bottom: 10px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pd-staging-title{
+  color: var(--muted);
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.pd-ap-actions{
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: 720px){
   .pd-controlbar{
     grid-template-columns: 1fr;
     justify-items: stretch;
     gap: 12px;
-  }
-
-  .pd-daypicker{
-    justify-self: start;
   }
 
   .pd-weekcenter{
@@ -239,4 +504,8 @@ table.matrix th.slot-head{
   }
 
   .pd-right-spacer{ display: none; }
+
+  .pd-mini-select{
+    min-width: 140px;
+  }
 }

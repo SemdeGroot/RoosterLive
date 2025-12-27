@@ -19,7 +19,6 @@
 
       <div class="pd-controlbar">
 
-        <!-- Links: dagpicker (met label) -->
         <div class="pd-daypicker">
           <label for="dayPicker" class="section-label">Selecteer Dag:</label>
           <select id="dayPicker" class="admin-select pd-select" aria-label="Selecteer dag">
@@ -31,7 +30,6 @@
           </select>
         </div>
 
-        <!-- Midden: weeknavigator + datum eronder (gecentreerd) -->
         <div class="pd-weekcenter">
           <div class="week-wrap">
             <div class="week-controls">
@@ -65,7 +63,6 @@
                   </span>
                 </button>
 
-                <!-- Wordt bij openen naar <body> geportaled -->
                 <div id="weekMenu" class="week-menu" role="listbox" tabindex="-1" hidden>
                   {% for opt in week_options %}
                     <div role="option"
@@ -93,14 +90,12 @@
               </button>
             </div>
 
-            <!-- Datum gecentreerd onder de week picker -->
             <div class="availability-daterange">
               {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
             </div>
           </div>
         </div>
 
-        <!-- Rechts: leeg (voor spacing zodat midden echt center blijft) -->
         <div class="pd-right-spacer" aria-hidden="true"></div>
 
       </div>
@@ -108,7 +103,8 @@
     </div>
   </div>
 
-  <!-- Main: left matrix + right panel -->
+  {{ pd_data|json_script:"pd-data" }}
+
   <div class="pd-main-grid">
 
     <!-- Links: grid -->
@@ -174,6 +170,7 @@
             <tbody id="matrixBody">
               {% for r in rows %}
                 <tr class="matrix-row"
+                    data-user-id="{{ r.user_id }}"
                     data-group="{{ r.group }}"
                     data-firstname="{{ r.firstname }}"
                     {{ r.data_attrs|safe }}>
@@ -182,13 +179,42 @@
                   <td class="cell-wrap no-vlines">{{ r.firstname }}</td>
 
                   <td class="slot-cell">
-                    <div class="avail-rect {% if r.cell.morning %}available{% endif %}" aria-label="Ochtend"></div>
+                    <div
+                      class="avail-rect {% if r.cell.morning %}available{% endif %}"
+                      aria-label="Ochtend"
+                      role="button"
+                      tabindex="{% if r.cell.morning %}0{% else %}-1{% endif %}"
+                      data-user-id="{{ r.user_id }}"
+                      data-group="{{ r.group }}"
+                      data-firstname="{{ r.firstname }}"
+                      data-date="{{ selected_day_ctx.iso }}"
+                      data-period="morning"></div>
                   </td>
+
                   <td class="slot-cell">
-                    <div class="avail-rect {% if r.cell.afternoon %}available{% endif %}" aria-label="Middag"></div>
+                    <div
+                      class="avail-rect {% if r.cell.afternoon %}available{% endif %}"
+                      aria-label="Middag"
+                      role="button"
+                      tabindex="{% if r.cell.afternoon %}0{% else %}-1{% endif %}"
+                      data-user-id="{{ r.user_id }}"
+                      data-group="{{ r.group }}"
+                      data-firstname="{{ r.firstname }}"
+                      data-date="{{ selected_day_ctx.iso }}"
+                      data-period="afternoon"></div>
                   </td>
+
                   <td class="slot-cell">
-                    <div class="avail-rect {% if r.cell.evening %}available{% endif %}" aria-label="Avond"></div>
+                    <div
+                      class="avail-rect {% if r.cell.evening %}available{% endif %}"
+                      aria-label="Avond"
+                      role="button"
+                      tabindex="{% if r.cell.evening %}0{% else %}-1{% endif %}"
+                      data-user-id="{{ r.user_id }}"
+                      data-group="{{ r.group }}"
+                      data-firstname="{{ r.firstname }}"
+                      data-date="{{ selected_day_ctx.iso }}"
+                      data-period="evening"></div>
                   </td>
                 </tr>
               {% endfor %}
@@ -201,11 +227,58 @@
 
     <!-- Rechts: actiepaneel -->
     <div class="card">
-      <div class="card-inner">
-        <h3 style="margin-top:0;">Actiepaneel</h3>
-        <p class="pd-subtitle" style="margin:0;">
-          Hier kun je straks taken toewijzen en beschikbaarheden accepteren (rechthoeken → groen).
-        </p>
+      <div class="card-inner pd-actionpanel">
+        <div class="pd-ap-head">
+          <div>
+            <h3 style="margin:0;">Actiepaneel</h3>
+            <p class="pd-subtitle" style="margin:4px 0 0 0;">
+              Selecteer links beschikbaarheden of bestaande diensten en beheer taken.
+            </p>
+          </div>
+
+          <div class="pd-ap-summary">
+            <div class="pd-pill">
+              <span class="pd-pill-label">Geselecteerd</span>
+              <span class="pd-pill-value" id="pdSelectedCount">0</span>
+            </div>
+            <div class="pd-pill">
+              <span class="pd-pill-label">Klaar om op te slaan</span>
+              <span class="pd-pill-value" id="pdReadyCount">0</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="crud-divider">
+
+        <section class="pd-ap-section">
+          <div class="pd-sec-head">
+            <h4 class="pd-sec-title">Toe te wijzen diensten</h4>
+            <span class="pd-sec-meta" id="pdSelectionMeta">0</span>
+          </div>
+
+          <div class="pd-list" id="pdSelectionList">
+            <div class="pd-empty" id="pdSelectionEmpty">
+              Selecteer links één of meerdere diensten (oranje of groen).
+            </div>
+          </div>
+        </section>
+
+        <section class="pd-ap-section">
+          <div class="pd-sec-head">
+            <h4 class="pd-sec-title">Locaties</h4>
+            <span class="pd-sec-meta">concepten + previews</span>
+          </div>
+
+          <div class="pd-tabs" id="pdLocationTabs" role="tablist"></div>
+          <div class="pd-tabpanels" id="pdLocationPanels"></div>
+        </section>
+
+        <div class="pd-ap-actions">
+          <button class="btn" id="pdSaveConceptBtn" disabled>
+            Concept opslaan
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -217,4 +290,5 @@
 
 {% block extra_js %}
   <script src="{% static 'js/personeelsdashboard/personeelsdashboard.js' %}" defer></script>
+  <script src="{% static 'js/personeelsdashboard/actiepaneel.js' %}" defer></script>
 {% endblock %}

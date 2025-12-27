@@ -1,14 +1,17 @@
+import json
 from datetime import date, timedelta
 from collections import defaultdict
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone, translation
 from django.utils.formats import date_format
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 from ._helpers import can
-from core.models import Availability
+from core.models import Availability, Location, Task, Shift
 from core.views.mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
 
 
@@ -92,7 +95,7 @@ def personeelsdashboard_view(request):
         key=lambda u: (_user_group(u).lower(), _user_firstname_cap(u).lower())
     )
 
-    # Matrix: morning/afternoon/evening (evening veilig via getattr)
+    # Matrix: morning/afternoon/evening
     matrix = defaultdict(lambda: {d: {"morning": False, "afternoon": False, "evening": False} for d in days})
     for av in av_qs:
         matrix[av.user][av.date]["morning"] = bool(getattr(av, "morning", False))
@@ -133,12 +136,10 @@ def personeelsdashboard_view(request):
     selected_iso = selected_day.strftime("%Y-%m-%d")
 
     for u in users:
-        # Haal de status voor de specifieke geselecteerde dag op
         is_morning = matrix[u][selected_day]["morning"]
         is_afternoon = matrix[u][selected_day]["afternoon"]
         is_evening = matrix[u][selected_day]["evening"]
 
-        # Alleen toevoegen als de gebruiker op DEZE dag beschikbaar is
         if not (is_morning or is_afternoon or is_evening):
             continue
 
@@ -156,6 +157,7 @@ def personeelsdashboard_view(request):
         ]
 
         rows.append({
+            "user_id": u.id,
             "group": _user_group(u),
             "firstname": _user_firstname_cap(u),
             "cell": cell,
@@ -177,8 +179,55 @@ def personeelsdashboard_view(request):
 
     iso_year, iso_week, _ = monday.isocalendar()
     header_title = f"Week {iso_week} – {iso_year}"
-
     default_sort_slot = f"{selected_day.isoformat()}|morning"
+
+    # ✅ Locations + Tasks voor actiepaneel
+    locations = (
+        Location.objects
+        .all()
+        .order_by("name")
+        .prefetch_related("tasks")
+    )
+    locations_payload = []
+    for loc in locations:
+        locations_payload.append({
+            "id": loc.id,
+            "name": loc.name,
+            "tasks": [{"id": t.id, "name": t.name} for t in loc.tasks.all().order_by("name")]
+        })
+
+    # ✅ Bestaande shifts (concept + accepted) voor geselecteerde dag
+    shifts_qs = (
+        Shift.objects
+        .filter(date=selected_day)
+        .select_related("user", "task", "task__location")
+        .prefetch_related("user__groups")
+        .order_by("period", "user__first_name", "user__username")
+    )
+
+    existing_shifts_payload = []
+    for s in shifts_qs:
+        existing_shifts_payload.append({
+            "id": s.id,
+            "user_id": s.user_id,
+            "group": _user_group(s.user),
+            "firstname": _user_firstname_cap(s.user),
+            "date": s.date.isoformat(),
+            "period": s.period,
+            "status": getattr(s, "status", "concept"),
+            "task_id": s.task_id,
+            "task_name": s.task.name,
+            "location_id": s.task.location_id,
+            "location_name": s.task.location.name,
+        })
+
+    pd_data = {
+        "selectedDate": selected_day.isoformat(),
+        "locations": locations_payload,
+        "existingShifts": existing_shifts_payload,
+        "saveConceptUrl": reverse("pd_save_concept"),
+        "deleteShiftUrl": reverse("pd_delete_shift"),
+    }
 
     return render(request, "personeelsdashboard/index.html", {
         "monday": monday,
@@ -198,4 +247,105 @@ def personeelsdashboard_view(request):
 
         "header_title": header_title,
         "default_sort_slot": default_sort_slot,
+
+        "pd_data": pd_data,
     })
+
+
+@login_required
+@require_POST
+def save_concept_shifts_api(request):
+    """
+    Body:
+      { "items": [ { "user_id": 1, "date": "2025-12-27", "period": "morning", "task_id": 5 }, ... ] }
+
+    Behaviour:
+      - Upsert op (user, date, period)
+      - Zet status altijd op 'concept'
+      - Als shift eerst 'accepted' was en je wijzigt taak -> wordt concept na save
+    """
+    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+        return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige JSON."}, status=400)
+
+    items = payload.get("items") or []
+    if not isinstance(items, list):
+        return JsonResponse({"ok": False, "error": "items moet een lijst zijn."}, status=400)
+
+    saved = []
+    for it in items:
+        try:
+            user_id = int(it["user_id"])
+            dt = date.fromisoformat(it["date"])
+            period = it["period"]
+            task_id = int(it["task_id"])
+        except Exception:
+            continue
+
+        if period not in ("morning", "afternoon", "evening"):
+            continue
+
+        obj, _created = Shift.objects.update_or_create(
+            user_id=user_id,
+            date=dt,
+            period=period,
+            defaults={
+                "task_id": task_id,
+                "status": "concept",
+            }
+        )
+
+        # voor de UI meteen volledige info teruggeven
+        obj = (
+            Shift.objects
+            .select_related("task", "task__location")
+            .get(id=obj.id)
+        )
+
+        saved.append({
+            "shift_id": obj.id,
+            "user_id": obj.user_id,
+            "date": obj.date.isoformat(),
+            "period": obj.period,
+            "status": getattr(obj, "status", "concept"),
+            "task_id": obj.task_id,
+            "task_name": obj.task.name,
+            "location_id": obj.task.location_id,
+            "location_name": obj.task.location.name,
+        })
+
+    return JsonResponse({"ok": True, "saved": saved})
+
+
+@login_required
+@require_POST
+def delete_shift_api(request):
+    """
+    Body:
+      { "shift_id": 123 }
+
+    Delete concept/accepted shift.
+    """
+    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+        return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige JSON."}, status=400)
+
+    shift_id = payload.get("shift_id")
+    if not shift_id:
+        return JsonResponse({"ok": False, "error": "shift_id ontbreekt."}, status=400)
+
+    try:
+        s = Shift.objects.get(id=int(shift_id))
+    except Shift.DoesNotExist:
+        return JsonResponse({"ok": True, "deleted": True})  # idempotent
+
+    s.delete()
+    return JsonResponse({"ok": True, "deleted": True, "shift_id": int(shift_id)})

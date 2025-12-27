@@ -658,7 +658,7 @@ class LocationForm(forms.ModelForm):
             }),
             "address": forms.TextInput(attrs={
                 "class": "admin-input",
-                "placeholder": "Adres - bijv. Liendertseweg 32",
+                "placeholder": "bijv. Liendertseweg 32, Amersfoort",
             }),
         }
 

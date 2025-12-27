@@ -165,37 +165,51 @@ class Shift(models.Model):
     """
     Links a user to a specific task at a specific time (date + period).
     """
+
     PERIOD_CHOICES = [
-        ('morning', 'Morning'),
-        ('afternoon', 'Afternoon'),
-        ('evening', 'Evening'),
+        ('morning', 'Ochtend'),
+        ('afternoon', 'Middag'),
+        ('evening', 'Avond'),
+    ]
+
+    STATUS_CHOICES = [
+        ("concept", "Concept"),
+        ("accepted", "Accepted"),
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name="shifts"
     )
     task = models.ForeignKey(
-        Task, 
-        on_delete=models.PROTECT, 
+        Task,
+        on_delete=models.PROTECT,
         related_name="shifts"
     )
     date = models.DateField(db_index=True)
     period = models.CharField(
-        max_length=10, 
+        max_length=10,
         choices=PERIOD_CHOICES,
         db_index=True
     )
-    
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="concept",
+        db_index=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("user", "date", "period")
         ordering = ["date", "period"]
 
     def __str__(self):
-        return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task})"
+        return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task}) [{self.status}]"
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")

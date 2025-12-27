@@ -179,7 +179,13 @@
   }
 
   badges.forEach(b => b.addEventListener('click', () => sortBySlot(b.dataset.slot)));
-  sortBySlot("{{ default_sort_slot }}");
+
+  // default sort
+  try {
+    sortBySlot("{{ default_sort_slot }}");
+  } catch(e) {
+    // ignore if template var not rendered in some context
+  }
 
   /* ---------- Search filter ---------- */
   const searchInput = document.getElementById('userSearch');
