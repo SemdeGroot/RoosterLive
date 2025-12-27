@@ -32,19 +32,16 @@
   justify-self: start;
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start; 
+  gap: 4px;
 }
 
 /* Label styling komt uit jouw bestaande .section-label (niet hier overschrijven) */
 
 .pd-select{
-  width: 260px;
-  max-width: 100%;
-
-  /* gevraagde background */
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
+  width: 100%;
+  background: var(--button-color) !important;
 }
 
 .pd-weekcenter{
@@ -93,8 +90,6 @@ table.matrix{
   /* overal dezelfde achtergrond als panel */
   background: var(--panel, var(--bg));
   border: 1px solid var(--border);
-
-  min-width: 620px;
 }
 
 /* Overal dezelfde achtergrond (ook head) */
@@ -119,9 +114,9 @@ table.matrix thead th{
 }
 
 /* kolombreedtes */
-.col-group { width: 32%; }
-.col-name  { width: 22%; }
-.col-slot  { width: 15.33%; }
+.col-group { width: 46%; }
+.col-name  { width: 30%; }
+.col-slot  { width: 8%; }
 
 /* Tekstcellen: wrap aan */
 .cell-wrap{
@@ -179,10 +174,6 @@ table.matrix th.slot-head{
   padding: 8px 10px;
   border-radius: 12px;
 
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-
   transition: background .2s ease, border-color .2s ease;
   user-select: none;
   white-space: nowrap;
@@ -200,13 +191,10 @@ table.matrix th.slot-head{
   font-size: 0.9rem;
 }
 
-/* hover/active */
-.slot-badge:hover{
-  background: #1f2d3d;
-  border-color: var(--accent);
-}
+
 .slot-badge.active{
   border-color: var(--accent);
+  background: var(--button-hover);
 }
 
 /* =========================================================

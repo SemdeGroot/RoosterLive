@@ -133,17 +133,26 @@ def personeelsdashboard_view(request):
     selected_iso = selected_day.strftime("%Y-%m-%d")
 
     for u in users:
+        # Haal de status voor de specifieke geselecteerde dag op
+        is_morning = matrix[u][selected_day]["morning"]
+        is_afternoon = matrix[u][selected_day]["afternoon"]
+        is_evening = matrix[u][selected_day]["evening"]
+
+        # Alleen toevoegen als de gebruiker op DEZE dag beschikbaar is
+        if not (is_morning or is_afternoon or is_evening):
+            continue
+
         cell = {
             "date": selected_day,
-            "morning": matrix[u][selected_day]["morning"],
-            "afternoon": matrix[u][selected_day]["afternoon"],
-            "evening": matrix[u][selected_day]["evening"],
+            "morning": is_morning,
+            "afternoon": is_afternoon,
+            "evening": is_evening,
         }
 
         data_attrs_parts = [
-            f'data-{selected_iso}-morning="{"1" if matrix[u][selected_day]["morning"] else "0"}"',
-            f'data-{selected_iso}-afternoon="{"1" if matrix[u][selected_day]["afternoon"] else "0"}"',
-            f'data-{selected_iso}-evening="{"1" if matrix[u][selected_day]["evening"] else "0"}"',
+            f'data-{selected_iso}-morning="{"1" if is_morning else "0"}"',
+            f'data-{selected_iso}-afternoon="{"1" if is_afternoon else "0"}"',
+            f'data-{selected_iso}-evening="{"1" if is_evening else "0"}"',
         ]
 
         rows.append({
