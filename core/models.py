@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 import json
+from django.core.validators import MinValueValidator
 
 class Roster(models.Model):
     file = models.FileField(upload_to="rooster/current.pdf", null=True)
@@ -143,16 +144,38 @@ class Location(models.Model):
 
 
 class Task(models.Model):
-    """
-    Defines what needs to be done, linked to a Location model.
-    """
     name = models.CharField(max_length=100)
     location = models.ForeignKey(
-        Location, 
-        on_delete=models.PROTECT, 
+        Location,
+        on_delete=models.PROTECT,
         related_name="tasks"
     )
     description = models.TextField(blank=True, null=True)
+
+    # ===== Minimale bezetting (ma t/m za) =====
+    min_mon_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_mon_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_mon_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_tue_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_tue_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_tue_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_wed_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_wed_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_wed_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_thu_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_thu_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_thu_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_fri_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_fri_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_fri_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_sat_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_sat_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_sat_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name_plural = "Tasks"

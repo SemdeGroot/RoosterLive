@@ -662,10 +662,19 @@ class LocationForm(forms.ModelForm):
             }),
         }
 
+STAFFING_FIELDS = [
+    "min_mon_morning","min_mon_afternoon","min_mon_evening",
+    "min_tue_morning","min_tue_afternoon","min_tue_evening",
+    "min_wed_morning","min_wed_afternoon","min_wed_evening",
+    "min_thu_morning","min_thu_afternoon","min_thu_evening",
+    "min_fri_morning","min_fri_afternoon","min_fri_evening",
+    "min_sat_morning","min_sat_afternoon","min_sat_evening",
+]
+
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["name", "location", "description"]
+        fields = ["name", "location", "description", *STAFFING_FIELDS]
         widgets = {
             "name": forms.TextInput(attrs={
                 "class": "admin-input",
@@ -680,6 +689,17 @@ class TaskForm(forms.ModelForm):
                 "placeholder": "Beschrijf hier kort wat de taak inhoudt...",
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # alle bezettingsvelden als integer inputs met jouw styling
+        for f in STAFFING_FIELDS:
+            self.fields[f].widget = forms.NumberInput(attrs={
+                "class": "admin-input",
+                "min": "0",
+                "step": "1",
+            })
 
 class NazendingForm(forms.ModelForm):
     class Meta:

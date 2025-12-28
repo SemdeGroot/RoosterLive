@@ -39,16 +39,16 @@
         <input type="hidden" name="form_kind" value="location">
 
         <div class="form form-sticky-actions" style="padding:0;">
-        <div class="admin-grid" style="margin-bottom: 12px;">
-        <div>
-            <label for="{{ location_form.name.id_for_label }}">Locatienaam:</label>
-            {{ location_form.name }}
-        </div>
-        <div>
-            <label for="{{ location_form.address.id_for_label }}">Adres (optioneel):</label>
-            {{ location_form.address }}
-        </div>
-        </div>
+          <div class="admin-grid" style="margin-bottom: 12px;">
+            <div>
+              <label for="{{ location_form.name.id_for_label }}">Locatienaam:</label>
+              {{ location_form.name }}
+            </div>
+            <div>
+              <label for="{{ location_form.address.id_for_label }}">Adres (optioneel):</label>
+              {{ location_form.address }}
+            </div>
+          </div>
 
           <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
             Toevoegen
@@ -126,20 +126,19 @@
                     <form method="post" action="{% url 'location_update' loc.id %}">
                       {% csrf_token %}
 
-                <div class="edit-grid">
-                <div>
-                    <label>Locatienaam:</label>
-                    <input class="admin-input" type="text" name="name"
-                        value="{{ loc.name }}" required style="margin-top:6px;">
-                </div>
+                      <div class="edit-grid">
+                        <div>
+                          <label>Locatienaam:</label>
+                          <input class="admin-input" type="text" name="name"
+                                 value="{{ loc.name }}" required style="margin-top:6px;">
+                        </div>
 
-                <div>
-                    <label>Adres (optioneel):</label>
-                    <input class="admin-input" type="text" name="address"
-                        value="{{ loc.address|default:'' }}" style="margin-top:6px;">
-                </div>
-                </div>
-
+                        <div>
+                          <label>Adres (optioneel):</label>
+                          <input class="admin-input" type="text" name="address"
+                                 value="{{ loc.address|default:'' }}" style="margin-top:6px;">
+                        </div>
+                      </div>
 
                       <div class="actions-wrap horizontal" style="margin-top:12px;">
                         <button class="btn btn-save" type="submit">Opslaan</button>
@@ -174,6 +173,7 @@
 
         <div class="form form-sticky-actions" style="padding:0;">
 
+          <!-- Taaknaam + Locatie -->
           <div class="admin-grid" style="margin-bottom: 12px;">
             <div>
               <label for="{{ task_form.name.id_for_label }}">Taaknaam:</label>
@@ -185,10 +185,53 @@
             </div>
           </div>
 
+          <!-- Omschrijving -->
           <div class="admin-grid" style="margin-bottom: 12px;">
             <div style="grid-column: 1 / -1;">
               <label for="{{ task_form.description.id_for_label }}">Omschrijving (optioneel):</label>
               {{ task_form.description }}
+            </div>
+          </div>
+
+          <!-- Minimale bezetting (grid van 3) -->
+          <div class="staffing-block">
+            <div class="staffing-title">Minimale bezetting</div>
+
+            <div class="staffing-grid">
+              <div class="staffing-head"></div>
+              <div class="staffing-head">Ochtend</div>
+              <div class="staffing-head">Middag</div>
+              <div class="staffing-head">Avond</div>
+
+              <div class="staffing-day">Maandag</div>
+              {{ task_form.min_mon_morning }}
+              {{ task_form.min_mon_afternoon }}
+              {{ task_form.min_mon_evening }}
+
+              <div class="staffing-day">Dinsdag</div>
+              {{ task_form.min_tue_morning }}
+              {{ task_form.min_tue_afternoon }}
+              {{ task_form.min_tue_evening }}
+
+              <div class="staffing-day">Woensdag</div>
+              {{ task_form.min_wed_morning }}
+              {{ task_form.min_wed_afternoon }}
+              {{ task_form.min_wed_evening }}
+
+              <div class="staffing-day">Donderdag</div>
+              {{ task_form.min_thu_morning }}
+              {{ task_form.min_thu_afternoon }}
+              {{ task_form.min_thu_evening }}
+
+              <div class="staffing-day">Vrijdag</div>
+              {{ task_form.min_fri_morning }}
+              {{ task_form.min_fri_afternoon }}
+              {{ task_form.min_fri_evening }}
+
+              <div class="staffing-day">Zaterdag</div>
+              {{ task_form.min_sat_morning }}
+              {{ task_form.min_sat_afternoon }}
+              {{ task_form.min_sat_evening }}
             </div>
           </div>
 
@@ -239,7 +282,7 @@
                            stroke="currentColor" stroke-width="2"
                            stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 20h9"/>
-                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                        <path d="M16.5 3.5a2.1 2 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                       </svg>
                     </button>
 
@@ -292,6 +335,48 @@
                         <div style="grid-column: 1 / -1;">
                           <label>Omschrijving (optioneel):</label>
                           <textarea name="description" class="admin-input" rows="3" style="margin-top:6px;">{{ t.description|default:'' }}</textarea>
+                        </div>
+                      </div>
+
+                      <!-- Minimale bezetting (grid van 3) - alleen zichtbaar in edit -->
+                      <div class="staffing-block">
+                        <div class="staffing-title">Minimale bezetting</div>
+
+                        <div class="staffing-grid">
+                          <div class="staffing-head"></div>
+                          <div class="staffing-head">Ochtend</div>
+                          <div class="staffing-head">Middag</div>
+                          <div class="staffing-head">Avond</div>
+
+                          <div class="staffing-day">Maandag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_mon_morning" value="{{ t.min_mon_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_mon_afternoon" value="{{ t.min_mon_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_mon_evening" value="{{ t.min_mon_evening }}">
+
+                          <div class="staffing-day">Dinsdag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_tue_morning" value="{{ t.min_tue_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_tue_afternoon" value="{{ t.min_tue_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_tue_evening" value="{{ t.min_tue_evening }}">
+
+                          <div class="staffing-day">Woensdag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_wed_morning" value="{{ t.min_wed_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_wed_afternoon" value="{{ t.min_wed_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_wed_evening" value="{{ t.min_wed_evening }}">
+
+                          <div class="staffing-day">Donderdag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_thu_morning" value="{{ t.min_thu_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_thu_afternoon" value="{{ t.min_thu_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_thu_evening" value="{{ t.min_thu_evening }}">
+
+                          <div class="staffing-day">Vrijdag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_fri_morning" value="{{ t.min_fri_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_fri_afternoon" value="{{ t.min_fri_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_fri_evening" value="{{ t.min_fri_evening }}">
+
+                          <div class="staffing-day">Zaterdag</div>
+                          <input class="admin-input" type="number" min="0" step="1" name="min_sat_morning" value="{{ t.min_sat_morning }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_sat_afternoon" value="{{ t.min_sat_afternoon }}">
+                          <input class="admin-input" type="number" min="0" step="1" name="min_sat_evening" value="{{ t.min_sat_evening }}">
                         </div>
                       </div>
 

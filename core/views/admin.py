@@ -509,6 +509,16 @@ def location_update(request, pk):
 
 
 
+# views.py
+STAFFING_FIELDS = [
+    "min_mon_morning","min_mon_afternoon","min_mon_evening",
+    "min_tue_morning","min_tue_afternoon","min_tue_evening",
+    "min_wed_morning","min_wed_afternoon","min_wed_evening",
+    "min_thu_morning","min_thu_afternoon","min_thu_evening",
+    "min_fri_morning","min_fri_afternoon","min_fri_evening",
+    "min_sat_morning","min_sat_afternoon","min_sat_evening",
+]
+
 @login_required
 @require_POST
 def task_update(request, pk):
@@ -532,14 +542,41 @@ def task_update(request, pk):
 
     loc = get_object_or_404(Location, pk=location_id)
 
+    # --- parse staffing ints ---
+    errors = []
+    staffing_values = {}
+    for f in STAFFING_FIELDS:
+        raw = (request.POST.get(f) or "").strip()
+        if raw == "":
+            val = 0
+        else:
+            try:
+                val = int(raw)
+            except ValueError:
+                errors.append(f"Veld '{f}' moet een geheel getal zijn.")
+                continue
+        if val < 0:
+            errors.append(f"Veld '{f}' mag niet negatief zijn.")
+            continue
+        staffing_values[f] = val
+
+    if errors:
+        for e in errors[:3]:
+            messages.error(request, e)
+        if len(errors) > 3:
+            messages.error(request, f"Nog {len(errors)-3} fout(en).")
+        return redirect("admin_taken")
+
     t.name = name
     t.location = loc
     t.description = description or None
-    t.save()
 
+    for f, v in staffing_values.items():
+        setattr(t, f, v)
+
+    t.save()
     messages.success(request, f"Taak '{t.name}' is bijgewerkt.")
     return redirect("admin_taken")
-
 
 @login_required
 @require_POST
