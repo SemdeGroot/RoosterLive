@@ -125,11 +125,16 @@ class SimpleUserCreateForm(forms.Form):
             raise forms.ValidationError("Er bestaat al een gebruiker met dit e-mailadres.")
         return email
 
+WORK_FIELDS = (
+    "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
+    "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm",
+)
 
 class SimpleUserEditForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150, required=True)
     last_name = forms.CharField(label="Achternaam", max_length=150, required=True)
     email = forms.EmailField(label="E-mail", required=True)
+
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
@@ -142,12 +147,14 @@ class SimpleUserEditForm(forms.Form):
             }
         ),
     )
+
     group = forms.ModelChoiceField(
         label="Groep",
         queryset=Group.objects.all(),
         required=True,
         empty_label="----------",
     )
+
     organization = forms.ModelChoiceField(
         label="Organisatie",
         queryset=Organization.objects.all(),
@@ -155,10 +162,37 @@ class SimpleUserEditForm(forms.Form):
         empty_label="----------",
     )
 
+    dienstverband = forms.ChoiceField(
+        label="Dienstverband",
+        choices=UserProfile.Dienstverband.choices,
+        required=True,
+        widget=forms.Select(attrs={"class": "admin-select js-dienstverband"}),
+    )
+
+    # werkblokken (ma-vr, ochtend/middag)
+    work_mon_am = forms.BooleanField(required=False)
+    work_mon_pm = forms.BooleanField(required=False)
+    work_tue_am = forms.BooleanField(required=False)
+    work_tue_pm = forms.BooleanField(required=False)
+    work_wed_am = forms.BooleanField(required=False)
+    work_wed_pm = forms.BooleanField(required=False)
+    work_thu_am = forms.BooleanField(required=False)
+    work_thu_pm = forms.BooleanField(required=False)
+    work_fri_am = forms.BooleanField(required=False)
+    work_fri_pm = forms.BooleanField(required=False)
+
     def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop("instance")
+        # instance is optioneel: bij create = None, bij edit = User instance
+        self.instance = kwargs.pop("instance", None)
         super().__init__(*args, **kwargs)
 
+        # defaults bij create
+        self.fields["dienstverband"].initial = UserProfile.Dienstverband.OPROEP
+
+        if not self.instance:
+            return
+
+        # initials bij edit (als je later ooit het form zou renderen)
         self.fields["first_name"].initial = self.instance.first_name or self.instance.username
         self.fields["last_name"].initial = self.instance.last_name
         self.fields["email"].initial = self.instance.email
@@ -168,17 +202,23 @@ class SimpleUserEditForm(forms.Form):
             self.fields["group"].initial = g.id
 
         profile = getattr(self.instance, "profile", None)
-        if profile and profile.birth_date:
-            self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
-        if profile and profile.organization:
-            self.fields["organization"].initial = profile.organization.id
+        if profile:
+            self.fields["dienstverband"].initial = profile.dienstverband
+
+            if profile.birth_date:
+                self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
+            if profile.organization:
+                self.fields["organization"].initial = profile.organization.id
+
+            for f in WORK_FIELDS:
+                self.fields[f].initial = getattr(profile, f, False)
 
     def clean_first_name(self):
         first = (self.cleaned_data.get("first_name") or "").strip().lower()
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
         return first
-    
+
     def clean_last_name(self):
         last = (self.cleaned_data.get("last_name") or "").strip().lower()
         if not last:
@@ -187,33 +227,70 @@ class SimpleUserEditForm(forms.Form):
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
-        if UserModel.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+        if not email:
+            raise forms.ValidationError("E-mail is verplicht.")
+
+        qs = UserModel.objects.filter(email__iexact=email)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
             raise forms.ValidationError("Er bestaat al een gebruiker met dit e-mailadres.")
+
         return email
 
     def save(self):
-        u = self.instance
+        """
+        Werkt voor BOTH:
+        - create: self.instance is None → maakt User + Profile
+        - edit: self.instance is User → update User + Profile
+        """
         first = self.cleaned_data["first_name"]
         last = self.cleaned_data["last_name"]
         email = self.cleaned_data["email"]
+
         group = self.cleaned_data.get("group")
         birth_date = self.cleaned_data.get("birth_date")
         organization = self.cleaned_data.get("organization")
 
-        u.username = email
-        u.first_name = first
-        u.last_name = last
-        u.email = email
-        u.save(update_fields=["username", "first_name", "last_name", "email"])
+        dienstverband = self.cleaned_data.get("dienstverband")
+
+        if self.instance:
+            u = self.instance
+            u.username = email
+            u.first_name = first
+            u.last_name = last
+            u.email = email
+            u.save(update_fields=["username", "first_name", "last_name", "email"])
+        else:
+            u = UserModel.objects.create(
+                username=email,
+                first_name=first,
+                last_name=last,
+                email=email,
+                is_active=True,
+            )
+            u.set_unusable_password()
+            u.save(update_fields=["password"])
 
         profile, _ = UserProfile.objects.get_or_create(user=u)
         profile.birth_date = birth_date
         profile.organization = organization
-        profile.save(update_fields=["birth_date", "organization"])
+        profile.dienstverband = dienstverband
 
+        if dienstverband == UserProfile.Dienstverband.OPROEP:
+            profile.clear_workdays()
+        else:
+            for f in WORK_FIELDS:
+                setattr(profile, f, bool(self.cleaned_data.get(f)))
+
+        profile.save()
+
+        # group opslaan
         u.groups.clear()
         if group:
             u.groups.add(group)
+
         return u
     
 class OrganizationEditForm(forms.Form):

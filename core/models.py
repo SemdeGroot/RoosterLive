@@ -336,18 +336,19 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+
 class UserProfile(models.Model):
+    class Dienstverband(models.TextChoices):
+        VAST = "vast", "Vast contract"
+        OPROEP = "oproep", "Oproeper"
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
     )
-    birth_date = models.DateField(
-        "Geboortedatum",
-        null=True,
-        blank=True,
-        db_index=True,
-    )
+    birth_date = models.DateField("Geboortedatum", null=True, blank=True, db_index=True)
+
     organization = models.ForeignKey(
         Organization,
         null=True,
@@ -356,6 +357,33 @@ class UserProfile(models.Model):
         related_name="users",
         verbose_name="Organisatie",
     )
+
+    dienstverband = models.CharField(
+        "Dienstverband",
+        max_length=10,
+        choices=Dienstverband.choices,
+        default=Dienstverband.OPROEP,
+        db_index=True,
+    )
+
+    # vaste werkdagen (ma-vr, ochtend/middag)
+    work_mon_am = models.BooleanField("Ma ochtend", default=False)
+    work_mon_pm = models.BooleanField("Ma middag", default=False)
+    work_tue_am = models.BooleanField("Di ochtend", default=False)
+    work_tue_pm = models.BooleanField("Di middag", default=False)
+    work_wed_am = models.BooleanField("Wo ochtend", default=False)
+    work_wed_pm = models.BooleanField("Wo middag", default=False)
+    work_thu_am = models.BooleanField("Do ochtend", default=False)
+    work_thu_pm = models.BooleanField("Do middag", default=False)
+    work_fri_am = models.BooleanField("Vr ochtend", default=False)
+    work_fri_pm = models.BooleanField("Vr middag", default=False)
+
+    def clear_workdays(self):
+        for f in (
+            "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
+            "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm",
+        ):
+            setattr(self, f, False)
 
     def __str__(self):
         return f"Profiel van {self.user}"

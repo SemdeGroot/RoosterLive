@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
-from ..forms import GroupWithPermsForm, SimpleUserCreateForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm
+from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
 from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task
@@ -47,68 +47,28 @@ def admin_users(request):
     if not can(request.user, "can_access_admin"):
         return HttpResponseForbidden("Geen toegang.")
 
-    # 2. Manage Check
-    can_manage = can(request.user, "can_manage_groups")
+    # 2. Manage Check (align met update/delete)
+    can_manage = can(request.user, "can_manage_users")
 
-    user_form = SimpleUserCreateForm(prefix="user")
+    # GET: leeg create-form
+    user_form = SimpleUserEditForm(prefix="user")
 
     # ---- Gebruiker aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "user_create":
-        # 3. POST Guard
         if not can_manage:
             messages.error(request, "Je hebt geen rechten om gebruikers toe te voegen.")
             return redirect("admin_users")
 
-        user_form = SimpleUserCreateForm(request.POST, prefix="user")
+        user_form = SimpleUserEditForm(request.POST, prefix="user", instance=None)
         if user_form.is_valid():
-            first_name = (user_form.cleaned_data.get("first_name") or "").strip().lower()
-            last_name = (user_form.cleaned_data.get("last_name") or "").strip().lower()
-            email = (user_form.cleaned_data.get("email") or "").strip().lower()
-            birth_date = user_form.cleaned_data.get("birth_date")
-            group = user_form.cleaned_data.get("group")
-            organization = user_form.cleaned_data.get("organization")
-
-            if not email:
-                messages.error(request, "E-mail is verplicht.")
-                return redirect("admin_users")
-
-            if User.objects.filter(email__iexact=email).exists():
-                messages.error(request, "Er bestaat al een gebruiker met dit e-mailadres.")
-                return redirect("admin_users")
-
-            user = User.objects.create(
-                username=email,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                is_active=True,
-            )
-            user.set_unusable_password()
-            user.save(update_fields=["password"])
-
-            if birth_date or organization:
-                UserProfile.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        "birth_date": birth_date,
-                        "organization": organization,
-                    },
-                )
-            if group:
-                if isinstance(group, Group):
-                    user.groups.add(group)
-                else:
-                    try:
-                        grp = Group.objects.get(pk=group)
-                        user.groups.add(grp)
-                    except Group.DoesNotExist:
-                        pass
-
             try:
+                user = user_form.save()
+
+                # invite mail
                 transaction.on_commit(lambda: send_invite_email_task.delay(user.id))
-                messages.success(request, f"Gebruiker {first_name} aangemaakt. Uitnodiging verzonden.")
+                messages.success(request, f"Gebruiker {user.first_name} aangemaakt. Uitnodiging verzonden.")
             except Exception as e:
-                messages.warning(request, f"Gebruiker aangemaakt, email mislukt: {e}")
+                messages.error(request, f"Gebruiker aanmaken mislukt: {e}")
             return redirect("admin_users")
         else:
             messages.error(request, "Gebruiker aanmaken mislukt.")
@@ -119,12 +79,11 @@ def admin_users(request):
 
     return render(request, "admin/users.html", {
         "users": users,
-        "user_form": user_form,
-        "groups": groups,
-        "organizations": organizations,
-        "can_manage": can_manage, # Doorgeven aan template
+        "user_form": user_form,          # create-form in template
+        "groups": groups,                # voor edit-row select
+        "organizations": organizations,  # voor edit-row select
+        "can_manage": can_manage,
     })
-
 
 # ==========================================
 # 3. GROUPS VIEW
@@ -357,15 +316,23 @@ def user_update(request, user_id: int):
     if not can(request.user, "can_manage_users"):
         messages.error(request, "Geen rechten om gebruikers te wijzigen.")
         return redirect("admin_users")
-        
+
     u = get_object_or_404(User, pk=user_id)
+
+    # LET OP: edit-row inputs in je HTML hebben GEEN prefix → dus hier geen prefix gebruiken
     form = SimpleUserEditForm(request.POST, instance=u)
+
     if form.is_valid():
-        form.save()
-        messages.success(request, "Gebruiker opgeslagen.")
+        try:
+            form.save()
+            messages.success(request, "Gebruiker opgeslagen.")
+        except Exception as e:
+            messages.error(request, f"Opslaan mislukt: {e}")
     else:
         messages.error(request, "Opslaan mislukt.")
+
     return redirect("admin_users")
+
 
 @login_required
 @require_POST
@@ -373,9 +340,9 @@ def user_delete(request, user_id: int):
     if not can(request.user, "can_manage_users"):
         messages.error(request, "Geen rechten om gebruikers te verwijderen.")
         return redirect("admin_users")
-        
+
     u = get_object_or_404(User, pk=user_id)
-    username = u.first_name
+    username = u.first_name or u.username
     u.delete()
     messages.success(request, f"Gebruiker {username} verwijderd.")
     return redirect("admin_users")

@@ -11,8 +11,10 @@
   <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
 
   <script src="https://unpkg.com/imask"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      // date mask
       document.querySelectorAll(".js-date").forEach(function (input) {
         IMask(input, {
           mask: 'd-m-Y',
@@ -26,6 +28,31 @@
           }
         });
       });
+
+      // dienstverband toggle (create + edit)
+      function toggleAvailabilityForForm(formEl) {
+        if (!formEl) return;
+        const sel = formEl.querySelector(".js-dienstverband");
+        const block = formEl.querySelector(".js-availability-block");
+        if (!sel || !block) return;
+
+        const isVast = (sel.value === "vast");
+        block.style.display = isVast ? "" : "none";
+
+        // optioneel: als oproep gekozen wordt, uncheck alles direct in UI
+        if (!isVast) {
+          block.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+      }
+
+      document.querySelectorAll("form").forEach(formEl => {
+        if (formEl.querySelector(".js-dienstverband") && formEl.querySelector(".js-availability-block")) {
+          toggleAvailabilityForForm(formEl);
+          formEl.querySelector(".js-dienstverband").addEventListener("change", function () {
+            toggleAvailabilityForForm(formEl);
+          });
+        }
+      });
     });
   </script>
 {% endblock %}
@@ -33,197 +60,303 @@
 {% block content %}
 
 <div class="admin-wrap">
-    <div class="card">
-      <div class="card-inner">
-            <div class="birthday-header agenda-section-header">
-                <img src="{% static 'img/user.svg' %}" alt="" class="birthday-icon">
-                <div class="birthday-header-text">
-                    <h2>Gebruikers beheren</h2>
-                    <p>Voeg hier gebruikers toe of bewerk de gegevens.</p>
-                </div>
-                <a href="{% url 'beheer_tiles' %}" class="btn btn-save">
-        Terug naar dashboard</a>
-                </div>
-                <hr class="crud-divider">
-        <h3 style="margin-top:0;">Gebruiker toevoegen</h3>
-
-        <form method="post" autocomplete="off">
-          {% csrf_token %}
-          <input type="hidden" name="form_kind" value="user_create">
-
-          {{ user_form.non_field_errors }}
-          {{ user_form.errors }}
-
-          <div class="form form-sticky-actions" style="padding:0;">
-            {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
-            {{ user_form.last_name.label_tag }} {{ user_form.last_name }}
-            {{ user_form.email.label_tag }} {{ user_form.email }}
-            {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
-            {{ user_form.group.label_tag }} {{ user_form.group }}
-            {{ user_form.organization.label_tag }} {{ user_form.organization }}
-
-            <button class="btn btn-save btn-block" type="submit">Aanmaken</button>
-          </div>
-        </form>
-
-        <hr class="crud-divider">
-        <h3 style="margin-top:0;">Bestaande gebruikers</h3>
-
-        <div class="search-bar">
-          <input type="text" id="userSearch" placeholder="Typ om te zoeken…">
+  <div class="card">
+    <div class="card-inner">
+      <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/user.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+          <h2>Gebruikers beheren</h2>
+          <p>Voeg hier gebruikers toe of bewerk de gegevens.</p>
         </div>
+        <a href="{% url 'beheer_tiles' %}" class="btn btn-save">Terug naar dashboard</a>
+      </div>
 
-        <div data-crud data-table="#userTable" data-rows="#userTable .user-row" data-page-size="10">
-          <div class="table-scroll">
-            <table class="crud-table compact user-table" id="userTable">
-              <thead>
-                <tr>
-                  <th class="center-col">Actief</th>
-                  <th>Voornaam</th>
-                  <th>Achternaam</th>
-                  <th>Organisatie</th>
-                  <th>Groep</th>
-                  <th>Acties</th>
-                </tr>
-              </thead>
+      <hr class="crud-divider">
+      <h3 style="margin-top:0;">Gebruiker toevoegen</h3>
 
-              <tbody>
-                {% for u in users %}
-                <tr class="user-row" id="user-row-{{ u.id }}">
-                  <td class="center-col"
-                      title="{% if u.has_usable_password %}Account actief{% else %}Nog niet geactiveerd{% endif %}">
-                    {% if u.has_usable_password %}✅{% else %}⛔{% endif %}
-                  </td>
+      <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="form_kind" value="user_create">
 
-                  <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
-                  <td>{{ u.last_name }}</td>
+        {{ user_form.non_field_errors }}
+        {{ user_form.errors }}
 
-                  <td class="wrap">
-                    {% if u.profile and u.profile.organization %}
-                      {{ u.profile.organization.name }}
-                    {% else %}
-                      -
-                    {% endif %}
-                  </td>
+        <div class="form form-sticky-actions" style="padding:0;">
+          {{ user_form.first_name.label_tag }} {{ user_form.first_name }}
+          {{ user_form.last_name.label_tag }} {{ user_form.last_name }}
+          {{ user_form.email.label_tag }} {{ user_form.email }}
+          {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
+          {{ user_form.group.label_tag }} {{ user_form.group }}
+          {{ user_form.organization.label_tag }} {{ user_form.organization }}
 
-                  <td>
-                    {% with g=u.groups.all|first %}
-                      {{ g.name|default:"-" }}
-                    {% endwith %}
-                  </td>
+          {# ✅ nieuw #}
+          {{ user_form.dienstverband.label_tag }} {{ user_form.dienstverband }}
 
-                  <td>
-                    {% if can_manage %}
-                    <div class="actions-wrap horizontal">
-                      <button type="button"
-                              class="icon-btn"
-                              onclick="toggleEdit('{{ u.id }}')"
-                              aria-label="Bewerken">
+          {# ✅ rooster (alleen zichtbaar bij vast) #}
+          <div class="availability-block js-availability-block">
+            <div class="availability-title">Vaste werkdagen</div>
+
+            <div class="availability-grid">
+              <div class="availability-head"></div>
+              <div class="availability-head">Ochtend</div>
+              <div class="availability-head">Middag</div>
+
+              <div class="availability-day">Maandag</div>
+              <div class="availability-cell">{{ user_form.work_mon_am }}</div>
+              <div class="availability-cell">{{ user_form.work_mon_pm }}</div>
+
+              <div class="availability-day">Dinsdag</div>
+              <div class="availability-cell">{{ user_form.work_tue_am }}</div>
+              <div class="availability-cell">{{ user_form.work_tue_pm }}</div>
+
+              <div class="availability-day">Woensdag</div>
+              <div class="availability-cell">{{ user_form.work_wed_am }}</div>
+              <div class="availability-cell">{{ user_form.work_wed_pm }}</div>
+
+              <div class="availability-day">Donderdag</div>
+              <div class="availability-cell">{{ user_form.work_thu_am }}</div>
+              <div class="availability-cell">{{ user_form.work_thu_pm }}</div>
+
+              <div class="availability-day">Vrijdag</div>
+              <div class="availability-cell">{{ user_form.work_fri_am }}</div>
+              <div class="availability-cell">{{ user_form.work_fri_pm }}</div>
+            </div>
+          </div>
+
+          <button class="btn btn-save btn-block" type="submit">Aanmaken</button>
+        </div>
+      </form>
+
+      <hr class="crud-divider">
+      <h3 style="margin-top:0;">Bestaande gebruikers</h3>
+
+      <div class="search-bar">
+        <input type="text" id="userSearch" placeholder="Typ om te zoeken…">
+      </div>
+
+      <div data-crud data-table="#userTable" data-rows="#userTable .user-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table compact user-table" id="userTable">
+            <thead>
+              <tr>
+                <th class="center-col">Actief</th>
+                <th>Voornaam</th>
+                <th>Achternaam</th>
+                <th>Organisatie</th>
+                <th>Groep</th>
+                <th>Dienstverband</th> {# ✅ nieuw #}
+                <th>Acties</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for u in users %}
+              <tr class="user-row" id="user-row-{{ u.id }}">
+                <td class="center-col"
+                    title="{% if u.has_usable_password %}Account actief{% else %}Nog niet geactiveerd{% endif %}">
+                  {% if u.has_usable_password %}✅{% else %}⛔{% endif %}
+                </td>
+
+                <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
+                <td>{{ u.last_name }}</td>
+
+                <td class="wrap">
+                  {% if u.profile and u.profile.organization %}
+                    {{ u.profile.organization.name }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% with g=u.groups.all|first %}
+                    {{ g.name|default:"-" }}
+                  {% endwith %}
+                </td>
+
+                {# ✅ dienstverband tonen #}
+                <td>
+                  {% if u.profile %}
+                    {% if u.profile.dienstverband == "vast" %}Vast contract{% else %}Oproeper{% endif %}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if can_manage %}
+                  <div class="actions-wrap horizontal">
+                    <button type="button"
+                            class="icon-btn"
+                            onclick="toggleEdit('{{ u.id }}')"
+                            aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+
+                    <form method="post"
+                          action="{% url 'user_delete' u.id %}"
+                          onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
+                      {% csrf_token %}
+                      <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                              stroke="currentColor" stroke-width="2"
                              stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 20h9"/>
-                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
                         </svg>
                       </button>
+                    </form>
+                  </div>
+                  {% else %}
+                    <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                  {% endif %}
+                </td>
+              </tr>
 
-                      <form method="post"
-                            action="{% url 'user_delete' u.id %}"
-                            onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
-                        {% csrf_token %}
-                        <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
-                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-                               stroke="currentColor" stroke-width="2"
-                               stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            <line x1="10" y1="11" x2="10" y2="17"/>
-                            <line x1="14" y1="11" x2="14" y2="17"/>
-                          </svg>
-                        </button>
-                      </form>
-                    </div>
-                    {% else %}
-                        <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
-                    {% endif %}
-                  </td>
-                </tr>
+              <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
+                <td colspan="7"> {# ✅ was 6 #}
+                  <div class="edit-wrap">
+                    <form method="post" action="{% url 'user_update' u.id %}">
+                      {% csrf_token %}
 
-                <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
-                  <td colspan="6">
-                    <div class="edit-wrap">
-                      <form method="post" action="{% url 'user_update' u.id %}">
-                        {% csrf_token %}
-
-                        <div class="edit-grid">
-                          <div>
-                            <label>Voornaam:</label>
-                            <input class="admin-input" type="text" name="first_name"
-                                   value="{{ u.first_name|default:u.username }}" style="margin-top:6px;">
-                          </div>
-                          <div>
-                            <label>Achternaam:</label>
-                            <input class="admin-input" type="text" name="last_name"
-                                   value="{{ u.last_name }}" style="margin-top:6px;">
-                          </div>
-                          <div>
-                            <label>E-mail:</label>
-                            <input class="admin-input" type="email" name="email"
-                                   value="{{ u.email }}" style="margin-top:6px;">
-                          </div>
-                          <div>
-                            <label>Geboortedatum:</label>
-                            <input class="admin-input js-date" type="text" name="birth_date"
-                                   value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
-                                   placeholder="dd-mm-jjjj" autocomplete="off" style="margin-top:6px;">
-                          </div>
-                          <div>
-                            <label>Groep:</label>
-                            <select name="group" class="admin-select" style="margin-top:6px;">
-                              {% with g=u.groups.all|first %}
-                                {% for grp in groups %}
-                                  <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
-                                    {{ grp.name }}
-                                  </option>
-                                {% endfor %}
-                              {% endwith %}
-                            </select>
-                          </div>
-                          <div>
-                            <label>Organisatie:</label>
-                            <select name="organization" class="admin-select" style="margin-top:6px;">
-                              <option value="">----------</option>
-                              {% with profile=u.profile %}
-                                {% for org in organizations %}
-                                  <option value="{{ org.id }}"
-                                          {% if profile.organization and profile.organization.id == org.id %}selected{% endif %}>
-                                    {{ org.name }}
-                                  </option>
-                                {% endfor %}
-                              {% endwith %}
-                            </select>
-                          </div>
+                      <div class="edit-grid">
+                        <div>
+                          <label>Voornaam:</label>
+                          <input class="admin-input" type="text" name="first_name"
+                                 value="{{ u.first_name|default:u.username }}" style="margin-top:6px;">
+                        </div>
+                        <div>
+                          <label>Achternaam:</label>
+                          <input class="admin-input" type="text" name="last_name"
+                                 value="{{ u.last_name }}" style="margin-top:6px;">
+                        </div>
+                        <div>
+                          <label>E-mail:</label>
+                          <input class="admin-input" type="email" name="email"
+                                 value="{{ u.email }}" style="margin-top:6px;">
+                        </div>
+                        <div>
+                          <label>Geboortedatum:</label>
+                          <input class="admin-input js-date" type="text" name="birth_date"
+                                 value="{% if u.profile and u.profile.birth_date %}{{ u.profile.birth_date|date:'d-m-Y' }}{% endif %}"
+                                 placeholder="dd-mm-jjjj" autocomplete="off" style="margin-top:6px;">
                         </div>
 
-                        <div class="actions-wrap horizontal" style="margin-top:12px;">
-                          <button class="btn btn-save" type="submit">Opslaan</button>
-                          <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
+                        <div>
+                          <label>Groep:</label>
+                          <select name="group" class="admin-select" style="margin-top:6px;">
+                            {% with g=u.groups.all|first %}
+                              {% for grp in groups %}
+                                <option value="{{ grp.id }}" {% if g and g.id == grp.id %}selected{% endif %}>
+                                  {{ grp.name }}
+                                </option>
+                              {% endfor %}
+                            {% endwith %}
+                          </select>
                         </div>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
 
-          <div class="crud-more-wrap">
-            <button class="btn small" type="button" data-crud-more>Toon meer</button>
-          </div>
+                        <div>
+                          <label>Organisatie:</label>
+                          <select name="organization" class="admin-select" style="margin-top:6px;">
+                            <option value="">----------</option>
+                            {% with profile=u.profile %}
+                              {% for org in organizations %}
+                                <option value="{{ org.id }}"
+                                        {% if profile.organization and profile.organization.id == org.id %}selected{% endif %}>
+                                  {{ org.name }}
+                                </option>
+                              {% endfor %}
+                            {% endwith %}
+                          </select>
+                        </div>
+
+                        {# ✅ nieuw: dienstverband #}
+                        <div>
+                          <label>Dienstverband:</label>
+                          <select name="dienstverband" class="admin-select js-dienstverband" style="margin-top:6px;">
+                            <option value="oproep" {% if u.profile and u.profile.dienstverband == "oproep" %}selected{% endif %}>Oproeper</option>
+                            <option value="vast" {% if u.profile and u.profile.dienstverband == "vast" %}selected{% endif %}>Vast contract</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {# ✅ rooster blok (alleen bij vast) #}
+                      <div class="availability-block js-availability-block" style="margin-top:12px;">
+                        <div class="availability-title">Vaste werkdagen</div>
+
+                        <div class="availability-grid">
+                          <div class="availability-head"></div>
+                          <div class="availability-head">Ochtend</div>
+                          <div class="availability-head">Middag</div>
+
+                          <div class="availability-day">Maandag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_mon_am" {% if u.profile and u.profile.work_mon_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_mon_pm" {% if u.profile and u.profile.work_mon_pm %}checked{% endif %}>
+                          </div>
+
+                          <div class="availability-day">Dinsdag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_tue_am" {% if u.profile and u.profile.work_tue_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_tue_pm" {% if u.profile and u.profile.work_tue_pm %}checked{% endif %}>
+                          </div>
+
+                          <div class="availability-day">Woensdag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_wed_am" {% if u.profile and u.profile.work_wed_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_wed_pm" {% if u.profile and u.profile.work_wed_pm %}checked{% endif %}>
+                          </div>
+
+                          <div class="availability-day">Donderdag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_thu_am" {% if u.profile and u.profile.work_thu_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_thu_pm" {% if u.profile and u.profile.work_thu_pm %}checked{% endif %}>
+                          </div>
+
+                          <div class="availability-day">Vrijdag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_fri_am" {% if u.profile and u.profile.work_fri_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_fri_pm" {% if u.profile and u.profile.work_fri_pm %}checked{% endif %}>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px;">
+                        <button class="btn btn-save" type="submit">Opslaan</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
 
+        <div class="crud-more-wrap">
+          <button class="btn" type="button" data-crud-more>Toon meer</button>
+        </div>
       </div>
+
     </div>
+  </div>
 </div>
 {% endblock %}

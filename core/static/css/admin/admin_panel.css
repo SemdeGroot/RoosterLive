@@ -89,14 +89,15 @@
    De echte table styling komt uit table.css (crud-table)
 ------------------------------------------------------- */
 
-/* USERS: 6 kolommen */
+/* USERS: 7 kolommen */
 table.user-table{
-  --c1:70px;
-  --c2:120px;
-  --c3:120px;
-  --c4:160px;
-  --c5:140px;
-  --c6:120px;
+  --c1:70px;   /* Actief */
+  --c2:120px;  /* Voornaam */
+  --c3:120px;  /* Achternaam */
+  --c4:160px;  /* Organisatie */
+  --c5:140px;  /* Groep */
+  --c6:140px;  /* Dienstverband */
+  --c7:120px;  /* Acties */
 }
 table.user-table th:nth-child(1),
 table.user-table td:nth-child(1){ text-align:center; }
@@ -160,10 +161,9 @@ table.afdeling-table {
 }
 /* Mobiel: forceer horizontale overflow zodat .table-scroll kan scrollen */
 @media (max-width: 900px) {
-
-  /* USERS: 70 + 120 + 120 + 160 + 140 + 120 = 730 */
+  /* USERS: 70 + 120 + 120 + 160 + 140 + 140 + 120 = 870 */
   table.user-table {
-    min-width: 760px;  /* + marge voor padding/borders */
+    min-width: 900px;
   }
 
   /* GROUPS: 180 + 200 + 90 + 120 = 590 */
@@ -219,8 +219,7 @@ table.task-table{
 .staffing-grid{
   display: grid;
   grid-template-columns: 140px repeat(3, minmax(0, 1fr));
-  gap: 4x 8px;  
-
+  gap: 4px;  
   align-items: center;
 }
 
@@ -264,4 +263,48 @@ table.task-table{
     display: block;
     height: auto;
   }
+}
+
+/* =========================
+   Dienstverband / werkdagen
+========================= */
+
+.availability-block{
+  margin-bottom: 20px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line, rgba(255,255,255,0.08));
+}
+
+.availability-title{
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.availability-grid{
+  display: grid;
+  grid-template-columns: 140px 80px 80px; /* dag | ochtend | middag */
+  column-gap: 6px;   /* horizontaal dichter */
+  row-gap: 6px;      /* verticaal gelijk */
+  align-items: center;
+}
+
+.availability-head{
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.availability-day{
+  font-weight: 600;
+  display: flex;
+  align-items: center;      /* verticaal midden */
+  justify-content: center;
+}
+
+.availability-cell input[type="checkbox"]{
+  width: 16px;
+  height: 16px;
+  margin: 0;              /* belangrijk */
+  display: block;         /* haalt baseline effect weg */
+  accent-color: var(--accent);
 }
