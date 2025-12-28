@@ -232,7 +232,7 @@
           <div>
             <h3 style="margin:0;">Actiepaneel</h3>
             <p class="pd-subtitle" style="margin:4px 0 0 0;">
-              Selecteer links beschikbaarheden of bestaande diensten en beheer taken.
+              Selecteer links diensten en wijs locatie/taak toe.
             </p>
           </div>
 
@@ -240,10 +240,6 @@
             <div class="pd-pill">
               <span class="pd-pill-label">Geselecteerd</span>
               <span class="pd-pill-value" id="pdSelectedCount">0</span>
-            </div>
-            <div class="pd-pill">
-              <span class="pd-pill-label">Klaar om op te slaan</span>
-              <span class="pd-pill-value" id="pdReadyCount">0</span>
             </div>
           </div>
         </div>
@@ -266,11 +262,14 @@
         <section class="pd-ap-section">
           <div class="pd-sec-head">
             <h4 class="pd-sec-title">Locaties</h4>
-            <span class="pd-sec-meta">concepten + previews</span>
+            <span class="pd-sec-meta">X/Y = ingepland/min</span>
           </div>
 
-          <div class="pd-tabs" id="pdLocationTabs" role="tablist"></div>
-          <div class="pd-tabpanels" id="pdLocationPanels"></div>
+          <!-- Locatie pills (zelfde styling als pd-pill) -->
+          <div id="pdLocationPills" class="pd-pill-row" role="tablist" aria-label="Locaties"></div>
+
+          <!-- Locatie panels -->
+          <div id="pdLocationPanels" style="margin-top:10px;"></div>
         </section>
 
         <div class="pd-ap-actions">

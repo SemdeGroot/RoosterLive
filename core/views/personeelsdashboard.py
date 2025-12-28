@@ -9,6 +9,7 @@ from django.utils import timezone, translation
 from django.utils.formats import date_format
 from django.views.decorators.http import require_POST
 from django.urls import reverse
+from django.db.models import Prefetch
 
 from ._helpers import can
 from core.models import Availability, Location, Task, Shift
@@ -26,6 +27,17 @@ def _user_firstname_cap(u):
         return fn[:1].upper() + fn[1:].lower()
     un = (getattr(u, "username", "") or "").strip()
     return un[:1].upper() + un[1:].lower() if un else "Onbekend"
+
+_DAY_PREFIX = {0: "mon", 1: "tue", 2: "wed", 3: "thu", 4: "fri", 5: "sat"}
+
+def _task_min_for(task, dt, period: str) -> int:
+    """
+    Return minimale bezetting voor task op datum dt voor period.
+    """
+    prefix = _DAY_PREFIX.get(dt.weekday())
+    if not prefix:
+        return 0
+    return int(getattr(task, f"min_{prefix}_{period}", 0) or 0)
 
 
 @login_required
@@ -181,22 +193,48 @@ def personeelsdashboard_view(request):
     header_title = f"Week {iso_week} – {iso_year}"
     default_sort_slot = f"{selected_day.isoformat()}|morning"
 
-    # ✅ Locations + Tasks voor actiepaneel
+    # Locations + Tasks voor actiepaneel (incl. minimale bezetting per dagdeel)
     locations = (
         Location.objects
         .all()
         .order_by("name")
-        .prefetch_related("tasks")
+        .prefetch_related(Prefetch("tasks", queryset=Task.objects.order_by("name")))
     )
+
+    overall_min = {"morning": 0, "afternoon": 0, "evening": 0}
     locations_payload = []
+
+    locations_payload = []
+
     for loc in locations:
+        tasks_payload = []
+        loc_min = {"morning": 0, "afternoon": 0, "evening": 0}
+
+        for t in loc.tasks.all():
+            tmin = {
+                "morning": _task_min_for(t, selected_day, "morning"),
+                "afternoon": _task_min_for(t, selected_day, "afternoon"),
+                "evening": _task_min_for(t, selected_day, "evening"),
+            }
+            loc_min["morning"] += tmin["morning"]
+            loc_min["afternoon"] += tmin["afternoon"]
+            loc_min["evening"] += tmin["evening"]
+
+            tasks_payload.append({
+                "id": t.id,
+                "name": t.name,
+                "min": tmin,
+            })
+
         locations_payload.append({
             "id": loc.id,
             "name": loc.name,
-            "tasks": [{"id": t.id, "name": t.name} for t in loc.tasks.all().order_by("name")]
+            "min": loc_min,
+            "tasks": tasks_payload,
         })
 
-    # ✅ Bestaande shifts (concept + accepted) voor geselecteerde dag
+
+    # Bestaande shifts (concept + accepted) voor geselecteerde dag
     shifts_qs = (
         Shift.objects
         .filter(date=selected_day)
@@ -224,6 +262,7 @@ def personeelsdashboard_view(request):
     pd_data = {
         "selectedDate": selected_day.isoformat(),
         "locations": locations_payload,
+        "overallMin": overall_min,
         "existingShifts": existing_shifts_payload,
         "saveConceptUrl": reverse("pd_save_concept"),
         "deleteShiftUrl": reverse("pd_delete_shift"),

@@ -9,6 +9,8 @@
     return null;
   }
 
+  const PERIODS = ["morning", "afternoon", "evening"];
+
   function periodLabel(p){
     if (p === "morning") return "Ochtend";
     if (p === "afternoon") return "Middag";
@@ -48,7 +50,6 @@
   const pd = parsePdData();
   if (!pd) return;
 
-  const selectedDate = pd.selectedDate;
   const locations = pd.locations || [];
   let existingShifts = pd.existingShifts || [];
   const saveConceptUrl = pd.saveConceptUrl;
@@ -58,39 +59,26 @@
   const selectionListEl = $("#pdSelectionList");
   const selectionEmptyEl = $("#pdSelectionEmpty");
   const selectionMetaEl = $("#pdSelectionMeta");
-  const tabsEl = $("#pdLocationTabs");
-  const panelsEl = $("#pdLocationPanels");
-
   const selectedCountEl = $("#pdSelectedCount");
-  const readyCountEl = $("#pdReadyCount");
   const saveBtn = $("#pdSaveConceptBtn");
 
-  if (!selectionListEl || !tabsEl || !panelsEl || !saveBtn) return;
+  const locPillsEl = $("#pdLocationPills");
+  const locPanelsEl = $("#pdLocationPanels");
 
-  // index tasks
+  if (!selectionListEl || !locPillsEl || !locPanelsEl || !saveBtn) return;
+
+  // index tasks by location (for selects)
   const tasksByLocation = new Map();
   locations.forEach(loc => {
     tasksByLocation.set(String(loc.id), (loc.tasks || []).map(t => ({ id: String(t.id), name: t.name })));
   });
 
-  // existing shift map by key (for quick compare + selection prefill)
   function buildExistingMap(){
     const m = new Map();
     existingShifts.forEach(s => {
       m.set(`${s.user_id}|${s.date}|${s.period}`, s);
     });
     return m;
-  }
-
-  // state
-  const state = {
-    selected: new Map(), // key -> item {user_id, group, firstname, date, period, existing, shift_id, status}
-    assigned: new Map(), // key -> { location_id, task_id }
-    dirty: new Set(),    // key -> existing item changed OR new item configured
-  };
-
-  function isExistingKey(k){
-    return buildExistingMap().has(k);
   }
 
   function getExistingByKey(k){
@@ -103,7 +91,6 @@
   }
 
   function markMatrixFromExisting(){
-    // mark rects green, but keep clickable
     existingShifts.forEach(s => {
       const sel = `.avail-rect[data-user-id="${s.user_id}"][data-date="${s.date}"][data-period="${s.period}"]`;
       const rect = document.querySelector(sel);
@@ -117,7 +104,7 @@
       rect.classList.remove("is-accepted", "is-concept");
       rect.classList.add(s.status === "accepted" ? "is-accepted" : "is-concept");
       rect.classList.add("has-shift");
-      rect.tabIndex = 0; // allow selection
+      rect.tabIndex = 0;
       rect.removeAttribute("aria-disabled");
     });
   }
@@ -133,84 +120,210 @@
     delete rect.dataset.locationId;
 
     rect.classList.remove("is-accepted", "is-concept", "has-shift", "is-selected");
-    // if availability exists, it stays orange via .available class
+  }
+
+  // state
+  const state = {
+    selected: new Map(),
+    assigned: new Map(),
+    dirty: new Set(),
+    ui: {
+      activeLocId: locations.length ? String(locations[0].id) : "",
+      activePeriodByLoc: new Map(), // locId -> "morning"/...
+    }
+  };
+
+  // init periods: default morning open for every loc
+  locations.forEach(loc => state.ui.activePeriodByLoc.set(String(loc.id), "morning"));
+
+  function setActiveLocation(locId){
+    state.ui.activeLocId = String(locId || "");
+
+    $all('button[data-loc-pill="1"]', locPillsEl).forEach(btn => {
+      const isActive = btn.dataset.locId === state.ui.activeLocId;
+      btn.classList.toggle("is-active", isActive);
+      btn.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+
+    $all(".pd-loc-panel", locPanelsEl).forEach(p => {
+      p.hidden = p.dataset.locId !== state.ui.activeLocId;
+    });
+
+    // ensure period visibility applied for this loc
+    applyPeriodVisibility(state.ui.activeLocId);
+  }
+
+  function setActivePeriod(locId, period){
+    const locIdStr = String(locId || "");
+    if (!locIdStr) return;
+    if (!PERIODS.includes(period)) return;
+
+    state.ui.activePeriodByLoc.set(locIdStr, period);
+    applyPeriodVisibility(locIdStr);
+  }
+
+  function applyPeriodVisibility(locId){
+    const locIdStr = String(locId || "");
+    const activePeriod = state.ui.activePeriodByLoc.get(locIdStr) || "morning";
+
+    const panel = locPanelsEl.querySelector(`.pd-loc-panel[data-loc-id="${locIdStr}"]`);
+    if (!panel) return;
+
+    // pills active
+    $all(`button[data-period-pill="1"][data-loc-id="${locIdStr}"]`, panel).forEach(btn => {
+      btn.classList.toggle("is-active", btn.dataset.period === activePeriod);
+      btn.setAttribute("aria-selected", btn.dataset.period === activePeriod ? "true" : "false");
+    });
+
+    // show only active period panel
+    $all(`.pd-period-panel[data-loc-id="${locIdStr}"]`, panel).forEach(sec => {
+      sec.hidden = sec.dataset.period !== activePeriod;
+    });
   }
 
   /* -----------------------------
-     Tabs/panels build
+     Status pill (no rgba colors)
   ------------------------------ */
-  function buildTabs(){
-    tabsEl.innerHTML = "";
-    panelsEl.innerHTML = "";
+  function statusPill(kind){
+    // kind: "available" | "concept" | "active"
+    const label =
+      kind === "available" ? "beschikbaar" :
+      kind === "active" ? "actief" :
+      "concept";
+
+    return `<span class="pd-status-pill pd-status-pill--${kind}">${label}</span>`;
+  }
+
+  function deleteButtonHtml(){
+    return `
+      <button class="icon-btn danger" type="button" data-action="delete" aria-label="Verwijderen">
+        ${DELETE_SVG}
+      </button>
+    `;
+  }
+
+  function removeButtonHtml(){
+    return `
+      <button type="button" class="btn pd-icon-btn" data-action="remove" aria-label="Verwijderen">
+        ✕
+      </button>
+    `;
+  }
+
+  /* -----------------------------
+     Build Location UI (loc pills + loc panels + period tabs)
+  ------------------------------ */
+  function buildLocationUI(){
+    locPillsEl.innerHTML = "";
+    locPanelsEl.innerHTML = "";
 
     locations.forEach((loc, idx) => {
       const locId = String(loc.id);
 
-      const tab = document.createElement("button");
-      tab.className = "pd-tab";
-      tab.type = "button";
-      tab.role = "tab";
-      tab.id = `pd-tab-${locId}`;
-      tab.setAttribute("aria-controls", `pd-panel-${locId}`);
-      tab.setAttribute("aria-selected", idx === 0 ? "true" : "false");
-      tab.dataset.locId = locId;
-      tab.innerHTML = `
-        <span class="pd-tab-name">${loc.name}</span>
-        <span class="pd-tab-count" id="pdLocCount-${locId}">0</span>
+      // location pill as button using pd-pill class
+      const pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = "pd-pill pd-pill-btn";
+      pill.dataset.locPill = "1";
+      pill.dataset.locId = locId;
+      pill.role = "tab";
+      pill.setAttribute("aria-selected", idx === 0 ? "true" : "false");
+      pill.innerHTML = `
+        <span class="pd-pill-label">${loc.name}</span>
+        <span class="pd-pill-value" id="pdLocPillCount-${locId}">0/0</span>
       `;
-      tabsEl.appendChild(tab);
+      locPillsEl.appendChild(pill);
 
+      // panel
       const panel = document.createElement("div");
-      panel.className = "pd-panel";
-      panel.role = "tabpanel";
-      panel.id = `pd-panel-${locId}`;
-      panel.setAttribute("aria-labelledby", `pd-tab-${locId}`);
-      panel.hidden = idx !== 0;
+      panel.className = "pd-loc-panel";
       panel.dataset.locId = locId;
+      panel.hidden = idx !== 0;
 
-      const tasksHtml = (loc.tasks || []).map(t => `
-        <div class="pd-task-row" data-task-id="${t.id}">
-          <div class="pd-task-head">
-            <div class="pd-task-name">${t.name}</div>
-            <div class="pd-task-count" id="pdTaskCount-${locId}-${t.id}">0</div>
-          </div>
-          <div class="pd-task-items" id="pdTaskItems-${locId}-${t.id}"></div>
-        </div>
+      // period pills (tab-like)
+      const periodPills = PERIODS.map(p => `
+        <button type="button"
+                class="pd-pill pd-pill-btn"
+                data-period-pill="1"
+                data-loc-id="${locId}"
+                data-period="${p}"
+                role="tab"
+                aria-selected="${p === "morning" ? "true" : "false"}">
+          <span class="pd-pill-label">${periodLabel(p)}</span>
+          <span class="pd-pill-value" id="pdLocPeriodPill-${locId}-${p}">0/0</span>
+        </button>
       `).join("");
 
+      // period panels (only active shown)
+      const periodPanels = PERIODS.map(p => {
+        const tasksHtml = (loc.tasks || []).map(t => `
+          <div class="pd-task-block">
+            <div class="pd-task-block-head">
+              <div class="pd-task-block-name">${t.name}</div>
+              <div class="pd-task-block-count" id="pdTaskCount-${locId}-${t.id}-${p}">0/${(t.min?.[p] ?? 0)}</div>
+            </div>
+            <div class="pd-task-items" id="pdTaskItems-${locId}-${t.id}-${p}"></div>
+          </div>
+        `).join("");
+
+        return `
+          <section class="pd-period-panel"
+                   data-loc-id="${locId}"
+                   data-period="${p}"
+                   id="pdPeriodPanel-${locId}-${p}"
+                   ${p === "morning" ? "" : "hidden"}>
+
+            <div class="pd-period-head">
+              <div class="pd-period-title">${periodLabel(p)}</div>
+              <div class="pd-period-count" id="pdLocPeriodHeader-${locId}-${p}">0/0</div>
+            </div>
+
+            <div class="pd-staging" id="pdStaging-${locId}-${p}" style="display:none;">
+              <div class="pd-staging-head">
+                <div class="pd-staging-title-strong">Nog geen taak gekozen</div>
+                <div class="pd-staging-count" id="pdStagingCount-${locId}-${p}">0/0</div>
+              </div>
+              <div class="pd-task-items" id="pdStagingItems-${locId}-${p}"></div>
+            </div>
+
+            ${tasksHtml || `<div class="pd-empty">Geen taken gekoppeld aan deze locatie.</div>`}
+          </section>
+        `;
+      }).join("");
+
       panel.innerHTML = `
-        <div class="pd-staging" id="pdStaging-${locId}">
-          <div class="pd-staging-title">Nog geen taak gekozen</div>
-          <div class="pd-task-items" id="pdStagingItems-${locId}"></div>
+        <div class="pd-loc-top">
+          <div class="pd-loc-title">${loc.name}</div>
+          <div class="pd-loc-period-pills" role="tablist" aria-label="Dagdelen">
+            ${periodPills}
+          </div>
         </div>
 
-        <div class="pd-task-grid">
-          ${tasksHtml || `<div class="pd-empty">Geen taken gekoppeld aan deze locatie.</div>`}
-        </div>
+        ${periodPanels}
       `;
-      panelsEl.appendChild(panel);
+
+      locPanelsEl.appendChild(panel);
     });
 
-    tabsEl.addEventListener("click", (e) => {
-      const btn = e.target.closest(".pd-tab");
+    // bind location pills
+    locPillsEl.addEventListener("click", (e) => {
+      const btn = e.target.closest('button[data-loc-pill="1"]');
       if (!btn) return;
-      setActiveTab(btn.dataset.locId);
+      setActiveLocation(btn.dataset.locId);
     });
-  }
 
-  function setActiveTab(locId){
-    $all(".pd-tab", tabsEl).forEach(t => {
-      const active = t.dataset.locId === locId;
-      t.classList.toggle("is-active", active);
-      t.setAttribute("aria-selected", active ? "true" : "false");
+    // bind period pills
+    locPanelsEl.addEventListener("click", (e) => {
+      const btn = e.target.closest('button[data-period-pill="1"]');
+      if (!btn) return;
+      setActivePeriod(btn.dataset.locId, btn.dataset.period);
     });
-    $all(".pd-panel", panelsEl).forEach(p => {
-      p.hidden = p.dataset.locId !== locId;
-    });
+
+    if (locations.length) setActiveLocation(String(locations[0].id));
   }
 
   /* -----------------------------
-     Selection: matrix click -> select/deselect
+     Selection: matrix click
   ------------------------------ */
   function selectRect(rect){
     const user_id = Number(rect.dataset.userId);
@@ -222,25 +335,12 @@
     const k = `${user_id}|${date}|${period}`;
     if (state.selected.has(k)) return;
 
-    // existing?
     const ex = getExistingByKey(k);
     if (ex){
-      state.selected.set(k, {
-        user_id, group, firstname, date, period,
-        existing: true,
-        shift_id: ex.id,
-        status: ex.status,
-      });
-      state.assigned.set(k, {
-        location_id: String(ex.location_id),
-        task_id: String(ex.task_id),
-      });
-      // not dirty yet
+      state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: ex.id, status: ex.status });
+      state.assigned.set(k, { location_id: String(ex.location_id ?? ""), task_id: String(ex.task_id ?? "") });
     } else {
-      state.selected.set(k, {
-        user_id, group, firstname, date, period,
-        existing: false,
-      });
+      state.selected.set(k, { user_id, group, firstname, date, period, existing: false });
       state.assigned.set(k, { location_id: "", task_id: "" });
     }
 
@@ -265,7 +365,6 @@
   }
 
   function bindMatrix(){
-    // bind both available AND existing shift blocks
     const rects = $all(".avail-rect.available, .avail-rect.has-shift");
     rects.forEach(rect => {
       rect.addEventListener("click", () => toggleRect(rect));
@@ -279,13 +378,13 @@
   }
 
   /* -----------------------------
-     UI builders
+     Select builders
   ------------------------------ */
   function buildLocationSelect(current){
     return `
       <select class="admin-select pd-mini-select" data-action="location">
         <option value="">Kies locatie…</option>
-        ${locations.map(l => `<option value="${l.id}" ${String(current||"")===String(l.id)?"selected":""}>${l.name}</option>`).join("")}
+        ${locations.map(l => `<option value="${l.id}" ${String(current ?? "")===String(l.id)?"selected":""}>${l.name}</option>`).join("")}
       </select>
     `;
   }
@@ -295,29 +394,33 @@
     return `
       <select class="admin-select pd-mini-select" data-action="task" ${locId ? "" : "disabled"}>
         <option value="">Kies taak…</option>
-        ${tasks.map(t => `<option value="${t.id}" ${String(currentTaskId||"")===String(t.id)?"selected":""}>${t.name}</option>`).join("")}
+        ${tasks.map(t => `<option value="${t.id}" ${String(currentTaskId ?? "")===String(t.id)?"selected":""}>${t.name}</option>`).join("")}
       </select>
     `;
   }
 
-  function statusChip(status){
-    if (!status) return "";
-    return `<span class="pd-chip pd-chip--status pd-chip--${status}">${status}</span>`;
-  }
+  /* -----------------------------
+     Shift card (compact)
+  ------------------------------ */
+  function shiftCardHeader(item){
+    // item: { existing?, status?, period, date, firstname, group }
+    let kind = "available";
+    if (item.existing){
+      kind = (item.status === "accepted") ? "active" : "concept";
+    }
+    const pill = statusPill(kind);
 
-  function deleteButtonHtml(){
-    return `
-      <button class="icon-btn danger" type="button" data-action="delete" aria-label="Verwijderen">
-        ${DELETE_SVG}
-      </button>
-    `;
-  }
+    const line1 = `${item.firstname} – ${item.group}`;
+    const line2 = `${periodLabel(item.period)} – ${item.date}`;
 
-  function removeButtonHtml(){
     return `
-      <button type="button" class="btn pd-icon-btn" data-action="remove" aria-label="Verwijderen">
-        ✕
-      </button>
+      <div class="pd-shift-card">
+        <div class="pd-shift-top">
+          ${pill}
+        </div>
+        <div class="pd-shift-line1">${line1}</div>
+        <div class="pd-shift-line2">${line2}</div>
+      </div>
     `;
   }
 
@@ -329,16 +432,14 @@
     card.className = "pd-item pd-item--selection";
     card.dataset.key = k;
 
-    const rightButtons = item.existing ? deleteButtonHtml() : removeButtonHtml();
+    // ✅ for existing: delete + remove (toggle)
+    const rightButtons = item.existing
+      ? `${deleteButtonHtml()}${removeButtonHtml()}`
+      : `${removeButtonHtml()}`;
 
     card.innerHTML = `
       <div class="pd-item-main">
-        <div class="pd-item-title">
-          ${item.existing ? statusChip(item.status) : ""}
-          <strong>${item.group}</strong> · ${item.firstname}
-          <span class="pd-chip">${periodLabel(item.period)}</span>
-        </div>
-        <div class="pd-item-sub">${item.date}</div>
+        ${shiftCardHeader(item)}
       </div>
 
       <div class="pd-item-actions">
@@ -352,21 +453,18 @@
     const taskSel = card.querySelector('select[data-action="task"]');
 
     locSel.addEventListener("change", () => {
-      const locId = locSel.value;
-      const cur = state.assigned.get(k) || { location_id: "", task_id: "" };
-
+      const locId = locSel.value; // may be ""
       state.assigned.set(k, { location_id: String(locId || ""), task_id: "" });
-      // if existing, mark dirty
-      state.dirty.add(k);
 
-      // re-render + switch tab + animate
-      if (locId) setActiveTab(String(locId));
+      if (item.existing) state.dirty.add(k);
+
+      if (locId) setActiveLocation(String(locId));
       renderAll();
       pop(card);
     });
 
     taskSel.addEventListener("change", () => {
-      const taskId = taskSel.value;
+      const taskId = taskSel.value; // may be ""
       const cur = state.assigned.get(k) || { location_id: "", task_id: "" };
       state.assigned.set(k, { ...cur, task_id: String(taskId || "") });
       state.dirty.add(k);
@@ -390,8 +488,6 @@
   }
 
   function panelShiftCard(shiftLike){
-    // shiftLike can be existing shift OR "preview" item (selected + task)
-    // Normalize:
     const isExisting = !!shiftLike.shift_id || !!shiftLike.id;
     const shiftId = shiftLike.shift_id || shiftLike.id || null;
 
@@ -402,11 +498,11 @@
     const firstname = shiftLike.firstname;
 
     const k = `${user_id}|${date}|${period}`;
-
     const status = shiftLike.status || (isExisting ? "concept" : "");
+
     const a = {
-      location_id: String(shiftLike.location_id || ""),
-      task_id: String(shiftLike.task_id || ""),
+      location_id: String(shiftLike.location_id ?? ""),
+      task_id: String(shiftLike.task_id ?? ""),
     };
 
     const card = document.createElement("div");
@@ -415,12 +511,14 @@
 
     card.innerHTML = `
       <div class="pd-item-main">
-        <div class="pd-item-title">
-          ${status ? statusChip(status) : ""}
-          <strong>${group}</strong> · ${firstname}
-          <span class="pd-chip">${periodLabel(period)}</span>
-        </div>
-        <div class="pd-item-sub">${date}</div>
+        ${shiftCardHeader({
+          existing: isExisting,
+          status,
+          period,
+          date,
+          firstname,
+          group
+        })}
       </div>
 
       <div class="pd-item-actions">
@@ -433,70 +531,37 @@
     const locSel = card.querySelector('select[data-action="location"]');
     const taskSel = card.querySelector('select[data-action="task"]');
 
-    // allow changing existing directly in panel:
     locSel.addEventListener("change", () => {
-      const locId = locSel.value;
-      if (!locId) return;
-      // update local existingShifts object if this is an existing shift
+      const locId = String(locSel.value || "");
+
       if (isExisting){
-        const idx = existingShifts.findIndex(s => s.id === shiftId);
-        if (idx >= 0){
-          existingShifts[idx].location_id = Number(locId);
-          existingShifts[idx].location_name = locations.find(l => String(l.id)===String(locId))?.name || "";
-          existingShifts[idx].task_id = null; // task must be reselected
-          existingShifts[idx].task_name = "";
-          // we do NOT change status here; that happens on save
-        }
-        // mark dirty by selecting it (so it appears above for save), but keep non-intrusive:
         if (!state.selected.has(k)){
-          // create selection silently
-          state.selected.set(k, {
-            user_id, group, firstname, date, period,
-            existing: true,
-            shift_id: shiftId,
-            status: status,
-          });
+          state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: shiftId, status });
         }
-        state.assigned.set(k, { location_id: String(locId), task_id: "" });
+        state.assigned.set(k, { location_id: locId, task_id: "" });
         state.dirty.add(k);
       } else {
-        // preview item: reflect into state
-        state.assigned.set(k, { location_id: String(locId), task_id: "" });
+        state.assigned.set(k, { location_id: locId, task_id: "" });
         state.dirty.add(k);
       }
 
-      setActiveTab(String(locId));
+      if (locId) setActiveLocation(locId);
       renderAll();
       pop(card);
     });
 
     taskSel.addEventListener("change", () => {
-      const taskId = taskSel.value;
-      const locId = locSel.value;
-
-      if (!locId) return;
+      const locId = String(locSel.value || "");
+      const taskId = String(taskSel.value || "");
 
       if (isExisting){
-        const idx = existingShifts.findIndex(s => s.id === shiftId);
-        if (idx >= 0){
-          const tname = (tasksByLocation.get(String(locId)) || []).find(t => String(t.id)===String(taskId))?.name || "";
-          existingShifts[idx].task_id = Number(taskId);
-          existingShifts[idx].task_name = tname;
-          existingShifts[idx].location_id = Number(locId);
-          existingShifts[idx].location_name = locations.find(l => String(l.id)===String(locId))?.name || existingShifts[idx].location_name;
-        }
         if (!state.selected.has(k)){
-          state.selected.set(k, {
-            user_id, group, firstname, date, period,
-            existing: true,
-            shift_id: shiftId,
-            status: status,
-          });
+          state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: shiftId, status });
         }
-        state.assigned.set(k, { location_id: String(locId), task_id: String(taskId || "") });
+        state.assigned.set(k, { location_id: locId, task_id: taskId });
         state.dirty.add(k);
       } else {
-        state.assigned.set(k, { location_id: String(locId), task_id: String(taskId || "") });
+        state.assigned.set(k, { location_id: locId, task_id: taskId });
         state.dirty.add(k);
       }
 
@@ -535,11 +600,9 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Verwijderen mislukt.");
 
-      // remove from existingShifts
       const removed = existingShifts.find(s => s.id === Number(shiftId));
       existingShifts = existingShifts.filter(s => s.id !== Number(shiftId));
 
-      // also clear from selection if selected
       if (removed){
         const k = `${removed.user_id}|${removed.date}|${removed.period}`;
         state.selected.delete(k);
@@ -562,16 +625,14 @@
   }
 
   /* -----------------------------
-     Render: selection list + panels + counts + save enabled
+     Render: selection list
   ------------------------------ */
   function renderSelection(){
     selectionListEl.innerHTML = "";
 
     const items = Array.from(state.selected.values());
     items.sort((a,b) => {
-      // existing first
       if (!!b.existing !== !!a.existing) return (b.existing ? 1 : 0) - (a.existing ? 1 : 0);
-      // then group/name
       const ag = (a.group||"").toLowerCase();
       const bg = (b.group||"").toLowerCase();
       if (ag !== bg) return ag.localeCompare(bg);
@@ -594,11 +655,15 @@
 
   function clearAllPanelContainers(){
     locations.forEach(loc => {
-      const staging = document.getElementById(`pdStagingItems-${loc.id}`);
-      if (staging) staging.innerHTML = "";
+      PERIODS.forEach(p => {
+        const stagingItems = document.getElementById(`pdStagingItems-${loc.id}-${p}`);
+        if (stagingItems) stagingItems.innerHTML = "";
+      });
       (loc.tasks || []).forEach(t => {
-        const el = document.getElementById(`pdTaskItems-${loc.id}-${t.id}`);
-        if (el) el.innerHTML = "";
+        PERIODS.forEach(p => {
+          const el = document.getElementById(`pdTaskItems-${loc.id}-${t.id}-${p}`);
+          if (el) el.innerHTML = "";
+        });
       });
     });
   }
@@ -606,16 +671,17 @@
   function renderPanels(){
     clearAllPanelContainers();
 
-    const existingMap = buildExistingMap();
-
-    // 1) Render existing shifts directly under their tasks
+    // 1) existing shifts
     existingShifts.forEach(s => {
-      const locId = String(s.location_id);
-      const taskId = String(s.task_id);
+      const locId = String(s.location_id ?? "");
+      const taskId = String(s.task_id ?? "");
+      const per = String(s.period);
 
-      const container = document.getElementById(`pdTaskItems-${locId}-${taskId}`);
-      if (container){
-        container.appendChild(panelShiftCard({
+      if (!locId || !PERIODS.includes(per)) return;
+
+      if (taskId){
+        const container = document.getElementById(`pdTaskItems-${locId}-${taskId}-${per}`);
+        container?.appendChild(panelShiftCard({
           id: s.id,
           user_id: s.user_id,
           group: s.group,
@@ -627,58 +693,51 @@
           task_id: s.task_id,
         }));
       } else {
-        // fallback -> staging
-        const staging = document.getElementById(`pdStagingItems-${locId}`);
-        if (staging){
-          staging.appendChild(panelShiftCard({
-            id: s.id,
-            user_id: s.user_id,
-            group: s.group,
-            firstname: s.firstname,
-            date: s.date,
-            period: s.period,
-            status: s.status,
-            location_id: s.location_id,
-            task_id: s.task_id,
-          }));
-        }
+        const staging = document.getElementById(`pdStagingItems-${locId}-${per}`);
+        staging?.appendChild(panelShiftCard({
+          id: s.id,
+          user_id: s.user_id,
+          group: s.group,
+          firstname: s.firstname,
+          date: s.date,
+          period: s.period,
+          status: s.status,
+          location_id: s.location_id,
+          task_id: null,
+        }));
       }
     });
 
-    // 2) Render previews (selected items with location but no task -> staging; with task -> task container)
+    // 2) previews (new + dirty existing)
     for (const it of state.selected.values()){
       const k = keyOf(it);
       const a = state.assigned.get(k);
       if (!a || !a.location_id) continue;
 
-      // don't duplicate existing if not changed? we still want preview only if it's a NEW selection
-      // For existing: only show preview if dirty (so user sees new placement)
+      const locId = String(a.location_id);
+      const per = String(it.period);
+      if (!PERIODS.includes(per)) continue;
+
       if (it.existing && !state.dirty.has(k)) continue;
 
-      const locId = String(a.location_id);
       const taskId = String(a.task_id || "");
 
       if (!taskId){
-        const staging = document.getElementById(`pdStagingItems-${locId}`);
-        if (staging){
-          staging.appendChild(panelShiftCard({
-            user_id: it.user_id,
-            group: it.group,
-            firstname: it.firstname,
-            date: it.date,
-            period: it.period,
-            status: it.existing ? it.status : "",
-            location_id: Number(locId),
-            task_id: null,
-            shift_id: it.shift_id || null,
-          }));
-        }
-        continue;
-      }
-
-      const container = document.getElementById(`pdTaskItems-${locId}-${taskId}`);
-      if (container){
-        container.appendChild(panelShiftCard({
+        const staging = document.getElementById(`pdStagingItems-${locId}-${per}`);
+        staging?.appendChild(panelShiftCard({
+          user_id: it.user_id,
+          group: it.group,
+          firstname: it.firstname,
+          date: it.date,
+          period: it.period,
+          status: it.existing ? it.status : "",
+          location_id: Number(locId),
+          task_id: null,
+          shift_id: it.shift_id || null,
+        }));
+      } else {
+        const container = document.getElementById(`pdTaskItems-${locId}-${taskId}-${per}`);
+        container?.appendChild(panelShiftCard({
           user_id: it.user_id,
           group: it.group,
           firstname: it.firstname,
@@ -692,84 +751,151 @@
       }
     }
 
-    // hide staging blocks if empty
+    // 3) staging visible only if it has items
     locations.forEach(loc => {
-      const stagingWrap = document.getElementById(`pdStaging-${loc.id}`);
-      const stagingItems = document.getElementById(`pdStagingItems-${loc.id}`);
-      if (stagingWrap && stagingItems){
-        stagingWrap.style.display = stagingItems.children.length ? "" : "none";
-      }
+      PERIODS.forEach(p => {
+        const wrap = document.getElementById(`pdStaging-${loc.id}-${p}`);
+        const items = document.getElementById(`pdStagingItems-${loc.id}-${p}`);
+        if (!wrap || !items) return;
+        wrap.style.display = items.children.length ? "" : "none";
+      });
     });
+
+    // period UI apply for active loc
+    if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
   }
 
+  /* -----------------------------
+     Counts (no count in shift)
+  ------------------------------ */
   function renderCounts(){
-    // Location counts must count how many concept are opgeslagen (plus previews that will save as concept)
-    const existingConceptByLoc = new Map();
-    locations.forEach(l => existingConceptByLoc.set(String(l.id), 0));
+    // override moved existing shifts (avoid double count)
+    const overrideByKey = new Map();
+    for (const it of state.selected.values()){
+      const k = keyOf(it);
+      if (!it.existing) continue;
+      if (!state.dirty.has(k)) continue;
 
-    existingShifts.forEach(s => {
-      if ((s.status || "concept") === "concept"){
-        const locId = String(s.location_id);
-        existingConceptByLoc.set(locId, (existingConceptByLoc.get(locId) || 0) + 1);
-      }
+      const a = state.assigned.get(k);
+      if (!a || !a.location_id) continue;
+
+      overrideByKey.set(k, {
+        location_id: String(a.location_id),
+        task_id: String(a.task_id || ""),
+      });
+    }
+
+    const locPeriodCounts = new Map(); // locId -> {morning,afternoon,evening}
+    const taskPeriodCounts = new Map(); // `${locId}|${taskId}` -> {morning,afternoon,evening}
+
+    locations.forEach(loc => {
+      locPeriodCounts.set(String(loc.id), { morning:0, afternoon:0, evening:0 });
+      (loc.tasks || []).forEach(t => {
+        taskPeriodCounts.set(`${loc.id}|${t.id}`, { morning:0, afternoon:0, evening:0 });
+      });
     });
 
-    // add previews that are "ready" (they will save as concept)
+    function bumpLoc(locId, period){
+      if (!locId || !PERIODS.includes(period)) return;
+      const lp = locPeriodCounts.get(String(locId));
+      if (lp) lp[period] += 1;
+    }
+
+    function bumpTask(locId, taskId, period){
+      if (!locId || !taskId || !PERIODS.includes(period)) return;
+      const tp = taskPeriodCounts.get(`${locId}|${taskId}`);
+      if (tp) tp[period] += 1;
+    }
+
+    // 1) existing shifts unless overridden
+    existingShifts.forEach(s => {
+      const k = `${s.user_id}|${s.date}|${s.period}`;
+      if (overrideByKey.has(k)) return;
+
+      const locId = String(s.location_id ?? "");
+      const taskId = String(s.task_id ?? "");
+      const per = String(s.period);
+
+      bumpLoc(locId, per);
+      if (taskId) bumpTask(locId, taskId, per);
+    });
+
+    // 2) previews (new + dirty existing)
     for (const it of state.selected.values()){
       const k = keyOf(it);
       const a = state.assigned.get(k);
-      if (!a || !a.location_id || !a.task_id) continue;
+      if (!a || !a.location_id) continue;
 
-      // new selections always count; existing only if dirty
       if (it.existing && !state.dirty.has(k)) continue;
 
       const locId = String(a.location_id);
-      existingConceptByLoc.set(locId, (existingConceptByLoc.get(locId) || 0) + 1);
+      const taskId = String(a.task_id || "");
+      const per = String(it.period);
+
+      bumpLoc(locId, per);
+      if (taskId) bumpTask(locId, taskId, per);
     }
 
-    // write tab counts
+    function locMinTotal(locId){
+      const loc = locations.find(x => String(x.id)===String(locId));
+      const m = loc?.min || {};
+      return (m.morning ?? 0) + (m.afternoon ?? 0) + (m.evening ?? 0);
+    }
+    function locMinPeriod(locId, p){
+      const loc = locations.find(x => String(x.id)===String(locId));
+      return (loc?.min?.[p] ?? 0);
+    }
+    function taskMinPeriod(locId, taskId, p){
+      const loc = locations.find(x => String(x.id)===String(locId));
+      const t = (loc?.tasks || []).find(tt => String(tt.id)===String(taskId));
+      return (t?.min?.[p] ?? 0);
+    }
+
+    // render location pills: total X/Y
     locations.forEach(loc => {
       const locId = String(loc.id);
-      const el = document.getElementById(`pdLocCount-${locId}`);
-      if (el) el.textContent = String(existingConceptByLoc.get(locId) || 0);
+      const lp = locPeriodCounts.get(locId) || {morning:0,afternoon:0,evening:0};
+      const x = (lp.morning||0) + (lp.afternoon||0) + (lp.evening||0);
+      const y = locMinTotal(locId);
+
+      const el = document.getElementById(`pdLocPillCount-${locId}`);
+      if (el) el.textContent = `${x}/${y}`;
+
+      PERIODS.forEach(p => {
+        const xp = lp[p] ?? 0;
+        const yp = locMinPeriod(locId, p);
+
+        const pillEl = document.getElementById(`pdLocPeriodPill-${locId}-${p}`);
+        if (pillEl) pillEl.textContent = `${xp}/${yp}`;
+
+        const headEl = document.getElementById(`pdLocPeriodHeader-${locId}-${p}`);
+        if (headEl) headEl.textContent = `${xp}/${yp}`;
+
+        const stEl = document.getElementById(`pdStagingCount-${locId}-${p}`);
+        if (stEl) stEl.textContent = `${xp}/${yp}`;
+      });
 
       (loc.tasks || []).forEach(t => {
         const tid = String(t.id);
+        const tp = taskPeriodCounts.get(`${locId}|${tid}`) || {morning:0,afternoon:0,evening:0};
 
-        // task counts: existing concept in that task + previews
-        let taskCount = 0;
-        existingShifts.forEach(s => {
-          if ((s.status || "concept") === "concept"
-              && String(s.location_id) === locId
-              && String(s.task_id) === tid){
-            taskCount += 1;
-          }
+        PERIODS.forEach(p => {
+          const xp = tp[p] ?? 0;
+          const yp = taskMinPeriod(locId, tid, p);
+          const tEl = document.getElementById(`pdTaskCount-${locId}-${tid}-${p}`);
+          if (tEl) tEl.textContent = `${xp}/${yp}`;
         });
-
-        for (const it of state.selected.values()){
-          const k = keyOf(it);
-          const a = state.assigned.get(k);
-          if (!a || !a.location_id || !a.task_id) continue;
-          if (String(a.location_id) !== locId) continue;
-          if (String(a.task_id) !== tid) continue;
-          if (it.existing && !state.dirty.has(k)) continue;
-          taskCount += 1;
-        }
-
-        const tcEl = document.getElementById(`pdTaskCount-${locId}-${tid}`);
-        if (tcEl) tcEl.textContent = String(taskCount);
       });
     });
   }
 
   function computeReadyToSaveCount(){
-    // ready to save: selection items that have task chosen AND:
-    // - new item, OR existing item that is dirty
     let n = 0;
     for (const it of state.selected.values()){
       const k = keyOf(it);
       const a = state.assigned.get(k);
       if (!a || !a.location_id || !a.task_id) continue;
+
       if (!it.existing) { n += 1; continue; }
       if (state.dirty.has(k)) n += 1;
     }
@@ -777,14 +903,8 @@
   }
 
   function ensureSaveEnabled(){
-    const selectedCount = state.selected.size;
-    const readyCount = computeReadyToSaveCount();
-
-    selectedCountEl.textContent = String(selectedCount);
-    readyCountEl.textContent = String(readyCount);
-
-    // enabled only if there is something to save
-    saveBtn.disabled = !(readyCount > 0);
+    selectedCountEl.textContent = String(state.selected.size);
+    saveBtn.disabled = !(computeReadyToSaveCount() > 0);
   }
 
   function renderAll(){
@@ -795,7 +915,7 @@
   }
 
   /* -----------------------------
-     Save concept (API)
+     Save concept
   ------------------------------ */
   async function saveConcept(){
     const items = [];
@@ -805,25 +925,12 @@
       const a = state.assigned.get(k);
       if (!a || !a.location_id || !a.task_id) continue;
 
-      // new always
       if (!it.existing){
-        items.push({
-          user_id: it.user_id,
-          date: it.date,
-          period: it.period,
-          task_id: Number(a.task_id),
-        });
+        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
         continue;
       }
-
-      // existing only if dirty
       if (state.dirty.has(k)){
-        items.push({
-          user_id: it.user_id,
-          date: it.date,
-          period: it.period,
-          task_id: Number(a.task_id),
-        });
+        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
       }
     }
 
@@ -846,13 +953,10 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Opslaan mislukt.");
 
-      // Update existingShifts with returned full details
       (data.saved || []).forEach(s => {
-        // merge into existingShifts (by key)
         const k = `${s.user_id}|${s.date}|${s.period}`;
         const idx = existingShifts.findIndex(x => `${x.user_id}|${x.date}|${x.period}` === k);
 
-        // need names for group/firstname - get from selection or rect dataset
         const rect = findRectByKey(k);
         const group = rect?.dataset.group || state.selected.get(k)?.group || "—";
         const firstname = rect?.dataset.firstname || state.selected.get(k)?.firstname || "—";
@@ -874,7 +978,6 @@
         if (idx >= 0) existingShifts[idx] = merged;
         else existingShifts.push(merged);
 
-        // Update matrix styling
         if (rect){
           rect.dataset.shiftId = String(merged.id);
           rect.dataset.shiftStatus = String(merged.status);
@@ -887,13 +990,11 @@
           rect.classList.remove("is-selected");
         }
 
-        // after saving, clear selection & dirty for this key
         state.selected.delete(k);
         state.assigned.delete(k);
         state.dirty.delete(k);
       });
 
-      // rebuild matrix markings (safe)
       markMatrixFromExisting();
       renderAll();
     } catch(err){
@@ -912,7 +1013,7 @@
   /* -----------------------------
      Init
   ------------------------------ */
-  buildTabs();
+  buildLocationUI();
   markMatrixFromExisting();
   bindMatrix();
   renderAll();

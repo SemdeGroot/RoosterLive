@@ -180,7 +180,6 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   cursor: pointer;
 }
 
-/* Selected (blue outline) */
 .avail-rect.is-selected{
   box-shadow:
     0 0 0 4px rgba(59,130,246,0.28),
@@ -188,7 +187,6 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   border-color: #3b82f6 !important;
 }
 
-/* Concept */
 .avail-rect.is-concept{
   background:
     repeating-linear-gradient(
@@ -203,7 +201,6 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   cursor: pointer;
 }
 
-/* Accepted */
 .avail-rect.is-accepted{
   background: rgba(34,197,94,0.90);
   border-color: rgba(34,197,94,1) !important;
@@ -239,9 +236,24 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 10px;
-  display: flex;
+  display: inline-flex;
   gap: 8px;
   align-items: center;
+}
+
+/* ✅ make pd-pill usable as button */
+button.pd-pill{
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+/* active pill (same idea as tabs) */
+.pd-pill.is-active{
+  border-color: var(--accent);
+  background: var(--button-hover);
 }
 
 .pd-pill-label{
@@ -252,6 +264,90 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 
 .pd-pill-value{
   font-weight: 900;
+}
+
+.pd-pill-row{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------
+   Location + period layout
+--------------------------------------------------------- */
+.pd-loc-panel{
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pd-loc-top{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pd-loc-title{
+  font-weight: 900;
+}
+
+.pd-loc-period-pills{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pd-period-panel{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* header per period: bold + italic + left */
+.pd-period-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-period-title{
+  font-weight: 900;
+  font-style: italic;
+  text-align: left;
+}
+
+.pd-period-count{
+  font-weight: 900;
+}
+
+.pd-task-block{
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pd-task-block-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pd-task-block-name{
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.pd-task-block-count{
+  font-weight: 900;
+  color: var(--muted);
 }
 
 .pd-ap-section{
@@ -293,6 +389,9 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   background: rgba(255,255,255,0.03);
 }
 
+/* =========================================================
+   Shift cards (compact + nicer)
+   ========================================================= */
 .pd-item{
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.03);
@@ -313,23 +412,7 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 }
 
 .pd-item-main{
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   min-width: 0;
-}
-
-.pd-item-title{
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.pd-item-sub{
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 0.9rem;
 }
 
 .pd-item-actions{
@@ -339,7 +422,6 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   flex-shrink: 0;
 }
 
-/* jouw icon-btn styling bestaat al elders; hier alleen alignment fix */
 .pd-item-actions .icon-btn{
   display: inline-flex;
   align-items: center;
@@ -356,108 +438,66 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   border-radius: 12px;
 }
 
-.pd-chip{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 0.8rem;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-}
-
-.pd-chip--status{
-  text-transform: lowercase;
-}
-
-.pd-chip--concept{
-  border-color: rgba(34,197,94,0.35);
-  background: rgba(34,197,94,0.10);
-}
-
-.pd-chip--accepted{
-  border-color: rgba(34,197,94,0.55);
-  background: rgba(34,197,94,0.18);
-}
-
-/* Tabs */
-.pd-tabs{
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pd-tab{
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-weight: 900;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.pd-tab.is-active{
-  border-color: var(--accent);
-  background: rgba(59,130,246,0.08);
-}
-
-.pd-tab-count{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  font-weight: 900;
-}
-
-.pd-panel{
-  margin-top: 10px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 10px;
-  background: rgba(255,255,255,0.02);
-}
-
-.pd-task-grid{
+/* compact inner block */
+.pd-shift-card{
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
+  min-width: 0;
 }
 
-.pd-task-row{
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 14px;
-  padding: 10px;
-  background: rgba(255,255,255,0.02);
-}
-
-.pd-task-head{
+.pd-shift-top{
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
-.pd-task-name{
+.pd-shift-line1{
   font-weight: 900;
+  line-height: 1.15;
+  word-break: break-word;
 }
 
-.pd-task-count{
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
+.pd-shift-line2{
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.9rem;
+  line-height: 1.15;
+}
+
+/* ✅ Status pills: NO RGBA (hex only) */
+.pd-status-pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
   border-radius: 999px;
-  padding: 2px 10px;
   font-weight: 900;
+  font-size: 0.78rem;
+  text-transform: lowercase;
+  border: 1px solid transparent;
+}
+
+/* blauw */
+.pd-status-pill--available{
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+/* lichtgroen */
+.pd-status-pill--concept{
+  background: #86efac;
+  border-color: #86efac;
+  color: #052e16;
+}
+
+/* donkergroen */
+.pd-status-pill--active{
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
 }
 
 .pd-task-items{
@@ -475,10 +515,20 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   background: rgba(255,255,255,0.02);
 }
 
-.pd-staging-title{
-  color: var(--muted);
-  font-weight: 900;
+.pd-staging-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
+}
+
+.pd-staging-title-strong{
+  font-weight: 900;
+}
+
+.pd-staging-count{
+  font-weight: 900;
 }
 
 .pd-ap-actions{
