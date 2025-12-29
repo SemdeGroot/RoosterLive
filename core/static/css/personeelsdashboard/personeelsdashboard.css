@@ -214,8 +214,14 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 .pd-actionpanel{
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0; /* ✅ zodat crud-divider dezelfde “hoogte/spacing” heeft als links */
 }
+
+/* ✅ maak spacing expliciet i.p.v. flex-gap */
+.pd-ap-head{ margin-bottom: 12px; }
+.pd-actionpanel > .crud-divider{ margin: 0 0 12px 0; }
+.pd-actionpanel .pd-ap-section{ margin-top: 12px; }
+.pd-actionpanel .pd-ap-section:first-of-type{ margin-top: 0; }
 
 .pd-ap-head{
   display: flex;
@@ -272,6 +278,10 @@ button.pd-pill{
   flex-wrap: wrap;
 }
 
+.pd-selection-period-row{
+  margin-top: 8px;
+}
+
 /* ---------------------------------------------------------
    Location + period layout
 --------------------------------------------------------- */
@@ -286,12 +296,22 @@ button.pd-pill{
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
 .pd-loc-title{
   font-weight: 900;
+    flex: 1 1 auto;
+  min-width: 0;
+
+  white-space: nowrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+
+  overflow: visible;     
+  text-overflow: clip;
 }
 
 .pd-loc-period-pills{
@@ -326,10 +346,9 @@ button.pd-pill{
 }
 
 .pd-task-block{
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 14px;
+  border: none !important;
+  background: transparent !important;
   padding: 10px;
-  background: rgba(255,255,255,0.02);
 }
 
 .pd-task-block-head{
@@ -390,7 +409,7 @@ button.pd-pill{
 }
 
 /* =========================================================
-   Shift cards (compact + nicer)
+   Shift cards (NEW layout: text boven actions)
    ========================================================= */
 .pd-item{
   border: 1px solid var(--border);
@@ -398,9 +417,10 @@ button.pd-pill{
   border-radius: 14px;
   padding: 10px 10px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
 }
 
 .pd-item--assigned{
@@ -415,11 +435,23 @@ button.pd-pill{
   min-width: 0;
 }
 
+/* ✅ actions blijven 1 regel (dropdowns + buttons) */
 .pd-item-actions{
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-wrap: nowrap;                 /* ✅ niet wrappen */
+  width: 100%;
+}
+
+.pd-item-actions select{
+  flex: 1 1 0;                       /* ✅ twee dropdowns verdelen ruimte */
+  min-width: 0;                      /* ✅ mag krimpen zodat het 1 regel blijft */
+}
+
+.pd-item-actions .icon-btn,
+.pd-item-actions .pd-icon-btn{
+  flex: 0 0 auto;
 }
 
 .pd-item-actions .icon-btn{
@@ -430,7 +462,7 @@ button.pd-pill{
 }
 
 .pd-mini-select{
-  min-width: 160px;
+  min-width: 0;                      /* ✅ override oude min-width */
 }
 
 .pd-icon-btn{
@@ -509,10 +541,10 @@ button.pd-pill{
 /* staging */
 .pd-staging{
   margin-bottom: 10px;
-  border: 1px dashed rgba(255,255,255,0.18);
+  border: none !important;
   border-radius: 14px;
   padding: 10px;
-  background: rgba(255,255,255,0.02);
+  background: transparent !important;
 }
 
 .pd-staging-head{
@@ -532,7 +564,7 @@ button.pd-pill{
 }
 
 .pd-ap-actions{
-  margin-top: 6px;
+  margin-top: 12px;
   display: flex;
   justify-content: flex-end;
 }
@@ -554,8 +586,4 @@ button.pd-pill{
   }
 
   .pd-right-spacer{ display: none; }
-
-  .pd-mini-select{
-    min-width: 140px;
-  }
 }

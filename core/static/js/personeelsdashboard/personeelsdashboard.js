@@ -156,8 +156,15 @@
     badges.forEach(b => b.classList.toggle('active', b.dataset.slot === slotId));
   }
 
+  function notifyPeriodChange(period){
+    // ✅ koppel links (sort) aan rechts (actiepaneel)
+    window.dispatchEvent(new CustomEvent("pd:periodChange", { detail: { period } }));
+  }
+
   function sortBySlot(slotId){
-    const [d, part] = slotId.split('|');
+    if (!body || !slotId) return;
+
+    const [d, part] = String(slotId).split('|');
     const rows = Array.from(body.querySelectorAll('.matrix-row'));
 
     rows.sort((a, b) => {
@@ -176,15 +183,19 @@
 
     rows.forEach(r => body.appendChild(r));
     setActiveBadge(slotId);
+
+    // ✅ sync naar actiepaneel
+    notifyPeriodChange(part);
   }
 
   badges.forEach(b => b.addEventListener('click', () => sortBySlot(b.dataset.slot)));
 
-  // default sort
+  // ✅ default: altijd Ochtend actief bij GET
   try {
-    sortBySlot("{{ default_sort_slot }}");
+    const morningBadge = Array.from(badges).find(b => String(b.dataset.slot || '').endsWith('|morning'));
+    if (morningBadge?.dataset?.slot) sortBySlot(morningBadge.dataset.slot);
   } catch(e) {
-    // ignore if template var not rendered in some context
+    // ignore
   }
 
   /* ---------- Search filter ---------- */

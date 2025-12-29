@@ -162,6 +162,19 @@
     applyPeriodVisibility(locIdStr);
   }
 
+  // ✅ used for syncing from left grid sorting:
+  function setPeriodForAllLocations(period){
+    if (!PERIODS.includes(period)) return;
+    locations.forEach(loc => state.ui.activePeriodByLoc.set(String(loc.id), period));
+    if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
+  }
+
+  /**
+   * ✅ SUPER IMPORTANT FIX:
+   * Niet vertrouwen op `hidden` alleen (kan door CSS overschreven worden),
+   * maar expliciet display:none zetten.
+   * Daardoor is er per locatie altijd maar 1 dagdeel zichtbaar.
+   */
   function applyPeriodVisibility(locId){
     const locIdStr = String(locId || "");
     const activePeriod = state.ui.activePeriodByLoc.get(locIdStr) || "morning";
@@ -171,21 +184,25 @@
 
     // pills active
     $all(`button[data-period-pill="1"][data-loc-id="${locIdStr}"]`, panel).forEach(btn => {
-      btn.classList.toggle("is-active", btn.dataset.period === activePeriod);
-      btn.setAttribute("aria-selected", btn.dataset.period === activePeriod ? "true" : "false");
+      const isActive = btn.dataset.period === activePeriod;
+      btn.classList.toggle("is-active", isActive);
+      btn.setAttribute("aria-selected", isActive ? "true" : "false");
     });
 
     // show only active period panel
     $all(`.pd-period-panel[data-loc-id="${locIdStr}"]`, panel).forEach(sec => {
-      sec.hidden = sec.dataset.period !== activePeriod;
+      const show = sec.dataset.period === activePeriod;
+
+      // hard enforce
+      sec.hidden = !show;
+      sec.style.display = show ? "" : "none";
     });
   }
 
   /* -----------------------------
-     Status pill (no rgba colors)
+     Status pill
   ------------------------------ */
   function statusPill(kind){
-    // kind: "available" | "concept" | "active"
     const label =
       kind === "available" ? "beschikbaar" :
       kind === "active" ? "actief" :
@@ -220,7 +237,7 @@
     locations.forEach((loc, idx) => {
       const locId = String(loc.id);
 
-      // location pill as button using pd-pill class
+      // location pill
       const pill = document.createElement("button");
       pill.type = "button";
       pill.className = "pd-pill pd-pill-btn";
@@ -240,7 +257,6 @@
       panel.dataset.locId = locId;
       panel.hidden = idx !== 0;
 
-      // period pills (tab-like)
       const periodPills = PERIODS.map(p => `
         <button type="button"
                 class="pd-pill pd-pill-btn"
@@ -254,7 +270,6 @@
         </button>
       `).join("");
 
-      // period panels (only active shown)
       const periodPanels = PERIODS.map(p => {
         const tasksHtml = (loc.tasks || []).map(t => `
           <div class="pd-task-block">
@@ -266,12 +281,15 @@
           </div>
         `).join("");
 
+        // ✅ init: non-morning panels display:none (hard)
+        const displayStyle = (p === "morning") ? "" : "display:none;";
+
         return `
           <section class="pd-period-panel"
                    data-loc-id="${locId}"
                    data-period="${p}"
                    id="pdPeriodPanel-${locId}-${p}"
-                   ${p === "morning" ? "" : "hidden"}>
+                   style="${displayStyle}">
 
             <div class="pd-period-head">
               <div class="pd-period-title">${periodLabel(p)}</div>
@@ -312,7 +330,7 @@
       setActiveLocation(btn.dataset.locId);
     });
 
-    // bind period pills
+    // bind period pills (per locatie)
     locPanelsEl.addEventListener("click", (e) => {
       const btn = e.target.closest('button[data-period-pill="1"]');
       if (!btn) return;
@@ -400,10 +418,9 @@
   }
 
   /* -----------------------------
-     Shift card (compact)
+     Shift card header
   ------------------------------ */
   function shiftCardHeader(item){
-    // item: { existing?, status?, period, date, firstname, group }
     let kind = "available";
     if (item.existing){
       kind = (item.status === "accepted") ? "active" : "concept";
@@ -432,7 +449,6 @@
     card.className = "pd-item pd-item--selection";
     card.dataset.key = k;
 
-    // ✅ for existing: delete + remove (toggle)
     const rightButtons = item.existing
       ? `${deleteButtonHtml()}${removeButtonHtml()}`
       : `${removeButtonHtml()}`;
@@ -453,18 +469,22 @@
     const taskSel = card.querySelector('select[data-action="task"]');
 
     locSel.addEventListener("change", () => {
-      const locId = locSel.value; // may be ""
+      const locId = locSel.value;
       state.assigned.set(k, { location_id: String(locId || ""), task_id: "" });
 
       if (item.existing) state.dirty.add(k);
 
-      if (locId) setActiveLocation(String(locId));
+      if (locId){
+        setActiveLocation(String(locId));
+        setActivePeriod(String(locId), item.period); // open dagdeel van die dienst
+      }
+
       renderAll();
       pop(card);
     });
 
     taskSel.addEventListener("change", () => {
-      const taskId = taskSel.value; // may be ""
+      const taskId = taskSel.value;
       const cur = state.assigned.get(k) || { location_id: "", task_id: "" };
       state.assigned.set(k, { ...cur, task_id: String(taskId || "") });
       state.dirty.add(k);
@@ -545,7 +565,11 @@
         state.dirty.add(k);
       }
 
-      if (locId) setActiveLocation(locId);
+      if (locId){
+        setActiveLocation(locId);
+        setActivePeriod(locId, period);
+      }
+
       renderAll();
       pop(card);
     });
@@ -761,15 +785,14 @@
       });
     });
 
-    // period UI apply for active loc
+    // ✅ keep period visibility correct
     if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
   }
 
   /* -----------------------------
-     Counts (no count in shift)
+     Counts + save enable (ongewijzigd)
   ------------------------------ */
   function renderCounts(){
-    // override moved existing shifts (avoid double count)
     const overrideByKey = new Map();
     for (const it of state.selected.values()){
       const k = keyOf(it);
@@ -785,8 +808,8 @@
       });
     }
 
-    const locPeriodCounts = new Map(); // locId -> {morning,afternoon,evening}
-    const taskPeriodCounts = new Map(); // `${locId}|${taskId}` -> {morning,afternoon,evening}
+    const locPeriodCounts = new Map();
+    const taskPeriodCounts = new Map();
 
     locations.forEach(loc => {
       locPeriodCounts.set(String(loc.id), { morning:0, afternoon:0, evening:0 });
@@ -807,7 +830,6 @@
       if (tp) tp[period] += 1;
     }
 
-    // 1) existing shifts unless overridden
     existingShifts.forEach(s => {
       const k = `${s.user_id}|${s.date}|${s.period}`;
       if (overrideByKey.has(k)) return;
@@ -820,7 +842,6 @@
       if (taskId) bumpTask(locId, taskId, per);
     });
 
-    // 2) previews (new + dirty existing)
     for (const it of state.selected.values()){
       const k = keyOf(it);
       const a = state.assigned.get(k);
@@ -851,7 +872,6 @@
       return (t?.min?.[p] ?? 0);
     }
 
-    // render location pills: total X/Y
     locations.forEach(loc => {
       const locId = String(loc.id);
       const lp = locPeriodCounts.get(locId) || {morning:0,afternoon:0,evening:0};
@@ -915,7 +935,7 @@
   }
 
   /* -----------------------------
-     Save concept
+     Save concept (ongewijzigd)
   ------------------------------ */
   async function saveConcept(){
     const items = [];
@@ -1008,6 +1028,15 @@
   saveBtn.addEventListener("click", (e) => {
     e.preventDefault();
     saveConcept();
+  });
+
+  /* -----------------------------
+     ✅ Sync: left grid sorting -> open same period in action panel
+  ------------------------------ */
+  window.addEventListener("pd:periodChange", (e) => {
+    const p = e?.detail?.period;
+    if (!p || !PERIODS.includes(p)) return;
+    setPeriodForAllLocations(p);
   });
 
   /* -----------------------------
