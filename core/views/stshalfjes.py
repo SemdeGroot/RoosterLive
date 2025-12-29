@@ -13,11 +13,11 @@ def stshalfjes(request):
     """
     Beheert het overzicht van geneesmiddelen die onnodig gehalveerd worden.
     """
-    # 1. Permissie controle (Pas de strings aan naar jouw permissie-systeem)
-    if not can(request.user, "can_view_sts_halfjes"):
+
+    if not can(request.user, "can_view_baxter_sts_halfjes"):
         return HttpResponseForbidden("Je hebt geen rechten om deze pagina te bekijken.")
     
-    can_edit = can(request.user, "can_edit_sts_halfjes")
+    can_edit = can(request.user, "can_edit_baxter_sts_halfjes")
 
     # 2. POST Logica
     if request.method == "POST":

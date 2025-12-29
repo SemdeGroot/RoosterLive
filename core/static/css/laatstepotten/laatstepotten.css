@@ -2,8 +2,8 @@
 table.laatstepotten-table {
   --c1: 40px;   /* Index */
   --c2: 120px;  /* ZI */
-  --c3: auto;   /* Naam (vult aan) */
-  --c4: 150px;  /* Datum */
+  --c3: 300px;   /* Naam (vult aan) */
+  --c4: 140px;  /* Datum */
   --c5: 100px;  /* Acties */
 }
 

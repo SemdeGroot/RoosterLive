@@ -1,8 +1,8 @@
 /* Kolom breedtes: 1: #, 2: Gehalveerd, 3: Alternatief, 4: Acties */
 table.stshalfjes-table {
   --c1: 40px;   /* Index */
-  --c2: 40%;    /* Huidig middel */
-  --c3: 40%;    /* Alternatief middel */
+  --c2: 300px;    /* Huidig middel */
+  --c3: 300px;    /* Alternatief middel */
   --c4: 100px;  /* Acties */
 }
 
