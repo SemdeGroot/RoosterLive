@@ -154,7 +154,7 @@ def sync_custom_permissions():
 def can(user, codename: str) -> bool:
     return user.is_superuser or user.has_perm(f"core.{codename}")
 
-# ===== Generieke helpers =====
+# ===== Clear dir voor rooster =====
 
 def clear_dir(p: Path):
     if not p.exists():
@@ -168,61 +168,15 @@ def clear_dir(p: Path):
             except Exception:
                 pass
 
-def read_table(fp):
-    """
-    Leest een CSV/Excel:
 
-    - DEV: fp is meestal een Path op het filesystem.
-    - PROD: fp is een storage-pad (string) voor default_storage (S3).
-
-    Retourneert (df, error).
-    """
-    try:
-        if isinstance(fp, Path):
-            suffix = fp.suffix.lower()
-            if suffix in (".xlsx", ".xls"):
-                df = pd.read_excel(fp)
-            else:
-                df = pd.read_csv(fp, sep=None, engine="python", encoding="utf-8-sig")
-        else:
-            # String-pad voor storage (S3 of FileSystemStorage)
-            suffix = Path(str(fp)).suffix.lower()
-            with default_storage.open(fp, "rb") as f:
-                raw = f.read()
-
-            if suffix in (".xlsx", ".xls"):
-                df = pd.read_excel(BytesIO(raw))
-            else:
-                text = raw.decode("utf-8-sig", errors="replace")
-                df = pd.read_csv(StringIO(text), sep=None, engine="python")
-        df.columns = [str(c) for c in df.columns]
-        return df, None
-    except Exception as e:
-        return None, f"Kon bestand niet lezen: {e}"
-
-def filter_and_limit(df, q, limit):
-    if df is None:
-        return df
-    work = df
-    if q:
-        ql = q.lower()
-        mask = pd.Series(False, index=work.index)
-        for col in work.columns:
-            try:
-                mask = mask | work[col].astype(str).str.lower().str.contains(ql, na=False)
-            except Exception:
-                pass
-        work = work[mask]
-    if limit and limit > 0:
-        work = work.head(limit)
-    return work
+# === Mobile check ===
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()
     # Simpele maar effectieve check, gelijk aan je JS isMobile()
     return any(s in ua for s in ["android", "iphone", "ipad", "ipod"])
 
-# === PDF export helpers
+# === PDF export helpers === 
 def _static_abs_path(static_path: str) -> str:
     path = finders.find(static_path)
     if not path:
