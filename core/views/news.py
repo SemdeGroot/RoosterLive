@@ -1,3 +1,4 @@
+# core/views/news.py
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -12,8 +13,15 @@ from django.utils import timezone
 
 from ._helpers import (
     can,
-    render_pdf_to_cache,
     CACHE_DIR,
+)
+
+from ._upload_helpers import (
+    save_upload_with_hash,
+    ensure_pdf_previews_exist,
+    list_pdf_preview_urls,
+    delete_pdf_previews,
+    read_storage_bytes,
 )
 
 from core.models import NewsItem
@@ -38,6 +46,7 @@ def _delete_news_files(rel_path: str, file_hash: str | None) -> None:
 
     ext = Path(rel_path).suffix.lower()
 
+    # DEV / lokaal
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
         abs_path = MEDIA_ROOT / rel_path
         try:
@@ -46,27 +55,18 @@ def _delete_news_files(rel_path: str, file_hash: str | None) -> None:
             pass
 
         if ext == ".pdf" and file_hash:
-            cache_path = CACHE_NEWS_DIR / file_hash
-            if cache_path.exists():
-                shutil.rmtree(cache_path, ignore_errors=True)
+            # Verwijder previews (webp en/of legacy png)
+            delete_pdf_previews(cache_root=CACHE_NEWS_DIR, file_hash=file_hash)
         return
 
+    # PROD / S3
     try:
         default_storage.delete(rel_path)
     except Exception:
         pass
 
     if ext == ".pdf" and file_hash:
-        cache_base = f"cache/news/{file_hash}"
-        try:
-            _dirs, files = default_storage.listdir(cache_base)
-        except Exception:
-            files = []
-        for name in files:
-            try:
-                default_storage.delete(f"{cache_base}/{name}")
-            except Exception:
-                pass
+        delete_pdf_previews(cache_root=CACHE_NEWS_DIR, file_hash=file_hash)
 
 
 def _delete_news_files_for_item(item: NewsItem) -> None:
@@ -84,52 +84,6 @@ def _cleanup_expired_news(now: datetime) -> int:
     return removed
 
 
-def _list_cached_pdf_png_urls(file_hash: str) -> list[str]:
-    if not file_hash:
-        return []
-
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        folder = CACHE_NEWS_DIR / file_hash
-        if not folder.exists():
-            return []
-        files = sorted([p.name for p in folder.glob("page_*.png")])
-        return [f"{settings.MEDIA_URL}cache/news/{file_hash}/{name}" for name in files]
-
-    base = f"cache/news/{file_hash}"
-    try:
-        _dirs, files = default_storage.listdir(base)
-    except Exception:
-        files = []
-
-    pngs = sorted([name for name in files if name.startswith("page_") and name.endswith(".png")])
-    return [f"{settings.MEDIA_URL}cache/news/{file_hash}/{name}" for name in pngs]
-
-
-def _ensure_pdf_cache_exists(rel_path: str, file_hash: str | None) -> str | None:
-    if not rel_path:
-        return file_hash
-
-    ext = Path(rel_path).suffix.lower()
-    if ext != ".pdf":
-        return file_hash
-
-    if file_hash and _list_cached_pdf_png_urls(file_hash):
-        return file_hash
-
-    try:
-        if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-            abs_path = MEDIA_ROOT / rel_path
-            pdf_bytes = abs_path.read_bytes()
-        else:
-            with default_storage.open(rel_path, "rb") as f:
-                pdf_bytes = f.read()
-    except Exception:
-        return file_hash
-
-    h, _n_pages = render_pdf_to_cache(pdf_bytes, dpi=300, cache_root=CACHE_NEWS_DIR)
-    return h
-
-
 @login_required
 def news_media(request, item_id: int):
     if not can(request.user, "can_view_news"):
@@ -140,10 +94,29 @@ def news_media(request, item_id: int):
     if not item.has_file:
         return JsonResponse({"has_file": False})
 
+    # PDF -> altijd previews (webp voorkeur, png fallback)
     if item.is_pdf:
-        urls = _list_cached_pdf_png_urls(item.file_hash or "")
+        try:
+            pdf_bytes = read_storage_bytes(item.file_path)
+            h, _n_pages, _ext = ensure_pdf_previews_exist(
+                pdf_bytes=pdf_bytes,
+                cache_root=CACHE_NEWS_DIR,
+                file_hash=item.file_hash or None,
+            )
+            if h and h != (item.file_hash or ""):
+                item.file_hash = h
+                item.save(update_fields=["file_hash"])
+        except Exception:
+            # Als render faalt, geef lege urls terug (frontend kan dit afvangen)
+            pass
+
+        urls, _ext_used = list_pdf_preview_urls(
+            cache_root=CACHE_NEWS_DIR,
+            file_hash=item.file_hash or "",
+        )
         return JsonResponse({"has_file": True, "type": "pdf", "urls": urls})
 
+    # Afbeelding (al webp of legacy png/jpg) -> direct URL
     return JsonResponse({"has_file": True, "type": "image", "url": item.media_url})
 
 
@@ -200,17 +173,25 @@ def news(request):
             item.description = edit_form.cleaned_data.get("description", "")
 
             if uploaded_file:
-                from ._helpers import save_pdf_or_png_with_hash
-
-                rel_path, h = save_pdf_or_png_with_hash(
+                rel_path, h = save_upload_with_hash(
                     uploaded_file=uploaded_file,
                     target_dir=NEWS_DIR,
                     base_name="news",
+                    convert_images_to_webp=True,
+                    webp_lossless=True,
                 )
 
-                h2 = _ensure_pdf_cache_exists(rel_path, h)
-                if h2:
-                    h = h2
+                # Eager previews voor PDF zodat media endpoint meteen URLs heeft
+                if rel_path.lower().endswith(".pdf"):
+                    try:
+                        pdf_bytes = read_storage_bytes(rel_path)
+                        ensure_pdf_previews_exist(
+                            pdf_bytes=pdf_bytes,
+                            cache_root=CACHE_NEWS_DIR,
+                            file_hash=h,
+                        )
+                    except Exception:
+                        pass
 
                 item.file_path = rel_path
                 item.file_hash = h
@@ -249,18 +230,25 @@ def news(request):
             original_name = ""
 
             if uploaded_file:
-                from ._helpers import save_pdf_or_png_with_hash
-
-                rel_path, h = save_pdf_or_png_with_hash(
+                rel_path, h = save_upload_with_hash(
                     uploaded_file=uploaded_file,
                     target_dir=NEWS_DIR,
                     base_name="news",
+                    convert_images_to_webp=True,
+                    webp_lossless=True,
                 )
                 original_name = uploaded_file.name
 
-                h2 = _ensure_pdf_cache_exists(rel_path, h)
-                if h2:
-                    h = h2
+                if rel_path.lower().endswith(".pdf"):
+                    try:
+                        pdf_bytes = read_storage_bytes(rel_path)
+                        ensure_pdf_previews_exist(
+                            pdf_bytes=pdf_bytes,
+                            cache_root=CACHE_NEWS_DIR,
+                            file_hash=h,
+                        )
+                    except Exception:
+                        pass
 
             news_item = NewsItem(
                 title=form.cleaned_data["title"],

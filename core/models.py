@@ -534,6 +534,21 @@ class Werkafspraak(models.Model):
             return ""
         return f"{settings.MEDIA_URL}{self.file_path}"
     
+class RosterWeek(models.Model):
+    monday = models.DateField(unique=True, db_index=True)
+    week_slug = models.CharField(max_length=16, db_index=True)  # "week01"
+    file_path = models.CharField(max_length=255, blank=True, default="")  # opgeslagen PDF pad (optioneel maar handig)
+    file_hash = models.CharField(max_length=32, db_index=True, blank=True)  # sha[:16] past ook
+    n_pages = models.PositiveIntegerField(default=0)
+    preview_ext = models.CharField(max_length=8, default="webp")  # "webp" of "png" (legacy)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-monday"]
+
+    def __str__(self):
+        return f"{self.week_slug} ({self.monday})"
+    
 class MedicatieReviewAfdeling(models.Model):
     """
     Stamdata: Een afdeling binnen een organisatie en locatie.

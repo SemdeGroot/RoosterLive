@@ -5,20 +5,27 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone, translation
 from django.core.files.storage import default_storage
 
+from core.models import RosterWeek
 from core.tasks import send_roster_updated_push_task
+
 from ._helpers import (
     can,
-    ROSTER_DIR,            # bijv. MEDIA_ROOT / "rooster"
-    CACHE_ROSTER_DIR,      # bijv. MEDIA_ROOT / "cache" / "rooster"
+    ROSTER_DIR,            # MEDIA_ROOT / "rooster"
+    CACHE_ROSTER_DIR,      # CACHE_DIR / "rooster"
     clear_dir,
-    render_pdf_to_cache,   # (pdf_bytes, dpi, cache_root) -> (hash_id, n_pages)
-    save_pdf_upload_with_hash,
+)
+
+from ._upload_helpers import (
+    save_upload_with_hash,
+    ensure_pdf_previews_exist,
+    list_pdf_preview_urls,
+    read_storage_bytes,
     _media_relpath,
 )
 
@@ -77,7 +84,7 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
     [huidige week .. +weeks_ahead] vallen.
     Daardoor verdwijnt week x automatisch zodra week x+1 start.
 
-    - In DEV: opruimen op filesystem (zoals je al had).
+    - In DEV: opruimen op filesystem.
     - In PROD: opruimen in S3 onder:
         media/rooster/weekNN/...
         media/cache/rooster/weekNN/...
@@ -89,7 +96,6 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
 
     # === DEV: lokaal filesystem ===
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        # Rooster-weekmappen
         for week_dir in ROSTER_DIR.glob("week*"):
             if not week_dir.is_dir():
                 continue
@@ -100,7 +106,6 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
                 except Exception:
                     pass
 
-        # Cache-weekmappen
         for cache_week_dir in CACHE_ROSTER_DIR.glob("week*"):
             if not cache_week_dir.is_dir():
                 continue
@@ -114,7 +119,6 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
         return
 
     # === PROD: S3 ===
-    # Rooster-PDF's: media/rooster/weekNN/rooster*.pdf
     roster_root = _media_relpath(ROSTER_DIR)  # "rooster"
     try:
         week_dirs, _files = default_storage.listdir(roster_root)
@@ -132,7 +136,7 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
                 if name.lower().endswith(".pdf"):
                     default_storage.delete(f"{week_prefix}/{name}")
 
-    # Cache: cache/rooster/weekNN/<hash>/page_XXX.png
+    # Cache: cache/rooster/weekNN/<hash>/page_XXX.(webp/png)
     cache_root = "cache/rooster"
     try:
         cache_week_dirs, _ = default_storage.listdir(cache_root)
@@ -153,12 +157,10 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
                 except FileNotFoundError:
                     files = []
                 for name in files:
-                    default_storage.delete(f"{hash_prefix}/{name}")
+                    # verwijder zowel webp als png
+                    if name.startswith("page_") and (name.endswith(".webp") or name.endswith(".png")):
+                        default_storage.delete(f"{hash_prefix}/{name}")
 
-
-# -----------------------------
-# View
-# -----------------------------
 
 @login_required
 def rooster(request):
@@ -220,23 +222,45 @@ def rooster(request):
             messages.error(request, "Upload een PDF-bestand (.pdf).")
             return redirect(f"{reverse('rooster')}?monday={post_monday.isoformat()}")
 
-        # Lokale dirs voor DEV; in PROD schrijft helper naar S3
         post_week_pdf_dir.mkdir(parents=True, exist_ok=True)
         CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
         # Lees bytes voor directe render
         pdf_bytes = f.read()
-        f.seek(0)
+        try:
+            f.seek(0)
+        except Exception:
+            pass
 
         # Cache voor deze week leegmaken
         clear_dir(post_week_cache_dir)
 
-        # PDF schrijven als rooster.<hash>.pdf (max 1 per week)
-        save_pdf_upload_with_hash(
+        # PDF opslaan als rooster.<hash>.pdf (max 1 per week)
+        rel_path, h = save_upload_with_hash(
             uploaded_file=f,
             target_dir=post_week_pdf_dir,
             base_name="rooster",
             clear_existing=True,
+            convert_images_to_webp=False,
+        )
+
+        # Render previews (webp voorkeur)
+        hash_id, n_pages, ext_used = ensure_pdf_previews_exist(
+            pdf_bytes=pdf_bytes,
+            cache_root=post_week_cache_dir,
+            file_hash=h,
+        )
+
+        # Model updaten
+        RosterWeek.objects.update_or_create(
+            monday=post_monday,
+            defaults={
+                "week_slug": _week_slug_from_monday(post_monday),
+                "file_path": rel_path,
+                "file_hash": hash_id,
+                "n_pages": n_pages,
+                "preview_ext": ext_used,
+            },
         )
 
         # Weekinfo voor notificatie
@@ -257,7 +281,6 @@ def rooster(request):
         week_end = week_end_post
         iso_year, iso_week, _ = monday_view.isocalendar()
 
-        # Navigatie opnieuw berekenen op basis van monday_view
         prev_raw = monday_view - timedelta(weeks=1)
         next_raw = monday_view + timedelta(weeks=1)
         has_prev = prev_raw >= min_monday
@@ -268,9 +291,9 @@ def rooster(request):
         week_slug = _week_slug_from_monday(monday_view)
         week_cache_dir = _week_cache_dir(monday_view)
 
-        # PDF → cache
-        hash_id, n = render_pdf_to_cache(
-            pdf_bytes, dpi=300, cache_root=week_cache_dir
+        page_urls, _ext_used2 = list_pdf_preview_urls(
+            cache_root=week_cache_dir,
+            file_hash=hash_id,
         )
 
         context = {
@@ -283,10 +306,7 @@ def rooster(request):
             "next_monday": next_monday,
             "week_slug": week_slug,
             "no_roster": False,
-            "page_urls": [
-                f"{settings.MEDIA_URL}cache/rooster/{week_slug}/{hash_id}/page_{i:03d}.png"
-                for i in range(1, n + 1)
-            ],
+            "page_urls": page_urls,
             "header_title": f"Week {iso_week} – {iso_year}",
             "min_monday": min_monday,
             "max_monday": max_monday,
@@ -294,7 +314,6 @@ def rooster(request):
             "can_upload": can(request.user, "can_upload_roster"),
         }
 
-        # Dropdown opnieuw opbouwen
         cur = min_monday
         while cur <= max_monday:
             context["week_options"].append({
@@ -353,13 +372,29 @@ def rooster(request):
         })
         cur += timedelta(weeks=1)
 
-    # PDF ophalen (DEV vs PROD)
+    # 1) Probeer eerst uit model + cache (zodat je geen PDF hoeft te lezen)
+    rw = RosterWeek.objects.filter(monday=monday).first()
+    if rw and rw.file_hash:
+        urls, _ext_used = list_pdf_preview_urls(
+            cache_root=week_cache_dir,
+            file_hash=rw.file_hash,
+        )
+        if urls:
+            context["page_urls"] = urls
+            context["no_roster"] = False
+            return render(request, "rooster/index.html", context)
+
+    # 2) Fallback: PDF ophalen (DEV vs PROD) en previews maken
+    storage_path = None
+
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
         if not week_pdf_path.exists():
             context["no_roster"] = True
             return render(request, "rooster/index.html", context)
-
         pdf_bytes = week_pdf_path.read_bytes()
+        # rel_path in dev (voor model)
+        rel_dir = _media_relpath(week_pdf_dir)
+        storage_path = f"{rel_dir}/{week_pdf_path.name}" if rel_dir else week_pdf_path.name
     else:
         week_rel_dir = _media_relpath(week_pdf_dir)  # bijv. "rooster/week48"
         try:
@@ -385,13 +420,26 @@ def rooster(request):
         with default_storage.open(storage_path, "rb") as f:
             pdf_bytes = f.read()
 
-    hash_id, n = render_pdf_to_cache(
-        pdf_bytes, dpi=300, cache_root=week_cache_dir
+    # Previews maken/zekerstellen
+    hash_id, n_pages, ext_used = ensure_pdf_previews_exist(
+        pdf_bytes=pdf_bytes,
+        cache_root=week_cache_dir,
+        file_hash=(rw.file_hash if rw and rw.file_hash else None),
     )
 
-    context["page_urls"] = [
-        f"{settings.MEDIA_URL}cache/rooster/{week_slug}/{hash_id}/page_{i:03d}.png"
-        for i in range(1, n + 1)
-    ]
+    # Model bijwerken/aanmaken
+    RosterWeek.objects.update_or_create(
+        monday=monday,
+        defaults={
+            "week_slug": week_slug,
+            "file_path": storage_path or "",
+            "file_hash": hash_id,
+            "n_pages": n_pages,
+            "preview_ext": ext_used,
+        },
+    )
+
+    urls, _ext_used2 = list_pdf_preview_urls(cache_root=week_cache_dir, file_hash=hash_id)
+    context["page_urls"] = urls
 
     return render(request, "rooster/index.html", context)

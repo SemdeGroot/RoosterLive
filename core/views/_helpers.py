@@ -1,7 +1,6 @@
 # core/views/_helpers.py
 from pathlib import Path
 import shutil
-import hashlib
 
 import fitz  # PyMuPDF
 import pandas as pd
@@ -10,10 +9,8 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 from django.contrib.staticfiles import finders
 
-from fnmatch import fnmatch
 from io import BytesIO, StringIO
 from weasyprint import HTML, CSS
 
@@ -158,8 +155,6 @@ def can(user, codename: str) -> bool:
     return user.is_superuser or user.has_perm(f"core.{codename}")
 
 # ===== Generieke helpers =====
-def pdf_hash(pdf_bytes: bytes) -> str:
-    return hashlib.sha256(pdf_bytes).hexdigest()[:16]
 
 def clear_dir(p: Path):
     if not p.exists():
@@ -172,99 +167,6 @@ def clear_dir(p: Path):
                 item.unlink()
             except Exception:
                 pass
-
-def _media_relpath(target_dir: Path) -> str:
-    """
-    Geeft het pad van target_dir relatief t.o.v. MEDIA_ROOT, als 'subdir/subdir2'.
-    """
-    try:
-        rel = target_dir.relative_to(MEDIA_ROOT)
-    except ValueError:
-        raise ValueError("target_dir moet onder MEDIA_ROOT liggen")
-    return str(rel).replace("\\", "/").strip("/")
-
-def render_pdf_to_cache(pdf_bytes: bytes, dpi: int = 300, cache_root: Path | None = None):
-    """
-    Render PDF -> PNG's in media/cache/<subdir>/<hash>/page_XXX.png.
-
-    - In DEV (of als SERVE_MEDIA_LOCALLY=True): schrijf naar het lokale filesystem
-      onder settings.CACHE_DIR.
-    - In PROD: schrijf naar S3 via default_storage, zodat CloudFront/CDN ze kan serveren.
-
-    Parameters
-    ----------
-    pdf_bytes : bytes
-        De inhoud van de PDF.
-    dpi : int
-        Resolutie van gerenderde PNG's.
-    cache_root : Path | None
-        Lokale map onder CACHE_DIR voor deze cache:
-          bijv. CACHE_AGENDA_DIR (= CACHE_DIR / "agenda")
-                CACHE_NEWS_DIR   (= CACHE_DIR / "news")
-                week_cache_dir   (= CACHE_DIR / "rooster" / "weekNN")
-        In DEV gebruiken we dit als echte directory.
-        In PROD gebruiken we het alleen om de S3-prefix te bepalen
-        (relatief pad t.o.v. CACHE_DIR).
-    """
-    h = pdf_hash(pdf_bytes)
-
-    # Standaard: direct onder CACHE_DIR
-    if cache_root is None:
-        cache_root = CACHE_DIR
-
-    # === DEV / lokaal cache ===
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        out_dir = cache_root / h
-        out_dir.mkdir(parents=True, exist_ok=True)
-
-        if not any(out_dir.glob("page_*.png")):
-            with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
-                for i, page in enumerate(doc):
-                    pix = page.get_pixmap(dpi=dpi, alpha=False)
-                    (out_dir / f"page_{i+1:03d}.png").write_bytes(pix.tobytes("png"))
-
-        n_pages = len(list(out_dir.glob("page_*.png")))
-        return h, n_pages
-
-    # === PROD / S3 cache ===
-    # Bepaal relatieve subdir t.o.v. CACHE_DIR, bijv.:
-    #   cache_root = CACHE_DIR / "agenda"        -> rel = "agenda"
-    #   cache_root = CACHE_DIR / "news"          -> rel = "news"
-    #   cache_root = CACHE_DIR / "rooster/week01"-> rel = "rooster/week01"
-    try:
-        rel = cache_root.relative_to(CACHE_DIR)
-        rel_str = str(rel).replace("\\", "/").strip("/")
-    except ValueError:
-        # fallback: als cache_root niet onder CACHE_DIR ligt
-        rel_str = ""
-
-    if rel_str:
-        base_dir = f"cache/{rel_str}/{h}"
-    else:
-        base_dir = f"cache/{h}"
-
-    # Kijk of er al PNG's zijn in S3
-    try:
-        _, files = default_storage.listdir(base_dir)
-    except FileNotFoundError:
-        files = []
-
-    png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
-
-    if not png_files:
-        # Nog niet gerenderd → render naar S3
-        with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
-            for i, page in enumerate(doc):
-                pix = page.get_pixmap(dpi=dpi, alpha=False)
-                file_path = f"{base_dir}/page_{i+1:03d}.png"
-                default_storage.save(file_path, ContentFile(pix.tobytes("png")))
-
-        # opnieuw ophalen voor het aantal pagina's
-        _, files = default_storage.listdir(base_dir)
-        png_files = [f for f in files if f.startswith("page_") and f.endswith(".png")]
-
-    n_pages = len(png_files)
-    return h, n_pages
 
 def read_table(fp):
     """
@@ -314,131 +216,6 @@ def filter_and_limit(df, q, limit):
     if limit and limit > 0:
         work = work.head(limit)
     return work
-
-def hash_from_img_url(img_url: str) -> str | None:
-    """
-    Haalt de hash uit een image-URL van het type:
-      /media/cache/<subdir>/<hash>/page_001.png
-
-    Werkt voor alle cache-submappen (bv. policies, news, voorraad, nazendingen, enz.).
-    Verwacht dat MEDIA_URL correct eindigt met een '/'.
-    """
-    prefix = f"{settings.MEDIA_URL}cache/"
-    if not img_url.startswith(prefix):
-        return None
-
-    rest = img_url[len(prefix):]  # bv. "policies/<hash>/page_001.png"
-    parts = rest.split("/")
-    if len(parts) >= 2:
-        # parts[0] = subdir (policies, news, etc.)
-        # parts[1] = hash
-        return parts[1]
-    return None
-
-def save_pdf_upload_with_hash(uploaded_file, target_dir: Path, base_name: str, clear_existing: bool = True):
-    """
-    Slaat een geüploade PDF op als <base_name>.<hash>.pdf.
-
-    DEV (SERVE_MEDIA_LOCALLY=True of DEBUG=True):
-        - Schrijft direct naar filesystem onder target_dir (Path).
-    PROD:
-        - Schrijft naar S3 via default_storage, onder 'media/<subdir>/<base_name>.<hash>.pdf'.
-
-    Retourneert:
-        DEV: Path naar lokaal bestand
-        PROD: storage-pad (string) relatief t.o.v. 'media' locatie, bv. 'agenda/agenda.<hash>.pdf'
-    """
-    # PDF in memory lezen (is nodig om te hashen)
-    if hasattr(uploaded_file, "chunks"):
-        pdf_bytes = b"".join(uploaded_file.chunks())
-    else:
-        pdf_bytes = uploaded_file.read()
-
-    h = pdf_hash(pdf_bytes)
-
-    # === DEV / lokaal ===
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        target_dir.mkdir(parents=True, exist_ok=True)
-        if clear_existing:
-            clear_dir(target_dir)
-
-        dest = target_dir / f"{base_name}.{h}.pdf"
-        dest.write_bytes(pdf_bytes)
-        return dest
-
-    # === PROD / S3 ===
-    rel_dir = _media_relpath(target_dir)  # bv. "agenda", "policies", "nazendingen"
-    # bestaande bestanden opruimen als clear_existing=True
-    if clear_existing:
-        try:
-            _, files = default_storage.listdir(rel_dir)
-        except FileNotFoundError:
-            files = []
-        for name in files:
-            if name.startswith(f"{base_name}.") and name.endswith(".pdf"):
-                default_storage.delete(f"{rel_dir}/{name}")
-
-    filename = f"{base_name}.{h}.pdf"
-    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
-    default_storage.save(storage_path, ContentFile(pdf_bytes))
-    return storage_path
-
-def save_pdf_or_png_with_hash(uploaded_file, target_dir: Path, base_name: str):
-    """
-    Slaat een geüpload bestand (PDF of afbeelding) gehashed op als
-        '<base_name>.<hash><ext>'
-    in target_dir (onder MEDIA_ROOT).
-
-    Werkt in DEV (filesystem) en PROD (S3 via default_storage).
-
-    Parameters
-    ----------
-    uploaded_file : UploadedFile
-        Het bestand uit request.FILES.
-    target_dir : Path
-        Directory onder MEDIA_ROOT waar het bestand moet komen (bv. MEDIA_ROOT / "news").
-    base_name : str
-        Logische basename, bv. 'news', 'policy', 'avatar'.
-
-    Retourneert
-    ----------
-    (rel_path, h)
-        rel_path : str
-            Pad relatief t.o.v. MEDIA_ROOT, bv. 'news/news.<hash>.pdf'
-        h : str
-            Hash-string (eerste 16 chars van sha256).
-    """
-    # Bestand in memory lezen (voor hashing)
-    if hasattr(uploaded_file, "chunks"):
-        file_bytes = b"".join(uploaded_file.chunks())
-    else:
-        file_bytes = uploaded_file.read()
-
-    ext = (Path(uploaded_file.name).suffix or "").lower()
-    allowed_exts = (".pdf", ".png", ".jpg", ".jpeg", ".webp")
-    if ext not in allowed_exts:
-        raise ValueError(f"Unsupported file type '{ext}'. Toegestaan: {', '.join(allowed_exts)}")
-
-    # Zelfde hashfunctie als voor PDF's (maar generiek bruikbaar)
-    h = pdf_hash(file_bytes)
-
-    filename = f"{base_name}.{h}{ext}"
-
-    # === DEV / lokaal filesystem ===
-    if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
-        target_dir.mkdir(parents=True, exist_ok=True)
-        dest = target_dir / filename
-        dest.write_bytes(file_bytes)
-
-        rel_dir = _media_relpath(target_dir)  # bv. "news"
-        rel_path = f"{rel_dir}/{filename}" if rel_dir else filename
-        return rel_path, h
-
-    # === PROD / S3 ===
-    rel_dir = _media_relpath(target_dir)  # bv. "news"
-    storage_path = f"{rel_dir}/{filename}" if rel_dir else filename
-    default_storage.save(storage_path, ContentFile(file_bytes))
-    return storage_path, h
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()
