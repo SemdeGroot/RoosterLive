@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from django.db import transaction, models
+from django.db import transaction
 
 # Pas de imports aan naar jouw mappenstructuur
 from ..forms import AvailabilityUploadForm

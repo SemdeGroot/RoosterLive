@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import hashlib
 import shutil
-from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import Iterable, Optional, Tuple

@@ -1,5 +1,4 @@
 # core/views/policies.py
-import shutil
 from pathlib import Path
 
 from django.conf import settings
@@ -13,7 +12,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from core.models import Werkafspraak
 from core.forms import WerkafspraakForm
 
-from ._helpers import can  # permissie helper blijft hier
+from ._helpers import can
 from ._upload_helpers import (
     save_upload_with_hash,
     read_storage_bytes,

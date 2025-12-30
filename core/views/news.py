@@ -1,5 +1,4 @@
 # core/views/news.py
-import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -15,7 +14,7 @@ from core.models import NewsItem
 from core.forms import NewsItemForm
 from core.tasks import send_news_uploaded_push_task
 
-from ._helpers import can  # permissie helper blijft hier
+from ._helpers import can
 from ._upload_helpers import (
     save_upload_with_hash,
     read_storage_bytes,

@@ -2,16 +2,11 @@
 from pathlib import Path
 import shutil
 
-import fitz  # PyMuPDF
-import pandas as pd
-
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.files.storage import default_storage
 from django.contrib.staticfiles import finders
 
-from io import BytesIO, StringIO
 from weasyprint import HTML, CSS
 
 # ===== PATHS =====
@@ -24,21 +19,9 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_ROSTER_DIR = CACHE_DIR / "rooster"
 CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
-CACHE_NAZENDINGEN_DIR = CACHE_DIR / "nazendingen"
-CACHE_NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
-
-POL_DIR = MEDIA_ROOT / "policies"
-POL_DIR.mkdir(parents=True, exist_ok=True)
-
-CACHE_POLICIES_DIR = CACHE_DIR / "policies"
-CACHE_POLICIES_DIR.mkdir(parents=True, exist_ok=True)
-
 ROSTER_DIR = MEDIA_ROOT / "rooster"
 ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 ROSTER_FILE = ROSTER_DIR / "rooster.pdf"
-
-NAZENDINGEN_DIR = MEDIA_ROOT / "nazendingen"
-NAZENDINGEN_DIR.mkdir(parents=True, exist_ok=True)
 
 DB_PATH = settings.BASE_DIR / "lookup.db"
 
