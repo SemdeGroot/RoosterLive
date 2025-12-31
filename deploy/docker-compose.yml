@@ -18,7 +18,7 @@ services:
   celery:
     container_name: rooster-celery
     image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
-    command: celery -A rooster_site worker -l INFO -Q default,mail,push --concurrency=2 --max-tasks-per-child=100
+    command: celery -A rooster_site worker -l INFO -Q mail,default,push -Ofair --concurrency=2 --max-tasks-per-child=100
     env_file:
       - /opt/rooster/app/.env
     depends_on:

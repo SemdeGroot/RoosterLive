@@ -168,8 +168,13 @@ CELERY_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_ROUTES = {
-    "core.tasks.send_invite_email_task": {"queue": "mail"},
+    "core.tasks_email.email_dispatcher_task": {"queue": "mail"},
+    "core.tasks_email.cleanup_storage_file_task": {"queue": "default"},
+
     "core.tasks.send_roster_updated_push_task": {"queue": "push"},
+    "core.tasks.send_news_uploaded_push_task": {"queue": "push"},
+    "core.tasks.send_agenda_uploaded_push_task": {"queue": "push"},
+    "core.tasks.send_laatste_pot_push_task": {"queue": "push"},
 }
 
 # === Auth / Passwords ===
