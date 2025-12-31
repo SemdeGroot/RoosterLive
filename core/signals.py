@@ -28,9 +28,8 @@ def warm_permissions_cache_on_login(sender, request, user, **kwargs):
 
 @receiver(user_logged_out)
 def drop_permissions_cache_on_logout(sender, request, user, **kwargs):
-    # optioneel opruimen; niet bumpen
-    delete_permset(user.id)
-
+    if user and getattr(user, "is_authenticated", False):
+        delete_permset(user.id)
 
 @receiver(m2m_changed, sender=User.groups.through)
 def invalidate_on_user_groups_change(sender, instance, action, **kwargs):

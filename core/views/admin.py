@@ -14,7 +14,6 @@ from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
 from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task
 from core.tiles import build_tiles
-from core.permissions_cache import bump_perm_version
 
 User = get_user_model()
 
@@ -75,7 +74,25 @@ def admin_users(request):
         else:
             messages.error(request, "Gebruiker aanmaken mislukt.")
 
-    users = User.objects.all().select_related("profile").order_by("username")
+    inlog_config = StandaardInlog.load()
+    kiosk_group = inlog_config.standaard_rol
+
+    users = (
+        User.objects
+        .all()
+        .select_related("profile")
+        .prefetch_related("groups")
+        .order_by("username")
+    )
+
+    # filter de kiosk login gebruiker weg:
+    if kiosk_group:
+        users = users.exclude(
+            first_name__iexact="Apotheek",
+            last_name__iexact="Algemeen",
+            groups=kiosk_group.id,
+        ).distinct()
+
     groups = Group.objects.all().order_by("name")
     organizations = Organization.objects.all().order_by("name")
 
@@ -136,10 +153,7 @@ def admin_groups(request):
         instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
         group_form = GroupWithPermsForm(request.POST, instance=instance, prefix="group")
         if group_form.is_valid():
-            g = group_form.save()
-            # invalidate alle users in deze groep
-            for uid in g.user_set.values_list("id", flat=True):
-                bump_perm_version(uid)
+            group_form.save()
             messages.success(request, "Groep opgeslagen.")
             return redirect("admin_groups")
         messages.error(request, "Groep opslaan mislukt.")
@@ -329,8 +343,7 @@ def user_update(request, user_id: int):
 
     if form.is_valid():
         try:
-            saved = form.save()
-            bump_perm_version(saved.id)
+            form.save()
             messages.success(request, "Gebruiker opgeslagen.")
         except Exception as e:
             messages.error(request, f"Opslaan mislukt: {e}")
