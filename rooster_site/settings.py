@@ -124,17 +124,10 @@ else:
     _db_url = os.getenv("PROD_DATABASE_URL")
 
 if _db_url:
-    try:
-        import dj_database_url
-        DATABASES = {
-            "default": dj_database_url.parse(
-                _db_url,
-                conn_max_age=0 if DEBUG else 600
-            )
-        }
-    except Exception:
-        # dj_database_url ontbreekt of parse error → blijf op SQLite
-        pass
+    import dj_database_url
+    DATABASES = {"default": dj_database_url.parse(_db_url, conn_max_age=0)}
+elif not DEBUG:
+    raise RuntimeError("PROD_DATABASE_URL ontbreekt")
 
 # === Redis / Cache / Sessions ===
 if DEBUG:
@@ -146,18 +139,24 @@ else:
     CELERY_BROKER_URL = os.getenv("PROD_CELERY_BROKER_URL")
     CELERY_RESULT_BACKEND = os.getenv("PROD_CELERY_RESULT_BACKEND")
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-SESSION_CACHE_ALIAS = "default"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-        "TIMEOUT": 3600,  # 1 uur
-    }
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "TIMEOUT": 3600,  # algemene cache
+        "KEY_PREFIX": "rooster",
+    },
+    "sessions": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "TIMEOUT": None,  # session backend zet per-key expiry
+        "KEY_PREFIX": "rooster:sess",
+    },
 }
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "sessions"
 
 RATELIMIT_USE_CACHE = "default"
 
@@ -256,7 +255,8 @@ else:
 # === Sessies ===
 SESSION_COOKIE_AGE = 60 * 60 * 10  # 10 uur
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = False
+SESSION_SAVE_EVERY_REQUEST = True # Rolling sessions
+PERMISSIONS_CACHE_TTL = SESSION_COOKIE_AGE # Permissies
 
 # === Email ===
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

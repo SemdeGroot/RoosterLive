@@ -118,48 +118,6 @@ echo "${IMAGE_TAG}" > "${LAST_OK_FILE}"
 echo "===> Deploy succeeded with image ${IMAGE_TAG}"
 
 echo "===> Cleaning up unused Docker resources"
-docker system prune -af --volumes || true
-
-# --- Automatische Cronjob Maintenance Configuratie ---
-echo "===> Configuring maintenance cronjob on host"
-
-# We zetten tijdelijk 'set -e' UIT. 
-# Dit voorkomt dat het script crasht als 'crontab -l' leeg is of dnf zeurt over updates.
-set +e
-
-# 1. Check of crontab commando bestaat. Zo niet: INSTALLEER het.
-if ! command -v crontab >/dev/null 2>&1; then
-    echo "!!! Crontab command not found. Installing cronie..."
-    
-    if command -v dnf >/dev/null 2>&1; then
-        # || true zorgt dat hij doorgaat, zelfs als dnf zeurt over updates
-        sudo dnf install -y cronie || true
-    else
-        sudo yum install -y cronie || true
-    fi
-
-    echo "Starting crond service..."
-    sudo systemctl enable crond || true
-    sudo systemctl start crond || true
-fi
-
-# 2. Stel de cronjob in (Veilige methode zonder pipes die kunnen falen)
-CRON_CMD="0 4 * * * docker exec rooster-web python manage.py clearsessions > /dev/null 2>&1"
-
-# Haal huidige crontab op. Als die niet bestaat, wordt CURRENT_CRON gewoon leeg (door || true)
-CURRENT_CRON="$(crontab -l 2>/dev/null || true)"
-
-# Check of onze regel er al in zit (grep via bash string check ipv pipe)
-if [[ "$CURRENT_CRON" != *"$CRON_CMD"* ]]; then
-    echo "Adding clearsessions to crontab..."
-    # Schrijf oude content + nieuwe regel
-    (echo "$CURRENT_CRON"; echo "$CRON_CMD") | crontab -
-else
-    echo "Cronjob already exists. Skipping."
-fi
-
-# Zet error checking weer AAN voor de zekerheid (hoewel het script hierna klaar is)
-set -e
-# -----------------------------------------------
+docker system prune -af || true
 
 echo "===> Done."

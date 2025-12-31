@@ -6,6 +6,9 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.staticfiles import finders
+from django.http import HttpRequest
+
+from core.permissions_cache import get_cached_permset
 
 from weasyprint import HTML, CSS
 
@@ -134,8 +137,31 @@ def sync_custom_permissions():
     if stale:
         Permission.objects.filter(content_type=ct, codename__in=stale).delete()
 
-def can(user, codename: str) -> bool:
-    return user.is_superuser or user.has_perm(f"core.{codename}")
+def can(obj, codename: str) -> bool:
+    """
+    Werkt met zowel request als user:
+      can(request, "can_access_admin")
+      can(request.user, "can_access_admin")
+    """
+    request = obj if isinstance(obj, HttpRequest) else None
+    user = obj.user if request else obj
+
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+
+    perm = codename if "." in codename else f"core.{codename}"
+
+    # request-local cache zodat meerdere can() calls in één view niet steeds Redis doen
+    if request is not None:
+        cached = getattr(request, "_permset_cache", None)
+        if cached is None:
+            cached = get_cached_permset(user)
+            request._permset_cache = cached
+        return perm in cached
+
+    return perm in get_cached_permset(user)
 
 # ===== Clear dir voor rooster =====
 

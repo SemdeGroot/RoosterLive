@@ -14,6 +14,8 @@ from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
 from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task
 from core.tiles import build_tiles
+from core.permissions_cache import bump_perm_version
+
 User = get_user_model()
 
 # ==========================================
@@ -134,7 +136,10 @@ def admin_groups(request):
         instance = Group.objects.filter(pk=gid_post).first() if gid_post else None
         group_form = GroupWithPermsForm(request.POST, instance=instance, prefix="group")
         if group_form.is_valid():
-            group_form.save()
+            g = group_form.save()
+            # invalidate alle users in deze groep
+            for uid in g.user_set.values_list("id", flat=True):
+                bump_perm_version(uid)
             messages.success(request, "Groep opgeslagen.")
             return redirect("admin_groups")
         messages.error(request, "Groep opslaan mislukt.")
@@ -324,7 +329,8 @@ def user_update(request, user_id: int):
 
     if form.is_valid():
         try:
-            form.save()
+            saved = form.save()
+            bump_perm_version(saved.id)
             messages.success(request, "Gebruiker opgeslagen.")
         except Exception as e:
             messages.error(request, f"Opslaan mislukt: {e}")

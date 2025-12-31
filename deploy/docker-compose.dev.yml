@@ -5,6 +5,7 @@ services:
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis_data_dev:/data
     ports:
       - "6379:6379"
     restart: unless-stopped
@@ -68,3 +69,4 @@ services:
 
 volumes:
   postgres_data_dev:
+  redis_data_dev:
