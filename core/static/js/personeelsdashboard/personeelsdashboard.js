@@ -157,7 +157,7 @@
   }
 
   function notifyPeriodChange(period){
-    // ✅ koppel links (sort) aan rechts (actiepaneel)
+    // koppel links (sort) aan rechts (actiepaneel)
     window.dispatchEvent(new CustomEvent("pd:periodChange", { detail: { period } }));
   }
 
@@ -184,13 +184,13 @@
     rows.forEach(r => body.appendChild(r));
     setActiveBadge(slotId);
 
-    // ✅ sync naar actiepaneel
+    // sync naar actiepaneel
     notifyPeriodChange(part);
   }
 
   badges.forEach(b => b.addEventListener('click', () => sortBySlot(b.dataset.slot)));
 
-  // ✅ default: altijd Ochtend actief bij GET
+  // default: altijd Ochtend actief bij GET
   try {
     const morningBadge = Array.from(badges).find(b => String(b.dataset.slot || '').endsWith('|morning'));
     if (morningBadge?.dataset?.slot) sortBySlot(morningBadge.dataset.slot);

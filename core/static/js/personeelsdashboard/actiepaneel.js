@@ -102,7 +102,8 @@
       rect.dataset.locationId = String(s.location_id);
 
       rect.classList.remove("is-accepted", "is-concept");
-      rect.classList.add(s.status === "accepted" ? "is-accepted" : "is-concept");
+      const st = String(s.status || "concept");
+      rect.classList.add((st === "active" || st === "accepted") ? "is-accepted" : "is-concept");
       rect.classList.add("has-shift");
       rect.tabIndex = 0;
       rect.removeAttribute("aria-disabled");
@@ -162,7 +163,7 @@
     applyPeriodVisibility(locIdStr);
   }
 
-  // ✅ used for syncing from left grid sorting:
+  // used for syncing from left grid sorting:
   function setPeriodForAllLocations(period){
     if (!PERIODS.includes(period)) return;
     locations.forEach(loc => state.ui.activePeriodByLoc.set(String(loc.id), period));
@@ -170,7 +171,6 @@
   }
 
   /**
-   * ✅ SUPER IMPORTANT FIX:
    * Niet vertrouwen op `hidden` alleen (kan door CSS overschreven worden),
    * maar expliciet display:none zetten.
    * Daardoor is er per locatie altijd maar 1 dagdeel zichtbaar.
@@ -281,7 +281,7 @@
           </div>
         `).join("");
 
-        // ✅ init: non-morning panels display:none (hard)
+        // init: non-morning panels display:none (hard)
         const displayStyle = (p === "morning") ? "" : "display:none;";
 
         return `
@@ -423,7 +423,8 @@
   function shiftCardHeader(item){
     let kind = "available";
     if (item.existing){
-      kind = (item.status === "accepted") ? "active" : "concept";
+      const st = String(item.status || "concept");
+      kind = (st === "active" || st === "accepted") ? "active" : "concept";
     }
     const pill = statusPill(kind);
 
@@ -785,7 +786,7 @@
       });
     });
 
-    // ✅ keep period visibility correct
+    // keep period visibility correct
     if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
   }
 
@@ -1005,7 +1006,8 @@
           rect.dataset.locationId = String(merged.location_id);
 
           rect.classList.remove("is-accepted", "is-concept");
-          rect.classList.add(merged.status === "accepted" ? "is-accepted" : "is-concept");
+          const st = String(merged.status || "concept");
+          rect.classList.add((st === "active" || st === "accepted") ? "is-accepted" : "is-concept");
           rect.classList.add("has-shift");
           rect.classList.remove("is-selected");
         }
@@ -1029,9 +1031,77 @@
     e.preventDefault();
     saveConcept();
   });
+    // -----------------------------
+  // Publish week (save selection + publish concept->accepted)
+  // -----------------------------
+  function buildItemsForPublish(){
+    const items = [];
+
+    for (const it of state.selected.values()){
+      const k = keyOf(it);
+      const a = state.assigned.get(k);
+      if (!a || !a.location_id || !a.task_id) continue; // alleen complete items
+
+      if (!it.existing){
+        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
+        continue;
+      }
+      if (state.dirty.has(k)){
+        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
+      }
+    }
+
+    return items;
+  }
+
+  const publishBtn = $("#pdPublishWeekBtn");
+  if (publishBtn) {
+    publishBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!pd?.publishUrl) return;
+
+    const msg =
+      "Weet je zeker dat je wilt publiceren?\n\n" +
+      "Na publiceren krijgen medewerkers een melding en worden de diensten zichtbaar in de Jansen app en de gesynchroniseerde agenda app.\n" +
+      "Publiceer bij voorkeur pas als je het rooster voor deze week volledig hebt ingepland en als concept hebt opgeslagen.\n\n" +
+      "Dit publiceert alle conceptdiensten van deze week (en slaat je huidige selectie eerst op als je dit nog niet hebt gedaan).";
+
+      const ok = confirm(msg);
+      if (!ok) return;
+
+      publishBtn.disabled = true;
+      const oldText = publishBtn.textContent;
+      publishBtn.textContent = "Publiceren…";
+
+      try {
+        const res = await fetch(pd.publishUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "",
+          },
+          body: JSON.stringify({
+            week_start: pd.weekStart,
+            week_end: pd.weekEnd,
+            items: buildItemsForPublish(),
+          }),
+        });
+
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Publiceren mislukt.");
+
+        window.location.reload(); // Django message zichtbaar + alles vers
+      } catch (err) {
+        alert(err.message || "Publiceren mislukt.");
+      } finally {
+        publishBtn.textContent = oldText;
+        publishBtn.disabled = false;
+      }
+    });
+  }
 
   /* -----------------------------
-     ✅ Sync: left grid sorting -> open same period in action panel
+     Sync: left grid sorting -> open same period in action panel
   ------------------------------ */
   window.addEventListener("pd:periodChange", (e) => {
     const p = e?.detail?.period;

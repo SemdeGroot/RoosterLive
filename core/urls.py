@@ -13,7 +13,7 @@ from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_o
 from core.views.profiel import profiel
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
-from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api
+from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api, publish_shifts_api
 from core.views import push as push_views
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 from core.views import agenda as agenda_views
@@ -115,6 +115,7 @@ urlpatterns = [
     path("personeel/teamdashboard/", personeelsdashboard_view, name="beschikbaarheidpersoneel"),
     path("personeel/teamdashboard/api/save-concept/", save_concept_shifts_api, name="pd_save_concept"),
     path("personeel/teamdashboard/api/delete-shift/", delete_shift_api, name="pd_delete_shift"),
+    path("personeel/teamdashboard/api/publish/", publish_shifts_api, name="pd_publish_shifts"),
     path("personeel/diensten/", diensten, name="diensten"),
     path("personeel/uren-doorgeven/", urendoorgeven, name="urendoorgeven"),
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),

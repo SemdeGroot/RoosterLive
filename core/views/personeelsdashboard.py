@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from collections import defaultdict
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone, translation
@@ -10,6 +11,7 @@ from django.utils.formats import date_format
 from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.db.models import Prefetch
+from django.db import transaction
 
 from ._helpers import can
 from core.models import Availability, Location, Task, Shift
@@ -261,12 +263,16 @@ def personeelsdashboard_view(request):
 
     pd_data = {
         "selectedDate": selected_day.isoformat(),
+        "weekStart": monday.isoformat(),
+        "weekEnd": week_end.isoformat(),
         "locations": locations_payload,
         "overallMin": overall_min,
         "existingShifts": existing_shifts_payload,
         "saveConceptUrl": reverse("pd_save_concept"),
         "deleteShiftUrl": reverse("pd_delete_shift"),
+        "publishUrl": reverse("pd_publish_shifts"),
     }
+
 
     return render(request, "personeelsdashboard/index.html", {
         "monday": monday,
@@ -388,3 +394,116 @@ def delete_shift_api(request):
 
     s.delete()
     return JsonResponse({"ok": True, "deleted": True, "shift_id": int(shift_id)})
+
+@login_required
+@require_POST
+def publish_shifts_api(request):
+    """
+    Publish (week) + optional save selected items:
+      - (optioneel) sla items op (create/update) zonder status te downgraden
+      - zet alle conceptdiensten in de weekrange op 'accepted'
+      - zet Django success message (zichtbaar na reload)
+      - return {ok, saved_count, updated_count}
+
+    Body:
+      {
+        "week_start": "YYYY-MM-DD",
+        "week_end": "YYYY-MM-DD",
+        "items": [ { "user_id": 1, "date": "YYYY-MM-DD", "period": "morning", "task_id": 12 }, ... ]   # optioneel
+      }
+    """
+    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+        return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige JSON."}, status=400)
+
+    ws = payload.get("week_start")
+    we = payload.get("week_end")
+    if not ws or not we:
+        return JsonResponse({"ok": False, "error": "week_start/week_end ontbreekt."}, status=400)
+
+    try:
+        week_start = date.fromisoformat(ws)
+        week_end = date.fromisoformat(we)
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige datum."}, status=400)
+
+    if week_end < week_start:
+        return JsonResponse({"ok": False, "error": "week_end mag niet vóór week_start liggen."}, status=400)
+
+    items = payload.get("items") or []
+    if not isinstance(items, list):
+        return JsonResponse({"ok": False, "error": "items moet een lijst zijn."}, status=400)
+
+    valid_periods = {p for p, _ in Shift.PERIOD_CHOICES}
+    errors = []
+    parsed_items = []
+
+    # validate items (hufterproof server-side)
+    for i, it in enumerate(items):
+        try:
+            user_id = int(it.get("user_id"))
+            task_id = int(it.get("task_id"))
+            period = str(it.get("period") or "")
+            d = date.fromisoformat(str(it.get("date") or ""))
+        except Exception:
+            errors.append(f"Item {i}: ongeldig formaat.")
+            continue
+
+        if period not in valid_periods:
+            errors.append(f"Item {i}: ongeldig period.")
+            continue
+
+        if d < week_start or d > week_end:
+            errors.append(f"Item {i}: date valt buiten weekrange.")
+            continue
+
+        parsed_items.append((user_id, d, period, task_id))
+
+    if errors:
+        return JsonResponse({"ok": False, "error": errors[0]}, status=400)
+
+    saved_count = 0
+
+    with transaction.atomic():
+        # 1) Save items (create/update), maar nooit accepted -> concept terugzetten
+        #    (dus: update alleen task_id; status blijft zoals hij is)
+        for (user_id, d, period, task_id) in parsed_items:
+            updated = (
+                Shift.objects
+                .filter(user_id=user_id, date=d, period=period)
+                .update(task_id=task_id)
+            )
+            if updated == 0:
+                Shift.objects.create(
+                    user_id=user_id,
+                    date=d,
+                    period=period,
+                    task_id=task_id,
+                    status="concept",
+                )
+            saved_count += 1
+
+        # 2) Publish: concept -> accepted in week
+        updated_count = (
+            Shift.objects
+            .filter(date__gte=week_start, date__lte=week_end, status="concept")
+            .update(status="accepted")
+        )
+
+    iso_week = week_start.isocalendar().week
+
+    messages.success(
+        request,
+        f"{int(updated_count)} dienst(en) gepubliceerd voor week {iso_week} "
+        f"({week_start:%d-%m} t/m {week_end:%d-%m})."
+    )
+
+    return JsonResponse({
+        "ok": True,
+        "saved_count": int(saved_count),
+        "updated_count": int(updated_count),
+    })
