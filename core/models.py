@@ -185,19 +185,10 @@ class Task(models.Model):
 
 
 class Shift(models.Model):
-    """
-    Links a user to a specific task at a specific time (date + period).
-    """
-
     PERIOD_CHOICES = [
         ('morning', 'Ochtend'),
         ('afternoon', 'Middag'),
         ('evening', 'Avond'),
-    ]
-
-    STATUS_CHOICES = [
-        ("concept", "Concept"),
-        ("accepted", "Accepted"),
     ]
 
     user = models.ForeignKey(
@@ -206,23 +197,12 @@ class Shift(models.Model):
         related_name="shifts"
     )
     task = models.ForeignKey(
-        Task,
+        "Task",
         on_delete=models.PROTECT,
         related_name="shifts"
     )
     date = models.DateField(db_index=True)
-    period = models.CharField(
-        max_length=10,
-        choices=PERIOD_CHOICES,
-        db_index=True
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="concept",
-        db_index=True
-    )
+    period = models.CharField(max_length=10, choices=PERIOD_CHOICES, db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -232,7 +212,33 @@ class Shift(models.Model):
         ordering = ["date", "period"]
 
     def __str__(self):
-        return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task}) [{self.status}]"
+        return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task})"
+    
+# core/models.py
+class ShiftDraft(models.Model):
+    ACTION_CHOICES = [
+        ("upsert", "Upsert"),
+        ("delete", "Delete"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="shift_drafts")
+    date = models.DateField(db_index=True)
+    period = models.CharField(max_length=10, choices=Shift.PERIOD_CHOICES, db_index=True)
+
+    # bij action="delete" is task leeg
+    task = models.ForeignKey("Task", on_delete=models.PROTECT, null=True, blank=True, related_name="shift_drafts")
+
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES, db_index=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "date", "period")
+        ordering = ["date", "period"]
+
+    def __str__(self):
+        return f"[DRAFT {self.action}] {self.date} {self.user} {self.period}"
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")

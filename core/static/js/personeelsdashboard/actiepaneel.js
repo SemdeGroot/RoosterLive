@@ -51,9 +51,14 @@
   if (!pd) return;
 
   const locations = pd.locations || [];
-  let existingShifts = pd.existingShifts || [];
+
+  // ✅ nieuw: published + drafts
+  let publishedShifts = pd.publishedShifts || [];
+  let draftShifts = pd.draftShifts || [];
+
   const saveConceptUrl = pd.saveConceptUrl;
   const deleteShiftUrl = pd.deleteShiftUrl;
+  const publishUrl = pd.publishUrl;
 
   // DOM
   const selectionListEl = $("#pdSelectionList");
@@ -73,16 +78,40 @@
     tasksByLocation.set(String(loc.id), (loc.tasks || []).map(t => ({ id: String(t.id), name: t.name })));
   });
 
-  function buildExistingMap(){
+  function keyFromParts(user_id, date, period){
+    return `${user_id}|${date}|${period}`;
+  }
+
+  function buildPublishedMap(){
     const m = new Map();
-    existingShifts.forEach(s => {
-      m.set(`${s.user_id}|${s.date}|${s.period}`, s);
-    });
+    publishedShifts.forEach(s => m.set(keyFromParts(s.user_id, s.date, s.period), s));
     return m;
   }
 
-  function getExistingByKey(k){
-    return buildExistingMap().get(k);
+  function buildDraftMap(){
+    const m = new Map();
+    draftShifts.forEach(d => m.set(keyFromParts(d.user_id, d.date, d.period), d));
+    return m;
+  }
+
+  // effective:
+  // - draft delete hides published and shows delete marker
+  // - draft upsert overrides published (concept)
+  // - else published
+  function getEffectiveByKey(k){
+    const pub = buildPublishedMap().get(k) || null;
+    const dr = buildDraftMap().get(k) || null;
+
+    if (dr && dr.action === "delete"){
+      return { kind: "draft_delete", published: pub, draft: dr };
+    }
+    if (dr && dr.action === "upsert"){
+      return { kind: "draft_upsert", published: pub, draft: dr };
+    }
+    if (pub){
+      return { kind: "published", published: pub, draft: null };
+    }
+    return null;
   }
 
   function findRectByKey(k){
@@ -90,51 +119,69 @@
     return document.querySelector(`.avail-rect[data-user-id="${user_id}"][data-date="${date}"][data-period="${period}"]`);
   }
 
-  function markMatrixFromExisting(){
-    existingShifts.forEach(s => {
-      const sel = `.avail-rect[data-user-id="${s.user_id}"][data-date="${s.date}"][data-period="${s.period}"]`;
-      const rect = document.querySelector(sel);
-      if (!rect) return;
-
-      rect.dataset.shiftId = String(s.id);
-      rect.dataset.shiftStatus = String(s.status || "concept");
-      rect.dataset.taskId = String(s.task_id);
-      rect.dataset.locationId = String(s.location_id);
-
-      rect.classList.remove("is-accepted", "is-concept");
-      const st = String(s.status || "concept");
-      rect.classList.add((st === "active" || st === "accepted") ? "is-accepted" : "is-concept");
-      rect.classList.add("has-shift");
-      rect.tabIndex = 0;
-      rect.removeAttribute("aria-disabled");
-    });
-  }
-
-  function clearMatrixShiftMark(shift){
-    const k = `${shift.user_id}|${shift.date}|${shift.period}`;
-    const rect = findRectByKey(k);
+  function clearRectMark(rect){
     if (!rect) return;
-
-    delete rect.dataset.shiftId;
-    delete rect.dataset.shiftStatus;
+    delete rect.dataset.shiftKind;
     delete rect.dataset.taskId;
     delete rect.dataset.locationId;
+    rect.classList.remove("has-shift","is-accepted","is-concept","is-delete-draft");
+  }
 
-    rect.classList.remove("is-accepted", "is-concept", "has-shift", "is-selected");
+  function markRectAs(rect, kind, locId, taskId){
+    if (!rect) return;
+
+    rect.classList.add("has-shift");
+    rect.dataset.shiftKind = String(kind || "");
+
+    if (locId != null) rect.dataset.locationId = String(locId);
+    if (taskId != null) rect.dataset.taskId = String(taskId);
+
+    rect.classList.remove("is-accepted","is-concept","is-delete-draft");
+    if (kind === "published") rect.classList.add("is-accepted");
+    else if (kind === "draft_upsert") rect.classList.add("is-concept");
+    else if (kind === "draft_delete") rect.classList.add("is-delete-draft");
+
+    rect.tabIndex = 0;
+    rect.removeAttribute("aria-disabled");
+  }
+
+  function markMatrixFromEffective(){
+    // reset only shift styles; keep .available as-is
+    $all(".avail-rect").forEach(r => clearRectMark(r));
+
+    const pubMap = buildPublishedMap();
+    const drMap = buildDraftMap();
+
+    // 1) published (skip if draft delete exists or draft upsert exists -> will be handled by draft)
+    pubMap.forEach((s, k) => {
+      const dr = drMap.get(k);
+      if (dr) return; // any draft overrides visibility in matrix
+      const rect = findRectByKey(k);
+      markRectAs(rect, "published", s.location_id, s.task_id);
+    });
+
+    // 2) drafts
+    drMap.forEach((d, k) => {
+      const rect = findRectByKey(k);
+      if (d.action === "delete"){
+        markRectAs(rect, "draft_delete", null, null);
+      } else {
+        markRectAs(rect, "draft_upsert", d.location_id, d.task_id);
+      }
+    });
   }
 
   // state
   const state = {
-    selected: new Map(),
-    assigned: new Map(),
-    dirty: new Set(),
+    selected: new Map(),  // k -> item
+    assigned: new Map(),  // k -> {location_id, task_id}
+    dirty: new Set(),     // k with unsaved changes
     ui: {
       activeLocId: locations.length ? String(locations[0].id) : "",
       activePeriodByLoc: new Map(), // locId -> "morning"/...
     }
   };
 
-  // init periods: default morning open for every loc
   locations.forEach(loc => state.ui.activePeriodByLoc.set(String(loc.id), "morning"));
 
   function setActiveLocation(locId){
@@ -150,7 +197,6 @@
       p.hidden = p.dataset.locId !== state.ui.activeLocId;
     });
 
-    // ensure period visibility applied for this loc
     applyPeriodVisibility(state.ui.activeLocId);
   }
 
@@ -163,18 +209,12 @@
     applyPeriodVisibility(locIdStr);
   }
 
-  // used for syncing from left grid sorting:
   function setPeriodForAllLocations(period){
     if (!PERIODS.includes(period)) return;
     locations.forEach(loc => state.ui.activePeriodByLoc.set(String(loc.id), period));
     if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
   }
 
-  /**
-   * Niet vertrouwen op `hidden` alleen (kan door CSS overschreven worden),
-   * maar expliciet display:none zetten.
-   * Daardoor is er per locatie altijd maar 1 dagdeel zichtbaar.
-   */
   function applyPeriodVisibility(locId){
     const locIdStr = String(locId || "");
     const activePeriod = state.ui.activePeriodByLoc.get(locIdStr) || "morning";
@@ -182,18 +222,14 @@
     const panel = locPanelsEl.querySelector(`.pd-loc-panel[data-loc-id="${locIdStr}"]`);
     if (!panel) return;
 
-    // pills active
     $all(`button[data-period-pill="1"][data-loc-id="${locIdStr}"]`, panel).forEach(btn => {
       const isActive = btn.dataset.period === activePeriod;
       btn.classList.toggle("is-active", isActive);
       btn.setAttribute("aria-selected", isActive ? "true" : "false");
     });
 
-    // show only active period panel
     $all(`.pd-period-panel[data-loc-id="${locIdStr}"]`, panel).forEach(sec => {
       const show = sec.dataset.period === activePeriod;
-
-      // hard enforce
       sec.hidden = !show;
       sec.style.display = show ? "" : "none";
     });
@@ -206,6 +242,7 @@
     const label =
       kind === "available" ? "beschikbaar" :
       kind === "active" ? "actief" :
+      kind === "delete" ? "verwijderen" :
       "concept";
 
     return `<span class="pd-status-pill pd-status-pill--${kind}">${label}</span>`;
@@ -228,7 +265,7 @@
   }
 
   /* -----------------------------
-     Build Location UI (loc pills + loc panels + period tabs)
+     Build Location UI
   ------------------------------ */
   function buildLocationUI(){
     locPillsEl.innerHTML = "";
@@ -237,7 +274,6 @@
     locations.forEach((loc, idx) => {
       const locId = String(loc.id);
 
-      // location pill
       const pill = document.createElement("button");
       pill.type = "button";
       pill.className = "pd-pill pd-pill-btn";
@@ -251,7 +287,6 @@
       `;
       locPillsEl.appendChild(pill);
 
-      // panel
       const panel = document.createElement("div");
       panel.className = "pd-loc-panel";
       panel.dataset.locId = locId;
@@ -281,7 +316,6 @@
           </div>
         `).join("");
 
-        // init: non-morning panels display:none (hard)
         const displayStyle = (p === "morning") ? "" : "display:none;";
 
         return `
@@ -323,14 +357,12 @@
       locPanelsEl.appendChild(panel);
     });
 
-    // bind location pills
     locPillsEl.addEventListener("click", (e) => {
       const btn = e.target.closest('button[data-loc-pill="1"]');
       if (!btn) return;
       setActiveLocation(btn.dataset.locId);
     });
 
-    // bind period pills (per locatie)
     locPanelsEl.addEventListener("click", (e) => {
       const btn = e.target.closest('button[data-period-pill="1"]');
       if (!btn) return;
@@ -353,12 +385,27 @@
     const k = `${user_id}|${date}|${period}`;
     if (state.selected.has(k)) return;
 
-    const ex = getExistingByKey(k);
-    if (ex){
-      state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: ex.id, status: ex.status });
-      state.assigned.set(k, { location_id: String(ex.location_id ?? ""), task_id: String(ex.task_id ?? "") });
+    const eff = getEffectiveByKey(k);
+
+    if (eff){
+      if (eff.kind === "draft_delete"){
+        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "draft_delete" });
+        state.assigned.set(k, { location_id: "", task_id: "" });
+      } else if (eff.kind === "draft_upsert"){
+        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "draft_upsert" });
+        state.assigned.set(k, {
+          location_id: String(eff.draft.location_id ?? ""),
+          task_id: String(eff.draft.task_id ?? "")
+        });
+      } else {
+        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "published" });
+        state.assigned.set(k, {
+          location_id: String(eff.published.location_id ?? ""),
+          task_id: String(eff.published.task_id ?? "")
+        });
+      }
     } else {
-      state.selected.set(k, { user_id, group, firstname, date, period, existing: false });
+      state.selected.set(k, { user_id, group, firstname, date, period, existing: false, kind: "available" });
       state.assigned.set(k, { location_id: "", task_id: "" });
     }
 
@@ -398,19 +445,20 @@
   /* -----------------------------
      Select builders
   ------------------------------ */
-  function buildLocationSelect(current){
+  function buildLocationSelect(current, disabled=false){
     return `
-      <select class="admin-select pd-mini-select" data-action="location">
+      <select class="admin-select pd-mini-select" data-action="location" ${disabled ? "disabled" : ""}>
         <option value="">Kies locatie…</option>
         ${locations.map(l => `<option value="${l.id}" ${String(current ?? "")===String(l.id)?"selected":""}>${l.name}</option>`).join("")}
       </select>
     `;
   }
 
-  function buildTaskSelect(locId, currentTaskId){
+  function buildTaskSelect(locId, currentTaskId, disabled=false){
     const tasks = tasksByLocation.get(String(locId)) || [];
+    const dis = disabled || !locId;
     return `
-      <select class="admin-select pd-mini-select" data-action="task" ${locId ? "" : "disabled"}>
+      <select class="admin-select pd-mini-select" data-action="task" ${dis ? "disabled" : ""}>
         <option value="">Kies taak…</option>
         ${tasks.map(t => `<option value="${t.id}" ${String(currentTaskId ?? "")===String(t.id)?"selected":""}>${t.name}</option>`).join("")}
       </select>
@@ -421,12 +469,14 @@
      Shift card header
   ------------------------------ */
   function shiftCardHeader(item){
-    let kind = "available";
-    if (item.existing){
-      const st = String(item.status || "concept");
-      kind = (st === "active" || st === "accepted") ? "active" : "concept";
-    }
-    const pill = statusPill(kind);
+    let pillKind = "available";
+
+    if (item.kind === "published") pillKind = "active";
+    else if (item.kind === "draft_upsert") pillKind = "concept";
+    else if (item.kind === "draft_delete") pillKind = "delete";
+    else if (item.existing) pillKind = "concept";
+
+    const pill = statusPill(pillKind);
 
     const line1 = `${item.firstname} – ${item.group}`;
     const line2 = `${periodLabel(item.period)} – ${item.date}`;
@@ -446,6 +496,9 @@
     const k = keyOf(item);
     const a = state.assigned.get(k) || { location_id: "", task_id: "" };
 
+    const isDeleteDraft = item.kind === "draft_delete";
+    const disableSelects = isDeleteDraft;
+
     const card = document.createElement("div");
     card.className = "pd-item pd-item--selection";
     card.dataset.key = k;
@@ -460,8 +513,8 @@
       </div>
 
       <div class="pd-item-actions">
-        ${buildLocationSelect(a.location_id)}
-        ${buildTaskSelect(a.location_id, a.task_id)}
+        ${buildLocationSelect(a.location_id, disableSelects)}
+        ${buildTaskSelect(a.location_id, a.task_id, disableSelects)}
         ${rightButtons}
       </div>
     `;
@@ -469,34 +522,39 @@
     const locSel = card.querySelector('select[data-action="location"]');
     const taskSel = card.querySelector('select[data-action="task"]');
 
-    locSel.addEventListener("change", () => {
-      const locId = locSel.value;
-      state.assigned.set(k, { location_id: String(locId || ""), task_id: "" });
+    if (!disableSelects){
+      locSel.addEventListener("change", () => {
+        const locId = locSel.value;
+        state.assigned.set(k, { location_id: String(locId || ""), task_id: "" });
 
-      if (item.existing) state.dirty.add(k);
+        // existing published/draft_upsert -> wijzigingen betekenen dirty
+        if (item.existing) state.dirty.add(k);
 
-      if (locId){
-        setActiveLocation(String(locId));
-        setActivePeriod(String(locId), item.period); // open dagdeel van die dienst
-      }
+        if (locId){
+          setActiveLocation(String(locId));
+          setActivePeriod(String(locId), item.period);
+        }
 
-      renderAll();
-      pop(card);
-    });
+        renderAll();
+        pop(card);
+      });
 
-    taskSel.addEventListener("change", () => {
-      const taskId = taskSel.value;
-      const cur = state.assigned.get(k) || { location_id: "", task_id: "" };
-      state.assigned.set(k, { ...cur, task_id: String(taskId || "") });
-      state.dirty.add(k);
-      renderAll();
-      pop(card);
-    });
+      taskSel.addEventListener("change", () => {
+        const taskId = taskSel.value;
+        const cur = state.assigned.get(k) || { location_id: "", task_id: "" };
+        state.assigned.set(k, { ...cur, task_id: String(taskId || "") });
+
+        if (item.existing) state.dirty.add(k);
+
+        renderAll();
+        pop(card);
+      });
+    }
 
     const delBtn = card.querySelector('[data-action="delete"]');
     if (delBtn){
       delBtn.addEventListener("click", async () => {
-        await deleteExistingByKey(k);
+        await toggleDeleteDraftByKey(k);
       });
     }
 
@@ -509,9 +567,6 @@
   }
 
   function panelShiftCard(shiftLike){
-    const isExisting = !!shiftLike.shift_id || !!shiftLike.id;
-    const shiftId = shiftLike.shift_id || shiftLike.id || null;
-
     const user_id = shiftLike.user_id;
     const date = shiftLike.date;
     const period = shiftLike.period;
@@ -519,22 +574,24 @@
     const firstname = shiftLike.firstname;
 
     const k = `${user_id}|${date}|${period}`;
-    const status = shiftLike.status || (isExisting ? "concept" : "");
-
     const a = {
       location_id: String(shiftLike.location_id ?? ""),
       task_id: String(shiftLike.task_id ?? ""),
     };
 
+    const kind = shiftLike.kind || (shiftLike.existing ? "draft_upsert" : "available");
+    const isDeleteDraft = kind === "draft_delete";
+    const disableSelects = isDeleteDraft;
+
     const card = document.createElement("div");
-    card.className = `pd-item pd-item--assigned ${isExisting ? "pd-item--existing" : ""}`;
+    card.className = `pd-item pd-item--assigned ${kind === "published" ? "pd-item--existing" : ""}`;
     card.dataset.key = k;
 
     card.innerHTML = `
       <div class="pd-item-main">
         ${shiftCardHeader({
-          existing: isExisting,
-          status,
+          existing: kind !== "available",
+          kind,
           period,
           date,
           firstname,
@@ -543,61 +600,56 @@
       </div>
 
       <div class="pd-item-actions">
-        ${buildLocationSelect(a.location_id)}
-        ${buildTaskSelect(a.location_id, a.task_id)}
-        ${isExisting ? deleteButtonHtml() : ""}
+        ${buildLocationSelect(a.location_id, disableSelects)}
+        ${buildTaskSelect(a.location_id, a.task_id, disableSelects)}
+        ${kind !== "available" ? deleteButtonHtml() : ""}
       </div>
     `;
 
     const locSel = card.querySelector('select[data-action="location"]');
     const taskSel = card.querySelector('select[data-action="task"]');
 
-    locSel.addEventListener("change", () => {
-      const locId = String(locSel.value || "");
+    if (!disableSelects){
+      locSel.addEventListener("change", () => {
+        const locId = String(locSel.value || "");
 
-      if (isExisting){
+        // zorg dat hij in selection staat zodra je hem wijzigt
         if (!state.selected.has(k)){
-          state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: shiftId, status });
+          state.selected.set(k, { user_id, group, firstname, date, period, existing: kind !== "available", kind });
         }
+
         state.assigned.set(k, { location_id: locId, task_id: "" });
         state.dirty.add(k);
-      } else {
-        state.assigned.set(k, { location_id: locId, task_id: "" });
-        state.dirty.add(k);
-      }
 
-      if (locId){
-        setActiveLocation(locId);
-        setActivePeriod(locId, period);
-      }
-
-      renderAll();
-      pop(card);
-    });
-
-    taskSel.addEventListener("change", () => {
-      const locId = String(locSel.value || "");
-      const taskId = String(taskSel.value || "");
-
-      if (isExisting){
-        if (!state.selected.has(k)){
-          state.selected.set(k, { user_id, group, firstname, date, period, existing: true, shift_id: shiftId, status });
+        if (locId){
+          setActiveLocation(locId);
+          setActivePeriod(locId, period);
         }
-        state.assigned.set(k, { location_id: locId, task_id: taskId });
-        state.dirty.add(k);
-      } else {
-        state.assigned.set(k, { location_id: locId, task_id: taskId });
-        state.dirty.add(k);
-      }
 
-      renderAll();
-      pop(card);
-    });
+        renderAll();
+        pop(card);
+      });
+
+      taskSel.addEventListener("change", () => {
+        const locId = String(locSel.value || "");
+        const taskId = String(taskSel.value || "");
+
+        if (!state.selected.has(k)){
+          state.selected.set(k, { user_id, group, firstname, date, period, existing: kind !== "available", kind });
+        }
+
+        state.assigned.set(k, { location_id: locId, task_id: taskId });
+        state.dirty.add(k);
+
+        renderAll();
+        pop(card);
+      });
+    }
 
     const delBtn = card.querySelector('[data-action="delete"]');
-    if (delBtn && isExisting){
+    if (delBtn){
       delBtn.addEventListener("click", async () => {
-        await deleteShiftById(shiftId);
+        await toggleDeleteDraftByKey(k);
       });
     }
 
@@ -605,12 +657,17 @@
   }
 
   /* -----------------------------
-     Delete helpers
+     Delete toggle (draft on/off)
   ------------------------------ */
-  async function deleteShiftById(shiftId){
-    if (!shiftId) return;
+  async function toggleDeleteDraftByKey(k){
+    const eff = getEffectiveByKey(k);
+    const [user_id, date, period] = k.split("|");
 
-    const ok = confirm("Weet je zeker dat je deze dienst wilt verwijderen?");
+    const msg = (eff && eff.kind === "draft_delete")
+      ? "Wil je de verwijdermarkering ongedaan maken?"
+      : "Weet je zeker dat je deze dienst wilt verwijderen? (wordt pas definitief na publiceren)";
+
+    const ok = confirm(msg);
     if (!ok) return;
 
     try{
@@ -620,33 +677,63 @@
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken") || "",
         },
-        body: JSON.stringify({ shift_id: Number(shiftId) }),
+        body: JSON.stringify({
+          user_id: Number(user_id),
+          date,
+          period
+        }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Verwijderen mislukt.");
 
-      const removed = existingShifts.find(s => s.id === Number(shiftId));
-      existingShifts = existingShifts.filter(s => s.id !== Number(shiftId));
+      // update local draftShifts
+      const drMap = buildDraftMap();
+      const existingDraft = drMap.get(k) || null;
 
-      if (removed){
-        const k = `${removed.user_id}|${removed.date}|${removed.period}`;
-        state.selected.delete(k);
-        state.assigned.delete(k);
-        state.dirty.delete(k);
-        clearMatrixShiftMark(removed);
+      if (data.mode === "undone"){
+        // draft removed
+        draftShifts = draftShifts.filter(d => keyFromParts(d.user_id, d.date, d.period) !== k);
+      } else if (data.mode === "marked_delete"){
+        // create/keep delete draft
+        const pubMap = buildPublishedMap();
+        const pub = pubMap.get(k) || null;
+        const rect = findRectByKey(k);
+        const g = rect?.dataset.group || pub?.group || "—";
+        const fn = rect?.dataset.firstname || pub?.firstname || "—";
+
+        const merged = {
+          id: data.draft_id || (existingDraft?.id ?? null),
+          user_id: Number(user_id),
+          group: g,
+          firstname: fn,
+          date,
+          period,
+          action: "delete",
+          task_id: null,
+          task_name: null,
+          location_id: null,
+          location_name: null,
+        };
+
+        const idx = draftShifts.findIndex(x => keyFromParts(x.user_id, x.date, x.period) === k);
+        if (idx >= 0) draftShifts[idx] = merged;
+        else draftShifts.push(merged);
       }
 
+      // selection/dirties cleanup for this slot
+      state.selected.delete(k);
+      state.assigned.delete(k);
+      state.dirty.delete(k);
+
+      const rect = findRectByKey(k);
+      rect?.classList.remove("is-selected");
+
+      markMatrixFromEffective();
       renderAll();
-      markMatrixFromExisting();
+
     } catch(err){
       alert(err.message || "Verwijderen mislukt.");
     }
-  }
-
-  async function deleteExistingByKey(k){
-    const ex = getExistingByKey(k);
-    if (!ex) return;
-    await deleteShiftById(ex.id);
   }
 
   /* -----------------------------
@@ -693,49 +780,97 @@
     });
   }
 
-  function renderPanels(){
-    clearAllPanelContainers();
+  function buildEffectiveListForPanels(){
+    const pubMap = buildPublishedMap();
+    const drMap = buildDraftMap();
 
-    // 1) existing shifts
-    existingShifts.forEach(s => {
-      const locId = String(s.location_id ?? "");
-      const taskId = String(s.task_id ?? "");
-      const per = String(s.period);
+    const list = [];
 
-      if (!locId || !PERIODS.includes(per)) return;
+    // published that are not overridden by draft
+    pubMap.forEach((s, k) => {
+      const dr = drMap.get(k);
+      if (dr) return; // any draft overrides
+      list.push({
+        kind: "published",
+        user_id: s.user_id,
+        group: s.group,
+        firstname: s.firstname,
+        date: s.date,
+        period: s.period,
+        location_id: s.location_id,
+        task_id: s.task_id,
+      });
+    });
 
-      if (taskId){
-        const container = document.getElementById(`pdTaskItems-${locId}-${taskId}-${per}`);
-        container?.appendChild(panelShiftCard({
-          id: s.id,
-          user_id: s.user_id,
-          group: s.group,
-          firstname: s.firstname,
-          date: s.date,
-          period: s.period,
-          status: s.status,
-          location_id: s.location_id,
-          task_id: s.task_id,
-        }));
-      } else {
-        const staging = document.getElementById(`pdStagingItems-${locId}-${per}`);
-        staging?.appendChild(panelShiftCard({
-          id: s.id,
-          user_id: s.user_id,
-          group: s.group,
-          firstname: s.firstname,
-          date: s.date,
-          period: s.period,
-          status: s.status,
-          location_id: s.location_id,
+    // drafts
+    drMap.forEach((d, k) => {
+      if (d.action === "delete"){
+        list.push({
+          kind: "draft_delete",
+          user_id: d.user_id,
+          group: d.group,
+          firstname: d.firstname,
+          date: d.date,
+          period: d.period,
+          location_id: null,
           task_id: null,
-        }));
+        });
+      } else {
+        list.push({
+          kind: "draft_upsert",
+          user_id: d.user_id,
+          group: d.group,
+          firstname: d.firstname,
+          date: d.date,
+          period: d.period,
+          location_id: d.location_id,
+          task_id: d.task_id,
+        });
       }
     });
 
-    // 2) previews (new + dirty existing)
+    return list;
+  }
+
+  function renderPanels(){
+    clearAllPanelContainers();
+
+    // 1) render effective (published + drafts)
+    const effective = buildEffectiveListForPanels();
+
+    effective.forEach(s => {
+      const per = String(s.period);
+      if (!PERIODS.includes(per)) return;
+
+      if (s.kind === "draft_delete"){
+        // show delete markers in staging of currently active location for that period
+        const fallbackLoc = state.ui.activeLocId || (locations[0] ? String(locations[0].id) : "");
+        if (!fallbackLoc) return;
+        const staging = document.getElementById(`pdStagingItems-${fallbackLoc}-${per}`);
+        staging?.appendChild(panelShiftCard(s));
+        return;
+      }
+
+      const locId = String(s.location_id ?? "");
+      if (!locId) return;
+
+      const taskId = String(s.task_id ?? "");
+      if (taskId){
+        const container = document.getElementById(`pdTaskItems-${locId}-${taskId}-${per}`);
+        container?.appendChild(panelShiftCard(s));
+      } else {
+        const staging = document.getElementById(`pdStagingItems-${locId}-${per}`);
+        staging?.appendChild(panelShiftCard(s));
+      }
+    });
+
+    // 2) previews (new + dirty existing) - keep old behavior
     for (const it of state.selected.values()){
       const k = keyOf(it);
+
+      // don't show preview for delete-draft selection (no assigns)
+      if (it.kind === "draft_delete") continue;
+
       const a = state.assigned.get(k);
       if (!a || !a.location_id) continue;
 
@@ -743,35 +878,36 @@
       const per = String(it.period);
       if (!PERIODS.includes(per)) continue;
 
+      // only preview if new or dirty
       if (it.existing && !state.dirty.has(k)) continue;
 
       const taskId = String(a.task_id || "");
 
+      const previewKind = it.existing ? (it.kind === "published" ? "draft_upsert" : it.kind) : "draft_upsert";
+
       if (!taskId){
         const staging = document.getElementById(`pdStagingItems-${locId}-${per}`);
         staging?.appendChild(panelShiftCard({
+          kind: previewKind,
           user_id: it.user_id,
           group: it.group,
           firstname: it.firstname,
           date: it.date,
           period: it.period,
-          status: it.existing ? it.status : "",
           location_id: Number(locId),
           task_id: null,
-          shift_id: it.shift_id || null,
         }));
       } else {
         const container = document.getElementById(`pdTaskItems-${locId}-${taskId}-${per}`);
         container?.appendChild(panelShiftCard({
+          kind: previewKind,
           user_id: it.user_id,
           group: it.group,
           firstname: it.firstname,
           date: it.date,
           period: it.period,
-          status: it.existing ? it.status : "",
           location_id: Number(locId),
           task_id: Number(taskId),
-          shift_id: it.shift_id || null,
         }));
       }
     }
@@ -786,17 +922,21 @@
       });
     });
 
-    // keep period visibility correct
     if (state.ui.activeLocId) applyPeriodVisibility(state.ui.activeLocId);
   }
 
   /* -----------------------------
-     Counts + save enable (ongewijzigd)
+     Counts + save enable
   ------------------------------ */
   function renderCounts(){
+    // overrides for unsaved dirty changes on existing slots
     const overrideByKey = new Map();
     for (const it of state.selected.values()){
       const k = keyOf(it);
+
+      if (it.kind === "draft_delete") continue;
+
+      // only overrides matter for existing dirty
       if (!it.existing) continue;
       if (!state.dirty.has(k)) continue;
 
@@ -808,6 +948,26 @@
         task_id: String(a.task_id || ""),
       });
     }
+
+    // base effective map (published + drafts)
+    const base = new Map();
+    const pubMap = buildPublishedMap();
+    const drMap = buildDraftMap();
+
+    // published unless overridden by any draft
+    pubMap.forEach((s, k) => {
+      if (drMap.has(k)) return;
+      base.set(k, { location_id: String(s.location_id ?? ""), task_id: String(s.task_id ?? ""), period: String(s.period) });
+    });
+
+    // drafts: upsert => base set; delete => remove
+    drMap.forEach((d, k) => {
+      if (d.action === "delete"){
+        base.delete(k);
+      } else {
+        base.set(k, { location_id: String(d.location_id ?? ""), task_id: String(d.task_id ?? ""), period: String(d.period) });
+      }
+    });
 
     const locPeriodCounts = new Map();
     const taskPeriodCounts = new Map();
@@ -831,23 +991,28 @@
       if (tp) tp[period] += 1;
     }
 
-    existingShifts.forEach(s => {
-      const k = `${s.user_id}|${s.date}|${s.period}`;
+    // 1) count base (skip overrides)
+    base.forEach((v, k) => {
       if (overrideByKey.has(k)) return;
 
-      const locId = String(s.location_id ?? "");
-      const taskId = String(s.task_id ?? "");
-      const per = String(s.period);
+      const locId = String(v.location_id ?? "");
+      const taskId = String(v.task_id ?? "");
+      const per = String(v.period ?? "");
 
       bumpLoc(locId, per);
       if (taskId) bumpTask(locId, taskId, per);
     });
 
+    // 2) count previews (new + dirty existing)
     for (const it of state.selected.values()){
       const k = keyOf(it);
+
+      if (it.kind === "draft_delete") continue;
+
       const a = state.assigned.get(k);
       if (!a || !a.location_id) continue;
 
+      // only include if new or dirty
       if (it.existing && !state.dirty.has(k)) continue;
 
       const locId = String(a.location_id);
@@ -914,6 +1079,10 @@
     let n = 0;
     for (const it of state.selected.values()){
       const k = keyOf(it);
+
+      // delete drafts are not "save concept"
+      if (it.kind === "draft_delete") continue;
+
       const a = state.assigned.get(k);
       if (!a || !a.location_id || !a.task_id) continue;
 
@@ -936,13 +1105,16 @@
   }
 
   /* -----------------------------
-     Save concept (ongewijzigd)
+     Save concept -> ShiftDraft upsert
   ------------------------------ */
   async function saveConcept(){
     const items = [];
 
     for (const it of state.selected.values()){
       const k = keyOf(it);
+
+      if (it.kind === "draft_delete") continue;
+
       const a = state.assigned.get(k);
       if (!a || !a.location_id || !a.task_id) continue;
 
@@ -955,7 +1127,7 @@
       }
     }
 
-    if (!items.length) return;
+    if (!items.length) return { ok: true, saved: 0 };
 
     saveBtn.disabled = true;
     const oldText = saveBtn.textContent;
@@ -974,53 +1146,47 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Opslaan mislukt.");
 
+      // update local draftShifts from response
       (data.saved || []).forEach(s => {
         const k = `${s.user_id}|${s.date}|${s.period}`;
-        const idx = existingShifts.findIndex(x => `${x.user_id}|${x.date}|${x.period}` === k);
-
         const rect = findRectByKey(k);
         const group = rect?.dataset.group || state.selected.get(k)?.group || "—";
         const firstname = rect?.dataset.firstname || state.selected.get(k)?.firstname || "—";
 
         const merged = {
-          id: s.shift_id,
+          id: s.draft_id,
           user_id: s.user_id,
           group,
           firstname,
           date: s.date,
           period: s.period,
-          status: s.status || "concept",
+          action: s.action || "upsert",
           task_id: s.task_id,
           task_name: s.task_name,
           location_id: s.location_id,
           location_name: s.location_name,
         };
 
-        if (idx >= 0) existingShifts[idx] = merged;
-        else existingShifts.push(merged);
+        const idx = draftShifts.findIndex(x => `${x.user_id}|${x.date}|${x.period}` === k);
+        if (idx >= 0) draftShifts[idx] = merged;
+        else draftShifts.push(merged);
 
-        if (rect){
-          rect.dataset.shiftId = String(merged.id);
-          rect.dataset.shiftStatus = String(merged.status);
-          rect.dataset.taskId = String(merged.task_id);
-          rect.dataset.locationId = String(merged.location_id);
-
-          rect.classList.remove("is-accepted", "is-concept");
-          const st = String(merged.status || "concept");
-          rect.classList.add((st === "active" || st === "accepted") ? "is-accepted" : "is-concept");
-          rect.classList.add("has-shift");
-          rect.classList.remove("is-selected");
-        }
-
+        // clear selection state for this key
         state.selected.delete(k);
         state.assigned.delete(k);
         state.dirty.delete(k);
+
+        rect?.classList.remove("is-selected");
       });
 
-      markMatrixFromExisting();
+      markMatrixFromEffective();
       renderAll();
+
+      return { ok: true, saved: (data.saved || []).length };
+
     } catch(err){
       alert(err.message || "Opslaan mislukt.");
+      return { ok: false, saved: 0 };
     } finally {
       saveBtn.textContent = oldText;
       ensureSaveEnabled();
@@ -1031,40 +1197,23 @@
     e.preventDefault();
     saveConcept();
   });
-    // -----------------------------
-  // Publish week (save selection + publish concept->accepted)
+
   // -----------------------------
-  function buildItemsForPublish(){
-    const items = [];
-
-    for (const it of state.selected.values()){
-      const k = keyOf(it);
-      const a = state.assigned.get(k);
-      if (!a || !a.location_id || !a.task_id) continue; // alleen complete items
-
-      if (!it.existing){
-        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
-        continue;
-      }
-      if (state.dirty.has(k)){
-        items.push({ user_id: it.user_id, date: it.date, period: it.period, task_id: Number(a.task_id) });
-      }
-    }
-
-    return items;
-  }
-
+  // Publish week:
+  // - if there are unsaved changes in selection => saveConcept() first
+  // - then publish drafts for the week
+  // -----------------------------
   const publishBtn = $("#pdPublishWeekBtn");
   if (publishBtn) {
     publishBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      if (!pd?.publishUrl) return;
+      if (!publishUrl) return;
 
-    const msg =
-      "Weet je zeker dat je wilt publiceren?\n\n" +
-      "Na publiceren krijgen medewerkers een melding en worden de diensten zichtbaar in de Jansen app en de gesynchroniseerde agenda app.\n" +
-      "Publiceer bij voorkeur pas als je het rooster voor deze week volledig hebt ingepland en als concept hebt opgeslagen.\n\n" +
-      "Dit publiceert alle conceptdiensten van deze week (en slaat je huidige selectie eerst op als je dit nog niet hebt gedaan).";
+      const msg =
+        "Weet je zeker dat je wilt publiceren?\n\n" +
+        "Na publiceren krijgen medewerkers een melding en worden de diensten zichtbaar in de Jansen app en de gesynchroniseerde agenda app.\n" +
+        "Publiceer bij voorkeur pas als je het rooster voor deze week volledig hebt ingepland.\n\n" +
+        "Dit publiceert alle conceptwijzigingen (drafts) van deze week.";
 
       const ok = confirm(msg);
       if (!ok) return;
@@ -1074,7 +1223,14 @@
       publishBtn.textContent = "Publiceren…";
 
       try {
-        const res = await fetch(pd.publishUrl, {
+        // 1) save selection if needed
+        if (computeReadyToSaveCount() > 0) {
+          const savedRes = await saveConcept();
+          if (!savedRes.ok) throw new Error("Opslaan mislukt; publiceren geannuleerd.");
+        }
+
+        // 2) publish drafts in week
+        const res = await fetch(publishUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1083,14 +1239,13 @@
           body: JSON.stringify({
             week_start: pd.weekStart,
             week_end: pd.weekEnd,
-            items: buildItemsForPublish(),
           }),
         });
 
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || "Publiceren mislukt.");
 
-        window.location.reload(); // Django message zichtbaar + alles vers
+        window.location.reload(); // Django message + fresh payload
       } catch (err) {
         alert(err.message || "Publiceren mislukt.");
       } finally {
@@ -1113,7 +1268,7 @@
      Init
   ------------------------------ */
   buildLocationUI();
-  markMatrixFromExisting();
+  markMatrixFromEffective();
   bindMatrix();
   renderAll();
 })();

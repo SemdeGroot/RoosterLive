@@ -1,3 +1,8 @@
+:root{
+  --pd-active-border: #2563eb; /* blauw */
+  --pd-orange: #f59e0b;
+}
+
 /* --- Bestaande basis (gelaten waar mogelijk) --- */
 .form h3 { text-align: center; }
 *:focus-visible { outline: none !important; }
@@ -174,8 +179,8 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 }
 
 .avail-rect.available{
-  background: #f59e0b;
-  border-color: #f59e0b;
+  background: var(--pd-orange);
+  border-color: var(--pd-orange);
   box-shadow: 0 0 0 4px rgba(245,158,11,0.18);
   cursor: pointer;
 }
@@ -184,7 +189,7 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   box-shadow:
     0 0 0 4px rgba(59,130,246,0.28),
     0 0 0 2px rgba(59,130,246,0.35) inset;
-  border-color: #3b82f6 !important;
+  border-color: var(--pd-active-border) !important;
 }
 
 .avail-rect.is-concept{
@@ -208,13 +213,19 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   cursor: pointer;
 }
 
+.avail-rect.has-shift{
+  outline: 2px solid var(--pd-active-border);
+  outline-offset: 2px;
+}
+
+
 /* =========================================================
    Action panel
    ========================================================= */
 .pd-actionpanel{
   display: flex;
   flex-direction: column;
-  gap: 0; /* ✅ zodat crud-divider dezelfde “hoogte/spacing” heeft als links */
+  gap: 0; 
 }
 
 /* ✅ maak spacing expliciet i.p.v. flex-gap */
@@ -586,4 +597,30 @@ button.pd-pill{
   }
 
   .pd-right-spacer{ display: none; }
+}
+
+.avail-rect.is-delete-draft{
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #F59E0B22,
+      #F59E0B22 6px,
+      #F59E0B55 6px,
+      #F59E0B55 12px
+    );
+  border: 2px dashed var(--pd-orange) !important;
+  position: relative;
+  cursor: pointer;
+}
+
+.avail-rect.is-delete-draft::after{
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  background: var(--pd-orange);
+  transform: translateY(-50%) rotate(-10deg);
+  border-radius: 2px;
 }
