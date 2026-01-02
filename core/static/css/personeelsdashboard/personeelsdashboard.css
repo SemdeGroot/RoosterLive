@@ -1,6 +1,19 @@
 :root{
   --pd-active-border: #2563eb; /* blauw */
   --pd-orange: #f59e0b;
+
+  /* Alpha varianten in hex (geen rgba) */
+  --pd-orange-soft: #f59e0b2e;   /* ~18% */
+  --pd-blue-soft:   #2563eb33;   /* ~20% */
+  --pd-blue-soft-2: #2563eb4d;   /* ~30% */
+
+  --pd-green: #22c55e;
+  --pd-green-soft-1: #22c55e40;  /* ~25% */
+  --pd-green-soft-2: #22c55e73;  /* ~45% */
+  --pd-green-ring:   #22c55e2e;  /* ~18% */
+
+  --pd-card-blue:  #3b82f610;    /* subtle */
+  --pd-card-green: #22c55e0d;    /* subtle */
 }
 
 /* --- Bestaande basis (gelaten waar mogelijk) --- */
@@ -30,6 +43,127 @@
   gap: 10px;
   align-items: center;
 }
+
+/* =========================================================
+   Legenda (Top card)
+   ========================================================= */
+.pd-legend{
+  margin-top: 4px;
+  padding-top: 4px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.pd-legend-col{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pd-legend-right{
+  justify-self: end;           /* rechts uitlijnen in de card */
+  text-align: left;            /* tekst blijft netjes rechts van swatch */
+}
+
+.pd-legend-row{
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.pd-legend-text{
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+/* De “slot” mini-rectangles */
+.pd-legend-swatch{
+  width: 34px;
+  height: 18px;
+  border-radius: 7px;
+  border: 2px solid #ffffff24;
+  box-sizing: border-box;
+}
+
+/* Oranje beschikbaar */
+.pd-legend-swatch--available{
+  background: var(--pd-orange);
+  border-color: var(--pd-orange);
+  box-shadow: 0 0 0 4px var(--pd-orange-soft);
+}
+
+/* Oranje delete (streepjes + kruis) */
+.pd-legend-swatch--delete{
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #f59e0b22,
+      #f59e0b22 6px,
+      #f59e0b55 6px,
+      #f59e0b55 12px
+    );
+  border: 2px solid var(--pd-orange);
+}
+
+.pd-legend-swatch--delete::before,
+.pd-legend-swatch--delete::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160%;
+  height: 2px;
+  background: var(--pd-orange);
+  border-radius: 2px;
+  transform-origin: center;
+}
+
+.pd-legend-swatch--delete::before{
+  transform: translate(-50%, -50%) rotate(20deg);
+}
+.pd-legend-swatch--delete::after{
+  transform: translate(-50%, -50%) rotate(-20deg);
+}
+
+/* Groen concept (streepjes) */
+.pd-legend-swatch--concept{
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--pd-green-soft-1),
+      var(--pd-green-soft-1) 6px,
+      var(--pd-green-soft-2) 6px,
+      var(--pd-green-soft-2) 12px
+    );
+  border-color: var(--pd-green);
+  box-shadow: 0 0 0 4px var(--pd-green-ring);
+}
+
+/* Groen gepubliceerd (vol) */
+.pd-legend-swatch--published{
+  background: #22c55ee6;
+  border-color: #22c55eff;
+  box-shadow: 0 0 0 4px var(--pd-green-ring);
+}
+
+/* Mobile: legenda onder elkaar */
+@media (max-width: 980px){
+  .pd-legend{
+    grid-template-columns: 1fr;
+  }
+  .pd-legend-right{
+    justify-self: start;
+  }
+}
+
 
 .pd-daypicker{
   justify-self: start;
@@ -175,49 +309,101 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   margin: 0;
   box-sizing: border-box;
   background: transparent;
-  border: 2px solid rgba(255,255,255,0.14);
+  border: 2px solid #ffffff24; /* i.p.v. rgba(255,255,255,0.14) */
+  position: relative;
 }
 
 .avail-rect.available{
   background: var(--pd-orange);
   border-color: var(--pd-orange);
-  box-shadow: 0 0 0 4px rgba(245,158,11,0.18);
+  box-shadow: 0 0 0 4px var(--pd-orange-soft);
   cursor: pointer;
 }
 
+/* Belangrijk: geselecteerd moet altijd een blauwe solide border hebben,
+   ongeacht of het slot accepted/concept/delete is */
 .avail-rect.is-selected{
+  border: 2px solid var(--pd-active-border) !important;
   box-shadow:
-    0 0 0 4px rgba(59,130,246,0.28),
-    0 0 0 2px rgba(59,130,246,0.35) inset;
-  border-color: var(--pd-active-border) !important;
+    0 0 0 4px var(--pd-blue-soft-2),
+    0 0 0 2px var(--pd-blue-soft) inset;
 }
 
+/* Concept (draft upsert) */
 .avail-rect.is-concept{
   background:
     repeating-linear-gradient(
       45deg,
-      rgba(34,197,94,0.25),
-      rgba(34,197,94,0.25) 6px,
-      rgba(34,197,94,0.45) 6px,
-      rgba(34,197,94,0.45) 12px
+      var(--pd-green-soft-1),
+      var(--pd-green-soft-1) 6px,
+      var(--pd-green-soft-2) 6px,
+      var(--pd-green-soft-2) 12px
     );
-  border-color: rgba(34,197,94,0.95) !important;
-  box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+  border-color: var(--pd-green) !important;
+  box-shadow: 0 0 0 4px var(--pd-green-ring);
   cursor: pointer;
 }
 
+/* Accepted (published) */
 .avail-rect.is-accepted{
-  background: rgba(34,197,94,0.90);
-  border-color: rgba(34,197,94,1) !important;
-  box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+  background: #22c55ee6; /* ~90% */
+  border-color: #22c55eff !important;
+  box-shadow: 0 0 0 4px var(--pd-green-ring);
   cursor: pointer;
 }
 
+/* Optional: bestaande highlight voor has-shift */
 .avail-rect.has-shift{
   outline: 2px solid var(--pd-active-border);
   outline-offset: 2px;
 }
 
+.avail-rect.is-delete-draft{
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #f59e0b22,
+      #f59e0b22 6px,
+      #f59e0b55 6px,
+      #f59e0b55 12px
+    );
+  border: 2px solid var(--pd-orange) !important;
+  position: relative;
+  overflow: hidden; /* kruis blijft binnen de rect */
+  cursor: pointer;
+}
+
+/* hoek-tot-hoek kruis */
+.avail-rect.is-delete-draft::before,
+.avail-rect.is-delete-draft::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160%;              /* langer dan slot, zodat hij de hoeken raakt */
+  height: 2px;
+  background: var(--pd-orange);
+  border-radius: 2px;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+/* rechtsboven -> linksonder ( / of \ afhankelijk van richting ) */
+.avail-rect.is-delete-draft::before{
+  transform: translate(-50%, -50%) rotate(15deg);
+}
+
+/* rechtsonder -> linksboven */
+.avail-rect.is-delete-draft::after{
+  transform: translate(-50%, -50%) rotate(-15deg);
+}
+
+.avail-rect.is-selected{
+  border: 2px solid var(--pd-active-border) !important;
+  box-shadow:
+    0 0 0 4px var(--pd-blue-soft-2),
+    0 0 0 2px var(--pd-blue-soft) inset;
+}
 
 /* =========================================================
    Action panel
@@ -225,20 +411,18 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 .pd-actionpanel{
   display: flex;
   flex-direction: column;
-  gap: 0; 
 }
 
-/* ✅ maak spacing expliciet i.p.v. flex-gap */
 .pd-ap-head{ margin-bottom: 12px; }
-.pd-actionpanel > .crud-divider{ margin: 0 0 12px 0; }
-.pd-actionpanel .pd-ap-section{ margin-top: 12px; }
+.pd-actionpanel > .crud-divider{ margin: 0 0 14px 0; }
+.pd-actionpanel .pd-ap-section{ margin-top: 14px; }
 .pd-actionpanel .pd-ap-section:first-of-type{ margin-top: 0; }
 
 .pd-ap-head{
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pd-ap-summary{
@@ -249,7 +433,7 @@ table.matrix th.slot-head{ padding: 8px 6px; }
 }
 
 .pd-pill{
-  background: rgba(255,255,255,0.06);
+  background: #ffffff0f;
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 10px;
@@ -258,7 +442,6 @@ table.matrix th.slot-head{ padding: 8px 6px; }
   align-items: center;
 }
 
-/* ✅ make pd-pill usable as button */
 button.pd-pill{
   appearance: none;
   -webkit-appearance: none;
@@ -267,7 +450,6 @@ button.pd-pill{
   font: inherit;
 }
 
-/* active pill (same idea as tabs) */
 .pd-pill.is-active{
   border-color: var(--accent);
   background: var(--button-hover);
@@ -300,7 +482,7 @@ button.pd-pill{
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 10px;
-  background: rgba(255,255,255,0.02);
+  background: #ffffff05;
 }
 
 .pd-loc-top{
@@ -313,7 +495,7 @@ button.pd-pill{
 
 .pd-loc-title{
   font-weight: 900;
-    flex: 1 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
 
   white-space: nowrap;
@@ -321,7 +503,7 @@ button.pd-pill{
   overflow-wrap: anywhere;
   hyphens: auto;
 
-  overflow: visible;     
+  overflow: visible;
   text-overflow: clip;
 }
 
@@ -338,7 +520,6 @@ button.pd-pill{
   gap: 10px;
 }
 
-/* header per period: bold + italic + left */
 .pd-period-head{
   display: flex;
   align-items: baseline;
@@ -416,15 +597,15 @@ button.pd-pill{
   border-radius: 12px;
   color: var(--muted);
   font-weight: 700;
-  background: rgba(255,255,255,0.03);
+  background: #ffffff08;
 }
 
 /* =========================================================
-   Shift cards (NEW layout: text boven actions)
+   Shift cards (compact layout)
    ========================================================= */
 .pd-item{
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
+  background: #ffffff08;
   border-radius: 14px;
   padding: 10px 10px;
   display: flex;
@@ -435,29 +616,28 @@ button.pd-pill{
 }
 
 .pd-item--assigned{
-  background: rgba(59,130,246,0.06);
+  background: var(--pd-card-blue);
 }
 
 .pd-item--existing{
-  background: rgba(34,197,94,0.05);
+  background: var(--pd-card-green);
 }
 
 .pd-item-main{
   min-width: 0;
 }
 
-/* ✅ actions blijven 1 regel (dropdowns + buttons) */
 .pd-item-actions{
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;                 /* ✅ niet wrappen */
+  flex-wrap: nowrap;
   width: 100%;
 }
 
 .pd-item-actions select{
-  flex: 1 1 0;                       /* ✅ twee dropdowns verdelen ruimte */
-  min-width: 0;                      /* ✅ mag krimpen zodat het 1 regel blijft */
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .pd-item-actions .icon-btn,
@@ -473,7 +653,7 @@ button.pd-pill{
 }
 
 .pd-mini-select{
-  min-width: 0;                      /* ✅ override oude min-width */
+  min-width: 0;
 }
 
 .pd-icon-btn{
@@ -481,19 +661,28 @@ button.pd-pill{
   border-radius: 12px;
 }
 
-/* compact inner block */
+/* Nieuw: pill links, tekst rechts (2 regels).
+   Dit vervangt de oude "pill bovenaan" layout. */
 .pd-shift-card{
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 
-.pd-shift-top{
+.pd-shift-pill-wrap{
+  flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
+  align-items: stretch;
+}
+
+.pd-shift-text{
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .pd-shift-line1{
@@ -509,38 +698,54 @@ button.pd-pill{
   line-height: 1.15;
 }
 
-/* ✅ Status pills: NO RGBA (hex only) */
+/* Status pills (hex only) */
 .pd-status-pill{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 10px;
+
+  padding: 6px 10px;        /* iets hoger zodat hij 2 regels mooi ondersteunt */
   border-radius: 999px;
   font-weight: 900;
   font-size: 0.78rem;
   text-transform: lowercase;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
-/* blauw */
+/* beschikbaar */
 .pd-status-pill--available{
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  color: #ffffff;
+  background: var(--pd-orange);
+  border-color: var(--pd-orange);
+  color: #111827;
 }
 
-/* lichtgroen */
+/* concept */
 .pd-status-pill--concept{
   background: #86efac;
   border-color: #86efac;
   color: #052e16;
 }
 
-/* donkergroen */
+/* actief */
 .pd-status-pill--active{
   background: #16a34a;
   border-color: #16a34a;
-  color: #ffffff;
+  color: var(--text-button);
+}
+
+/* verwijderen */
+.pd-status-pill--delete{
+  background: var(--pd-orange);
+  border-color: var(--pd-orange);
+  color: var(--text-button);
+}
+
+/* in bewerking: transparant */
+.pd-status-pill--editing{
+  background: transparent;
+  border-color: var(--pd-active-border);
+  color: var(--pd-active-border);
 }
 
 .pd-task-items{
@@ -597,30 +802,4 @@ button.pd-pill{
   }
 
   .pd-right-spacer{ display: none; }
-}
-
-.avail-rect.is-delete-draft{
-  background:
-    repeating-linear-gradient(
-      45deg,
-      #F59E0B22,
-      #F59E0B22 6px,
-      #F59E0B55 6px,
-      #F59E0B55 12px
-    );
-  border: 2px dashed var(--pd-orange) !important;
-  position: relative;
-  cursor: pointer;
-}
-
-.avail-rect.is-delete-draft::after{
-  content: "";
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  top: 50%;
-  height: 2px;
-  background: var(--pd-orange);
-  transform: translateY(-50%) rotate(-10deg);
-  border-radius: 2px;
 }
