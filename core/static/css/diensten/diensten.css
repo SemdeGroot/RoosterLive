@@ -1,0 +1,77 @@
+/* core/static/css/mijndiensten/mijndiensten.css */
+
+/* Kolombreedtes: Dag, Dagdeel, Locatie, Taak */
+table.mijndiensten-table{
+  --c1: 160px;
+  --c2: 190px;
+  --c3: 220px;
+  --c4: auto;
+}
+
+/* Optioneel: op mobiel een min-width zodat horizontaal scrollen fijn werkt */
+@media (max-width: 900px){
+  table.mijndiensten-table{
+    min-width: 760px;
+  }
+}
+
+/* Lichte “lege” rijen (waar geen shift is) */
+table.mijndiensten-table tr.is-empty td{
+  opacity: .75;
+}
+
+table.mijndiensten-table .dash{
+  opacity: .6;
+}
+
+table.mijndiensten-table .muted{
+  opacity: .75;
+  font-size: .92em;
+  margin-left: 4px;
+}
+
+/* Hergebruik je pattern voor dag */
+.weekday-title{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.weekday-title small{
+  opacity:.75;
+}
+
+/* --- Mobiel: compacter kolommen + padding --- */
+@media (max-width: 600px){
+  /* Smalle vaste kolommen voor Dag + Dagdeel */
+  table.mijndiensten-table{
+    --c1: 70px;   /* Dag */
+    --c2: 120px;  /* Dagdeel */
+    --c3: 170px;  /* Locatie (iets compacter) */
+    --c4: 220px;  /* Taak (laat nog ruimte) */
+    min-width: 600px; /* zodat horizontaal scrollen netjes blijft */
+  }
+
+  /* Compacter cell padding (alleen deze tabel) */
+  table.mijndiensten-table th,
+  table.mijndiensten-table td{
+    padding: 6px 8px;
+  }
+
+  /* Tekstblokken iets compacter */
+  table.mijndiensten-table .weekday-title{
+    gap: 1px;
+  }
+  table.mijndiensten-table .weekday-title small{
+    font-size: 0.85em;
+  }
+}
+
+/* Apply: hele rij heel licht tinten */
+table.mijndiensten-table tr.loc-tint--green td{ background: var(--loc-green-bg); }
+table.mijndiensten-table tr.loc-tint--red td{   background: var(--loc-red-bg); }
+table.mijndiensten-table tr.loc-tint--blue td{  background: var(--loc-blue-bg); }
+
+/* Maar laat lege rows (—) gewoon neutraal */
+table.mijndiensten-table tr.is-empty td{
+  background: transparent !important;
+}

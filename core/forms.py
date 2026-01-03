@@ -727,7 +727,7 @@ class AfdelingEditForm(forms.ModelForm):
 class LocationForm(forms.ModelForm):
     class Meta:
         model = Location
-        fields = ["name", "address"]
+        fields = ["name", "address", "color"]
         widgets = {
             "name": forms.TextInput(attrs={
                 "class": "admin-input",
@@ -737,6 +737,7 @@ class LocationForm(forms.ModelForm):
                 "class": "admin-input",
                 "placeholder": "bijv. Liendertseweg 32, Amersfoort",
             }),
+            "color": forms.Select(attrs={"class": "admin-select"}),
         }
 
 STAFFING_FIELDS = [

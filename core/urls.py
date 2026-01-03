@@ -25,7 +25,7 @@ from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
 from core.views.ziekmelden import ziekmelden
 from core.views.urendoorgeven import urendoorgeven
-from core.views.diensten import diensten
+from core.views.diensten import mijndiensten_view
 from core.views.onboarding_forms import forms
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
@@ -116,7 +116,7 @@ urlpatterns = [
     path("personeel/teamdashboard/api/save-concept/", save_concept_shifts_api, name="pd_save_concept"),
     path("personeel/teamdashboard/api/delete-shift/", delete_shift_api, name="pd_delete_shift"),
     path("personeel/teamdashboard/api/publish/", publish_shifts_api, name="pd_publish_shifts"),
-    path("personeel/diensten/", diensten, name="diensten"),
+    path("personeel/diensten/", mijndiensten_view, name="mijndiensten"),
     path("personeel/uren-doorgeven/", urendoorgeven, name="urendoorgeven"),
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
     path("onboarding/wie-is-wie/", whoiswho, name="whoiswho"),

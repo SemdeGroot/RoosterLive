@@ -28,6 +28,11 @@
     /* Meta theme-color variabelen voor de browser balk (voor JS) */
     --theme-meta-base: #131a24;      /* base.html kleur */
     --theme-meta-login: #0d131b;     /* _base.html kleur */
+
+    /* Locatie kleuren */
+    --loc-green-bg: rgba(0, 160, 90, 0.10);
+    --loc-red-bg:   rgba(220, 60, 60, 0.10);
+    --loc-blue-bg:  rgba(60, 120, 220, 0.10);
 }
 
 /* Light Mode overschrijvingen */
@@ -50,4 +55,9 @@
     /* Meta theme-color variabelen voor light mode */
     --theme-meta-base: #E3E8F0;      /* base.html kleur */
     --theme-meta-login: #D4D9E6;     /* _base.html kleur */
+
+    /* Locatie kleuren */
+    --loc-green-bg: rgba(0, 160, 90, 0.07);
+    --loc-red-bg:   rgba(220, 60, 60, 0.07);
+    --loc-blue-bg:  rgba(60, 120, 220, 0.07);
 }

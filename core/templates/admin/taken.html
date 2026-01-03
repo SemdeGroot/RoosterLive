@@ -48,6 +48,10 @@
               <label for="{{ location_form.address.id_for_label }}">Adres:</label>
               {{ location_form.address }}
             </div>
+            <div>
+              <label for="{{ location_form.color.id_for_label }}">Kleur:</label>
+              {{ location_form.color }}
+            </div>
           </div>
 
           <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
@@ -74,6 +78,7 @@
               <tr>
                 <th>Locatie</th>
                 <th>Adres</th>
+                <th>Kleur</th>
                 <th>Acties</th>
               </tr>
             </thead>
@@ -83,6 +88,7 @@
               <tr class="location-row" id="location-row-{{ loc.id }}">
                 <td style="font-weight: 600;">{{ loc.name }}</td>
                 <td>{{ loc.address|default:"-" }}</td>
+                <td>{{ loc.get_color_display }}</td>
                 <td>
                   {% if can_manage %}
                   <div class="actions-wrap horizontal">
@@ -121,7 +127,7 @@
               </tr>
 
               <tr id="location-edit-row-{{ loc.id }}" class="edit-row" style="display:none;">
-                <td colspan="3">
+                <td colspan="4">
                   <div class="edit-wrap">
                     <form method="post" action="{% url 'location_update' loc.id %}">
                       {% csrf_token %}
@@ -138,6 +144,14 @@
                           <input class="admin-input" type="text" name="address"
                                  value="{{ loc.address|default:'' }}" style="margin-top:6px;">
                         </div>
+                        <div>
+                        <label>Kleur:</label>
+                        <select name="color" class="admin-select" required style="margin-top:6px;">
+                          <option value="green" {% if loc.color == "green" %}selected{% endif %}>Groen</option>
+                          <option value="red"   {% if loc.color == "red" %}selected{% endif %}>Rood</option>
+                          <option value="blue"  {% if loc.color == "blue" %}selected{% endif %}>Blauw</option>
+                        </select>
+                      </div>
                       </div>
 
                       <div class="actions-wrap horizontal" style="margin-top:12px;">

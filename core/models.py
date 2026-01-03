@@ -130,12 +130,16 @@ class Availability(models.Model):
         return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon} a:{self.evening})"
     
 class Location(models.Model):
-    """
-    Physical places where a task can take place.
-    """
+    COLOR_CHOICES = [
+        ("green", "Groen"),
+        ("red", "Rood"),
+        ("blue", "Blauw"),
+    ]
+
     name = models.CharField(max_length=100, unique=True)
     address = models.CharField(max_length=255, blank=True, default="")
-    
+    color = models.CharField(max_length=10, choices=COLOR_CHOICES, default="blue")
+
     class Meta:
         verbose_name_plural = "Locations"
 

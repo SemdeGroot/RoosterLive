@@ -1,14 +1,145 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}Diensten{% endblock %}
 {% block header_title %}Diensten{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/diensten/diensten.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Diensten</h3>
-  <p>
-    Hier komt later de inhoud voor <strong>Diensten</strong>.
-  </p>
+<div class="card">
+  <div class="form">
+
+    <!-- Weeknavigatie-->
+    <div class="week-controls">
+      <button id="prevWeekBtn"
+              class="btn btn-icon"
+              {% if not has_prev %}disabled aria-disabled="true"{% endif %}
+              data-target="{{ prev_monday|date:'Y-m-d' }}"
+              aria-label="Vorige week">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-arrow-left-icon lucide-arrow-left">
+          <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+        </svg>
+      </button>
+
+      <div class="week-picker">
+        <button id="weekPickerBtn"
+                class="btn week-picker-btn"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="weekMenu">
+          <span class="wp-label">{{ header_title }}</span>
+          <span class="wp-caret" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-chevron-down">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </button>
+
+        <div id="weekMenu" class="week-menu" role="listbox" tabindex="-1" hidden>
+          {% for opt in week_options %}
+            <div role="option"
+                 class="week-option{% if opt.value == monday|date:'Y-m-d' %} is-active{% endif %}"
+                 data-value="{{ opt.value }}"
+                 aria-selected="{% if opt.value == monday|date:'Y-m-d' %}true{% else %}false{% endif %}">
+              <strong>Week {{ opt.iso_week }} – {{ opt.iso_year }}</strong>
+              <small>({{ opt.start|date:"d-m" }} – {{ opt.end|date:"d-m" }})</small>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button id="nextWeekBtn"
+              class="btn btn-icon"
+              {% if not has_next %}disabled aria-disabled="true"{% endif %}
+              data-target="{{ next_monday|date:'Y-m-d' }}"
+              aria-label="Volgende week">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-arrow-right-icon lucide-arrow-right">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="availability-daterange">
+      {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
+    </div>
+
+    <div class="table-scroll">
+      <table class="crud-table compact mijndiensten-table" aria-label="Mijn diensten">
+        <thead>
+          <tr>
+            <th>Dag</th>
+            <th>Dagdeel</th>
+            <th>Locatie</th>
+            <th>Taak</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if rows %}
+            {% for r in rows %}
+              <tr class="{% if not r.is_assigned %}is-empty{% endif %} {{ r.row_class }}">
+                <!-- Dag: alleen op eerste rij van die dag -->
+                <td>
+                  {% if r.show_day %}
+                    <div class="weekday-title">
+                      <strong>{{ r.date|date:"D"|capfirst }}</strong>
+                      <small>{{ r.date|date:"d-m" }}</small>
+                    </div>
+                  {% else %}
+                    <span class="day-blank" aria-hidden="true"></span>
+                  {% endif %}
+                </td>
+
+                <!-- Dagdeel: label + tijd eronder, met dezelfde class -->
+                <td>
+                  <div class="weekday-title">
+                    <strong>{{ r.period_label }}</strong>
+                    <small>{{ r.period_time }}</small>
+                  </div>
+                </td>
+
+                <td class="wrap">
+                  {% if r.location %}
+                    {{ r.location }}
+                  {% else %}
+                    <span class="dash">—</span>
+                  {% endif %}
+                </td>
+
+                <td class="wrap">
+                  {% if r.task %}
+                    {{ r.task }}
+                  {% else %}
+                    <span class="dash">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="4" class="wrap">
+                Geen diensten gevonden voor deze week.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/diensten/diensten.js' %}" defer></script>
 {% endblock %}

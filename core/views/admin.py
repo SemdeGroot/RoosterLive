@@ -477,6 +477,11 @@ def location_update(request, pk):
 
     name = (request.POST.get("name") or "").strip()
     address = (request.POST.get("address") or "").strip()
+    color = (request.POST.get("color") or "").strip()
+
+    allowed = {c[0] for c in Location.COLOR_CHOICES}
+    if color not in allowed:
+        color = loc.color  # fallback (of default)
 
     if not name:
         messages.error(request, "Locatienaam is verplicht.")
@@ -488,14 +493,12 @@ def location_update(request, pk):
 
     loc.name = name
     loc.address = address
-    loc.save(update_fields=["name", "address"])
+    loc.color = color
+    loc.save(update_fields=["name", "address", "color"])
 
     messages.success(request, f"Locatie '{loc.name}' is bijgewerkt.")
     return redirect("admin_taken")
 
-
-
-# views.py
 STAFFING_FIELDS = [
     "min_mon_morning","min_mon_afternoon","min_mon_evening",
     "min_tue_morning","min_tue_afternoon","min_tue_evening",
