@@ -5,6 +5,7 @@ from django.utils import timezone
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 import json
 from django.core.validators import MinValueValidator
+import uuid
 
 class Roster(models.Model):
     file = models.FileField(upload_to="rooster/current.pdf", null=True)
@@ -218,7 +219,6 @@ class Shift(models.Model):
     def __str__(self):
         return f"{self.date} - {self.user} - {self.get_period_display()} ({self.task})"
     
-# core/models.py
 class ShiftDraft(models.Model):
     ACTION_CHOICES = [
         ("upsert", "Upsert"),
@@ -375,6 +375,7 @@ class UserProfile(models.Model):
         default=Dienstverband.OPROEP,
         db_index=True,
     )
+    calendar_token = models.UUIDField(default=uuid.uuid4, unique=True,editable=False)
 
     # vaste werkdagen (ma-vr, ochtend/middag)
     work_mon_am = models.BooleanField("Ma ochtend", default=False)

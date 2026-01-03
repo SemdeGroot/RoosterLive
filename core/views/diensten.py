@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils import timezone, translation
+from django.urls import reverse
 
 from core.models import Shift
 from ._helpers import can
@@ -34,7 +35,7 @@ def mijndiensten_view(request):
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    # ---- weekselectie (zelfde pattern als jouw beschikbaarheid-view) ----
+    # ---- weekselectie ----
     qs_week = request.GET.get("week")
     qs_monday = request.GET.get("monday")
 
@@ -56,7 +57,7 @@ def mijndiensten_view(request):
     monday = _clamp_week(monday, min_monday, max_monday)
     week_end = monday + timedelta(days=5)  # ma..za
 
-    # Navigatie (alleen tussen huidige week en +WEEKS_AHEAD)
+    # Navigatie
     prev_raw = monday - timedelta(weeks=1)
     next_raw = monday + timedelta(weeks=1)
     has_prev = prev_raw >= min_monday
@@ -64,11 +65,9 @@ def mijndiensten_view(request):
     prev_monday = prev_raw if has_prev else min_monday
     next_monday = next_raw if has_next else max_monday
 
-    # ma..za dates
     days = [monday + timedelta(days=i) for i in range(6)]
     saturday = monday + timedelta(days=5)
 
-    # Shifts voor user in deze week
     shifts = (
         Shift.objects
         .filter(user=request.user, date__in=days)
@@ -76,10 +75,7 @@ def mijndiensten_view(request):
         .order_by("date", "period")
     )
 
-    # map: (date, period) -> Shift
     shift_map = {(s.date, s.period): s for s in shifts}
-
-    # Alleen zaterdag tonen als er zaterdag-shifts bestaan
     show_saturday = any(s.date == saturday for s in shifts)
 
     PERIOD_META = {
@@ -92,9 +88,6 @@ def mijndiensten_view(request):
         return (d, "evening") in shift_map
 
     def row_payload(d: date, p: str, s: Shift | None, show_day: bool):
-        """
-        Enrich row with location color classes (for subtle background tint).
-        """
         color = ""
         if s and s.task and s.task.location:
             color = (s.task.location.color or "").strip()
@@ -114,35 +107,29 @@ def mijndiensten_view(request):
 
     rows = []
 
-    # Ma–Vr: ochtend + middag altijd, avond alleen als ingepland
     for d in days[:5]:
-        # Ochtend (dag tonen)
         p = "morning"
         s = shift_map.get((d, p))
         rows.append(row_payload(d, p, s, show_day=True))
 
-        # Middag (dag leeg)
         p = "afternoon"
         s = shift_map.get((d, p))
         rows.append(row_payload(d, p, s, show_day=False))
 
-        # Avond alleen als ingepland (dag nooit tonen)
         if has_evening(d):
             p = "evening"
             s = shift_map.get((d, p))
             rows.append(row_payload(d, p, s, show_day=False))
 
-    # Zaterdag alleen als ingepland (dag alleen bij ochtend; fallback bij eerste rij)
     if show_saturday:
         d = saturday
         sat_periods = [p for p in ("morning", "afternoon", "evening") if (d, p) in shift_map]
 
         for idx, p in enumerate(sat_periods):
             s = shift_map[(d, p)]
-            show_day = (p == "morning") or ("morning" not in sat_periods and idx == 0)
-            rows.append(row_payload(d, p, s, show_day=show_day))
+            show_day_flag = (p == "morning") or ("morning" not in sat_periods and idx == 0)
+            rows.append(row_payload(d, p, s, show_day=show_day_flag))
 
-    # Dropdown weeks
     week_options = []
     cur = min_monday
     while cur <= max_monday:
@@ -158,6 +145,13 @@ def mijndiensten_view(request):
     iso_year, iso_week, _ = monday.isocalendar()
     header_title = f"Week {iso_week} – {iso_year}"
 
+    # --- UUID webcal link ---
+    # jouw UserProfile is related_name="profile"
+    token = request.user.profile.calendar_token
+    ics_path = reverse("diensten_webcal", args=[token])
+    https_url = request.build_absolute_uri(ics_path)
+    webcal_url = https_url.replace("https://", "webcal://").replace("http://", "webcal://")
+
     return render(request, "diensten/index.html", {
         "monday": monday,
         "week_end": week_end,
@@ -171,4 +165,7 @@ def mijndiensten_view(request):
         "prev_monday": prev_monday,
         "next_monday": next_monday,
         "show_saturday": show_saturday,
+
+        "webcal_https_url": https_url,
+        "webcal_url": webcal_url,
     })

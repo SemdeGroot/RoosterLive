@@ -82,3 +82,105 @@
     closeMenu();
   });
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("syncAgendaBtn");
+  const modal = document.getElementById("agendaModal");
+  const closeBtn = document.getElementById("agendaModalClose");
+
+  if (!btn || !modal) return;
+
+  const desktopWrap = document.getElementById("agendaDesktop");
+  const mobileWrap = document.getElementById("agendaMobile");
+
+  const webcalUrl = btn.getAttribute("data-webcal") || "";
+  const httpsUrl = btn.getAttribute("data-https") || "";
+
+  const webcalInput = document.getElementById("webcalInput");
+  const copyBtn = document.getElementById("copyWebcalBtn");
+  const copyBtnMobile = document.getElementById("copyWebcalBtnMobile");
+  const openAgendaBtn = document.getElementById("openAgendaBtn");
+
+  const okDesktop = document.getElementById("agendaModalOkDesktop");
+  const okMobile = document.getElementById("agendaModalOkMobile");
+
+  function isMobile() {
+    return window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
+  }
+
+  function openModal() {
+    modal.style.display = "block";
+
+    const mobile = isMobile();
+    if (desktopWrap) desktopWrap.style.display = mobile ? "none" : "block";
+    if (mobileWrap) mobileWrap.style.display = mobile ? "block" : "none";
+
+    if (webcalInput) webcalInput.value = webcalUrl || httpsUrl;
+  }
+
+  function closeModal() {
+    modal.style.display = "none";
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch (e2) {
+        document.body.removeChild(ta);
+        return false;
+      }
+    }
+  }
+
+  btn.addEventListener("click", openModal);
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (okDesktop) okDesktop.addEventListener("click", closeModal);
+  if (okMobile) okMobile.addEventListener("click", closeModal);
+
+  // Sluit als je op overlay klikt
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Copy (desktop)
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const ok = await copyText(webcalUrl || httpsUrl);
+      copyBtn.textContent = ok ? "Gekopieerd" : "Mislukt";
+      setTimeout(() => (copyBtn.textContent = "Kopieer"), 1200);
+    });
+  }
+
+  // Copy (mobile)
+  if (copyBtnMobile) {
+    copyBtnMobile.addEventListener("click", async () => {
+      const ok = await copyText(webcalUrl || httpsUrl);
+      copyBtnMobile.textContent = ok ? "Gekopieerd" : "Mislukt";
+      setTimeout(() => (copyBtnMobile.textContent = "Kopieer link"), 1200);
+    });
+  }
+
+  // Open agenda app (mobile)
+  if (openAgendaBtn) {
+    openAgendaBtn.addEventListener("click", () => {
+      // webcal:// is het meest “agenda-app friendly”
+      if (webcalUrl) {
+        window.location.href = webcalUrl;
+      } else if (httpsUrl) {
+        window.location.href = httpsUrl;
+      }
+    });
+  }
+});

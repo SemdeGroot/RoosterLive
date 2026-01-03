@@ -75,3 +75,36 @@ table.mijndiensten-table tr.loc-tint--blue td{  background: var(--loc-blue-bg); 
 table.mijndiensten-table tr.is-empty td{
   background: transparent !important;
 }
+
+/* Rechtsonder “floating” knop */
+.diensten-sync-fab{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2000;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+}
+
+/* Op mobiel iets breder en hoger */
+@media (max-width: 720px){
+  .diensten-sync-fab{
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: auto;
+    justify-content: center;
+  }
+}
+
+/* Modal sizing (lijkt op je andere modal) */
+.diensten-modal{
+  width: min(720px, 94vw) !important;
+  margin: 8vh auto !important;
+  max-width: 720px !important;
+}
+
+@media (max-width: 720px){
+  .diensten-modal{
+    margin: 10vh auto !important;
+  }
+}

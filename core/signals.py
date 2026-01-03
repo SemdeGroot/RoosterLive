@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, m2m_changed, post_delete
+from django.db import transaction
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from core.models import Shift
 
 from core.models import UserProfile
 from core.permissions_cache import bump_perm_version, delete_permset, get_cached_permset
@@ -49,3 +51,19 @@ def invalidate_on_group_permissions_change(sender, instance, action, **kwargs):
         user_ids = list(instance.user_set.values_list("id", flat=True))
         for uid in user_ids:
             bump_perm_version(uid)
+
+def _ics_cache_key(user_id: int) -> str:
+    return f"diensten_ics:{user_id}"
+
+
+@receiver(post_save, sender=Shift)
+def invalidate_diensten_ics_on_shift_save(sender, instance, **kwargs):
+    # delete na commit, zodat calendar fetch nooit “tussen” jouw publish-transaction door
+    uid = instance.user_id
+    transaction.on_commit(lambda: cache.delete(_ics_cache_key(uid)))
+
+
+@receiver(post_delete, sender=Shift)
+def invalidate_diensten_ics_on_shift_delete(sender, instance, **kwargs):
+    uid = instance.user_id
+    transaction.on_commit(lambda: cache.delete(_ics_cache_key(uid)))

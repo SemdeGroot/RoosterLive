@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.db.models import Prefetch
 from django.db import transaction
+from django.core.cache import cache
 
 from ._helpers import can
 from core.models import Availability, Location, Task, Shift, ShiftDraft
@@ -426,6 +427,8 @@ def publish_shifts_api(request):
             .select_related("task")
         )
 
+        affected_user_ids = set(drafts.values_list("user_id", flat=True))
+
         deletes = drafts.filter(action="delete").values_list("user_id", "date", "period")
         for (uid, d, p) in deletes:
             Shift.objects.filter(user_id=uid, date=d, period=p).delete()
@@ -441,6 +444,12 @@ def publish_shifts_api(request):
 
         changed_count = drafts.count()
         drafts.delete()
+
+        def _delete_keys():
+            keys = [f"diensten_ics:{uid}" for uid in affected_user_ids]
+            cache.delete_many(keys)
+
+        transaction.on_commit(_delete_keys)
 
     iso_week = week_start.isocalendar().week
     messages.success(

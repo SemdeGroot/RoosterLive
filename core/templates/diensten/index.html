@@ -135,9 +135,95 @@
         </tbody>
       </table>
     </div>
+    <div style="display:flex; align-items:center; margin-top:20px;">
+      <button
+        type="button"
+        id="syncAgendaBtn"
+        class="btn btn-save"
+        data-webcal="{{ webcal_url }}"
+        data-https="{{ webcal_https_url }}"
+        style="margin-left:auto;"
+      >
+        Synchroniseer eenmalig met agenda
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div id="agendaModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content diensten-modal"
+       style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:640px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <h2 style="margin:0; font-size: 1.4rem;">Agenda synchronisatie</h2>
+      <span id="agendaModalClose" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <!-- Desktop variant -->
+    <div id="agendaDesktop" style="display:none;">
+      <p style="margin-top:0; color:var(--muted);">
+        Wil je je diensten in je agenda? Kopieer de link hieronder en open hem op je telefoon.
+        Zodra je hem één keer toevoegt, worden wijzigingen automatisch bijgewerkt.
+      </p>
+
+      <label class="section-label">Jouw agenda-link</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input id="webcalInput" class="admin-input" type="text" readonly value="{{ webcal_url }}" style="flex:1;">
+        <button type="button" id="copyWebcalBtn" class="btn">Kopieer</button>
+      </div>
+
+      <div style="margin-top:14px; padding-top:16px; border-top: 1px solid var(--border);">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Zo voeg je hem toe op je telefoon:</strong><br>
+          1) Kopieer de link hierboven.<br>
+          2) Stuur de link naar jezelf (WhatsApp of e-mail) en open hem op je telefoon of typ hem over in je browser.<br>
+          3) Kies in je agenda-app voor <em>Abonneren</em> / <em>Kalender toevoegen</em> en bevestig.
+        </small>
+      </div>
+
+      <div style="margin-top:14px;">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Lukt openen niet?</strong><br>
+          Open je agenda-app → <em>Instellingen</em> → <em>Kalender toevoegen</em> (of <em>Abonneren</em>) en plak daar de link.
+        </small>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
+        <button type="button" id="agendaModalOkDesktop" class="btn btn-danger">Sluiten</button>
+      </div>
+    </div>
+
+    <!-- Mobile variant -->
+    <div id="agendaMobile" style="display:none;">
+      <p style="margin-top:0; color:var(--muted);">
+        Voeg je diensten toe aan je agenda. Daarna worden wijzigingen automatisch bijgewerkt.
+      </p>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button type="button" id="openAgendaBtn" class="btn btn-save">Open agenda-app</button>
+        <button type="button" id="copyWebcalBtnMobile" class="btn">Kopieer link</button>
+      </div>
+
+      <div style="margin-top:18px; padding-top:16px; border-top: 1px solid var(--border);">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Werkt “Open agenda-app” niet?</strong><br>
+          1) Tik op <em>Kopieer link</em>.<br>
+          2) Open je agenda-app en ga naar <em>Instellingen</em>.<br>
+          3) Kies <em>Kalender toevoegen</em> of <em>Abonneren</em>.<br>
+          4) Plak de link en sla op.
+        </small>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" id="agendaModalOkMobile" class="btn btn-danger">Sluiten</button>
+      </div>
+    </div>
 
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
