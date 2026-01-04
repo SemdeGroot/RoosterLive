@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, timezone as dt_timezone
 from email.utils import parsedate_to_datetime
 from hashlib import sha256
 from zoneinfo import ZoneInfo
+import gzip
 
 from django.conf import settings
 from django.core.cache import cache
@@ -33,20 +34,143 @@ def _ics_escape(s: str) -> str:
 
 
 def _fmt_dt_utc(dt: datetime) -> str:
-    dt_utc = dt.astimezone(timezone.utc)
+    dt_utc = dt.astimezone(dt_timezone.utc)
     return dt_utc.strftime("%Y%m%dT%H%M%SZ")
 
 
 def _httpdate(dt: datetime) -> str:
-    # RFC7231 compliant-ish via Django format
     from django.utils.http import http_date
     return http_date(int(dt.timestamp()))
 
 
-def _build_ics_for_user(user) -> tuple[str, datetime]:
+def _etag_for_bytes(payload: bytes) -> str:
+    return '"' + sha256(payload).hexdigest() + '"'
+
+
+def _fold_ics_line(line: str, limit_octets: int = 75) -> list[str]:
     """
-    Returns: (ics_text, last_modified_utc)
-    last_modified_utc = max(updated_at) of included shifts (or now if none).
+    RFC5545 line folding: >75 octets => CRLF + SP continuation.
+    """
+    b = line.encode("utf-8")
+    if len(b) <= limit_octets:
+        return [line]
+
+    out = []
+    start = 0
+    while start < len(b):
+        end = min(start + limit_octets, len(b))
+        # Don't split inside UTF-8 continuation bytes
+        while end < len(b) and (b[end] & 0xC0) == 0x80:
+            end -= 1
+        chunk = b[start:end].decode("utf-8", errors="strict")
+        if start == 0:
+            out.append(chunk)
+        else:
+            out.append(" " + chunk)
+        start = end
+    return out
+
+
+def _fold_ics_lines(lines: list[str]) -> list[str]:
+    folded = []
+    for line in lines:
+        folded.extend(_fold_ics_line(line))
+    return folded
+
+
+def _parse_accept_encoding(header_value: str) -> dict[str, float]:
+    """
+    Return mapping {coding: q}. Missing q => 1.0. Invalid => 0.0.
+    """
+    result: dict[str, float] = {}
+    if not header_value:
+        return result
+
+    parts = [p.strip() for p in header_value.split(",") if p.strip()]
+    for p in parts:
+        coding, *params = [x.strip() for x in p.split(";")]
+        coding = coding.lower()
+        q = 1.0
+        for param in params:
+            if param.startswith("q="):
+                try:
+                    q = float(param[2:])
+                except ValueError:
+                    q = 0.0
+        result[coding] = q
+    return result
+
+
+def _client_accepts_gzip(request) -> bool:
+    enc = _parse_accept_encoding(request.headers.get("Accept-Encoding", ""))
+
+    if "gzip" in enc:
+        return enc["gzip"] > 0.0
+    if "*" in enc:
+        return enc["*"] > 0.0
+    return False
+
+
+def _etag_matches(if_none_match_value: str, etag: str) -> bool:
+    """
+    Handle lists and weak tags (W/"...") and wildcard (*).
+    """
+    if not if_none_match_value:
+        return False
+    v = if_none_match_value.strip()
+    if v == "*":
+        return True
+
+    candidates = [c.strip() for c in v.split(",") if c.strip()]
+    for c in candidates:
+        if c.startswith("W/"):
+            c = c[2:].strip()
+        if c == etag:
+            return True
+    return False
+
+
+def _maybe_304(request, etag: str, last_modified_utc: datetime):
+    inm = request.headers.get("If-None-Match")
+    if inm and _etag_matches(inm, etag):
+        resp = HttpResponseNotModified()
+        resp["ETag"] = etag
+        resp["Last-Modified"] = _httpdate(last_modified_utc)
+        resp["Cache-Control"] = "private, max-age=0, must-revalidate"
+        resp["Vary"] = "Accept-Encoding"
+        return resp
+
+    ims = request.headers.get("If-Modified-Since")
+    if ims:
+        try:
+            ims_dt = parsedate_to_datetime(ims)
+            if ims_dt.tzinfo is None:
+                ims_dt = ims_dt.replace(tzinfo=dt_timezone.utc)
+            if ims_dt >= last_modified_utc:
+                resp = HttpResponseNotModified()
+                resp["ETag"] = etag
+                resp["Last-Modified"] = _httpdate(last_modified_utc)
+                resp["Cache-Control"] = "private, max-age=0, must-revalidate"
+                resp["Vary"] = "Accept-Encoding"
+                return resp
+        except Exception:
+            pass
+
+    return None
+
+
+def _ics_cache_key(user_id: int) -> str:
+    return f"diensten_ics:{user_id}"
+
+
+def _build_cached_payload_for_user(user) -> dict:
+    """
+    Build ICS once and return cache payload:
+      - store_bytes: either plain or gzip (whichever is smaller)
+      - store_encoding: "gzip" or "identity"
+      - etag_plain, etag_gzip
+      - last_modified_utc
+      - gzip_better: bool (len(gz) < len(plain))
     """
     tz = ZoneInfo(getattr(settings, "TIME_ZONE", "Europe/Amsterdam"))
 
@@ -61,16 +185,10 @@ def _build_ics_for_user(user) -> tuple[str, datetime]:
     )
 
     now = timezone.now()
+    last_modified_utc = now.astimezone(dt_timezone.utc)
 
-    last_mod = None
-    for s in shifts:
-        if last_mod is None or s.updated_at > last_mod:
-            last_mod = s.updated_at
-    if last_mod is None:
-        last_mod = now
-    last_mod_utc = last_mod.astimezone(timezone.utc)
 
-    lines = []
+    lines: list[str] = []
     lines.append("BEGIN:VCALENDAR")
     lines.append("VERSION:2.0")
     lines.append("PRODID:-//Apotheek Jansen//Diensten//NL")
@@ -92,21 +210,23 @@ def _build_ics_for_user(user) -> tuple[str, datetime]:
         summary = f"Werken bij Apotheek Jansen – {task_name}".strip()
         location_line = " – ".join([x for x in [loc_name, loc_addr] if x]).strip()
 
-        desc_parts = [
-            f"Dagdeel: {PERIOD_LABELS.get(s.period, s.period)}",
-        ]
+        desc_parts = [f"Dagdeel: {PERIOD_LABELS.get(s.period, s.period)}"]
         if loc_name:
             desc_parts.append(f"Locatie: {loc_name}")
         if loc_addr:
             desc_parts.append(f"Adres: {loc_addr}")
-        desc_parts.append("Deze agenda synchroniseert automatisch. Het kan even duren voordat wijzigingen zichtbaar zijn (afhankelijk van je agenda-app).")
+        desc_parts.append(
+            "Deze agenda synchroniseert automatisch. Het kan even duren voordat wijzigingen zichtbaar zijn (afhankelijk van je agenda-app)."
+        )
         description = "\n".join(desc_parts)
 
         uid = f"shift-{s.id}@apotheekjansen"
+        dt_event_mod = now.astimezone(dt_timezone.utc)
 
         lines.append("BEGIN:VEVENT")
         lines.append(f"UID:{_ics_escape(uid)}")
-        lines.append(f"DTSTAMP:{_fmt_dt_utc(now)}")
+        lines.append(f"DTSTAMP:{_fmt_dt_utc(dt_event_mod)}")
+        lines.append(f"LAST-MODIFIED:{_fmt_dt_utc(dt_event_mod)}")
         lines.append(f"DTSTART:{_fmt_dt_utc(dt_start_local)}")
         lines.append(f"DTEND:{_fmt_dt_utc(dt_end_local)}")
         lines.append(f"SUMMARY:{_ics_escape(summary)}")
@@ -117,40 +237,31 @@ def _build_ics_for_user(user) -> tuple[str, datetime]:
 
     lines.append("END:VCALENDAR")
 
-    ics = "\r\n".join(lines) + "\r\n"
-    return ics, last_mod_utc
+    lines = _fold_ics_lines(lines)
+    ics_text = "\r\n".join(lines) + "\r\n"
+    plain_bytes = ics_text.encode("utf-8")
+    etag_plain = _etag_for_bytes(plain_bytes)
 
+    gz_bytes = gzip.compress(plain_bytes, compresslevel=6)
+    etag_gzip = _etag_for_bytes(gz_bytes)
 
-def _ics_cache_key(user_id: int) -> str:
-    return f"diensten_ics:{user_id}"
+    gzip_better = len(gz_bytes) < len(plain_bytes)
 
+    if gzip_better:
+        store_bytes = gz_bytes
+        store_encoding = "gzip"
+    else:
+        store_bytes = plain_bytes
+        store_encoding = "identity"
 
-def _maybe_304(request, etag: str, last_modified_utc: datetime):
-    inm = request.headers.get("If-None-Match")
-    if inm and inm.strip() == etag:
-        resp = HttpResponseNotModified()
-        resp["ETag"] = etag
-        resp["Last-Modified"] = _httpdate(last_modified_utc)
-        resp["Cache-Control"] = "private, max-age=0, must-revalidate"
-        return resp
-
-    ims = request.headers.get("If-Modified-Since")
-    if ims:
-        try:
-            ims_dt = parsedate_to_datetime(ims)
-            if ims_dt.tzinfo is None:
-                ims_dt = ims_dt.replace(tzinfo=timezone.utc)
-            # 304 als client al iets heeft dat >= last_modified
-            if ims_dt >= last_modified_utc:
-                resp = HttpResponseNotModified()
-                resp["ETag"] = etag
-                resp["Last-Modified"] = _httpdate(last_modified_utc)
-                resp["Cache-Control"] = "private, max-age=0, must-revalidate"
-                return resp
-        except Exception:
-            pass
-
-    return None
+    return {
+        "store_bytes": store_bytes,
+        "store_encoding": store_encoding,
+        "etag_plain": etag_plain,
+        "etag_gzip": etag_gzip,
+        "gzip_better": gzip_better,
+        "last_modified_utc": last_modified_utc,
+    }
 
 
 def diensten_webcal_view(request, token):
@@ -166,39 +277,51 @@ def diensten_webcal_view(request, token):
     user = profile.user
     key = _ics_cache_key(user.id)
 
+    wants_gzip = _client_accepts_gzip(request)
+
     cached = cache.get(key)
-    if cached:
-        ics = cached["ics"]
-        etag = cached["etag"]
-        last_modified_utc = cached["last_modified_utc"]
+    if not cached:
+        cached = _build_cached_payload_for_user(user)
+        cache.set(key, cached, timeout=60 * 60 * 24 * 7)
 
-        maybe = _maybe_304(request, etag, last_modified_utc)
-        if maybe:
-            return maybe
+    # Decide response representation:
+    # - Only serve gzip if client accepts gzip AND gzip is actually smaller.
+    serve_gzip = bool(wants_gzip and cached["gzip_better"])
 
-        resp = HttpResponse(ics, content_type="text/calendar; charset=utf-8")
-        resp["Content-Disposition"] = 'inline; filename="diensten.ics"'
-        resp["ETag"] = etag
-        resp["Last-Modified"] = _httpdate(last_modified_utc)
-        resp["Cache-Control"] = "private, max-age=0, must-revalidate"
-        return resp
+    chosen_etag = cached["etag_gzip"] if serve_gzip else cached["etag_plain"]
+    last_modified_utc = cached["last_modified_utc"]
 
-    ics, last_modified_utc = _build_ics_for_user(user)
-    etag = '"' + sha256(ics.encode("utf-8")).hexdigest() + '"'
-
-    cache.set(
-        key,
-        {"ics": ics, "etag": etag, "last_modified_utc": last_modified_utc},
-        timeout=60 * 60 * 24 * 7,  # 7 dagen
-    )
-
-    maybe = _maybe_304(request, etag, last_modified_utc)
+    maybe = _maybe_304(request, chosen_etag, last_modified_utc)
     if maybe:
         return maybe
 
-    resp = HttpResponse(ics, content_type="text/calendar; charset=utf-8")
+    store_bytes: bytes = cached["store_bytes"]
+    store_encoding: str = cached["store_encoding"]
+
+    if serve_gzip:
+        # Need gzip body
+        if store_encoding == "gzip":
+            body = store_bytes
+        else:
+            # stored plain, but gzip is better => compress on the fly (should be rare)
+            body = gzip.compress(store_bytes, compresslevel=6)
+
+        resp = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+        resp["Content-Encoding"] = "gzip"
+        resp["ETag"] = chosen_etag
+
+    else:
+        # Need plain body
+        if store_encoding == "identity":
+            body = store_bytes
+        else:
+            body = gzip.decompress(store_bytes)
+
+        resp = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+        resp["ETag"] = chosen_etag
+
     resp["Content-Disposition"] = 'inline; filename="diensten.ics"'
-    resp["ETag"] = etag
     resp["Last-Modified"] = _httpdate(last_modified_utc)
     resp["Cache-Control"] = "private, max-age=0, must-revalidate"
+    resp["Vary"] = "Accept-Encoding"
     return resp

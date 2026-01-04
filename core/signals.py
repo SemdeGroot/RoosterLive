@@ -7,13 +7,12 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from core.models import Shift
-
-from core.models import UserProfile
+from core.models import Shift, Task, Location, UserProfile
 from core.permissions_cache import bump_perm_version, delete_permset, get_cached_permset
 
 User = get_user_model()
 
+# === Birthday caching ===
 
 @receiver(post_save, sender=UserProfile)
 def invalidate_birthdays_cache_on_profile_change(sender, instance, **kwargs):
@@ -22,6 +21,7 @@ def invalidate_birthdays_cache_on_profile_change(sender, instance, **kwargs):
     cache_key = f"agenda_birthdays:{org_id}:{today_str}"
     cache.delete(cache_key)
 
+# === Permission caching & invalidation === 
 
 @receiver(user_logged_in)
 def warm_permissions_cache_on_login(sender, request, user, **kwargs):
@@ -52,9 +52,21 @@ def invalidate_on_group_permissions_change(sender, instance, action, **kwargs):
         for uid in user_ids:
             bump_perm_version(uid)
 
+# === Invalidate agenda caching ===
+
 def _ics_cache_key(user_id: int) -> str:
     return f"diensten_ics:{user_id}"
 
+def _invalidate_diensten_ics_for_user_ids(user_ids: list[int]) -> None:
+    if not user_ids:
+        return
+
+    keys = [_ics_cache_key(uid) for uid in user_ids]
+
+    def do_delete():
+        cache.delete_many(keys)
+
+    transaction.on_commit(do_delete)
 
 @receiver(post_save, sender=Shift)
 def invalidate_diensten_ics_on_shift_save(sender, instance, **kwargs):
@@ -67,3 +79,25 @@ def invalidate_diensten_ics_on_shift_save(sender, instance, **kwargs):
 def invalidate_diensten_ics_on_shift_delete(sender, instance, **kwargs):
     uid = instance.user_id
     transaction.on_commit(lambda: cache.delete(_ics_cache_key(uid)))
+
+@receiver(post_save, sender=Task)
+@receiver(post_delete, sender=Task)
+def invalidate_diensten_ics_on_task_change(sender, instance, **kwargs):
+    user_ids = list(
+        Shift.objects
+        .filter(task_id=instance.id)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
+    _invalidate_diensten_ics_for_user_ids(user_ids)
+
+@receiver(post_save, sender=Location)
+@receiver(post_delete, sender=Location)
+def invalidate_diensten_ics_on_location_change(sender, instance, **kwargs):
+    user_ids = list(
+        Shift.objects
+        .filter(task__location_id=instance.id)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
+    _invalidate_diensten_ics_for_user_ids(user_ids)
