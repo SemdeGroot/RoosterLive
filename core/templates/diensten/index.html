@@ -74,6 +74,7 @@
       {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
     </div>
 
+    <!-- DIENSTEN TABEL -->
     <div class="table-scroll">
       <table class="crud-table compact mijndiensten-table" aria-label="Mijn diensten">
         <thead>
@@ -88,7 +89,6 @@
           {% if rows %}
             {% for r in rows %}
               <tr class="{% if not r.is_assigned %}is-empty{% endif %} {{ r.row_class }}">
-                <!-- Dag: alleen op eerste rij van die dag -->
                 <td>
                   {% if r.show_day %}
                     <div class="weekday-title">
@@ -100,7 +100,6 @@
                   {% endif %}
                 </td>
 
-                <!-- Dagdeel: label + tijd eronder, met dezelfde class -->
                 <td>
                   <div class="weekday-title">
                     <strong>{{ r.period_label }}</strong>
@@ -135,7 +134,42 @@
         </tbody>
       </table>
     </div>
-    <div style="display:flex; align-items:center; margin-top:20px;">
+
+    <!-- ADRES TABEL (onder diensten tabel) -->
+    <div class="table-scroll" style="margin-top:16px;">
+      <table class="crud-table compact locaties-table" aria-label="Locaties en adressen">
+        <thead>
+          <tr>
+            <th>Locatie</th>
+            <th>Adres</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if location_rows %}
+            {% for loc in location_rows %}
+              <tr class="{{ loc.row_class }}">
+                <td class="wrap">{{ loc.name }}</td>
+                <td class="wrap">
+                  {% if loc.address %}
+                    {{ loc.address }}
+                  {% else %}
+                    <span class="dash">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="2" class="wrap">
+                Geen locaties gevonden voor deze week.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="btn-sync-wrap" style="display:flex; align-items:center; margin-top:20px;">
       <button
         type="button"
         id="syncAgendaBtn"
@@ -147,8 +181,8 @@
         Synchroniseer eenmalig met agenda
       </button>
     </div>
-  </div>
 
+  </div>
 </div>
 
 <!-- Modal -->

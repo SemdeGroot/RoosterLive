@@ -108,3 +108,34 @@ table.mijndiensten-table tr.is-empty td{
     margin: 10vh auto !important;
   }
 }
+
+/* Kolombreedtes: Locatie, Adres */
+table.locaties-table{
+  --c1: 220px;
+  --c2: auto;
+}
+
+@media (max-width: 900px){
+  table.locaties-table{
+    min-width: 520px;
+  }
+}
+
+/* dezelfde row tints voor locaties tabel */
+table.locaties-table tr.loc-tint--green td{ background: var(--loc-green-bg); }
+table.locaties-table tr.loc-tint--red td{   background: var(--loc-red-bg); }
+table.locaties-table tr.loc-tint--blue td{  background: var(--loc-blue-bg); }
+
+/* Mobile: sync knop centreren onderin */
+@media (max-width: 720px){
+  /* wrapper center */
+  .btn-sync-wrap{
+    justify-content: center !important;
+    margin-top: 16px;
+  }
+
+  /* override inline margin-left:auto; */
+  #syncAgendaBtn.btn-sync{
+    margin-left: 0 !important;
+  }
+}

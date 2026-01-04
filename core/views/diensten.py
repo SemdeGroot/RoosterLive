@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils import timezone, translation
 from django.urls import reverse
 
-from core.models import Shift
+from core.models import Shift, Location
 from ._helpers import can
 
 
@@ -145,6 +145,17 @@ def mijndiensten_view(request):
     iso_year, iso_week, _ = monday.isocalendar()
     header_title = f"Week {iso_week} – {iso_year}"
 
+    # --- Unieke locaties voor extra tabel (alleen Location.address) ---
+    
+    location_rows = []
+    for loc in Location.objects.order_by("name"):
+        color = (loc.color or "").strip()
+        location_rows.append({
+            "name": loc.name,
+            "address": (loc.address or "").strip(),
+            "row_class": f"loc-tint loc-tint--{color}" if color else "",
+        })
+
     # --- UUID webcal link ---
     # jouw UserProfile is related_name="profile"
     token = request.user.profile.calendar_token
@@ -156,6 +167,7 @@ def mijndiensten_view(request):
         "monday": monday,
         "week_end": week_end,
         "rows": rows,
+        "location_rows": location_rows,
         "week_options": week_options,
         "min_monday": min_monday,
         "max_monday": max_monday,
