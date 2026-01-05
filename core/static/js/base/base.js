@@ -2,22 +2,52 @@
 const VAPID =
   (window.PWA && window.PWA.VAPID_PUBLIC_KEY) ||
   (document.currentScript && document.currentScript.dataset && document.currentScript.dataset.vapid) ||
-  (function(){
+  (function () {
     const s = document.querySelector('script[src$="base.js"]');
     return s && s.dataset ? s.dataset.vapid : null;
   })();
 
-(function(){
+(function () {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
 
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                    || window.navigator.standalone === true;
-  const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
 
-  const modal   = document.getElementById('pushPrompt');
+  const onHttps =
+    location.protocol === 'https:' || location.hostname === 'localhost';
+
+  const modal = document.getElementById('pushPrompt');
   const btnAllow = document.getElementById('pushAllowBtn');
-  const btnDecl  = document.getElementById('pushDeclineBtn');
-  const btnCloseX= document.getElementById('pushCloseX');
+  const btnDecl = document.getElementById('pushDeclineBtn');
+  const btnCloseX = document.getElementById('pushCloseX');
+
+  const titleEl = document.getElementById('pushTitle');
+  const textEl = document.getElementById('pushText');
+
+  // Bewaar originele modal-teksten/labels zodat we repair-modus netjes kunnen terugzetten
+  const ORIGINAL_UI = {
+    title: titleEl ? titleEl.textContent : '',
+    text: textEl ? textEl.textContent : '',
+    allow: btnAllow ? btnAllow.textContent : '',
+    decline: btnDecl ? btnDecl.textContent : '',
+  };
+
+  function setModalUI({ title, text, allowLabel, declineLabel } = {}) {
+    if (titleEl && typeof title === 'string') titleEl.textContent = title;
+    if (textEl && typeof text === 'string') textEl.textContent = text;
+    if (btnAllow && typeof allowLabel === 'string') btnAllow.textContent = allowLabel;
+    if (btnDecl && typeof declineLabel === 'string') btnDecl.textContent = declineLabel;
+  }
+
+  function resetModalUI() {
+    setModalUI({
+      title: ORIGINAL_UI.title,
+      text: ORIGINAL_UI.text,
+      allowLabel: ORIGINAL_UI.allow,
+      declineLabel: ORIGINAL_UI.decline,
+    });
+  }
 
   function b64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -30,6 +60,7 @@ const VAPID =
 
   async function registerSW() {
     try {
+      // register() is idempotent; we keep it here so silentPushSync can always rely on ready()
       await navigator.serviceWorker.register('/service_worker.v19.js');
       return await navigator.serviceWorker.ready;
     } catch (e) {
@@ -49,11 +80,13 @@ const VAPID =
       navigator.platform,
       navigator.language,
       [screen.width, screen.height, screen.colorDepth].join('x'),
-      navigator.maxTouchPoints || 0
+      navigator.maxTouchPoints || 0,
     ].join('|');
     const enc = new TextEncoder().encode(data);
     const buf = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   async function saveSubscription(sub) {
@@ -61,13 +94,16 @@ const VAPID =
       const device_hash = await getDeviceHash();
       await fetch('/api/push/subscribe/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRF(),
+        },
         credentials: 'same-origin',
         body: JSON.stringify({
           subscription: sub,
           device_hash,
           user_agent: navigator.userAgent,
-          replace: true
+          replace: true,
         }),
       });
       console.log('[push] Sync met server geslaagd');
@@ -76,40 +112,73 @@ const VAPID =
     }
   }
 
-  // DE MOTOR: Silent Sync met 24-uurs debounce
-  window.silentPushSync = async function(forceNew = false) {
+  // endpoint + keys bepalen of dit "dezelfde" subscription is (detecteert rotatie)
+  function subFingerprint(sub) {
+    try {
+      const j = sub.toJSON();
+      return JSON.stringify({ endpoint: j.endpoint, keys: j.keys });
+    } catch (_) {
+      return sub && sub.endpoint ? String(sub.endpoint) : '';
+    }
+  }
+
+  // DE MOTOR: Silent Sync met 24-uurs debounce (fingerprint-aware)
+  window.silentPushSync = async function (forceNew = false) {
     if (!VAPID || !onHttps || Notification.permission !== 'granted') return;
 
     try {
       const reg = await registerSW();
       if (!reg) return;
 
-      let sub = await reg.pushManager.getSubscription();
-      
       const lastSyncKey = 'lastPushSyncTimestamp';
-      const lastSync = localStorage.getItem(lastSyncKey);
+      const lastFpKey = 'lastPushSubFingerprint';
+      const needsGestureKey = 'pushNeedsUserGestureFix';
+
+      const lastSync = parseInt(localStorage.getItem(lastSyncKey) || '0', 10);
+      const lastFp = localStorage.getItem(lastFpKey) || '';
       const nu = Date.now();
       const eenDag = 24 * 60 * 60 * 1000;
 
-      // Skip POST als alles up-to-date is en recent gesynct
-      if (sub && !forceNew && lastSync && (nu - parseInt(lastSync) < eenDag)) {
-        console.debug('[push] Sync overgeslagen: recent nog uitgevoerd.');
-        return; 
+      let sub = await reg.pushManager.getSubscription();
+
+      // Als we een bestaande sub hebben, check of die veranderd is (rotatie)
+      if (sub && !forceNew) {
+        const fp = subFingerprint(sub);
+
+        // Alleen skippen als: recent gesynct + fingerprint identiek
+        if (lastSync && nu - lastSync < eenDag && fp === lastFp) {
+          console.debug('[push] Sync overgeslagen: recent + fingerprint gelijk.');
+          return;
+        }
       }
 
-      // Hersubscribe als token weg is (data gewist) of geforceerd
+      // (Her)subscribe als token weg is of geforceerd
       if (!sub || forceNew) {
         console.log('[push] Herstel of nieuwe sub aanvraag...');
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: b64ToUint8Array(VAPID),
-        });
-      }
-      
-      await saveSubscription(sub);
-      localStorage.setItem(lastSyncKey, nu.toString());
+        try {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: b64ToUint8Array(VAPID),
+          });
+          // Als dit lukt, is gesture-fix niet nodig
+          localStorage.removeItem(needsGestureKey);
+        } catch (err) {
+          console.warn('[push] subscribe faalde:', err);
 
-    } catch(e) {
+          // Op iOS / sommige browsers kan subscribe zonder click soms niet mogen
+          if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+            localStorage.setItem(needsGestureKey, '1');
+          }
+          return; // zonder sub kunnen we niet saven
+        }
+      }
+
+      // Nu altijd saven als we hier zijn (want óf: nieuw, óf: veranderd, óf: >24u)
+      await saveSubscription(sub);
+
+      localStorage.setItem(lastSyncKey, String(nu));
+      localStorage.setItem(lastFpKey, subFingerprint(sub));
+    } catch (e) {
       console.warn('[push] silentPushSync faalde:', e);
     }
   };
@@ -122,17 +191,61 @@ const VAPID =
     closePushModal();
   }
 
-  window.offerPushPrompt = function() {
+  window.offerPushPrompt = function () {
     if (!modal || Notification.permission !== 'default' || !isStandalone) return;
+
+    // Zorg dat onboarding prompt altijd de originele tekst/labels toont
+    resetModalUI();
+
     btnAllow && (btnAllow.onclick = subscribeFlow);
     btnDecl && (btnDecl.onclick = closePushModal);
     btnCloseX && (btnCloseX.onclick = closePushModal);
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+  };
+
+  // Repair prompt: alleen als permission al granted is, maar subscribe/sync ooit faalde door user-gesture
+  window.offerPushRepairPrompt = function () {
+    if (!modal || Notification.permission !== 'granted' || !isStandalone) return;
+
+    // Pas tekst aan zodat user begrijpt wat er gebeurt
+    setModalUI({
+      title: 'Meldingen herstellen?',
+      text: 'We hebben gedetecteerd dat meldingen opnieuw gekoppeld moeten worden. Tik op “Herstellen” om dit te fixen.',
+      allowLabel: 'Herstellen',
+      declineLabel: 'Later',
+    });
+
+    btnAllow &&
+      (btnAllow.onclick = async () => {
+        await window.silentPushSync(true); // forceNew
+        localStorage.removeItem('pushNeedsUserGestureFix');
+        closePushModal();
+      });
+
+    const snooze = () => {
+      // Niet blijven zeuren: 30 dagen niet meer tonen
+      localStorage.setItem(
+        'pushRepairSnoozeUntil',
+        String(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      );
+      closePushModal();
+    };
+
+    btnDecl && (btnDecl.onclick = snooze);
+    btnCloseX && (btnCloseX.onclick = snooze);
+
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
   };
 
   function closePushModal() {
     if (!modal) return;
+
+    // Bij sluiten terug naar default UI, zodat volgende keer onboarding niet “repair” tekst heeft
+    resetModalUI();
+
     modal.setAttribute('aria-hidden', 'true');
     modal.hidden = true;
   }
@@ -140,20 +253,34 @@ const VAPID =
 
 // ---------- DE SLIMME ORCHESTRATOR ----------
 (function () {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                    || window.navigator.standalone === true;
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
 
   let isChecking = false;
 
   async function runPushHealthCheck() {
     if (!isStandalone || isChecking) return;
     isChecking = true;
+
     try {
       if (Notification.permission === 'granted') {
-        // Probeert te syncen; de 24-uurs timer in de functie beslist of het echt nodig is
-        await window.silentPushSync().catch(() => {}); 
-      } 
-      else if (Notification.permission === 'default') {
+        // 1) eerst proberen silent te fixen (incl. rotatie-detectie)
+        await window.silentPushSync().catch(() => {});
+
+        // 2) als browser user-gesture nodig bleek te hebben: toon max 1x per 30 dagen repair prompt
+        const needs = localStorage.getItem('pushNeedsUserGestureFix') === '1';
+        const snoozeUntil = parseInt(
+          localStorage.getItem('pushRepairSnoozeUntil') || '0',
+          10
+        );
+
+        if (needs && Date.now() > snoozeUntil) {
+          if (typeof window.offerPushRepairPrompt === 'function') {
+            window.offerPushRepairPrompt();
+          }
+        }
+      } else if (Notification.permission === 'default') {
         const doneKey = 'onboardingPush_v4';
         if (localStorage.getItem(doneKey) !== '1') {
           if (typeof window.offerPushPrompt === 'function') {
@@ -184,13 +311,20 @@ const VAPID =
   });
 })();
 
-// ---------- SERVICE WORKER REGISTRATIE + CLEANUP VIA ?cleanup=1 ----------
+// ---------- SERVICE WORKER REGISTRATIE + CLEANUP VIA ?sw_cleanup=1 ----------
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service_worker.v19.js');
-        console.log('[sw] Geregistreerd met scope:', reg.scope);
+        // Probeer bestaande registratie te gebruiken; anders registreren
+        const reg = await (async () => {
+          const r = await navigator.serviceWorker.getRegistration();
+          if (r) return r;
+          await navigator.serviceWorker.register('/service_worker.v19.js');
+          return await navigator.serviceWorker.getRegistration();
+        })();
+
+        if (reg) console.log('[sw] Geregistreerd met scope:', reg.scope);
 
         const url = new URL(window.location.href);
         const shouldCleanup = url.searchParams.get('sw_cleanup') === '1';

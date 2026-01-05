@@ -8,6 +8,10 @@ import shutil
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
+CELERY_STATE_DIR = PROJECT_ROOT / ".celery"
+CELERY_STATE_DIR.mkdir(exist_ok=True)
+CELERYBEAT_SCHEDULE = str(CELERY_STATE_DIR / "celerybeat-schedule")
+
 # Gebruik exact dezelfde Python/venv waarmee je dit script start
 PY = sys.executable
 
@@ -74,9 +78,23 @@ worker_proc = subprocess.Popen(
     env=env,
 )
 
+print("⏱️ Starting Celery beat...")
+beat_proc = subprocess.Popen(
+    CELERY_CMD
+    + [
+        "-A", "rooster_site",
+        "beat",
+        "-l", "info",
+        "--pidfile=",
+        f"--schedule={CELERYBEAT_SCHEDULE}",
+    ],
+    cwd=str(PROJECT_ROOT),
+    env=env,
+)
+
 def shutdown(*_):
     print("\n🛑 Stopping development processes...")
-    for p in (worker_proc, django_proc):
+    for p in (beat_proc, worker_proc, django_proc):
         try:
             p.terminate()
         except Exception:
@@ -92,6 +110,7 @@ print("\n✅ Development environment running:")
 print("   - Django: http://127.0.0.1:8000")
 print("   - Redis:  redis://127.0.0.1:6379")
 print("   - Celery: worker \n")
+print("   - Celery: beat\n")
 print("Press Ctrl+C to stop.\n")
 
 # Houdt script in leven

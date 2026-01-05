@@ -20,7 +20,7 @@ def email_dispatcher_task(self, job: dict):
 
     if job_type == "invite":
         from django.contrib.auth import get_user_model
-        from core.utils.invite import send_invite_email
+        from core.utils.emails.invite import send_invite_email
 
         User = get_user_model()
         user = User.objects.get(pk=p["user_id"])
@@ -29,7 +29,7 @@ def email_dispatcher_task(self, job: dict):
 
     if job_type == "password_reset":
         from django.contrib.auth import get_user_model
-        from core.utils.reset import send_password_reset_email
+        from core.utils.emails.reset import send_password_reset_email
 
         User = get_user_model()
         user = User.objects.get(pk=p["user_id"])
@@ -37,7 +37,7 @@ def email_dispatcher_task(self, job: dict):
         return
 
     if job_type == "laatste_pot":
-        from core.utils.laatstepotten_mail import send_laatste_pot_email
+        from core.utils.emails.laatstepotten_mail import send_laatste_pot_email
 
         send_laatste_pot_email(
             to_email=p["to_email"],
@@ -47,7 +47,7 @@ def email_dispatcher_task(self, job: dict):
         return
 
     if job_type == "nazending_single":
-        from core.utils.nazending_mail import send_single_nazending_email
+        from core.utils.emails.nazending_mail import send_single_nazending_email
 
         # PDF uit storage lezen (lokaal of S3)
         with default_storage.open(p["pdf_path"], "rb") as f:

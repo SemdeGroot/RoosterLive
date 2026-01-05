@@ -2,10 +2,16 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # === Basis ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=True)  # .env lokaal; prod via echte env/secrets
+
+LANGUAGE_CODE = 'nl-nl'
+TIME_ZONE = 'Europe/Amsterdam'
+USE_I18N = True
+USE_TZ = True
 
 # === Debug ===
 DEBUG = os.getenv("DEBUG", "True") == "True"
@@ -167,15 +173,19 @@ CELERY_TASK_SOFT_TIME_LIMIT = 50
 CELERY_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_DEFAULT_QUEUE = "default"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
 CELERY_TASK_ROUTES = {
-    "core.tasks_email.email_dispatcher_task": {"queue": "mail"},
-    "core.tasks_email.cleanup_storage_file_task": {"queue": "default"},
+    "core.tasks.email_dispatcher.email_dispatcher_task": {"queue": "mail"},
+    "core.tasks.email_dispatcher.cleanup_storage_file_task": {"queue": "default"},
 
     "core.tasks.send_roster_updated_push_task": {"queue": "push"},
     "core.tasks.send_news_uploaded_push_task": {"queue": "push"},
     "core.tasks.send_agenda_uploaded_push_task": {"queue": "push"},
     "core.tasks.send_laatste_pot_push_task": {"queue": "push"},
 }
+
+CELERY_BEAT_SCHEDULE = {}
 
 # === Auth / Passwords ===
 AUTH_PASSWORD_VALIDATORS = [
@@ -301,11 +311,6 @@ ALLOWED_PHARMACY_NETWORKS = [
     "127.0.0.1",   # Localhost (voor development)
     "37.9.216.65", # Het IP van Apo Jansen
 ]
-
-LANGUAGE_CODE = 'nl-nl'
-TIME_ZONE = 'Europe/Amsterdam'
-USE_I18N = True
-USE_TZ = True
 
 LOGGING = {
     'version': 1,

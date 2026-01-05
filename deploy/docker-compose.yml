@@ -26,6 +26,19 @@ services:
       - pgbouncer
     restart: unless-stopped
 
+  celery-beat:
+    container_name: rooster-celery-beat
+    image: 495236579960.dkr.ecr.eu-central-1.amazonaws.com/roosterlive/django:${IMAGE_TAG}
+    command: celery -A rooster_site beat -l INFO --pidfile= --schedule=/var/run/celery/celerybeat-schedule
+    env_file:
+      - /opt/rooster/app/.env
+    depends_on:
+      - redis
+      - pgbouncer
+    volumes:
+      - celerybeat_data:/var/run/celery
+    restart: unless-stopped
+
   redis:
     container_name: rooster-redis
     image: redis:7-alpine
@@ -63,3 +76,4 @@ services:
 
 volumes:
   redis_data:
+  celerybeat_data:

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
-from core.utils.invite import build_set_password_link
+from core.utils.emails.invite import build_set_password_link
 
 
 def send_password_reset_email(user):

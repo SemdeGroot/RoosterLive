@@ -18,12 +18,12 @@ MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 CACHE_DIR = Path(settings.CACHE_DIR)
 
 # ===== Defaults (geen settings.py afhankelijkheid) =====
-DEFAULT_DPI = 220                 # 180–220 is vaak ruim voldoende voor PDF previews
+DEFAULT_DPI = 240                 # 180–220 is vaak ruim voldoende voor PDF previews
 DEFAULT_PREVIEW_FORMAT = "webp"   # "webp" of "png"
 
 # WebP encoding defaults
 DEFAULT_WEBP_LOSSLESS = False     # lossy = kleiner + vaak sneller
-DEFAULT_WEBP_QUALITY = 85         # 70–85 is meestal prima
+DEFAULT_WEBP_QUALITY = 90         # 70–85 is meestal prima
 DEFAULT_WEBP_METHOD = 4           # 0–6 (lager = sneller, iets groter)
 
 # Legacy support: oude PNG caches blijven werken
