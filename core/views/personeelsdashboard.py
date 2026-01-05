@@ -429,12 +429,28 @@ def publish_shifts_api(request):
 
         affected_user_ids = set(drafts.values_list("user_id", flat=True))
 
-        deletes = drafts.filter(action="delete").values_list("user_id", "date", "period")
+        existing_keys = set(
+            Shift.objects
+            .filter(user_id__in=affected_user_ids, date__gte=week_start, date__lte=week_end)
+            .values_list("user_id", "date", "period")
+        )
+
+        per_user_counts = defaultdict(lambda: {"added": 0, "changed": 0, "removed": 0})
+
+        deletes = list(drafts.filter(action="delete").values_list("user_id", "date", "period"))
         for (uid, d, p) in deletes:
+            if (uid, d, p) in existing_keys:
+                per_user_counts[uid]["removed"] += 1
             Shift.objects.filter(user_id=uid, date=d, period=p).delete()
 
-        upserts = drafts.filter(action="upsert")
+        upserts = list(drafts.filter(action="upsert"))
         for dr in upserts:
+            key = (dr.user_id, dr.date, dr.period)
+            if key in existing_keys:
+                per_user_counts[dr.user_id]["changed"] += 1
+            else:
+                per_user_counts[dr.user_id]["added"] += 1
+
             Shift.objects.update_or_create(
                 user_id=dr.user_id,
                 date=dr.date,
@@ -445,11 +461,32 @@ def publish_shifts_api(request):
         changed_count = drafts.count()
         drafts.delete()
 
-        def _delete_keys():
+        def _on_commit_actions():
             keys = [f"diensten_ics:{uid}" for uid in affected_user_ids]
             cache.delete_many(keys)
 
-        transaction.on_commit(_delete_keys)
+            from core.tasks.push import send_user_shifts_changed_push_task
+            # of: from core.tasks.push import send_user_shifts_changed_push_task
+
+            iso_year = week_start.isocalendar().year
+            iso_week = week_start.isocalendar().week
+
+            for uid, c in per_user_counts.items():
+                total = int(c["added"]) + int(c["changed"]) + int(c["removed"])
+                if total <= 0:
+                    continue
+
+                send_user_shifts_changed_push_task.delay(
+                    int(uid),
+                    int(iso_year),
+                    int(iso_week),
+                    week_start.isoformat(),
+                    int(c["added"]),
+                    int(c["changed"]),
+                    int(c["removed"]),
+                )
+
+        transaction.on_commit(_on_commit_actions)
 
     iso_week = week_start.isocalendar().week
     messages.success(
@@ -457,5 +494,4 @@ def publish_shifts_api(request):
         f"{int(changed_count)} wijziging(en) gepubliceerd voor week {iso_week} "
         f"({week_start:%d-%m} t/m {week_end:%d-%m})."
     )
-
     return JsonResponse({"ok": True, "changed_count": int(changed_count)})
