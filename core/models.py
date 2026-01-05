@@ -50,6 +50,9 @@ class Roster(models.Model):
             # Ziek melden
             ("can_view_ziekmelden",       "Mag Ziek Melden bekijken"),
             ("can_edit_ziekmelden",       "Mag personeel ziek melden"),
+            # Inschrijven
+            ("can_view_inschrijven",       "Mag zich inschrijven"),
+            ("can_edit_inschrijven",       "Mag inschrijving formulieren aanpassen"),
             # Wie is wie?
             ("can_view_whoiswho",       "Mag Wie is wie? bekijken"),
             ("can_edit_whoiswho",       "Mag Wie is wie? aanpassen"),

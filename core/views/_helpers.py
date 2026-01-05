@@ -65,6 +65,9 @@ PERM_LABELS = {
     # Ziek melden
     "can_view_ziekmelden":       "Mag Ziek Melden bekijken",
     "can_edit_ziekmelden":       "Mag personeel ziek melden",
+    # Inschrijven
+    "can_view_inschrijven":       "Mag zich inschrijven",
+    "can_edit_inschrijven":       "Mag inschrijving formulieren aanpassen",
     # Wie is Wie?
     "can_view_whoiswho":       "Mag Wie is wie? bekijken",
     "can_edit_whoiswho":       "Mag Wie is wie? aanpassen",
@@ -98,7 +101,7 @@ PERM_SECTIONS = [
     ("Rooster",       ["can_view_roster", "can_upload_roster"]),
     ("Beschikbaarheid",       ["can_send_beschikbaarheid"]),
 
-    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard", "can_edit_beschikbaarheidsdashboard", "can_view_diensten", "can_view_urendoorgeven", "can_view_ziekmelden", "can_edit_ziekmelden", "can_view_policies", "can_upload_werkafspraken"]),
+    ("Personeel", ["can_view_personeel", "can_view_beschikbaarheidsdashboard", "can_edit_beschikbaarheidsdashboard", "can_view_diensten", "can_view_urendoorgeven", "can_view_ziekmelden", "can_edit_ziekmelden", "can_view_inschrijven", "can_edit_inschrijven", "can_view_policies", "can_upload_werkafspraken"]),
 
     ("Onboarding", [
         "can_view_onboarding", "can_view_whoiswho", "can_edit_whoiswho","can_view_forms","can_edit_forms", "can_view_checklist", "can_edit_checklist", ]),

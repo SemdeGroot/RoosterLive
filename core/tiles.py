@@ -22,6 +22,7 @@ TILE_GROUPS = {
         {"name": "Uren Doorgeven", "img": "uren_doorgeven.svg", "url_name": "urendoorgeven", "perm": "can_view_urendoorgeven"},
         {"name": "Ziek Melden", "img": "ziek.svg", "url_name": "ziekmelden", "perm": "can_view_ziekmelden"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Inschrijven", "img": "inschrijven.svg", "url_name": "inschrijven", "perm": "can_view_inschrijven"},
     ],
 
     "onboarding": [

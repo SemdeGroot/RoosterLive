@@ -23,6 +23,7 @@ from core.views import review_settings as med_settings
 from core.views.personeel import personeel_tiles
 from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
+from core.views.inschrijven import inschrijven
 from core.views.ziekmelden import ziekmelden
 from core.views.urendoorgeven import urendoorgeven
 from core.views.diensten import mijndiensten_view
@@ -121,6 +122,7 @@ urlpatterns = [
     path("diensten/webcal/<uuid:token>.ics", diensten_webcal_view, name="diensten_webcal"),
     path("personeel/uren-doorgeven/", urendoorgeven, name="urendoorgeven"),
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
+    path("personeel/inschrijven/", inschrijven, name="inschrijven"),
     path("onboarding/wie-is-wie/", whoiswho, name="whoiswho"),
     path("onboarding/formulieren/", forms, name="forms"),
     path("onboarding/checklist/", checklist, name="checklist"),
