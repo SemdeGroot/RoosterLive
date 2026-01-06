@@ -77,11 +77,11 @@ def mijnbeschikbaarheid_view(request):
             afternoon = key_a in request.POST
             evening = key_e in request.POST
 
-            if morning or afternoon:
+            if morning or afternoon or evening:
                 Availability.objects.update_or_create(
                     user=request.user,
                     date=d,
-                    defaults={"morning": morning, "afternoon": afternoon, "evening": evening},
+                    defaults={"morning": morning, "afternoon": afternoon, "evening": evening, "source": "manual"},
                 )
             else:
                 Availability.objects.filter(user=request.user, date=d).delete()

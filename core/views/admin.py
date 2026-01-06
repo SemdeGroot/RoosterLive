@@ -17,6 +17,11 @@ from core.tiles import build_tiles
 
 User = get_user_model()
 
+WORK_FIELDS = (
+    "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
+    "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm",
+)
+
 # ==========================================
 # 1. DASHBOARD (TILES)
 # ==========================================
@@ -64,7 +69,13 @@ def admin_users(request):
         if user_form.is_valid():
             try:
                 user = user_form.save()
+                def _after_create(user_id: int) -> None:
+                    profile = UserProfile.objects.filter(user_id=user_id).first()
+                    if profile and profile.dienstverband == UserProfile.Dienstverband.VAST:
+                        from core.utils.beat.fill import fill_availability_for_profile
+                        fill_availability_for_profile(profile, weeks_ahead=12)
 
+                transaction.on_commit(lambda: _after_create(user.id))
                 # invite mail
                 transaction.on_commit(lambda: send_invite_email_task.delay(user.id))
                 messages.success(request, f"Gebruiker {user.first_name} aangemaakt. Uitnodiging verzonden.")
@@ -343,7 +354,30 @@ def user_update(request, user_id: int):
 
     if form.is_valid():
         try:
+            # BEFORE: onthoud oude vaste dagen + dienstverband
+            profile_before = UserProfile.objects.filter(user=u).first()
+            before_dienstverband = profile_before.dienstverband if profile_before else None
+            before_work = {f: getattr(profile_before, f, False) for f in WORK_FIELDS} if profile_before else {}
+
             form.save()
+
+            # AFTER: pak nieuw profiel en bepaal of schema gewijzigd is
+            profile = UserProfile.objects.filter(user=u).first()
+            if profile and profile.dienstverband == UserProfile.Dienstverband.VAST:
+                after_work = {f: getattr(profile, f, False) for f in WORK_FIELDS}
+                work_changed = (before_work != after_work)
+                became_vast = (before_dienstverband != UserProfile.Dienstverband.VAST)
+
+                from core.utils.beat.fill import (
+                    fill_availability_for_profile,
+                    rebuild_auto_availability_for_profile,
+                )
+
+                if work_changed or became_vast:
+                    rebuild_auto_availability_for_profile(profile, weeks_ahead=12)
+                else:
+                    fill_availability_for_profile(profile, weeks_ahead=12)
+
             messages.success(request, "Gebruiker opgeslagen.")
         except Exception as e:
             messages.error(request, f"Opslaan mislukt: {e}")

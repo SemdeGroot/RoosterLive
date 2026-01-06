@@ -189,6 +189,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "core.tasks.beat.cleanup.weekly_cleanup_task",
         "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
         "options": {"queue": "default"},
+    },
+    "weekly_fill_availability_monday_0003": {
+        "task": "core.tasks.beat.fill.weekly_fill_availability_task",
+        "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
+        "options": {"queue": "default"},
     }
 }
 

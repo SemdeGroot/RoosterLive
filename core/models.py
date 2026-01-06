@@ -176,11 +176,21 @@ class StandaardInlog(models.Model):
         return "Configuratie Standaard Inlog"
 
 class Availability(models.Model):
+    SOURCE_CHOICES = [
+        ("auto", "Auto"),
+        ("manual", "Manual"),
+    ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availabilities")
     date = models.DateField(db_index=True)
     morning = models.BooleanField(default=False)
     afternoon = models.BooleanField(default=False)
     evening = models.BooleanField(default=False)
+    source = models.CharField(
+        max_length=10,
+        choices=SOURCE_CHOICES,
+        default="manual",
+        db_index=True,
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
