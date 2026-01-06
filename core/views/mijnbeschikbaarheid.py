@@ -35,9 +35,6 @@ def mijnbeschikbaarheid_view(request):
     min_monday = _monday_of_iso_week(today)                     # huidige week (ma)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    # ✅ Housekeeping: wis alle oude weken (alles vóór huidige maandag)
-    Availability.objects.filter(date__lt=min_monday).delete()
-
     # ---- weekselectie (ongewijzigd) ----
     qs_week = request.GET.get("week")
     qs_monday = request.GET.get("monday")

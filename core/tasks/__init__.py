@@ -9,3 +9,4 @@ from .email_dispatcher import *
 from .beat.cleanup import *  # noqa
 from .beat.emails import *  # noqa
 from .beat.push import *  # noqa
+from .beat.fill import *  # noqa

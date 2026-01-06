@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-from datetime import timedelta
 from dotenv import load_dotenv
 from celery.schedules import crontab
 
@@ -185,7 +184,13 @@ CELERY_TASK_ROUTES = {
     "core.tasks.send_laatste_pot_push_task": {"queue": "push"},
 }
 
-CELERY_BEAT_SCHEDULE = {}
+CELERY_BEAT_SCHEDULE = {
+    "weekly_cleanup_monday_0000": {
+        "task": "core.tasks.beat.cleanup.weekly_cleanup_task",
+        "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
+        "options": {"queue": "default"},
+    }
+}
 
 # === Auth / Passwords ===
 AUTH_PASSWORD_VALIDATORS = [
