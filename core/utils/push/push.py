@@ -271,7 +271,7 @@ def send_user_shifts_changed_push(
         changes_text = ", ".join(parts[:-1]) + " en " + parts[-1]
 
     payload = {
-        "title": f"Diensten bijgewerkt – week {iso_week}",
+        "title": f"Diensten bijgewerkt",
         "body": f"Je diensten voor {week_label} zijn bijgewerkt: {changes_text}.",
         "url": f"/personeel/diensten/?monday={monday_str}",
         "tag": f"diensten-update-{iso_year}-{iso_week}-user-{user_id}",

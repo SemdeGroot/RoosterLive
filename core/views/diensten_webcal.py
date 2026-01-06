@@ -206,6 +206,7 @@ def _build_cached_payload_for_user(user) -> dict:
         loc = getattr(s.task, "location", None)
         loc_name = getattr(loc, "name", "") if loc else ""
         loc_addr = getattr(loc, "address", "") if loc else ""
+        task_desc = (getattr(s.task, "description", "") or "").strip()
 
         summary = f"Werken bij Apotheek Jansen – {task_name}".strip()
         location_line = " – ".join([x for x in [loc_name, loc_addr] if x]).strip()
@@ -215,9 +216,11 @@ def _build_cached_payload_for_user(user) -> dict:
             desc_parts.append(f"Locatie: {loc_name}")
         if loc_addr:
             desc_parts.append(f"Adres: {loc_addr}")
-        desc_parts.append(
-            "Deze agenda synchroniseert automatisch. Het kan even duren voordat wijzigingen zichtbaar zijn (afhankelijk van je agenda-app)."
-        )
+        if task_desc:
+            desc_parts.append("")  # lege regel in de ICS description
+            desc_parts.append("Taakomschrijving:")
+            desc_parts.append(task_desc)
+
         description = "\n".join(desc_parts)
 
         uid = f"shift-{s.id}@apotheekjansen"

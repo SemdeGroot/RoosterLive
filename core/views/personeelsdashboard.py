@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.db.models import Prefetch
 from django.db import transaction
 from django.core.cache import cache
+from django.views.decorators.cache import never_cache
 
 from ._helpers import can
 from core.models import Availability, Location, Task, Shift, ShiftDraft
@@ -43,6 +44,7 @@ def _task_min_for(task, dt, period: str) -> int:
     return int(getattr(task, f"min_{prefix}_{period}", 0) or 0)
 
 @login_required
+@never_cache
 def personeelsdashboard_view(request):
     if not can(request.user, "can_view_beschikbaarheidsdashboard"):
         return HttpResponseForbidden("Geen toegang.")
