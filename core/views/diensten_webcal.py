@@ -13,7 +13,7 @@ from core.models import Shift, UserProfile
 
 
 PERIOD_TIMES = {
-    "morning": (time(9, 0), time(13, 0)),
+    "morning": (time(8, 0), time(12, 30)),
     "afternoon": (time(13, 0), time(17, 30)),
     "evening": (time(18, 0), time(20, 0)),
 }

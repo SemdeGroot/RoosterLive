@@ -1,11 +1,68 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.utils import timezone
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
-import json
 from django.core.validators import MinValueValidator
 import uuid
+
+class SoftDeleteQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+    def inactive(self):
+        return self.filter(is_active=False)
+
+    def delete(self):
+        """
+        Bulk soft delete, bv: Location.objects.filter(...).delete()
+        """
+        return super().update(is_active=False, deleted_at=timezone.now())
+
+    def hard_delete(self):
+        """
+        Echte delete in de DB.
+        """
+        return super().delete()
+
+
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        # Default manager toont alleen actieve records
+        return SoftDeleteQuerySet(self.model, using=self._db).active()
+
+    def all_with_inactive(self):
+        return SoftDeleteQuerySet(self.model, using=self._db)
+
+    def inactive(self):
+        return self.all_with_inactive().inactive()
+
+
+class SoftDeleteModel(models.Model):
+    is_active = models.BooleanField(default=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    # Default: alleen actieve
+    objects = SoftDeleteManager()
+
+    # Optioneel: alles (actief + inactief)
+    all_objects = SoftDeleteQuerySet.as_manager()
+
+    class Meta:
+        abstract = True
+
+    def delete(self, using=None, keep_parents=False):
+        """
+        Instance soft delete, bv: obj.delete()
+        """
+        if self.is_active:
+            self.is_active = False
+            self.deleted_at = timezone.now()
+            self.save(update_fields=["is_active", "deleted_at"])
+
+    def hard_delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
 
 class Roster(models.Model):
     file = models.FileField(upload_to="rooster/current.pdf", null=True)
@@ -133,25 +190,32 @@ class Availability(models.Model):
     def __str__(self):
         return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon} a:{self.evening})"
     
-class Location(models.Model):
+class Location(SoftDeleteModel):
     COLOR_CHOICES = [
         ("green", "Groen"),
         ("red", "Rood"),
         ("blue", "Blauw"),
     ]
 
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     address = models.CharField(max_length=255, blank=True, default="")
     color = models.CharField(max_length=10, choices=COLOR_CHOICES, default="blue")
 
+    # Conditional unique constraint
     class Meta:
         verbose_name_plural = "Locations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"],
+                condition=Q(is_active=True),
+                name="uniq_active_location_name",
+            )
+        ]
 
     def __str__(self):
         return self.name
 
-
-class Task(models.Model):
+class Task(SoftDeleteModel):
     name = models.CharField(max_length=100)
     location = models.ForeignKey(
         Location,
@@ -187,10 +251,16 @@ class Task(models.Model):
 
     class Meta:
         verbose_name_plural = "Tasks"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["location", "name"],
+                condition=Q(is_active=True),
+                name="uniq_active_task_name_per_location",
+            )
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.location.name})"
-
 
 class Shift(models.Model):
     PERIOD_CHOICES = [

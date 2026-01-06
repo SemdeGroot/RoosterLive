@@ -79,7 +79,7 @@ def mijndiensten_view(request):
     show_saturday = any(s.date == saturday for s in shifts)
 
     PERIOD_META = {
-        "morning": {"label": "Ochtend", "time": "09:00 - 13:00"},
+        "morning": {"label": "Ochtend", "time": "08:00 - 12:30"},
         "afternoon": {"label": "Middag", "time": "13:00 - 17:30"},
         "evening": {"label": "Avond", "time": "18:00 - 20:00"},
     }

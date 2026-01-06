@@ -455,7 +455,7 @@ def admin_taken(request):
         messages.error(request, "Kon taak niet aanmaken. Controleer de velden.")
 
     locations = Location.objects.all().order_by("name")
-    tasks = Task.objects.select_related("location").order_by("name", "location__name")
+    tasks = Task.objects.select_related("location").order_by("location__name", "name")
 
     return render(request, "admin/taken.html", {
         "locations": locations,
@@ -487,7 +487,7 @@ def location_update(request, pk):
         messages.error(request, "Locatienaam is verplicht.")
         return redirect("admin_taken")
 
-    if Location.objects.filter(name__iexact=name).exclude(pk=loc.pk).exists():
+    if Location.all_objects.filter(name__iexact=name, is_active=True).exclude(pk=loc.pk).exists():
         messages.error(request, "Er bestaat al een locatie met deze naam.")
         return redirect("admin_taken")
 
@@ -530,6 +530,14 @@ def task_update(request, pk):
         return redirect("admin_taken")
 
     loc = get_object_or_404(Location, pk=location_id)
+    
+    if Task.all_objects.filter(
+        location=loc,
+        name__iexact=name,
+        is_active=True,
+    ).exclude(pk=t.pk).exists():
+        messages.error(request, "Er bestaat al een actieve taak met deze naam op deze locatie.")
+        return redirect("admin_taken")
 
     # --- parse staffing ints ---
     errors = []
@@ -574,17 +582,13 @@ def delete_location(request, pk):
         messages.error(request, "Geen rechten om locaties te verwijderen.")
         return redirect("admin_taken")
 
-    loc = get_object_or_404(Location, pk=pk)
+    loc = get_object_or_404(Location.all_objects, pk=pk)
     naam = loc.name
 
-    try:
-        loc.delete()
-        messages.success(request, f"Locatie '{naam}' verwijderd.")
-    except ProtectedError:
-        messages.error(request, "Kan locatie niet verwijderen: er zijn nog taken aan gekoppeld.")
-
+    loc.delete()  # soft delete
+    Task.all_objects.filter(location=loc, is_active=True).delete()
+    messages.success(request, f"Locatie '{naam}' gedeactiveerd.")
     return redirect("admin_taken")
-
 
 @login_required
 @require_POST
@@ -593,8 +597,9 @@ def delete_task(request, pk):
         messages.error(request, "Geen rechten om taken te verwijderen.")
         return redirect("admin_taken")
 
-    t = get_object_or_404(Task, pk=pk)
+    t = get_object_or_404(Task.all_objects, pk=pk)
     naam = t.name
-    t.delete()
-    messages.success(request, f"Taak '{naam}' verwijderd.")
+
+    t.delete()  # soft delete
+    messages.success(request, f"Taak '{naam}' gedeactiveerd.")
     return redirect("admin_taken")
