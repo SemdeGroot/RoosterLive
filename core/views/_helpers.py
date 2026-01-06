@@ -44,7 +44,7 @@ PERM_LABELS = {
     "can_view_av_medications": "Mag Voorraad zien",
     "can_upload_voorraad":     "Mag Voorraad uploaden",
     "can_view_av_nazendingen": "Mag Nazendingen zien",
-    "can_upload_nazendingen":  "Mag Nazendingen uploaden",
+    "can_upload_nazendingen":  "Mag Nazendingen uploaden en versturen",
     "can_view_news":           "Mag Nieuws bekijken",
     "can_upload_news":         "Mag Nieuws uploaden",
     "can_view_policies":       "Mag Werkafspraken bekijken",

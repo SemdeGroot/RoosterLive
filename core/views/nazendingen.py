@@ -96,7 +96,7 @@ def nazendingen_view(request):
 @login_required
 def export_nazendingen_pdf(request):
     # 1. Check permissies
-    if not can(request.user, "can_view_nazendingen"):
+    if not can(request.user, "can_view_av_nazendingen"):
         return HttpResponseForbidden("Geen toegang tot nazendingen.")
 
     # 2. Data ophalen (alles, gesorteerd op datum)
@@ -134,7 +134,7 @@ def export_nazendingen_pdf(request):
 @login_required
 def email_nazendingen_pdf(request):
     # 1. Check permissie
-    if not can(request.user, "can_view_nazendingen"): # Of specifieke email permissie
+    if not can(request.user, "can_upload_nazendingen"): # Of specifieke email permissie
         return HttpResponseForbidden("Geen toegang.")
 
     if request.method == "POST":
