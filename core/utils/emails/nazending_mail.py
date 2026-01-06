@@ -9,7 +9,7 @@ def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path
     """
     Verstuurt 1 email naar 1 apotheek met PDF bijlage.
     """
-    subject = f"Overzicht Nazendingen - {name}"
+    subject = f"Overzicht Nazendingen - Apotheek Jansen"
     
     # De 'friendly' afzender naam
     from_email_formatted = f"Apotheek Jansen <{contact_email}>"
