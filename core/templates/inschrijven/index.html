@@ -7,7 +7,6 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
   <link rel="stylesheet" href="{% static 'css/onboarding_formulieren/formulieren.css' %}">
-  <script src="{% static 'js/onboarding_formulieren/formulieren.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -18,13 +17,11 @@
       <img src="{% static 'img/inschrijven.svg' %}" alt="" class="birthday-icon">
 
       <div class="birthday-header-text">
-      <h2>Inschrijven</h2>
-      <p>Klik op een link om je in te schrijven voor activiteiten of andere onderdelen.</p>
+        <h2>Inschrijven</h2>
+        <p>Klik op een link om je in te schrijven voor activiteiten of andere onderdelen.</p>
       </div>
 
       <div class="header-actions">
-        {# <a href="{% url 'personeel_tiles' %}" class="btn">Terug</a> #}
-
         {% if can_edit %}
           <button
             type="button"
@@ -43,7 +40,7 @@
     {% if can_edit %}
       <form
         id="inschrijven-form-add"
-        class="form agenda-inline-form {% if not new_form.errors %}is-hidden{% endif %}"
+        class="form agenda-inline-form {% if not new_form.errors and not show_add_form %}is-hidden{% endif %}"
         method="post"
         autocomplete="off"
         data-lock-submit="1"
@@ -61,11 +58,24 @@
         {{ new_form.url.errors }}
         {{ new_form.url }}
 
+        <label for="{{ new_form.verloopdatum.id_for_label }}">Verloopdatum (optioneel):</label>
+        {{ new_form.verloopdatum.errors }}
+        <input
+          type="text"
+          id="{{ new_form.verloopdatum.id_for_label }}"
+          name="{{ new_form.verloopdatum.html_name }}"
+          class="js-date"
+          placeholder="dd-mm-jjjj"
+          inputmode="numeric"
+          autocomplete="off"
+          value="{{ new_form.verloopdatum.value|default_if_none:'' }}"
+        >
+
         <p class="form-help-text">
           <em>
-            Tip: maak bijvoorbeeld een Google Form en plak hier de link.
-            Gebruik bij voorkeur een verkorte link door op verkorten te klikken
-            (bijv. <span class="btn btn-inline-mono">forms.gle/...</span>) zodat het overzichtelijk blijft.
+            Tip: plak hier de link naar het inschrijfformulier.
+            Gebruik bij voorkeur een verkorte link (bijv. <span class="btn btn-inline-mono">forms.gle/...</span>).
+            <strong>Let op:</strong> als je een verloopdatum invult, wordt dit item automatisch verwijderd na die datum.
           </em>
         </p>
 
@@ -100,14 +110,20 @@
                       class="agenda-description form-url-link"
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="Open formulier"
+                      title="Open inschrijving"
                     >
                       {{ item.url }}
                     </a>
                   </div>
                 </div>
 
-                <div class="birthday-right"></div>
+                <div class="birthday-right">
+                  {% if item.verloopdatum %}
+                    <span class="birthday-date">
+                      {{ item.verloopdatum|date:"d-m-Y" }}
+                    </span>
+                  {% endif %}
+                </div>
               </div>
 
               {% if can_edit %}
@@ -138,6 +154,7 @@
                       class="icon-btn danger"
                       title="Verwijderen"
                       aria-label="Verwijderen"
+                      data-submit-btn
                     >
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                            stroke="currentColor" stroke-width="2"
@@ -173,11 +190,23 @@
                 {{ edit_form.url.errors }}
                 {{ edit_form.url }}
 
+                <label for="{{ edit_form.verloopdatum.id_for_label }}">Verloopdatum (optioneel):</label>
+                {{ edit_form.verloopdatum.errors }}
+                <input
+                  type="text"
+                  id="{{ edit_form.verloopdatum.id_for_label }}"
+                  name="{{ edit_form.verloopdatum.html_name }}"
+                  class="js-date"
+                  placeholder="dd-mm-jjjj"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  value="{% if edit_form.is_bound %}{{ edit_form.verloopdatum.value|default_if_none:'' }}{% else %}{% if item.verloopdatum %}{{ item.verloopdatum|date:'d-m-Y' }}{% endif %}{% endif %}"
+                >
+
                 <p class="form-help-text">
                   <em>
-                    Tip: maak bijvoorbeeld een Google Form en plak hier de link.
-                    Gebruik bij voorkeur een verkorte link door op verkorten te klikken
-                    (bijv. <span class="btn btn-inline-mono">forms.gle/...</span>) zodat het overzichtelijk blijft.
+                    Tip: gebruik bij voorkeur een verkorte link (bijv. <span class="btn btn-inline-mono">forms.gle/...</span>).
+                    <strong>Let op:</strong> als je een verloopdatum invult, wordt dit item automatisch verwijderd na die datum.
                   </em>
                 </p>
 
@@ -201,10 +230,66 @@
       </ul>
     {% else %}
       <p class="birthday-empty">
-        Nog geen items toegevoegd.
+        Nog geen inschrijvingen toegevoegd.
       </p>
     {% endif %}
 
   </div>
 </div>
+
+{# --- Exact dezelfde IMask + toggle/cancel implementatie als Agenda --- #}
+<script src="https://unpkg.com/imask"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Toggle forms
+    document.querySelectorAll(".js-toggle-form").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetSelector = btn.getAttribute("data-target");
+        if (!targetSelector) return;
+
+        var form = document.querySelector(targetSelector);
+        if (!form) return;
+
+        var isHidden = form.classList.toggle("is-hidden");
+        btn.setAttribute("aria-expanded", isHidden ? "false" : "true");
+
+        if (!isHidden) {
+          var firstField = form.querySelector("input, textarea");
+          if (firstField) firstField.focus();
+        }
+      });
+    });
+
+    // Annuleren
+    document.querySelectorAll(".js-cancel-form").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetSelector = btn.getAttribute("data-target");
+        if (!targetSelector) return;
+
+        var form = document.querySelector(targetSelector);
+        if (!form) return;
+
+        form.classList.add("is-hidden");
+
+        var toggleBtn = document.querySelector('.js-toggle-form[data-target="' + targetSelector + '"]');
+        if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    // Date mask voor alle .js-date velden (dd-mm-jjjj)
+    document.querySelectorAll(".js-date").forEach(function (input) {
+      IMask(input, {
+        mask: 'd-m-Y',
+        lazy: true,
+        overwrite: true,
+        autofix: false,
+        blocks: {
+          d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+          m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+          Y: { mask: IMask.MaskedRange, from: 1900, to: 2100, maxLength: 4 }
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

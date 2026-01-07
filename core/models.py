@@ -661,15 +661,14 @@ class OnboardingFormulier(models.Model):
     
 
 class InschrijvingItem(models.Model):
-    title = models.CharField(
-        "Titel",
-        max_length=80,
-        help_text="Naam van het formulier (max. 80 tekens).",
-    )
-    url = models.URLField(
-        "URL",
-        max_length=500,
-        help_text="Volledige link naar het formulier (bijv. Google Forms).",
+    title = models.CharField("Titel", max_length=80, help_text="Naam van het formulier (max. 80 tekens).")
+    url = models.URLField("URL", max_length=500, help_text="Volledige link naar het formulier (bijv. Google Forms).")
+
+    verloopdatum = models.DateField(
+        "Verloopdatum",
+        null=True,
+        blank=True,
+        help_text="Optioneel: na deze datum wordt dit item automatisch verwijderd.",
     )
 
     created_by = models.ForeignKey(
@@ -682,11 +681,7 @@ class InschrijvingItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["title"]
-        permissions = [
-            ("can_view_inschrijvingen", "Mag inschrijvingen bekijken"),
-            ("can_edit_inschrijvingen", "Mag inschrijvingen aanpassen"),
-        ]
+        ordering = ["verloopdatum", "title"]
 
     def __str__(self):
         return self.title

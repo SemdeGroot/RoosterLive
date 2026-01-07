@@ -675,15 +675,23 @@ class OnboardingFormulierForm(forms.ModelForm):
         return url
 
 class InschrijvingItemForm(forms.ModelForm):
+    verloopdatum = forms.DateField(
+        required=False,
+        input_formats=["%d-%m-%Y"],
+        error_messages={"invalid": "Voer een geldige datum in (dd-mm-jjjj)."},
+        help_text="Optioneel: na deze datum wordt dit item automatisch verwijderd.",
+    )
+
     class Meta:
         model = InschrijvingItem
-        fields = ["title", "url"]
+        fields = ["title", "url", "verloopdatum"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields["title"].widget.attrs.setdefault("placeholder", "Titel (max 80 karakters)")
         self.fields["url"].widget.attrs.setdefault("placeholder", "https://... (bij voorkeur verkorte link)")
+        self.fields["verloopdatum"].widget.attrs.setdefault("placeholder", "dd-mm-jjjj")
 
         self.fields["title"].widget.attrs["maxlength"] = 80
         self.fields["url"].widget.attrs["maxlength"] = 500
@@ -695,7 +703,6 @@ class InschrijvingItemForm(forms.ModelForm):
         if not url:
             return url
 
-        # Gebruiksvriendelijk: als iemand 'forms.gle/...' plakt, prepend https://
         if not url.startswith(("http://", "https://")):
             url = "https://" + url
 
