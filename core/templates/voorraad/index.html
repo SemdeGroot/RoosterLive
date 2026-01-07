@@ -11,7 +11,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="card" style="padding:16px;">
+<div class="card" style="padding: 16px;">
+        <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/voorraad.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+        <h2>Baxtervoorraad geneesmiddelen</h2>
+        <p>Bekijk hier de voorraad geneesmiddelen voor de baxterproductie en de bijbehorende locaties.</p>
+        </div>
+        <a href="{% url 'baxter_tiles' %}" class="btn btn-save">
+          Terug naar Baxterproductie
+        </a>
+      </div>
+      <hr class="crud-divider">
 
   {% if perms.core.can_upload_voorraad %}
   <form method="post" enctype="multipart/form-data" class="uploader" id="medForm">

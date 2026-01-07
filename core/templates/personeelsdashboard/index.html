@@ -16,7 +16,17 @@
   <!-- Top card: controls -->
   <div class="card">
     <div class="card-inner">
-
+        <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/teamdashboard.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+        <h2>Diensten beheren</h2>
+        <p>Beheer diensten per week en dag. Kies links een dienst en wijs rechts taken toe. Sla per dag op en publiceer pas als het weekrooster compleet is, dan wordt het zichtbaar voor medewerkers.</p>
+        </div>
+        <a href="{% url 'personeel_tiles' %}" class="btn btn-save">
+          Terug naar Personeel
+        </a>
+      </div>
+      <hr class="crud-divider">
       <div class="pd-controlbar">
 
         <div class="pd-daypicker">
@@ -96,7 +106,7 @@
           </div>
         </div>
         <div class="pd-right-spacer">
-          <button class="btn" id="pdPublishWeekBtn" type="button">
+          <button class="btn btn-save" id="pdPublishWeekBtn" type="button">
             Publiceer weekrooster
           </button>
         </div>
@@ -298,7 +308,7 @@
         </section>
 
         <div class="pd-ap-actions">
-          <button class="btn" id="pdSaveConceptBtn" disabled>
+          <button class="btn btn-save" id="pdSaveConceptBtn" disabled>
             Concept opslaan
           </button>
         </div>

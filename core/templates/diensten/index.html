@@ -13,6 +13,18 @@
 <div class="card">
   <div class="form">
 
+          <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/diensten.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+        <h2>Diensten bekijken</h2>
+        <p>Kies een week om je toegewezen diensten en locaties te zien. Synchroniseer onderaan eenmalig met je agenda app.</p>
+        </div>
+        <a href="{% url 'personeel_tiles' %}" class="btn btn-save">
+          Terug naar Personeel
+        </a>
+      </div>
+      <hr class="crud-divider">
+
     <!-- Weeknavigatie-->
     <div class="week-controls">
       <button id="prevWeekBtn"

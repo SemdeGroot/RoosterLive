@@ -25,13 +25,16 @@
         <p>Overzicht van geneesmiddelen die in nazending zijn.</p>
       </div>
 
-      {% if can_upload %}
       <div class="header-actions">
+        <a href="{% url 'baxter_tiles' %}" class="btn">
+          Terug naar Baxterproductie
+        </a>
+        {% if can_upload %}
         <button type="button" class="btn btn-save" onclick="toggleAddSection()">
           Toevoegen
         </button>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
 
     <div class="card-inner" style="padding-top:0;">
