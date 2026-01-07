@@ -659,6 +659,38 @@ class OnboardingFormulier(models.Model):
     def __str__(self):
         return self.title
     
+
+class InschrijvingItem(models.Model):
+    title = models.CharField(
+        "Titel",
+        max_length=80,
+        help_text="Naam van het formulier (max. 80 tekens).",
+    )
+    url = models.URLField(
+        "URL",
+        max_length=500,
+        help_text="Volledige link naar het formulier (bijv. Google Forms).",
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="inschrijvingen",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["title"]
+        permissions = [
+            ("can_view_inschrijvingen", "Mag inschrijvingen bekijken"),
+            ("can_edit_inschrijvingen", "Mag inschrijvingen aanpassen"),
+        ]
+
+    def __str__(self):
+        return self.title
+    
 class RosterWeek(models.Model):
     monday = models.DateField(unique=True, db_index=True)
     week_slug = models.CharField(max_length=16, db_index=True)  # "week01"
