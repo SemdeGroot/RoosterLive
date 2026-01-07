@@ -177,13 +177,14 @@ def policies_media(request, item_id: int):
 def policies(request):
     if not can(request.user, "can_view_policies"):
         return HttpResponseForbidden("Geen toegang.")
+    can_edit = can(request, "can_upload_werkafspraken")
 
     open_edit_id = None
     open_add_category = None
 
     # === DELETE ===
     if request.method == "POST" and "delete_item" in request.POST:
-        if not can(request.user, "can_upload_werkafspraken"):
+        if not can_edit:
             return HttpResponseForbidden("Geen toegang.")
 
         item = get_object_or_404(Werkafspraak, id=request.POST.get("delete_item"))
@@ -194,7 +195,7 @@ def policies(request):
 
     # === EDIT ===
     if request.method == "POST" and "edit_item" in request.POST:
-        if not can(request.user, "can_upload_werkafspraken"):
+        if not can_edit:
             return HttpResponseForbidden("Geen uploadrechten.")
 
         try:
@@ -287,7 +288,7 @@ def policies(request):
 
     # === ADD ===
     if request.method == "POST" and "add_item" in request.POST:
-        if not can(request.user, "can_upload_werkafspraken"):
+        if not can_edit:
             return HttpResponseForbidden("Geen uploadrechten.")
 
         open_add_category = request.POST.get("add_item") or None
@@ -417,5 +418,6 @@ def policies(request):
         {
             "categories": categories,
             "open_edit_id": open_edit_id,
+            "can_edit": can_edit,
         },
     )

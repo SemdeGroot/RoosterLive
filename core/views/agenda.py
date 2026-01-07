@@ -52,6 +52,8 @@ def format_dutch_name_from_user(user) -> str:
 def agenda(request):
     if not can(request.user, "can_view_agenda"):
         return HttpResponseForbidden("Geen toegang tot agenda.")
+    
+    can_edit = can(request, "can_upload_agenda")
 
     today = timezone.localdate()
 
@@ -68,7 +70,7 @@ def agenda(request):
 
     # 1. Verwijderen van items
     if request.method == "POST" and "delete_item" in request.POST:
-        if not can(request.user, "can_upload_agenda"):
+        if not can_edit:
             return HttpResponseForbidden("Geen toegang.")
 
         item_id = request.POST.get("delete_item")
@@ -84,7 +86,7 @@ def agenda(request):
 
     # 2. Bewerken van items
     if request.method == "POST" and "edit_item" in request.POST:
-        if not can(request.user, "can_upload_agenda"):
+        if not can_edit:
             return HttpResponseForbidden("Geen toegang.")
 
         try:
@@ -109,7 +111,7 @@ def agenda(request):
 
     # 3. Toevoegen van items
     if request.method == "POST" and "add_category" in request.POST:
-        if not can(request.user, "can_upload_agenda"):
+        if not can_edit:
             return HttpResponseForbidden("Geen toegang.")
 
         category = request.POST.get("add_category")
@@ -189,6 +191,7 @@ def agenda(request):
         cache.set(cache_key, birthdays, 60 * 60 * 8)
 
     context = {
+        "can_edit": can_edit,
         "today": today,
         "four_weeks_later": four_weeks_later,
         "birthdays": birthdays,

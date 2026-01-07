@@ -176,6 +176,8 @@ def news_media(request, item_id: int):
 def news(request):
     if not can(request.user, "can_view_news"):
         return HttpResponseForbidden("Geen toegang.")
+    
+    can_edit = can(request, "can_upload_news")
 
     _cleanup_expired_news(timezone.now())
 
@@ -183,7 +185,7 @@ def news(request):
 
     # DELETE
     if request.method == "POST" and "delete_item" in request.POST:
-        if not can(request.user, "can_upload_news"):
+        if not can_edit:
             return HttpResponseForbidden("Geen toegang.")
 
         item = get_object_or_404(NewsItem, id=request.POST.get("delete_item"))
@@ -196,7 +198,7 @@ def news(request):
 
     # EDIT
     if request.method == "POST" and "edit_item" in request.POST:
-        if not can(request.user, "can_upload_news"):
+        if not can_edit:
             return HttpResponseForbidden("Geen uploadrechten.")
 
         try:
@@ -280,7 +282,7 @@ def news(request):
 
     # ADD
     if request.method == "POST" and "add_news" in request.POST:
-        if not can(request.user, "can_upload_news"):
+        if not can_edit:
             return HttpResponseForbidden("Geen uploadrechten.")
 
         form = NewsItemForm(request.POST, request.FILES)
@@ -360,6 +362,7 @@ def news(request):
         news_rows.append((it, edit_form))
 
     context = {
+        "can_edit": can_edit,
         "news_items": items,
         "news_rows": news_rows,
         "form": form,

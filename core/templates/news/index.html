@@ -26,7 +26,7 @@
         <p>Klik op de items om te openen.</p>
       </div>
 
-      {% if perms.core.can_upload_news %}
+      {% if can_edit %}
         <button
           type="button"
           class="btn btn-save js-toggle-form"
@@ -40,7 +40,7 @@
       {% endif %}
     </div>
 
-    {% if perms.core.can_upload_news %}
+    {% if can_edit %}
       <form
         id="news-form"
         class="form agenda-inline-form {% if not form.errors %}is-hidden{% endif %}"
@@ -122,7 +122,7 @@
                 </div>
               </div>
 
-              {% if perms.core.can_upload_news %}
+              {% if can_edit %}
                 <div class="agenda-actions" data-stop-toggle>
                   <button
                     type="button"
@@ -165,7 +165,7 @@
               {% endif %}
             </div>
 
-            {% if perms.core.can_upload_news %}
+            {% if can_edit %}
               <form
                 id="news-edit-{{ item.id }}"
                 class="form agenda-inline-form news-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"

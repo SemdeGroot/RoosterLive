@@ -25,7 +25,7 @@
         <p>Algemene agenda</p>
       </div>
 
-      {% if perms.core.can_upload_agenda %}
+      {% if can_edit %}
         <button
           type="button"
           class="btn btn-save js-toggle-form"
@@ -39,7 +39,7 @@
       {% endif %}
     </div>
 
-    {% if perms.core.can_upload_agenda %}
+    {% if can_edit %}
       <form
         id="agenda-form-general"
         class="form agenda-inline-form {% if not new_general_form.errors %}is-hidden{% endif %}"
@@ -108,7 +108,7 @@
                 </div>
               </div>
 
-              {% if perms.core.can_upload_agenda %}
+              {% if can_edit %}
                 <div class="agenda-actions">
                   <button
                     type="button"
@@ -152,7 +152,7 @@
               {% endif %}
             </div>
 
-            {% if perms.core.can_upload_agenda %}
+            {% if can_edit %}
               <form
                 id="agenda-edit-general-{{ item.id }}"
                 class="form agenda-inline-form agenda-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
@@ -224,7 +224,7 @@
         <p>Geplande uitjes</p>
       </div>
 
-      {% if perms.core.can_upload_agenda %}
+      {% if can_edit %}
         <button
           type="button"
           class="btn btn-save js-toggle-form"
@@ -238,7 +238,7 @@
       {% endif %}
     </div>
 
-    {% if perms.core.can_upload_agenda %}
+    {% if can_edit %}
       <form
         id="agenda-form-outing"
         class="form agenda-inline-form {% if not new_outing_form.errors %}is-hidden{% endif %}"
@@ -307,7 +307,7 @@
                 </div>
               </div>
 
-              {% if perms.core.can_upload_agenda %}
+              {% if can_edit %}
                 <div class="agenda-actions">
                   <button
                     type="button"
@@ -351,7 +351,7 @@
               {% endif %}
             </div>
 
-            {% if perms.core.can_upload_agenda %}
+            {% if can_edit %}
               <form
                 id="agenda-edit-outing-{{ item.id }}"
                 class="form agenda-inline-form agenda-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"

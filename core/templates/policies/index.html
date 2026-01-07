@@ -27,7 +27,7 @@
           <p>Klik op de items om te openen.</p>
         </div>
 
-        {% if perms.core.can_upload_werkafspraken %}
+        {% if can_edit %}
           <button
             type="button"
             class="btn btn-save js-toggle-form"
@@ -41,7 +41,7 @@
         {% endif %}
       </div>
 
-      {% if perms.core.can_upload_werkafspraken %}
+      {% if can_edit %}
         <form
           id="werkafspraken-form-{{ category.category }}"
           class="form agenda-inline-form {% if not category.form.errors %}is-hidden{% endif %}"
@@ -123,7 +123,7 @@
                   {# GEEN DATUM TONEN #}
                 </div>
 
-                {% if perms.core.can_upload_werkafspraken %}
+                {% if can_edit %}
                   <div class="agenda-actions" data-stop-toggle>
                     <button
                       type="button"
@@ -166,7 +166,7 @@
                 {% endif %}
               </div>
 
-              {% if perms.core.can_upload_werkafspraken %}
+              {% if can_edit %}
                 <form
                   id="werkafspraken-edit-{{ item.id }}"
                   class="form agenda-inline-form policy-edit-form {% if open_edit_id != item.id and not edit_form.errors %}is-hidden{% endif %}"
