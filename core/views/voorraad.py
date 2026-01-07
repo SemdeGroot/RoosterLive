@@ -1,16 +1,72 @@
+import csv
 import io
-import pandas as pd
+import re
 from pathlib import Path
+
+from openpyxl import load_workbook
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.db import transaction
 
-# Pas de imports aan naar jouw mappenstructuur
 from ..forms import AvailabilityUploadForm
-from ..models import VoorraadItem 
-from ._helpers import can 
+from ..models import VoorraadItem
+from ._helpers import can
+
+
+ZI_RE = re.compile(r"^\d{8}$")
+TRAILING_DOTZERO_RE = re.compile(r"[,.]0$")
+
+
+def _clean_cell(value) -> str:
+    """
+    Normaliseert celwaarden naar string:
+    - None -> ""
+    - str/int/float -> string + strip
+    - verwijdert Excel-artifacten: '12345678.0' of '12345678,0' -> '12345678'
+    """
+    if value is None:
+        return ""
+    s = str(value).strip()
+    s = TRAILING_DOTZERO_RE.sub("", s)
+    return s
+
+
+def _read_csv_rows(uploaded_file):
+    content = uploaded_file.read()
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = content.decode("latin-1")
+
+    # Dialect sniffen (vergelijkbaar met pandas sep=None)
+    sample = text[:4096]
+    try:
+        dialect = csv.Sniffer().sniff(sample, delimiters=";,|\t,")
+    except csv.Error:
+        dialect = csv.excel  # fallback
+
+    f = io.StringIO(text)
+    reader = csv.reader(f, dialect)
+
+    rows = []
+    for row in reader:
+        rows.append([_clean_cell(c) for c in row])
+    return rows
+
+
+def _read_xlsx_rows(uploaded_file):
+    # data_only=True: als er formules zijn, probeert openpyxl de opgeslagen waarde te geven
+    wb = load_workbook(uploaded_file, read_only=True, data_only=True)
+    ws = wb.active
+
+    rows = []
+    for row in ws.iter_rows(values_only=True):
+        rows.append([_clean_cell(c) for c in row])
+    return rows
+
 
 @login_required
 def medications_view(request):
@@ -30,109 +86,121 @@ def medications_view(request):
             f = form.cleaned_data["file"]
             ext = Path(f.name).suffix.lower()
 
-            if ext not in (".xlsx", ".xls", ".csv"):
-                messages.error(request, "Alleen CSV of Excel toegestaan.")
+            # LET OP: openpyxl ondersteunt géén .xls
+            if ext not in (".xlsx", ".csv"):
+                messages.error(request, "Alleen CSV of .xlsx Excel toegestaan.")
             else:
                 try:
-                    df = None
-                    
                     # --- A. BESTAND INLEZEN ---
-                    if ext == '.csv':
-                        content = f.read()
-                        try:
-                            text_content = content.decode('utf-8-sig')
-                        except UnicodeDecodeError:
-                            text_content = content.decode('latin-1')
-                        
-                        # dtype=str is cruciaal om voorloopnullen in ZI te behouden
-                        df = pd.read_csv(
-                            io.StringIO(text_content), 
-                            sep=None, 
-                            engine='python', 
-                            dtype=str
-                        )
+                    if ext == ".csv":
+                        raw_rows = _read_csv_rows(f)
                     else:
-                        df = pd.read_excel(f, dtype=str)
+                        raw_rows = _read_xlsx_rows(f)
 
-                    # --- B. OPSCHONEN ---
-                    df = df.fillna("")
-                    df.columns = df.columns.astype(str).str.strip()
-                    df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-                    # Strip .0 en ,0 van het einde (Excel artifacten)
-                    df = df.replace(r'[,.]0$', '', regex=True)
+                    # Lege rijen weg
+                    cleaned_rows = []
+                    for r in raw_rows:
+                        if not r:
+                            continue
+                        if all(c == "" for c in r):
+                            continue
+                        cleaned_rows.append(r)
 
-                    if len(df.columns) < 2:
+                    if not cleaned_rows:
+                        messages.error(request, "Het bestand bevat geen geldige regels.")
+                        ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                        return render(request, "voorraad/index.html", ctx)
+
+                    # --- B. HEADER + MIN 2 KOLOMMEN ---
+                    header = [h.strip() for h in cleaned_rows[0]]
+                    # drop trailing lege headers
+                    while header and header[-1] == "":
+                        header.pop()
+
+                    if len(header) < 2:
                         raise ValueError("Het bestand moet minimaal 2 kolommen hebben (ZI-nummer en Naam).")
 
-                    # Lege rijen verwijderen
-                    zi_col_raw = df.iloc[:, 0]
-                    naam_col_raw = df.iloc[:, 1]
-                    is_empty_row = (zi_col_raw == "") & (naam_col_raw == "")
-                    df = df[~is_empty_row].reset_index(drop=True)
+                    data_rows = cleaned_rows[1:]
 
-                    if df.empty:
+                    # Rijen waar (ZI en Naam) beide leeg zijn verwijderen
+                    filtered = []
+                    for r in data_rows:
+                        # pad rij tot header-lengte zodat zip veilig is
+                        if len(r) < len(header):
+                            r = r + [""] * (len(header) - len(r))
+
+                        zi = r[0]
+                        naam = r[1]
+                        if zi == "" and naam == "":
+                            continue
+                        filtered.append(r)
+
+                    if not filtered:
                         messages.error(request, "Het bestand bevat geen geldige regels.")
-                        # Render opnieuw om errors te tonen
                         ctx = {"form": form, "title": "Voorraad", "has_data": False}
                         return render(request, "voorraad/index.html", ctx)
 
                     # --- C. VALIDATIE ---
-                    zi_col = df.iloc[:, 0]
+                    zis = [r[0].strip() for r in filtered]
 
                     # 1. ZI moet 8 cijfers zijn
-                    is_valid_zi = zi_col.str.isdigit() & (zi_col.str.len() == 8)
-                    if not is_valid_zi.all():
-                        error_idx = df[~is_valid_zi].index[0]
-                        foute_rij = error_idx + 2 
-                        foute_waarde = zi_col.iloc[error_idx]
-                        messages.error(request, f"Fout op rij {foute_rij}: '{foute_waarde}' is geen geldig ZI-nummer (moet 8 cijfers zijn).")
-                        ctx = {"form": form, "title": "Voorraad", "has_data": False}
-                        return render(request, "voorraad/index.html", ctx)
+                    for i, zi in enumerate(zis):
+                        if not ZI_RE.match(zi):
+                            foute_rij = i + 2  # header = rij 1
+                            messages.error(
+                                request,
+                                f"Fout op rij {foute_rij}: '{zi}' is geen geldig ZI-nummer (moet 8 cijfers zijn)."
+                            )
+                            ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                            return render(request, "voorraad/index.html", ctx)
 
                     # 2. Geen dubbele ZI-nummers in bestand
-                    if zi_col.duplicated().any():
-                        dubbele = zi_col[zi_col.duplicated()].unique()[0]
-                        messages.error(request, f"Validatiefout: ZI-nummer '{dubbele}' komt meerdere keren voor in het bestand.")
+                    seen = set()
+                    duplicate = None
+                    for zi in zis:
+                        if zi in seen:
+                            duplicate = zi
+                            break
+                        seen.add(zi)
+
+                    if duplicate:
+                        messages.error(request, f"Validatiefout: ZI-nummer '{duplicate}' komt meerdere keren voor in het bestand.")
                         ctx = {"form": form, "title": "Voorraad", "has_data": False}
                         return render(request, "voorraad/index.html", ctx)
 
                     # 3. Check medicijnnaam (optioneel, warning)
-                    naam_col = df.iloc[:, 1]
-                    if not naam_col.str.contains("paracetamol", case=False).any():
+                    namen = [r[1] for r in filtered]
+                    if not any("paracetamol" in (n or "").lower() for n in namen):
                         messages.warning(request, "Let op: Geen 'Paracetamol' gevonden. Weet je zeker dat de kolommen goed staan?")
 
                     # --- D. SYNC LOGICA (VEILIG OPSLAAN) ---
-                    
-                    # Set maken van nieuwe ZI's voor latere delete-check
                     file_zi_set = set()
-
-                    # Huidige DB inladen voor snelle lookup
-                    existing_items_map = {
-                        item.zi_nummer: item 
-                        for item in VoorraadItem.objects.all()
-                    }
+                    existing_items_map = {item.zi_nummer: item for item in VoorraadItem.objects.all()}
 
                     to_create = []
                     to_update = []
-                    meta_columns = df.columns[2:] 
 
-                    for _, row in df.iterrows():
-                        zi = str(row.iloc[0]).strip()
-                        naam = row.iloc[1]
-                        metadata = dict(zip(meta_columns, row.iloc[2:]))
-                        
+                    meta_columns = header[2:]
+
+                    for r in filtered:
+                        zi = r[0].strip()
+                        naam = r[1].strip()
+
+                        meta_values = r[2:2 + len(meta_columns)]
+                        if len(meta_values) < len(meta_columns):
+                            meta_values += [""] * (len(meta_columns) - len(meta_values))
+
+                        metadata = dict(zip(meta_columns, meta_values))
+
                         file_zi_set.add(zi)
 
                         if zi in existing_items_map:
-                            # ITEM BESTAAT: Update velden (ID blijft behouden -> Nazending blijft veilig!)
                             item = existing_items_map[zi]
-                            # Alleen updaten als er iets gewijzigd is (kleine optimalisatie)
-                            if item.naam != naam or item.metadata != metadata:
+                            if item.naam != naam or (item.metadata or {}) != metadata:
                                 item.naam = naam
                                 item.metadata = metadata
                                 to_update.append(item)
                         else:
-                            # ITEM NIEUW: Toevoegen aan create lijst
                             to_create.append(VoorraadItem(
                                 zi_nummer=zi,
                                 naam=naam,
@@ -140,36 +208,35 @@ def medications_view(request):
                             ))
 
                     with transaction.atomic():
-                        # 1. Nieuwe items aanmaken
                         if to_create:
                             VoorraadItem.objects.bulk_create(to_create)
-                        
-                        # 2. Bestaande items updaten
+
                         if to_update:
-                            VoorraadItem.objects.bulk_update(to_update, ['naam', 'metadata'])
-                        
-                        # 3. Opschonen (Delete items die NIET meer in bestand staan)
-                        # Let op: Dit verwijdert items (en hun nazendingen via Cascade) die uit het bestand zijn verdwenen.
+                            VoorraadItem.objects.bulk_update(to_update, ["naam", "metadata"])
+
                         items_to_delete = VoorraadItem.objects.exclude(zi_nummer__in=file_zi_set)
-                        deleted_count, _ = items_to_delete.delete()
+
+                        # ✅ Alleen VoorraadItem tellen (geen cascades)
+                        deleted_items_count = items_to_delete.count()
+
+                        # Daarna pas verwijderen (cascades kunnen gebeuren, maar tellen we niet mee)
+                        items_to_delete.delete()
 
                     messages.success(
-                        request, 
-                        f"Verwerking gereed: {len(to_create)} toegevoegd, {len(to_update)} geüpdatet, {deleted_count} verwijderd."
+                        request,
+                        f"Verwerking gereed: {len(to_create)} toegevoegd, {len(to_update)} geüpdatet, {deleted_items_count} verwijderd."
                     )
 
                 except Exception as e:
                     messages.error(request, f"Fout bij verwerken: {e}")
 
     # === DATA OPHALEN VOOR TABEL ===
-    # We laden alles, client-side pagination/filter kan dit aan tot een paar duizend regels.
     all_items = VoorraadItem.objects.all()
-    
+
     rows = []
     columns = []
 
     if all_items.exists():
-        # Kolommen bepalen obv eerste item
         first_item = all_items.first()
         columns = ["ZI Nummer", "Naam"]
         if first_item.metadata:
