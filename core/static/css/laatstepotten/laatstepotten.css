@@ -25,3 +25,11 @@ table.laatstepotten-table {
     min-width: 700px;
   }
 }
+
+/* Helptekst onder inputvelden (zoals bij news, maar klein en simpel) */
+.form-help-text {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.35;
+}

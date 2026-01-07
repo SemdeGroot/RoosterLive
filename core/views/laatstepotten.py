@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime, date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -30,6 +30,46 @@ def laatstepotten(request):
     cutoff = timezone.now() - timedelta(days=30)
     LaatstePot.objects.filter(created_at__lt=cutoff).delete()
 
+    def _get_submitted_date_field_and_value(bound_form):
+        # Eerst veelvoorkomende veldnamen proberen
+        for fname in ("datum", "date", "datum_tijd", "datetime", "created_at"):
+            if fname in bound_form.cleaned_data and bound_form.cleaned_data.get(fname):
+                return fname, bound_form.cleaned_data.get(fname)
+
+        # Fallback: eerste datum/datetime-achtige waarde in cleaned_data
+        for fname, val in bound_form.cleaned_data.items():
+            if isinstance(val, (datetime, date)):
+                return fname, val
+
+        return None, None
+
+    def _date_not_older_than_30_days(bound_form):
+        submitted_field, submitted_value = _get_submitted_date_field_and_value(bound_form)
+        if not submitted_value:
+            return True
+
+        # Normaliseer naar aware datetime voor vergelijking
+        if isinstance(submitted_value, date) and not isinstance(submitted_value, datetime):
+            submitted_dt = datetime.combine(submitted_value, datetime.min.time())
+            submitted_dt = timezone.make_aware(submitted_dt, timezone.get_current_timezone())
+        else:
+            submitted_dt = submitted_value
+            if timezone.is_naive(submitted_dt):
+                submitted_dt = timezone.make_aware(submitted_dt, timezone.get_current_timezone())
+
+        local_cutoff = timezone.now() - timedelta(days=30)
+        if submitted_dt < local_cutoff:
+            msg = "De datum mag niet ouder zijn dan 30 dagen."
+            if submitted_field:
+                bound_form.add_error(submitted_field, msg)
+            else:
+                bound_form.add_error(None, msg)
+            return False
+
+        return True
+
+    form = None
+
     # POST logica (Toevoegen, Aanpassen, Verwijderen)
     if request.method == "POST":
         if not can_edit:
@@ -49,31 +89,40 @@ def laatstepotten(request):
             instance = get_object_or_404(LaatstePot, id=item_id)
             form = LaatstePotForm(request.POST, instance=instance)
             if form.is_valid():
-                form.save()
-                messages.success(request, "Wijziging opgeslagen.")
-                return redirect("laatstepotten")
-            messages.error(request, "Er ging iets mis bij het aanpassen.")
+                if not _date_not_older_than_30_days(form):
+                    messages.error(request, "De datum mag niet ouder zijn dan 30 dagen.")
+                else:
+                    form.save()
+                    messages.success(request, "Wijziging opgeslagen.")
+                    return redirect("laatstepotten")
+            else:
+                messages.error(request, "Er ging iets mis bij het aanpassen.")
 
         # Toevoegen
         elif "btn_add" in request.POST:
             form = LaatstePotForm(request.POST)
             if form.is_valid():
-                new_item = form.save()
-                item_naam = new_item.voorraad_item.naam
+                if not _date_not_older_than_30_days(form):
+                    messages.error(request, "De datum mag niet ouder zijn dan 30 dagen.")
+                else:
+                    new_item = form.save()
+                    item_naam = new_item.voorraad_item.naam
 
-                send_laatste_pot_push_task.delay(item_naam)
-                send_laatste_pot_email_task.delay(item_naam)
+                    send_laatste_pot_push_task.delay(item_naam)
+                    send_laatste_pot_email_task.delay(item_naam)
 
-                messages.success(
-                    request,
-                    "Melding opgeslagen. Bestellers zijn per push en e-mail geïnformeerd.",
-                )
-                return redirect("laatstepotten")
-            messages.error(request, "Controleer de invoer van het formulier.")
+                    messages.success(
+                        request,
+                        "Melding opgeslagen. Bestellers zijn per push en e-mail geïnformeerd.",
+                    )
+                    return redirect("laatstepotten")
+            else:
+                messages.error(request, "Controleer de invoer van het formulier.")
 
     # GET logica (Data ophalen)
     items = LaatstePot.objects.select_related("voorraad_item").all()
-    form = LaatstePotForm()
+    if form is None:
+        form = LaatstePotForm()
 
     context = {
         "title": "Laatste Potten",

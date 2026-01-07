@@ -48,6 +48,11 @@
             <label class="section-label" style="margin-bottom: 6px;">Datum aangebroken:</label>
             {{ form.datum }}
           </div>
+            <p class="form-help-text">
+              <em>
+                Laatste potten meldingen worden automatisch verwijderd na 30 dagen.
+              </em>
+            </p>
 
           <div style="display:flex; justify-content:flex-end; gap:10px;">
             <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
@@ -121,6 +126,11 @@
                       <div>
                         <label class="section-label">Datum aangebroken:</label>
                         <input type="text" name="datum" value="{{ item.datum|date:'d-m-Y' }}" class="admin-input js-date">
+                      <p class="form-help-text" style="margin-bottom: 8px !important;">
+                        <em>
+                          Laatste potten meldingen worden automatisch verwijderd na 30 dagen.
+                        </em>
+                      </p>
                       </div>
                     </div>
                     <div class="actions-wrap horizontal" style="margin-top:10px;">
