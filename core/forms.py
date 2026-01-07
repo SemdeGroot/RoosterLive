@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier
 
 UserModel = get_user_model()
 
@@ -643,6 +643,36 @@ class WerkafspraakForm(forms.ModelForm):
                 f"Het bestand is te groot. Maximaal {self.MAX_FILE_SIZE_MB} MB toegestaan."
             )
         return f
+
+class OnboardingFormulierForm(forms.ModelForm):
+    class Meta:
+        model = OnboardingFormulier
+        fields = ["title", "url"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["title"].widget.attrs.setdefault("placeholder", "Titel (max 80 karakters)")
+        self.fields["url"].widget.attrs.setdefault("placeholder", "https://... (bij voorkeur verkorte link)")
+
+        self.fields["title"].widget.attrs["maxlength"] = 80
+        self.fields["url"].widget.attrs["maxlength"] = 500
+
+        self.fields["title"].validators.append(MaxLengthValidator(80))
+
+    def clean_url(self):
+        url = (self.cleaned_data.get("url") or "").strip()
+        if not url:
+            return url
+
+        # Maak het gebruiksvriendelijk: als iemand 'forms.gle/...' plakt, prepend https://
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        # Laat URLField de rest valideren, maar met nette foutmelding
+        if " " in url:
+            raise ValidationError("URL mag geen spaties bevatten.")
+        return url
 
 class MedicatieReviewForm(forms.Form):
     

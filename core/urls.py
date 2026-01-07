@@ -28,7 +28,7 @@ from core.views.ziekmelden import ziekmelden
 from core.views.urendoorgeven import urendoorgeven
 from core.views.diensten import mijndiensten_view
 from core.views.diensten_webcal import diensten_webcal_view
-from core.views.onboarding_forms import forms
+from core.views.onboarding_forms import onboarding_formulieren
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
 from core.views.omzettingslijst import omzettingslijst
@@ -124,7 +124,7 @@ urlpatterns = [
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
     path("personeel/inschrijven/", inschrijven, name="inschrijven"),
     path("onboarding/wie-is-wie/", whoiswho, name="whoiswho"),
-    path("onboarding/formulieren/", forms, name="forms"),
+    path("onboarding/formulieren/", onboarding_formulieren, name="onboarding_formulieren"),
     path("onboarding/checklist/", checklist, name="checklist"),
 
     path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),

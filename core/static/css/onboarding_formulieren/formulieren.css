@@ -1,0 +1,35 @@
+/* Helptekst onder inputvelden (zoals bij news, maar klein en simpel) */
+.form-help-text {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Gebruik bestaande .btn styling, maar maak 'm klein en monospace voor inline voorbeelden */
+.btn.btn-inline-mono {
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  pointer-events: none; /* puur visueel (niet klikbaar) */
+}
+
+.form-url-link {
+  color: inherit;       /* lichtblauw */
+  text-decoration: underline;
+  cursor: pointer;
+  word-break: break-word;
+}
+
+.form-url-link:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+
+.form-url-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
