@@ -3,12 +3,6 @@
 /* -------------------------------------------------------
    HEADER & ADD SECTION
 ------------------------------------------------------- */
-.header-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
 .add-section-panel {
   background-color: var(--panel); /* Iets afwijkende achtergrond */

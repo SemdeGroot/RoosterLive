@@ -22,11 +22,16 @@
         <p>Meld hier wanneer de laatste pot van een geneesmiddel is aangebroken.</p>
       </div>
 
-      {% if can_edit %}
       <div class="header-actions">
-        <button type="button" class="btn btn-save" onclick="toggleAddSection()">Toevoegen</button>
+        <a href="{% url 'baxter_tiles' %}" class="btn">
+          Terug naar Baxterproductie
+        </a>
+        {% if can_edit %}
+        <button type="button" class="btn btn-save" onclick="toggleAddSection()">
+          Toevoegen
+        </button>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
 
     <div class="card-inner" style="padding-top:0;">

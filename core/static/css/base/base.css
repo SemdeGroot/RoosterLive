@@ -768,3 +768,21 @@ textarea.form-input::placeholder{
     display: block;
   }
 }
+/* -------------------------------------------------------
+   HEADER & ADD SECTION
+------------------------------------------------------- */
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-section-panel {
+  background-color: var(--panel); /* Iets afwijkende achtergrond */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-top: 5px;
+}
