@@ -1,0 +1,89 @@
+.uren-deadline-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--border, rgba(255,255,255,.08));
+  background: var(--card-2, rgba(255,255,255,.03));
+  margin-top: 10px;
+}
+
+.uren-deadline-left{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.uren-deadline-label{
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+.uren-deadline-timer{
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:.85rem;
+  font-weight:600;
+  border:1px solid var(--border, rgba(255,255,255,.10));
+}
+
+.badge.ok{
+  color: var(--success, #36d399);
+}
+
+.badge.danger{
+  color: var(--danger, #ff6b6b);
+}
+
+.uren-grid-top{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+}
+
+@media (max-width: 900px){
+  .uren-grid-top{
+    grid-template-columns: 1fr;
+  }
+}
+
+.uren-toeslag-card,
+.uren-help-card{
+  border:1px solid var(--border, rgba(255,255,255,.08));
+  background: var(--card-2, rgba(255,255,255,.03));
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.uren-toeslag-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.uren-toeslag-value{
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.toeslag-form .admin-input{
+  margin-top: 6px;
+  width: 100%;
+}
+
+.hint{
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .85rem;
+}

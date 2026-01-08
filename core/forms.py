@@ -7,12 +7,12 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-
+from decimal import Decimal, ROUND_HALF_UP
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings
 
 UserModel = get_user_model()
 
@@ -917,3 +917,66 @@ class STSHalfjeForm(forms.ModelForm):
         # Queryset ophalen voor beide velden, identiek aan laatste potten
         self.fields['item_gehalveerd'].queryset = VoorraadItem.objects.all()
         self.fields['item_alternatief'].queryset = VoorraadItem.objects.all()
+
+# Uren doorgeven incl CAO toeslag
+def _clean_1_decimal_decimal(value, field_label: str) -> Decimal:
+    if value is None:
+        return Decimal("0.0")
+    if value < 0:
+        raise ValidationError(f"{field_label} mag niet negatief zijn.")
+    # forceer 1 decimaal
+    q = value.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+    return q
+
+
+class UrenInvoerForm(forms.ModelForm):
+    class Meta:
+        model = UrenInvoer
+        fields = ["hours_before_18", "hours_after_18"]
+        widgets = {
+            "hours_before_18": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "step": "0.1",
+                "inputmode": "decimal",
+                "placeholder": "0.0",
+                "autocomplete": "off",
+            }),
+            "hours_after_18": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "step": "0.1",
+                "inputmode": "decimal",
+                "placeholder": "0.0",
+                "autocomplete": "off",
+            }),
+        }
+
+    def clean_hours_before_18(self):
+        v = self.cleaned_data.get("hours_before_18")
+        return _clean_1_decimal_decimal(v, "Uren tot 18:00")
+
+    def clean_hours_after_18(self):
+        v = self.cleaned_data.get("hours_after_18")
+        return _clean_1_decimal_decimal(v, "Uren na 18:00")
+
+
+class UrenDoorgevenSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UrenDoorgevenSettings
+        fields = ["evening_allowance_pct"]
+        widgets = {
+            "evening_allowance_pct": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "step": "0.01",
+                "inputmode": "decimal",
+                "placeholder": "Bijv. 25.00",
+                "autocomplete": "off",
+            })
+        }
+
+    def clean_evening_allowance_pct(self):
+        v = self.cleaned_data.get("evening_allowance_pct")
+        if v is None:
+            return Decimal("0.00")
+        if v < 0 or v > 200:
+            raise ValidationError("Toeslag % moet tussen 0 en 200 liggen.")
+        return v.quantize(Decimal("0.01"))

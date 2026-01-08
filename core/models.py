@@ -6,6 +6,7 @@ from django.utils import timezone
 from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextField
 from django.core.validators import MinValueValidator
 import uuid
+from decimal import Decimal
 
 class SoftDeleteQuerySet(models.QuerySet):
     def active(self):
@@ -911,3 +912,77 @@ class STSHalfje(models.Model):
 
     def __str__(self):
         return f"{self.item_gehalveerd.naam} -> {self.item_alternatief.naam}"
+    
+class UrenDoorgevenSettings(models.Model):
+    """
+    Singleton settings model.
+    """
+    evening_allowance_pct = models.DecimalField(
+        "CAO toeslag % na 18:00",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Bijv. 25.00 voor 25% toeslag.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="urendoorgeven_settings_updates",
+    )
+
+    @classmethod
+    def load(cls):
+        obj = cls.objects.first()
+        if obj:
+            return obj
+        return cls.objects.create()
+
+    def __str__(self):
+        return "Uren doorgeven instellingen"
+
+
+class UrenInvoer(models.Model):
+    """
+    Eén regel per gebruiker per maand (maand = eerste dag van de maand).
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="uren_invoer",
+    )
+
+    month = models.DateField("Maand", db_index=True, help_text="Eerste dag van de maand.")
+    hours_before_18 = models.DecimalField(
+        "Uren tot 18:00",
+        max_digits=5,          # bv 999.9
+        decimal_places=1,
+        default=Decimal("0.0"),
+    )
+    hours_after_18 = models.DecimalField(
+        "Uren na 18:00",
+        max_digits=5,
+        decimal_places=1,
+        default=Decimal("0.0"),
+    )
+
+    evening_allowance_pct_used = models.DecimalField(
+        "Toeslag % gebruikt",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Snapshot van de instelling op moment van opslaan.",
+    )
+
+    submitted_at = models.DateTimeField("Ingediend op", auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "month"], name="uniq_user_month_ureninvoer"),
+        ]
+        ordering = ["-month", "user_id"]
+
+    def __str__(self):
+        return f"{self.user_id} - {self.month} ({self.hours_before_18}/{self.hours_after_18})"
