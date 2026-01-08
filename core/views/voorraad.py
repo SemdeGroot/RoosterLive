@@ -73,12 +73,14 @@ def medications_view(request):
     # 1. Check Rechten
     if not can(request.user, "can_view_av_medications"):
         return HttpResponseForbidden("Geen toegang.")
+    
+    can_edit = can(request, "can_upload_voorraad")
 
     form = AvailabilityUploadForm()
 
     # === UPLOAD VERWERKING ===
     if request.method == "POST":
-        if not can(request.user, "can_upload_voorraad"):
+        if not can_edit:
             return HttpResponseForbidden("Geen uploadrechten.")
 
         form = AvailabilityUploadForm(request.POST, request.FILES)
@@ -249,6 +251,7 @@ def medications_view(request):
             rows.append(row_data)
 
     ctx = {
+        "can_edit": can_edit,
         "form": form,
         "columns": columns,
         "rows": rows,

@@ -24,7 +24,7 @@
       </div>
       <hr class="crud-divider">
 
-  {% if perms.core.can_upload_voorraad %}
+  {% if can_edit %}
   <form method="post" enctype="multipart/form-data" class="uploader" id="medForm">
     {% csrf_token %}
     <input type="file" id="medFile" name="file" accept=".csv,.xlsx,.xls" hidden required>
