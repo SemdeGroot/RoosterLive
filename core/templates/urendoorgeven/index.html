@@ -20,13 +20,13 @@
         <div class="birthday-header-text">
           <h2>Uren doorgeven</h2>
           <p>
-            Je geeft de uren door voor <strong>{{ target_month|date:"F Y" }}</strong>.
+            Geef hier je gewerkte uren door voor de maand <strong>{{ target_month|date:"F Y" }}</strong>.
             Deadline: <strong>{{ deadline_local_str }}</strong>.
           </p>
         </div>
       </div>
 
-      <div class="uren-deadline-bar"
+      <div class="uren-deadline-bar" style="margin-bottom: 16px;"
            data-deadline="{{ deadline_iso }}"
            data-deadline-passed="{{ deadline_passed|yesno:'1,0' }}">
         <div class="uren-deadline-left">
@@ -36,13 +36,18 @@
         {% if deadline_passed %}
           <span class="badge danger">Deadline voorbij</span>
         {% else %}
-          <span class="badge ok">Open</span>
+          <span class="badge ok">Beschikbaar</span>
         {% endif %}
       </div>
 
-      <hr class="crud-divider">
 
       <div class="uren-grid-top">
+        <div class="uren-help-card">
+          <div style="margin-top:6px;">
+            Vul je totale uren in voor de maand, gesplitst in
+            <strong>tot 18:00</strong> en <strong>na 18:00</strong>.
+          </div>
+        </div>
         <div class="uren-toeslag-card">
           <div class="uren-toeslag-row">
             <div>
@@ -64,32 +69,32 @@
             {% endif %}
           </div>
 
-          {% if can_edit %}
-          <form method="post" id="toeslagForm" class="toeslag-form" style="display:none;">
-            {% csrf_token %}
-            <input type="hidden" name="form_kind" value="settings">
-            <label for="{{ settings_form.evening_allowance_pct.id_for_label }}" class="muted" style="margin-top:8px;">
-              Nieuw toeslag %
+       {% if can_edit %}
+      <form method="post" id="toeslagForm" class="toeslag-form form" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="form_kind" value="settings">
+
+        <div class="admin-grid">
+          <div>
+            <label for="{{ settings_form.evening_allowance_pct.id_for_label }}" class="muted">
+              Nieuwe toeslag %
             </label>
             {{ settings_form.evening_allowance_pct }}
-            <div class="actions-wrap horizontal" style="margin-top:10px;">
-              <button class="btn btn-save" type="submit">Opslaan</button>
-              <button class="btn btn-danger" type="button" id="toeslagCancelBtn">Annuleren</button>
-            </div>
-          </form>
-          {% endif %}
-        </div>
-
-        <div class="uren-help-card">
-          <div class="muted">Tip</div>
-          <div style="margin-top:6px;">
-            Vul je totale uren in voor de maand, gesplitst in
-            <strong>tot 18:00</strong> en <strong>na 18:00</strong>.
           </div>
         </div>
+
+        <div class="actions-wrap horizontal" style="margin-top:6px;">
+          <button class="btn btn-save" type="submit">Opslaan</button>
+          <button class="btn btn-danger" type="button" id="toeslagCancelBtn">Annuleren</button>
+        </div>
+      </form>
+      {% endif %}
+
+        </div>
+
       </div>
 
-      <h3 style="margin-top: 14px;">Uren invoeren</h3>
+      <h3 style="margin-top: 20px;">Uren invoeren</h3>
 
       <form method="post" autocomplete="off" class="uren-form">
         {% csrf_token %}
@@ -100,7 +105,7 @@
             <div>
               <label for="{{ uren_form.hours_before_18.id_for_label }}">Uren tot 18:00</label>
               {{ uren_form.hours_before_18 }}
-              <div class="hint">Float, max 1 decimaal</div>
+              <div class="hint">Max. 1 decimaal</div>
             </div>
 
             <div>
@@ -108,18 +113,22 @@
                 Uren na 18:00 <span class="muted">(met toeslag {{ settings_obj.evening_allowance_pct }}%)</span>
               </label>
               {{ uren_form.hours_after_18 }}
-              <div class="hint">Float, max 1 decimaal</div>
+              <div class="hint">Max. 1 decimaal</div>
             </div>
           </div>
 
           {% if deadline_passed %}
-            <button class="btn btn-save btn-block" type="submit" disabled style="margin-top: 10px; opacity:.6;">
+          <div class="uren-actions">
+            <button class="btn btn-save btn-block" type="submit" disabled style="opacity:.6;">
               Opslaan (deadline voorbij)
             </button>
+          </div>
           {% else %}
-            <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
+          <div class="uren-actions">
+            <button class="btn btn-save" type="submit" data-haptic>
               Opslaan
             </button>
+          </div>
           {% endif %}
         </div>
       </form>

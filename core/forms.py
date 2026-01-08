@@ -934,18 +934,16 @@ class UrenInvoerForm(forms.ModelForm):
         model = UrenInvoer
         fields = ["hours_before_18", "hours_after_18"]
         widgets = {
-            "hours_before_18": forms.NumberInput(attrs={
+            "hours_before_18": forms.TextInput(attrs={
                 "class": "admin-input",
-                "step": "0.1",
                 "inputmode": "decimal",
-                "placeholder": "0.0",
+                "placeholder": "0,0",
                 "autocomplete": "off",
             }),
-            "hours_after_18": forms.NumberInput(attrs={
+            "hours_after_18": forms.TextInput(attrs={
                 "class": "admin-input",
-                "step": "0.1",
                 "inputmode": "decimal",
-                "placeholder": "0.0",
+                "placeholder": "0,0",
                 "autocomplete": "off",
             }),
         }
@@ -964,11 +962,10 @@ class UrenDoorgevenSettingsForm(forms.ModelForm):
         model = UrenDoorgevenSettings
         fields = ["evening_allowance_pct"]
         widgets = {
-            "evening_allowance_pct": forms.NumberInput(attrs={
+            "evening_allowance_pct": forms.TextInput(attrs={
                 "class": "admin-input",
-                "step": "0.01",
                 "inputmode": "decimal",
-                "placeholder": "Bijv. 25.00",
+                "placeholder": "Bijv. 25,00",
                 "autocomplete": "off",
             })
         }

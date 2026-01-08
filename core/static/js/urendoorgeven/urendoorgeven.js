@@ -45,23 +45,46 @@
     };
 
     tick();
-    // update elke 30 sec is genoeg (dagen/uren/minuten)
     setInterval(tick, 30000);
   }
 
-  function normalizeOneDecimalInput(input) {
-    // Sta comma toe
-    let v = input.value.replace(",", ".").trim();
+  // Tijdens typen: laat digits, comma en punt toe (maar verder niks)
+  function allowDecimalTyping(input) {
+    let v = input.value;
+
+    // alleen digits + , .
+    v = v.replace(/[^\d,\.]/g, "");
+
+    // maximaal 1 scheidingsteken (eerste van , of .)
+    const firstSepIndex = v.search(/[,.]/);
+    if (firstSepIndex !== -1) {
+      const before = v.slice(0, firstSepIndex + 1);
+      const after = v.slice(firstSepIndex + 1).replace(/[,.]/g, "");
+      v = before + after;
+    }
+
+    // max 1 decimaal na scheidingsteken (als aanwezig)
+    const parts = v.split(/[,.]/);
+    if (parts.length === 2) {
+      v = parts[0] + (v.includes(",") ? "," : ".") + parts[1].slice(0, 1);
+    }
+
+    input.value = v;
+  }
+
+  // Bij blur/submit: normaliseer naar punt en 1 decimaal
+  function normalizeOneDecimal(input) {
+    let v = (input.value || "").trim();
     if (v === "") return;
 
-    // Alleen digits + 1 punt
-    v = v.replace(/[^\d.]/g, "");
+    v = v.replace(",", ".");         // Django-friendly
+    v = v.replace(/[^\d.]/g, "");    // safety
+
     const parts = v.split(".");
     if (parts.length > 2) {
       v = parts[0] + "." + parts.slice(1).join("");
     }
 
-    // max 1 decimaal
     if (v.includes(".")) {
       const [a, b] = v.split(".");
       v = a + "." + (b || "").slice(0, 1);
@@ -71,10 +94,20 @@
   }
 
   function setupDecimalInputs() {
-    const inputs = document.querySelectorAll(".uren-form input[type='number'], .uren-form input.admin-input");
+    const form = document.querySelector(".uren-form");
+    if (!form) return;
+
+    // Pak alleen de 2 uur-velden (class admin-input in jouw form)
+    const inputs = form.querySelectorAll("input.admin-input");
+
     inputs.forEach((inp) => {
-      inp.addEventListener("input", () => normalizeOneDecimalInput(inp));
-      inp.addEventListener("blur", () => normalizeOneDecimalInput(inp));
+      inp.addEventListener("input", () => allowDecimalTyping(inp));
+      inp.addEventListener("blur", () => normalizeOneDecimal(inp));
+    });
+
+    // Extra: bij submit altijd normaliseren (belangrijk voor Django DecimalField)
+    form.addEventListener("submit", () => {
+      inputs.forEach((inp) => normalizeOneDecimal(inp));
     });
   }
 

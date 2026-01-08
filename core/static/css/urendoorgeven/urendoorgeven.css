@@ -37,11 +37,11 @@
 }
 
 .badge.ok{
-  color: var(--success, #36d399);
+  color: #14532d;
 }
 
 .badge.danger{
-  color: var(--danger, #ff6b6b);
+  color: #7f1d1d;
 }
 
 .uren-grid-top{
@@ -66,7 +66,7 @@
 
 .uren-toeslag-row{
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   justify-content:space-between;
   gap:10px;
 }
@@ -83,7 +83,12 @@
 }
 
 .hint{
-  margin-top: 6px;
   color: var(--muted);
   font-size: .85rem;
+  margin-top: -6px !important;
+}
+
+.uren-actions{
+  display: flex;
+  justify-content: flex-end;   /* rechts */
 }

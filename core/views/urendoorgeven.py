@@ -94,7 +94,7 @@ def urendoorgeven_view(request):
                 obj.evening_allowance_pct_used = settings_obj.evening_allowance_pct
                 obj.save()
 
-                messages.success(request, f"Uren opgeslagen voor {target_month.strftime('%m-%Y')}.")
+                messages.success(request, f"Bedankt! Je uren voor {target_month.strftime('%m-%Y')} zijn opgeslagen en worden binnenkort verwerkt.")
                 return redirect("urendoorgeven")
 
             messages.error(request, "Opslaan mislukt. Controleer de velden.")
