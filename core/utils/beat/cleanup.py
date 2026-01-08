@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Min
 from django.utils import timezone
 
-from core.models import ShiftDraft, Availability
+from core.models import ShiftDraft, Availability, UrenInvoer
 
 
 def _monday_of_week(d: date) -> date:
@@ -54,3 +54,16 @@ def cleanup_availability_new_week(*, today: Optional[date] = None) -> int:
         deleted, _ = Availability.objects.filter(date__lt=cutoff).delete()
 
     return int(deleted)
+
+@transaction.atomic
+def delete_ureninvoer_through_month(month_first: date) -> int:
+    """
+    Verwijdert alle UrenInvoer regels met month <= month_first.
+    (Dus: alles t/m en inclusief de verwerkte maand.)
+
+    Return: aantal verwijderde records.
+    """
+    qs = UrenInvoer.objects.filter(month__lte=month_first)
+    count = qs.count()
+    qs.delete()
+    return count

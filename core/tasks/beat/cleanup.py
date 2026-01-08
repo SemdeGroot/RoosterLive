@@ -1,9 +1,14 @@
 # core/tasks/beat/cleanup.py
-
 from __future__ import annotations
+
+from datetime import date
 
 from celery import shared_task
 from celery.schedules import crontab
+
+from django.core.files.storage import default_storage
+
+from core.utils.beat.cleanup import delete_ureninvoer_through_month
 
 @shared_task(ignore_result=True)
 def weekly_cleanup_task() -> dict:
@@ -16,3 +21,22 @@ def weekly_cleanup_task() -> dict:
         "deleted_shift_drafts": cleanup_shiftdrafts_new_week(),
         "deleted_availability": cleanup_availability_new_week(),
     }
+
+@shared_task(bind=True)
+def cleanup_uren_export_task(self, results, xlsx_path: str, month_first_iso: str):
+    """
+    Callback voor chord: draait alleen na succesvolle verzending.
+    - verwijdert excel uit storage
+    - verwijdert alle UrenInvoer t/m de verwerkte maand
+    """
+    month_first = date.fromisoformat(month_first_iso)
+
+    # alles t/m deze maand weg
+    delete_ureninvoer_through_month(month_first)
+
+    # excel weg (best effort)
+    try:
+        if xlsx_path and default_storage.exists(xlsx_path):
+            default_storage.delete(xlsx_path)
+    except Exception:
+        pass

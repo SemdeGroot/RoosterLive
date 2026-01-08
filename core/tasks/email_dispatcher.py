@@ -77,6 +77,26 @@ def email_dispatcher_task(self, job: dict):
             else:
                 raise
         return
+    
+    if job_type == "uren_overzicht":
+        from datetime import date
+        from core.utils.emails.uren_overzicht import send_uren_overzicht_email
+
+        # XLSX uit storage lezen (lokaal of S3)
+        with default_storage.open(p["xlsx_path"], "rb") as f:
+            xlsx_content = f.read()
+
+        month_first = date.fromisoformat(p["month_first"])
+
+        send_uren_overzicht_email(
+            to_email=p["to_email"],
+            month_first=month_first,
+            xlsx_content=xlsx_content,
+            filename=p["filename"],
+            contact_email=p["contact_email"],
+            logo_path=p.get("logo_path"),
+        )
+        return
 
     raise ValueError(f"Unknown job type: {job_type}")
 
