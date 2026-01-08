@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.http import Http404, HttpResponse, HttpResponseNotModified
 from django.utils import timezone
 
-from core.models import Shift, UserProfile
+from core.models import Shift, UserProfile, AgendaItem
 
 
 PERIOD_TIMES = {
@@ -184,6 +184,12 @@ def _build_cached_payload_for_user(user) -> dict:
         .order_by("date", "period")
     )
 
+    agenda_items = (
+        AgendaItem.objects
+        .filter(date__gte=start_date)
+        .order_by("date", "category", "title")
+    )
+
     now = timezone.now()
     last_modified_utc = now.astimezone(dt_timezone.utc)
 
@@ -194,7 +200,7 @@ def _build_cached_payload_for_user(user) -> dict:
     lines.append("PRODID:-//Apotheek Jansen//Diensten//NL")
     lines.append("CALSCALE:GREGORIAN")
     lines.append("METHOD:PUBLISH")
-    lines.append(f"X-WR-CALNAME:{_ics_escape('Werken bij Apotheek Jansen')}")
+    lines.append(f"X-WR-CALNAME:{_ics_escape('Apotheek Jansen Agenda')}")
     lines.append(f"X-WR-TIMEZONE:{_ics_escape(str(tz))}")
 
     for s in shifts:
@@ -237,6 +243,32 @@ def _build_cached_payload_for_user(user) -> dict:
             lines.append(f"LOCATION:{_ics_escape(location_line)}")
         lines.append(f"DESCRIPTION:{_ics_escape(description)}")
         lines.append("END:VEVENT")
+        
+    for item in agenda_items:
+        # Hele dag event (DATE value)
+        dtstart_date = item.date.strftime("%Y%m%d")
+        dtend_date = (item.date + timedelta(days=1)).strftime("%Y%m%d")  # DTEND is exclusief
+
+        if item.category == "outing":
+            summary = f"Apotheek Jansen Uitje: {item.title}".strip()
+        else:
+            summary = f"Apotheek Jansen Algemeen: {item.title}".strip()
+
+        description = (item.description or "").strip()
+
+        uid = f"agenda-{item.id}@apotheekjansen"
+        dt_event_mod = now.astimezone(dt_timezone.utc)
+
+        lines.append("BEGIN:VEVENT")
+        lines.append(f"UID:{_ics_escape(uid)}")
+        lines.append(f"DTSTAMP:{_fmt_dt_utc(dt_event_mod)}")
+        lines.append(f"LAST-MODIFIED:{_fmt_dt_utc(dt_event_mod)}")
+        lines.append(f"DTSTART;VALUE=DATE:{dtstart_date}")
+        lines.append(f"DTEND;VALUE=DATE:{dtend_date}")
+        lines.append(f"SUMMARY:{_ics_escape(summary)}")
+        lines.append(f"DESCRIPTION:{_ics_escape(description)}")
+        lines.append("END:VEVENT")
+
 
     lines.append("END:VCALENDAR")
 

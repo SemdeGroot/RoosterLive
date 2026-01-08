@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from core.models import Shift, Task, Location, UserProfile
+from core.models import Shift, Task, Location, UserProfile, AgendaItem
 from core.permissions_cache import bump_perm_version, delete_permset, get_cached_permset
 
 User = get_user_model()
@@ -101,3 +101,21 @@ def invalidate_diensten_ics_on_location_change(sender, instance, **kwargs):
         .distinct()
     )
     _invalidate_diensten_ics_for_user_ids(user_ids)
+
+def _invalidate_all_diensten_ics() -> None:
+    """
+    Algemene agenda-items zijn voor iedereen zichtbaar in de webcal.
+    Daarom invalidaten we alle diensten_ics caches voor actieve users met een calendar_token.
+    """
+    user_ids = list(
+        UserProfile.objects
+        .filter(user__is_active=True, calendar_token__isnull=False)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
+    _invalidate_diensten_ics_for_user_ids(user_ids)
+
+@receiver(post_save, sender=AgendaItem)
+@receiver(post_delete, sender=AgendaItem)
+def invalidate_diensten_ics_on_agendaitem_change(sender, instance, **kwargs):
+    _invalidate_all_diensten_ics()
