@@ -23,7 +23,7 @@ def send_birthday_email(to_email, first_name):
     # 1. De HTML Body
     html_body = f"""
       <p style="margin:0 0 18px 0;">Beste {display_name},</p>
-      <p style="margin:0 0 12px 0;">Van harte gefeliciteerd met je verjaardag!</p>
+      <p style="margin:0 0 12px 0;">Van harte gefeliciteerd met je verjaardag! 🎉</p>
       <p style="margin:24px 0 12px 0;">Wij wensen je een geweldige dag toe!</p>
       <p style="margin:24px 0 12px 0;">Met vriendelijke groet,<br>Het Apotheek Jansen Team</p>
     """
@@ -39,7 +39,7 @@ def send_birthday_email(to_email, first_name):
     # Plaintext fallback
     text_content = (
         f"Beste {display_name},\n\n"
-        f"Van harte gefeliciteerd met je verjaardag!\n\n"
+        f"Van harte gefeliciteerd met je verjaardag! 🎉\n\n"
         "Wij wensen je een geweldige dag toe!\n\n"
         "Met vriendelijke groet,\nHet Apotheek Jansen Team"
     )

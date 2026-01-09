@@ -97,6 +97,15 @@ def email_dispatcher_task(self, job: dict):
             logo_path=p.get("logo_path"),
         )
         return
+    
+    if job_type == "birthday":
+        from core.utils.emails.birthday_email import send_birthday_email
+
+        send_birthday_email(
+            to_email=p["to_email"],
+            first_name=p.get("first_name", "Collega"),
+        )
+        return
 
     raise ValueError(f"Unknown job type: {job_type}")
 

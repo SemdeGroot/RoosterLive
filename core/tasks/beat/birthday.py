@@ -2,25 +2,18 @@
 from __future__ import annotations
 from celery import shared_task
 from django.utils import timezone
-from datetime import timedelta, date  # Zorg ervoor dat 'date' geïmporteerd is
+from datetime import date
 
 from core.models import UserProfile
 from core.utils.push.push import send_birthday_push_for_user, send_birthday_push_for_others
-from core.utils.emails.birthday_email import send_birthday_email
+from core.tasks.email_dispatcher import email_dispatcher_task
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_birthday_reminder(self):
-    """
-    Taak om elke ochtend om 7:30 de verjaardagen te controleren
-    en notificaties/mail te sturen.
-    """
     today = timezone.localdate()
 
-    profiles = UserProfile.objects.filter(
-        birth_date__isnull=False, organization_id=1
-    )
+    profiles = UserProfile.objects.filter(birth_date__isnull=False, organization_id=1)
 
-    # Verjaardagen voor vandaag
     birthday_profiles = []
     for profile in profiles:
         dob = profile.birth_date
@@ -32,28 +25,26 @@ def send_birthday_reminder(self):
         if next_bday == today:
             birthday_profiles.append(profile)
 
-    # Als er meerdere mensen jarig zijn, verzamelen we hun namen
+    # niks jarig? stop
+    if not birthday_profiles:
+        return
+
     birthday_names = [profile.user.first_name.capitalize() for profile in birthday_profiles]
-    
-    # Stuur emails en pushmeldingen naar de jarige
+    birthday_user_ids = [profile.user_id for profile in birthday_profiles]
+
+    # Persoonlijk naar elke jarige
     for profile in birthday_profiles:
-        # Verjaardagse-mail sturen
-        send_birthday_email(profile.user.email, profile.user.first_name)
+        email_dispatcher_task.apply_async(
+            args=[{
+                "type": "birthday",
+                "payload": {
+                    "to_email": profile.user.email,
+                    "first_name": profile.user.first_name or "Collega",
+                }
+            }],
+            queue="mail",
+        )
+        send_birthday_push_for_user(profile.user_id, profile.user.first_name.capitalize())
 
-        # Pushmelding voor de jarige sturen
-        send_birthday_push_for_user(profile.user.id, profile.user.first_name.capitalize())
-
-    # Boodschap voor de rest van de organisatie genereren
-    if len(birthday_names) > 1:
-        # Als er meer dan één jarige is, combineer de namen
-        birthday_message = " en ".join([", ".join(birthday_names[:-1]), birthday_names[-1]]) if len(birthday_names) > 2 else " en ".join(birthday_names)
-        message_body = f"Hoera! {birthday_message} zijn vandaag jarig!"
-    else:
-        # Als er maar één jarige is
-        birthday_message = birthday_names[0]
-        message_body = f"Hoera! {birthday_message} is vandaag jarig!"
-
-    # Pushmelding voor de rest van de organisatie
-    birthday_profile_ids = [profile.id for profile in birthday_profiles]  # Verzamel IDs van jarigen
-    for other_profile in profiles.exclude(id__in=birthday_profile_ids):
-        send_birthday_push_for_others(other_profile.user.id, birthday_names, message_body)
+    # Eén keer naar alle anderen (exclude alle jarigen)
+    send_birthday_push_for_others(birthday_user_ids=birthday_user_ids, birthday_names=birthday_names)

@@ -334,7 +334,7 @@ def send_birthday_push_for_user(user_id, birthday_name):
     """
     payload = {
         "title": f"Gefeliciteerd!",
-        "body": f"Beste {birthday_name}, gefeliciteerd met je verjaardag!",
+        "body": f"Beste {birthday_name}, gefeliciteerd met je verjaardag! 🎉",
         "url": "/agenda/",
         "tag": f"birthday-update-{user_id}-user",
     }
@@ -360,30 +360,42 @@ def send_birthday_push_for_user(user_id, birthday_name):
             if status in (404, 410, 403):
                 s.delete()
 
-def send_birthday_push_for_others(user_id, birthday_names, message_body):
+def human_join(names: list[str]) -> str:
+    names = [n for n in names if n]
+    if not names:
+        return ""
+    if len(names) == 1:
+        return names[0]
+    if len(names) == 2:
+        return f"{names[0]} en {names[1]}"
+    return f"{', '.join(names[:-1])} en {names[-1]}"
+
+def is_zijn(names: list[str]) -> str:
+    return "zijn" if len(names) != 1 else "is"
+
+def send_birthday_push_for_others(birthday_user_ids: list[int], birthday_names: list[str]):
     """
-    Stuur een pushmelding naar alle andere gebruikers die de verjaardag van iemand vieren.
-    Dit moet een lijst van namen bevatten als er meerdere mensen jarig zijn.
+    Stuur één pushmelding naar alle andere gebruikers (dus exclude alle jarigen).
+    Tekst is correct voor 1, 2 of meerdere jarigen.
     """
-    # Maak een samengevoegde string van de namen van de jarigen
-    if len(birthday_names) > 1:
-        birthday_message = ", ".join(birthday_names[:-1]) + " en " + birthday_names[-1]
-    else:
-        birthday_message = birthday_names[0]
+    if not birthday_names:
+        return
+
+    names_str = human_join(birthday_names)
+    verb = is_zijn(birthday_names)
 
     payload = {
-        "title": f"Hoera! {birthday_message} zijn vandaag jarig!",
-        "body": message_body,
+        "title": f"Hoera! {names_str} {verb} vandaag jarig! 🎉",
+        "body": "Vergeet niet even te feliciteren 👏",
         "url": "/agenda/",
-        "tag": f"birthday-update-{user_id}-others",
+        # tag per dag zodat browsers dezelfde notificatie kunnen dedupen
+        "tag": f"birthday-others-{timezone.localdate().isoformat()}",
     }
 
-    # Alle subscriptions voor de organisatie behalve de jarige zelf
-    subs = PushSubscription.objects.select_related("user").exclude(user_id=user_id)
+    subs = PushSubscription.objects.select_related("user").exclude(user_id__in=birthday_user_ids)
 
     for s in subs:
         claims = _build_vapid_claims(s.endpoint)
-
         try:
             webpush(
                 subscription_info={
