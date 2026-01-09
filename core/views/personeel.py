@@ -8,7 +8,7 @@ from django.http import HttpResponseForbidden
 @login_required
 def personeel_tiles(request):
 
-    if not can(request.user, "can_view_onboarding"):
+    if not can(request.user, "can_view_personeel"):
         return HttpResponseForbidden("Je hebt geen toegang tot deze pagina.")
 
     tiles = build_tiles(request.user, group="personeel")

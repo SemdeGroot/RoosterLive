@@ -297,3 +297,33 @@ def send_user_shifts_changed_push(
             status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
             if status in (404, 410, 403):
                 s.delete()
+
+def send_uren_reminder_push(user_id, reminder_date):
+    """
+    Stuur een push naar de gebruiker 2 of 1 dag voor de deadline van het doorgeven van uren.
+    """
+    payload = {
+        "title": "Herinnering: Uren doorgeven",
+        "body": f"Herinnering: Je hebt nog geen uren doorgegeven voor {reminder_date.strftime('%B %Y')}. Vergeet dit niet in te dienen.",
+        "url": "/uren-doorgeven/",
+        "tag": f"uren-reminder-{reminder_date.year}-{reminder_date.month}",
+    }
+
+    # Alleen subscriptions van deze user
+    subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
+    for s in subs:
+        claims = _build_vapid_claims(s.endpoint)
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+            if status in (404, 410, 403):
+                s.delete()

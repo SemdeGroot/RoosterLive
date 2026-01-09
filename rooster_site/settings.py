@@ -200,6 +200,16 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=0, hour=7, day_of_month="11"),
         "options": {"queue": "default"},
     },
+    "send_uren_reminder_8th": {
+        "task": "core.tasks.beat.uren.send_uren_reminder",
+        "schedule": crontab(minute=0, hour=9, day_of_month="8"),
+        "options": {"queue": "default"},
+    },
+    "send_uren_reminder_9th": {
+        "task": "core.tasks.beat.uren.send_uren_reminder",
+        "schedule": crontab(minute=0, hour=9, day_of_month="9"),
+        "options": {"queue": "default"},
+    },
 }
 
 # === Auth / Passwords ===
