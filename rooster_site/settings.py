@@ -210,6 +210,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=0, hour=9, day_of_month="9"),
         "options": {"queue": "default"},
     },
+    "send_birthday_reminder_0730": {
+        "task": "core.tasks.beat.birthday.send_birthday_reminder",
+        "schedule": crontab(minute=30, hour=7),
+        "options": {"queue": "default"},
+    },
 }
 
 # === Auth / Passwords ===

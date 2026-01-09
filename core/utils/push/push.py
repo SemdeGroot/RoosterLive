@@ -184,7 +184,7 @@ def send_laatste_pot_push(item_naam: str):
     payload = {
         "title": "Laatste pot aangebroken!",
         "body": f"Middel: {item_naam}. Controleer of er besteld moet worden.",
-        "url": "/laatste-potten/",
+        "url": "/baxter/laatste-potten/",
         "tag": "laatste-pot-update",
     }
 
@@ -313,6 +313,77 @@ def send_uren_reminder_push(user_id, reminder_date):
     subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
     for s in subs:
         claims = _build_vapid_claims(s.endpoint)
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+            if status in (404, 410, 403):
+                s.delete()
+
+def send_birthday_push_for_user(user_id, birthday_name):
+    """
+    Stuur een pushmelding naar de jarige gebruiker.
+    """
+    payload = {
+        "title": f"Gefeliciteerd!",
+        "body": f"Beste {birthday_name}, gefeliciteerd met je verjaardag!",
+        "url": "/agenda/",
+        "tag": f"birthday-update-{user_id}-user",
+    }
+
+    # Haal de pushsubscriptions van de jarige gebruiker zelf
+    subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
+
+    for s in subs:
+        claims = _build_vapid_claims(s.endpoint)
+
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": s.endpoint,
+                    "keys": {"p256dh": s.p256dh, "auth": s.auth},
+                },
+                data=json.dumps(payload),
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims=claims,
+            )
+        except WebPushException as e:
+            status = getattr(e, "response", None).status_code if getattr(e, "response", None) else None
+            if status in (404, 410, 403):
+                s.delete()
+
+def send_birthday_push_for_others(user_id, birthday_names, message_body):
+    """
+    Stuur een pushmelding naar alle andere gebruikers die de verjaardag van iemand vieren.
+    Dit moet een lijst van namen bevatten als er meerdere mensen jarig zijn.
+    """
+    # Maak een samengevoegde string van de namen van de jarigen
+    if len(birthday_names) > 1:
+        birthday_message = ", ".join(birthday_names[:-1]) + " en " + birthday_names[-1]
+    else:
+        birthday_message = birthday_names[0]
+
+    payload = {
+        "title": f"Hoera! {birthday_message} zijn vandaag jarig!",
+        "body": message_body,
+        "url": "/agenda/",
+        "tag": f"birthday-update-{user_id}-others",
+    }
+
+    # Alle subscriptions voor de organisatie behalve de jarige zelf
+    subs = PushSubscription.objects.select_related("user").exclude(user_id=user_id)
+
+    for s in subs:
+        claims = _build_vapid_claims(s.endpoint)
+
         try:
             webpush(
                 subscription_info={
