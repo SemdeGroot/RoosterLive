@@ -1,3 +1,21 @@
+// ==========================================
+// Herstel Focus na service worker notificatie
+// ==========================================
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'restoreFocus') {
+            // Wacht een kort moment voordat je de focus instelt
+            setTimeout(() => {
+                // Zoek het eerste invoerveld en geef de focus
+                const inputField = document.querySelector('input, textarea, select');
+                if (inputField) {
+                    inputField.focus();
+                }
+            }, 100); // Wacht 100ms voor het opnieuw proberen
+        }
+    });
+}
+
 // ---------- WEB PUSH INIT (mobiel + modaal) ----------
 const VAPID =
   (window.PWA && window.PWA.VAPID_PUBLIC_KEY) ||
@@ -61,7 +79,7 @@ const VAPID =
   async function registerSW() {
     try {
       // register() is idempotent; we keep it here so silentPushSync can always rely on ready()
-      await navigator.serviceWorker.register('/service_worker.v19.js');
+      await navigator.serviceWorker.register('/service_worker.v20.js');
       return await navigator.serviceWorker.ready;
     } catch (e) {
       console.warn('[push] SW ready-check faalde:', e);
@@ -320,7 +338,7 @@ if ('serviceWorker' in navigator) {
         const reg = await (async () => {
           const r = await navigator.serviceWorker.getRegistration();
           if (r) return r;
-          await navigator.serviceWorker.register('/service_worker.v19.js');
+          await navigator.serviceWorker.register('/service_worker.v20.js');
           return await navigator.serviceWorker.getRegistration();
         })();
 

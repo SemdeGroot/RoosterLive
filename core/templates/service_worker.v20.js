@@ -301,10 +301,29 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      let focusedClient = null;
+
+      // Zoek naar de juiste client die focus kan krijgen
       for (const client of clientList) {
-        if ('focus' in client) return client.focus();
+        if ('focus' in client && client.url.includes(targetUrl)) {
+          focusedClient = client;
+          break;
+        }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+
+      if (focusedClient) {
+        // Zorg ervoor dat de focus terug gaat naar de juiste client
+        focusedClient.focus();
+        
+        // Verstuur een bericht naar de client om de focus naar het invoerveld te sturen
+        focusedClient.postMessage({ type: 'restoreFocus' });
+        return focusedClient.focus();
+      } else {
+        // Als geen client de focus kan krijgen, open dan een nieuw venster
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+      }
     })
   );
 });
