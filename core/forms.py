@@ -105,6 +105,14 @@ class SimpleUserCreateForm(forms.Form):
         empty_label="----------",
     )
 
+    function = forms.ModelChoiceField(
+        label="Functie",
+        queryset=Function.objects.all().order_by("ranking", "title"),
+        required=False,
+        empty_label="----------",
+        widget=forms.Select(attrs={"class": "admin-select"}),
+    )
+
     def clean_first_name(self):
         first = (self.cleaned_data.get("first_name") or "").strip().lower()
         if not first:
@@ -169,6 +177,14 @@ class SimpleUserEditForm(forms.Form):
         widget=forms.Select(attrs={"class": "admin-select js-dienstverband"}),
     )
 
+    function = forms.ModelChoiceField(
+        label="Functie",
+        queryset=Function.objects.all().order_by("ranking", "title"),
+        required=False,
+        empty_label="----------",
+        widget=forms.Select(attrs={"class": "admin-select"}),
+    )
+
     # werkblokken (ma-vr, ochtend/middag)
     work_mon_am = forms.BooleanField(required=False)
     work_mon_pm = forms.BooleanField(required=False)
@@ -209,6 +225,9 @@ class SimpleUserEditForm(forms.Form):
                 self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
             if profile.organization:
                 self.fields["organization"].initial = profile.organization.id
+
+            if profile.function_id:
+                self.fields["function"].initial = profile.function_id
 
             for f in WORK_FIELDS:
                 self.fields[f].initial = getattr(profile, f, False)
@@ -254,6 +273,7 @@ class SimpleUserEditForm(forms.Form):
         organization = self.cleaned_data.get("organization")
 
         dienstverband = self.cleaned_data.get("dienstverband")
+        function = self.cleaned_data.get("function")
 
         if self.instance:
             u = self.instance
@@ -277,6 +297,7 @@ class SimpleUserEditForm(forms.Form):
         profile.birth_date = birth_date
         profile.organization = organization
         profile.dienstverband = dienstverband
+        profile.function = function
 
         if dienstverband == UserProfile.Dienstverband.OPROEP:
             profile.clear_workdays()

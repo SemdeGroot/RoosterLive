@@ -88,11 +88,10 @@
           {{ user_form.birth_date.label_tag }} {{ user_form.birth_date }}
           {{ user_form.group.label_tag }} {{ user_form.group }}
           {{ user_form.organization.label_tag }} {{ user_form.organization }}
-
-          {# ✅ nieuw #}
+          {{ user_form.function.label_tag }} {{ user_form.function }}
           {{ user_form.dienstverband.label_tag }} {{ user_form.dienstverband }}
 
-          {# ✅ rooster (alleen zichtbaar bij vast) #}
+          {# rooster (alleen zichtbaar bij vast) #}
           <div class="availability-block js-availability-block">
             <div class="availability-title">Vaste werkdagen</div>
 
@@ -143,7 +142,8 @@
                 <th>Voornaam</th>
                 <th>Achternaam</th>
                 <th>Organisatie</th>
-                <th>Groep</th>
+                <th>Functie</th>
+                <th>Permissie groep</th>
                 <th>Dienstverband</th> {# ✅ nieuw #}
                 <th>Acties</th>
               </tr>
@@ -169,12 +169,19 @@
                 </td>
 
                 <td>
+                  {% if u.profile and u.profile.function %}
+                    {{ u.profile.function.title }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+
+                <td>
                   {% with g=u.groups.all|first %}
                     {{ g.name|default:"-" }}
                   {% endwith %}
                 </td>
 
-                {# ✅ dienstverband tonen #}
                 <td>
                   {% if u.profile %}
                     {% if u.profile.dienstverband == "vast" %}Vast contract{% else %}Oproeper{% endif %}
@@ -221,7 +228,7 @@
               </tr>
 
               <tr id="edit-row-{{ u.id }}" class="edit-row" style="display:none;">
-                <td colspan="7"> {# ✅ was 6 #}
+                <td colspan="8">
                   <div class="edit-wrap">
                     <form method="post" action="{% url 'user_update' u.id %}">
                       {% csrf_token %}
@@ -250,7 +257,7 @@
                         </div>
 
                         <div>
-                          <label>Groep:</label>
+                          <label>Permissie groep:</label>
                           <select name="group" class="admin-select" style="margin-top:6px;">
                             {% with g=u.groups.all|first %}
                               {% for grp in groups %}
@@ -277,7 +284,18 @@
                           </select>
                         </div>
 
-                        {# ✅ nieuw: dienstverband #}
+                        <div>
+                          <label>Functie:</label>
+                          <select name="function" class="admin-select" style="margin-top:6px;">
+                            <option value="">----------</option>
+                            {% for fn in functions %}
+                              <option value="{{ fn.id }}" {% if u.profile and u.profile.function_id == fn.id %}selected{% endif %}>
+                                {{ fn.title }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+
                         <div>
                           <label>Dienstverband:</label>
                           <select name="dienstverband" class="admin-select js-dienstverband" style="margin-top:6px;">

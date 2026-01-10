@@ -89,15 +89,16 @@
    De echte table styling komt uit table.css (crud-table)
 ------------------------------------------------------- */
 
-/* USERS: 7 kolommen */
+/* USERS: 8 kolommen */
 table.user-table{
   --c1:70px;   /* Actief */
   --c2:120px;  /* Voornaam */
   --c3:120px;  /* Achternaam */
   --c4:160px;  /* Organisatie */
-  --c5:140px;  /* Groep */
+  --c5:160px;  /* Functies */
   --c6:140px;  /* Dienstverband */
-  --c7:120px;  /* Acties */
+  --c7:140px;  /* Groep */
+  --c8:120px;  /* Acties */
 }
 table.user-table th:nth-child(1),
 table.user-table td:nth-child(1){ text-align:center; }
@@ -163,7 +164,7 @@ table.afdeling-table {
 @media (max-width: 900px) {
   /* USERS: 70 + 120 + 120 + 160 + 140 + 140 + 120 = 870 */
   table.user-table {
-    min-width: 900px;
+    min-width: 1050px;
   }
 
   /* GROUPS: 180 + 200 + 90 + 120 = 590 */

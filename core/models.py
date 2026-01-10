@@ -350,7 +350,7 @@ class Function(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.title} (#{self.ranking})"
+        return self.title
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")
@@ -501,6 +501,15 @@ class UserProfile(models.Model):
     avatar = models.ImageField("Profielfoto", upload_to="avatars/", null=True, blank=True)
     avatar_hash = models.CharField(max_length=16, blank=True, default="", db_index=True)
     avatar_updated_at = models.DateTimeField(null=True, blank=True)
+
+    # === Functies ===
+    function = models.ForeignKey(
+    "core.Function",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="profiles",
+    )
 
     def clear_workdays(self):
         for f in (

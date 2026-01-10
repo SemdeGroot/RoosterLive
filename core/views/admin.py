@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
+from django.db.models import F
 
 from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm, FunctionForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
@@ -91,9 +92,14 @@ def admin_users(request):
     users = (
         User.objects
         .all()
-        .select_related("profile")
+        .select_related("profile", "profile__organization", "profile__function")
         .prefetch_related("groups")
-        .order_by("username")
+            .order_by(
+        F("profile__function__ranking").asc(nulls_last=True),
+        "profile__function__title",
+        "first_name",
+        "last_name",
+    )
     )
 
     # filter de kiosk login gebruiker weg:
@@ -106,12 +112,14 @@ def admin_users(request):
 
     groups = Group.objects.all().order_by("name")
     organizations = Organization.objects.all().order_by("name")
+    functions = Function.objects.all().order_by("ranking", "title")
 
     return render(request, "admin/users.html", {
         "users": users,
         "user_form": user_form,          # create-form in template
         "groups": groups,                # voor edit-row select
         "organizations": organizations,  # voor edit-row select
+        "functions": functions,
         "can_manage": can_manage,
     })
 
