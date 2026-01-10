@@ -49,6 +49,7 @@ from core.views.passkeys import (
     passkey_should_offer,
     passkey_skip,
 )
+from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen
 
 urlpatterns = [
     path("", home, name="home"),
@@ -167,6 +168,9 @@ urlpatterns = [
     path("profiel/", profiel_index, name="profiel"),
     path("profiel/avatar/upload/", avatar_upload, name="profiel_avatar_upload"),
     path("profiel/avatar/remove/", avatar_remove, name="profiel_avatar_remove"),
+    # Bezorgers
+    path("bezorgers/", bezorgers_tiles, name="bezorgers_tiles"),
+    path("bezorgers/bakken-bezorgen", bakkenbezorgen, name="bakkenbezorgen"),
     # Beheer Dashboard / Landing
     path("beheer/", admin_dashboard, name="beheer_tiles"),
     # De beheer paginas

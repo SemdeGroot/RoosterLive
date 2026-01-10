@@ -12,6 +12,7 @@ TILE_GROUPS = {
         {"name": "Baxterproductie", "img": "factory.svg", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
         {"name": "Openbare Apo",    "img": "openbareapo.svg", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
         {"name": "Instellingsapotheek", "img": "instellingsapotheek.svg", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
+        {"name": "Bezorgers", "img": "delivery.svg", "url_name": "bezorgers_tiles", "perm": "can_view_bezorgers"},
         {"name": "Profiel", "img": "profile.svg", "url_name": "profiel", "perm": "can_access_profiel"},
         {"name": "Beheer", "img": "beheer.svg", "url_name": "beheer_tiles", "perm": "can_access_admin"},
     ],
@@ -58,6 +59,12 @@ TILE_GROUPS = {
         {"name": "Portavita Check", "img": "portavita.svg",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
+    ],
+
+    "bezorgers": [
+        # Deze verwijst ook naar de dashboard view
+        {"name": "Bakken bezorgen", "img": "delivery-completed.svg",
+         "url_name": "bakkenbezorgen", "perm": "can_view_bakkenbezorgen"},
     ],
 
     # De subtiles voor Medicatiebeoordeling

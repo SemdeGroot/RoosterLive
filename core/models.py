@@ -146,6 +146,9 @@ class Roster(models.Model):
             # Portavita Check
             ("can_view_portavita", "Mag Portavita Check bekijken"),
             ("can_edit_portavita", "Mag Portavita Check bewerken"),
+            # Bezorgers
+            ("can_view_bezorgers",    "Mag Bezorgers openen"),
+            ("can_view_bakkenbezorgen",    "Mag bakken bezorgen"),
 
         ]
     def __str__(self):
