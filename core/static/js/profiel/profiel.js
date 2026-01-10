@@ -20,7 +20,7 @@
   });
   document.addEventListener("DOMContentLoaded", syncChildBlocks);
 
-  // ===== FLASH (client-side, zelfde styling als jouw base.css) =====
+  // ===== FLASH =====
   function showFlash(level, text) {
     const container = document.querySelector(".content") || document.body;
     if (!container) return;
@@ -43,10 +43,22 @@
     return el ? el.value : "";
   }
 
-  // ===== helpers =====
   function toBlobAsync(canvas, type, quality) {
     return new Promise((resolve) => {
       canvas.toBlob((b) => resolve(b), type, quality);
+    });
+  }
+
+  function waitFor(fn, timeoutMs = 4000) {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      (function tick() {
+        let ok = false;
+        try { ok = !!fn(); } catch (_) { ok = false; }
+        if (ok) return resolve(true);
+        if (Date.now() - start > timeoutMs) return reject(new Error("timeout"));
+        setTimeout(tick, 30);
+      })();
     });
   }
 
@@ -62,8 +74,14 @@
   const avatarPreview = $("avatarPreview");
 
   let cropper = null;
-  let originalFile = null;
   let uploading = false;
+  let cropperReady = false;
+
+  function setSaveState(enabled, label) {
+    if (!saveCroppedBtn) return;
+    saveCroppedBtn.disabled = !enabled;
+    if (label) saveCroppedBtn.textContent = label;
+  }
 
   function openModal() {
     if (!cropModal) return;
@@ -71,65 +89,88 @@
   }
 
   function destroyCropper() {
+    cropperReady = false;
     if (cropper) {
-      cropper.destroy();
+      try { cropper.destroy(); } catch (_) {}
       cropper = null;
     }
   }
 
   function resetFileInput() {
     if (!avatarInput) return;
-    avatarInput.value = ""; // belangrijk: zodat dezelfde file opnieuw gekozen kan worden
-    originalFile = null;
+    avatarInput.value = "";
     if (avatarFilename) avatarFilename.textContent = "";
   }
 
   function closeModal({ resetFile = false } = {}) {
     if (cropModal) cropModal.style.display = "none";
+    document.body.style.overflow = ""; // Herstel scroll
     destroyCropper();
     if (resetFile) resetFileInput();
+    setSaveState(true, "Opslaan");
   }
 
-  function startCropperFromFile(file) {
+  async function startCropperFromFile(file) {
     if (!file || !cropImage) return;
 
-    if (avatarFilename) avatarFilename.textContent = file.name;
-
+    setSaveState(false, "Laden…");
     destroyCropper();
+    
+    if (avatarFilename) avatarFilename.textContent = file.name || "";
+
+    // 1. Toon de modal direct (nodig voor berekening)
+    cropModal.style.display = "flex";
+    // Voorkom scrollen van de achtergrond (body)
+    document.body.style.overflow = "hidden";
+
+    // 2. Wacht op Cropper library
+    try {
+      await waitFor(() => typeof window.Cropper === "function", 5000);
+    } catch (_) {
+      showFlash("error", "Fout: Cropper library niet geladen.");
+      closeModal({ resetFile: true });
+      return;
+    }
 
     const url = URL.createObjectURL(file);
 
-    // iOS/mobile race fix: load handler eerst, dan src
-    const onLoad = () => {
-      URL.revokeObjectURL(url);
+    // 3. Gebruik een Image object om te pre-loaden (Safari stabieler)
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      cropImage.src = url;
 
-      // 1 frame wachten zodat modal/layout klopt op mobile
+      // Forceer layout frame
       requestAnimationFrame(() => {
-        destroyCropper();
-        cropper = new Cropper(cropImage, {
-          aspectRatio: 1,
-          viewMode: 1,
-          autoCropArea: 1,
-          dragMode: "move",
-          background: false,
-          responsive: true,
-          checkOrientation: false,
-        });
+        setTimeout(() => {
+          try {
+            cropper = new window.Cropper(cropImage, {
+              aspectRatio: 1,
+              viewMode: 1,
+              dragMode: 'move',
+              autoCropArea: 1,
+              checkOrientation: true, // Cruciaal voor iPhone foto's!
+              background: false,
+              responsive: true,
+              ready() {
+                cropperReady = true;
+                setSaveState(true, "Opslaan");
+              }
+            });
+          } catch (e) {
+            console.error(e);
+            showFlash("error", "Cropper kon niet starten.");
+          }
+        }, 100);
       });
     };
-
-    cropImage.addEventListener("load", onLoad, { once: true });
-
-    openModal();
-    cropImage.src = url;
+    tempImg.src = url;
   }
-
-  // zodra file gekozen is → meteen crop modal
+  // Event Listeners voor de Input en Modal buttons
   if (avatarInput) {
     avatarInput.addEventListener("change", () => {
-      originalFile = avatarInput.files && avatarInput.files[0] ? avatarInput.files[0] : null;
-      if (!originalFile) return;
-      startCropperFromFile(originalFile);
+      const file = avatarInput.files && avatarInput.files[0] ? avatarInput.files[0] : null;
+      if (!file) return;
+      startCropperFromFile(file);
     });
   }
 
@@ -139,18 +180,29 @@
   if (saveCroppedBtn) {
     saveCroppedBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      if (uploading) return;
 
-      if (!cropper || uploading) return;
+      if (!cropper || !cropperReady) {
+        showFlash("error", "De cropper is nog niet klaar.");
+        return;
+      }
 
-      const canvas = cropper.getCroppedCanvas({ width: 512, height: 512 });
-      if (!canvas) return;
+      let canvas = null;
+      try {
+        canvas = cropper.getCroppedCanvas({ width: 512, height: 512 });
+      } catch (_) {
+        canvas = null;
+      }
+
+      if (!canvas) {
+        showFlash("error", "Kon uitsnede niet maken. Controleer of de foto niet te groot is.");
+        return;
+      }
 
       uploading = true;
-      saveCroppedBtn.disabled = true;
-      saveCroppedBtn.textContent = "Bezig…";
+      setSaveState(false, "Bezig…");
 
       try {
-        // WebP werkt niet overal op iOS → fallback naar JPEG/PNG
         let blob = await toBlobAsync(canvas, "image/webp", 0.90);
         let filename = "avatar.webp";
 
@@ -158,42 +210,46 @@
           blob = await toBlobAsync(canvas, "image/jpeg", 0.92);
           filename = "avatar.jpg";
         }
-        if (!blob) {
-          blob = await toBlobAsync(canvas, "image/png", 1.0);
-          filename = "avatar.png";
-        }
-        if (!blob) throw new Error("Kon geen afbeelding maken (browser beperking).");
+        
+        if (!blob) throw new Error("Kon geen afbeelding maken.");
 
         const fd = new FormData();
-        fd.append("avatar", blob, filename);
+          fd.append("avatar", blob, filename);
 
-        const res = await fetch("/profiel/avatar/upload/", {
-          method: "POST",
-          headers: { "X-CSRFToken": getCSRFToken() },
-          body: fd,
-        });
+          const res = await fetch("/profiel/avatar/upload/", {
+            method: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() },
+            body: fd,
+          });
 
-        const data = await res.json().catch(() => ({}));
+          // Probeer ALTIJD de JSON te parsen, ook bij status 400/500
+          const data = await res.json().catch(() => ({}));
 
-        if (!res.ok) {
-          if (data?.flash?.text) showFlash(data.flash.level || "error", data.flash.text);
-          throw new Error(data?.error || "Upload mislukt.");
+          if (!res.ok) {
+            // Check of de server een specifieke flash melding heeft gestuurd (zoals Rekognition)
+            if (data.flash && data.flash.text) {
+              showFlash(data.flash.level || "error", data.flash.text);
+            } else {
+              showFlash("error", data.error || "Er ging iets mis bij het uploaden.");
+            }
+            // BELANGRIJK: stop hier, want res.ok is false
+            uploading = false;
+            setSaveState(true, "Opslaan");
+            return; 
+          }
+
+          // Succes geval
+          if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
+          showFlash("success", "Profielfoto opgeslagen.");
+          closeModal({ resetFile: true });
+
+        } catch (err) {
+          console.error(err);
+          showFlash("error", "Netwerkfout of server onbereikbaar.");
+        } finally {
+          uploading = false;
+          setSaveState(true, "Opslaan");
         }
-
-        if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
-        if (removeAvatarBtn) removeAvatarBtn.disabled = false;
-
-        if (data?.flash?.text) showFlash(data.flash.level || "success", data.flash.text);
-        else showFlash("success", "Profielfoto opgeslagen.");
-
-        closeModal({ resetFile: true });
-      } catch (err) {
-        showFlash("error", err?.message || "Upload mislukt.");
-      } finally {
-        uploading = false;
-        saveCroppedBtn.disabled = false;
-        saveCroppedBtn.textContent = "Opslaan";
-      }
     });
   }
 
@@ -209,16 +265,11 @@
         });
 
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          if (data?.flash?.text) showFlash(data.flash.level || "error", data.flash.text);
-          throw new Error(data?.error || "Verwijderen mislukt.");
-        }
+        if (!res.ok) throw new Error(data?.error || "Verwijderen mislukt.");
 
         if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
         removeAvatarBtn.disabled = true;
-
-        if (data?.flash?.text) showFlash(data.flash.level || "success", data.flash.text);
-        else showFlash("success", "Profielfoto verwijderd.");
+        showFlash("success", "Profielfoto verwijderd.");
       } catch (err) {
         showFlash("error", err?.message || "Verwijderen mislukt.");
       }

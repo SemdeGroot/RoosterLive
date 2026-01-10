@@ -140,8 +140,6 @@ def profiel_index(request):
         "prefs_form": form,
     })
 
-# core/views/profiel.py (alleen de return JsonResponses aanpassen)
-
 @login_required
 def avatar_upload(request):
     if request.method != "POST":

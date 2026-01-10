@@ -5,10 +5,9 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/profiel/profiel.css' %}">
-  <script src="{% static 'js/profiel/profiel.js' %}" defer></script>
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
+  <script src="{% static 'js/profiel/profiel.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -20,7 +19,7 @@
         <img src="{% static 'img/profile.svg' %}" alt="" class="birthday-icon">
         <div class="birthday-header-text">
           <h2>Jouw profiel</h2>
-          <p>Profielfoto en notificatievoorkeuren.</p>
+          <p>Bekijk en beheer hier jouw profielfoto, gegevens en notificatie permissies.</p>
         </div>
       </div>
 
@@ -188,7 +187,7 @@
   <div class="modal-inner">
     <div class="modal-head">
       <h3 style="margin:0;">Foto bijsnijden</h3>
-      <button type="button" class="icon-btn" id="closeCropModal" aria-label="Sluiten">✕</button>
+      <button type="button" class="icon-btn btn-danger" id="closeCropModal" aria-label="Sluiten">✕</button>
     </div>
 
     <div class="crop-wrap">

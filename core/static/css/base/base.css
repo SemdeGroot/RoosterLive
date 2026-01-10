@@ -786,3 +786,8 @@ textarea.form-input::placeholder{
   margin-bottom: 20px;
   margin-top: 5px;
 }
+
+.cropper-container * {
+  box-shadow: none !important; /* optioneel, maar wees voorzichtig met !important in base.css */
+  outline: initial !important; 
+}
