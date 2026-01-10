@@ -385,8 +385,8 @@ def send_birthday_push_for_others(birthday_user_ids: list[int], birthday_names: 
     verb = is_zijn(birthday_names)
 
     payload = {
-        "title": f"Hoera! {names_str} {verb} vandaag jarig! 🎉",
-        "body": "Vergeet niet even te feliciteren 👏",
+        "title": "Vandaag jarig 🎉",
+        "body": f"Hoera! {names_str} {verb} vandaag jarig!",
         "url": "/agenda/",
         # tag per dag zodat browsers dezelfde notificatie kunnen dedupen
         "tag": f"birthday-others-{timezone.localdate().isoformat()}",

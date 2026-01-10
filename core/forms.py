@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences
 
 UserModel = get_user_model()
 
@@ -292,6 +292,23 @@ class SimpleUserEditForm(forms.Form):
             u.groups.add(group)
 
         return u
+    
+class NotificationPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = NotificationPreferences
+        fields = [
+            "push_enabled",
+            "push_new_roster",
+            "push_new_agenda",
+            "push_news_upload",
+            "push_dienst_changed",
+            "push_birthday_self",
+            "push_birthday_apojansen",
+            "push_uren_reminder",
+            "email_enabled",
+            "email_birthday_self",
+            "email_uren_reminder",
+        ]
     
 class OrganizationEditForm(forms.Form):
     ORG_TYPE_CHOICES = [

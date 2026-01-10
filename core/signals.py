@@ -7,10 +7,31 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from core.models import Shift, Task, Location, UserProfile, AgendaItem
+from core.models import Shift, Task, Location, UserProfile, AgendaItem, NotificationPreferences
 from core.permissions_cache import bump_perm_version, delete_permset, get_cached_permset
 
 User = get_user_model()
+
+# === Notification init ===
+@receiver(post_save, sender=UserProfile, dispatch_uid="core.ensure_notif_prefs")
+def ensure_notif_prefs(sender, instance: UserProfile, **kwargs):
+    NotificationPreferences.objects.get_or_create(
+        profile=instance,
+        defaults={
+            "push_enabled": True,
+            "push_new_roster": True,
+            "push_new_agenda": True,
+            "push_news_upload": True,
+            "push_dienst_changed": True,
+            "push_birthday_self": True,
+            "push_birthday_apojansen": True,
+            "push_uren_reminder": True,
+
+            "email_enabled": True,
+            "email_birthday_self": True,
+            "email_uren_reminder": True,
+        },
+    )
 
 # === Birthday caching ===
 

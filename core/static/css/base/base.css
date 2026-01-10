@@ -186,6 +186,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   align-items:center;
   justify-content:center;
   transition: background .2s ease, border-color .2s ease;
+  font-weight:600;
 }
 
 .btn:hover{
@@ -216,7 +217,6 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   background-color:var(--accent) !important;
   border-color:var(--accent) !important;
   color:var(--text-button) !important;
-  font-weight:600;
 }
 .btn-save:hover{ background-color:var(--button-hover-blue) !important; }
 

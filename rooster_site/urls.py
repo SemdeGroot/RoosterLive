@@ -38,7 +38,7 @@ path(
 ),
 ]
 
-# Static alleen in DEBUG via Django (prod doet static via WhiteNoise)
+# Static alleen in DEBUG via Django (prod doet static via S3)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += [

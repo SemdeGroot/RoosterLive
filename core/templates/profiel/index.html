@@ -1,14 +1,151 @@
 {% extends "base.html" %}
-{% load static %}
-
+{% load static role_tags %}
 {% block title %}Profiel{% endblock %}
 {% block header_title %}Profiel{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/profiel/profiel.css' %}">
+  <script src="{% static 'js/profiel/profiel.js' %}" defer></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js" defer></script>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Profiel</h3>
-  <p>
-    Hier komt later de inhoud voor <strong>Profiel bijwerken</strong>. Bijvoorbeeld om een profielfoto toe te voegen of mailadres aan te passen.
-  </p>
+<div class="admin-wrap">
+  <div class="card">
+    <div class="card-inner">
+
+      <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/profile.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+          <h2>Jouw profiel</h2>
+          <p>Profielfoto en notificatievoorkeuren.</p>
+        </div>
+      </div>
+
+      <section class="profile-section">
+        <h3 style="margin-top:16px !important;">Profielfoto</h3>
+
+        <div class="avatar-row">
+          <div class="avatar-preview-wrap">
+            <img
+              id="avatarPreview"
+              class="avatar-preview {% if profile.avatar %}has-avatar{% endif %}"
+              src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}{% static 'img/user.svg' %}{% endif %}"
+              alt="Profielfoto preview">
+          </div>
+
+          <div class="avatar-actions">
+            <input
+              id="avatarInput"
+              name="avatar"
+              type="file"
+              accept="image/*"
+              class="file-hidden"
+            >
+
+            <span id="avatarFilename" class="muted"></span>
+
+            <p class="muted" style="margin:10px 0 0;">
+              (Optioneel) Wijzig hier je profielfoto. Deze is zichtbaar voor de rest van de medewerkers.
+            </p>
+
+            <div class="actions-wrap horizontal avatar-btn-row" style="margin-top:10px;">
+              <label for="avatarInput" class="btn btn-save">
+                Profielfoto wijzigen…
+              </label>
+
+              <button
+                class="btn btn-danger"
+                type="button"
+                id="removeAvatarBtn"
+                {% if not profile.avatar %}disabled{% endif %}>
+                Verwijderen
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <hr class="crud-divider">
+
+      <section class="profile-section">
+        <h3 style="margin-top:20px;">Notificaties</h3>
+
+        <form method="post" autocomplete="off" class="form form-sticky-actions" style="padding:0;">
+          {% csrf_token %}
+          <input type="hidden" name="form_kind" value="prefs">
+
+          <div class="notif-block">
+            <div class="notif-header">
+              <h4 style="margin:0;">Push meldingen</h4>
+              <div class="switch-row">
+                <span class="muted">Push meldingen ontvangen</span>
+                <label class="switch">
+                  <input type="checkbox" name="push_enabled" id="id_push_enabled" {% if prefs.push_enabled %}checked{% endif %}>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="notif-grid" data-child-of="id_push_enabled">
+              {% include "profiel/_switch.html" with id="id_push_new_agenda" name="push_new_agenda" label="Push melding bij nieuw agenda item" checked=prefs.push_new_agenda %}
+              {% include "profiel/_switch.html" with id="id_push_news_upload" name="push_news_upload" label="Push melding bij nieuwtje" checked=prefs.push_news_upload %}
+              {% include "profiel/_switch.html" with id="id_push_new_roster" name="push_new_roster" label="Push melding bij nieuw algemeen rooster" checked=prefs.push_new_roster %}
+              {% include "profiel/_switch.html" with id="id_push_dienst_changed" name="push_dienst_changed" label="Push melding bij aanpassen individuele diensten" checked=prefs.push_dienst_changed %}
+              {% include "profiel/_switch.html" with id="id_push_birthday_self" name="push_birthday_self" label="Push melding als jij jarig bent" checked=prefs.push_birthday_self %}
+              {% include "profiel/_switch.html" with id="id_push_birthday_apojansen" name="push_birthday_apojansen" label="Push melding als iemand van Apotheek Jansen jarig is" checked=prefs.push_birthday_apojansen %}
+              {% include "profiel/_switch.html" with id="id_push_uren_reminder" name="push_uren_reminder" label="Push reminder als je je uren nog niet hebt doorgegeven (voor oproepers met gewerkte shifts)" checked=prefs.push_uren_reminder %}
+            </div>
+          </div>
+
+          <div class="notif-block" style="margin-top:14px;">
+            <div class="notif-header">
+              <h4 style="margin:0;">Email meldingen</h4>
+              <div class="switch-row">
+                <span class="muted">Email meldingen ontvangen</span>
+                <label class="switch">
+                  <input type="checkbox" name="email_enabled" id="id_email_enabled" {% if prefs.email_enabled %}checked{% endif %}>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="notif-grid" data-child-of="id_email_enabled">
+              {% include "profiel/_switch.html" with id="id_email_birthday_self" name="email_birthday_self" label="Email krijgen als je jarig bent" checked=prefs.email_birthday_self %}
+              {% include "profiel/_switch.html" with id="id_email_uren_reminder" name="email_uren_reminder" label="Email reminder als je je uren nog niet hebt doorgegeven (voor oproepers met gewerkte shifts)" checked=prefs.email_uren_reminder %}
+            </div>
+          </div>
+          <div class="profiel-btn-wrap">
+          <button class="btn btn-save" type="submit" style="margin-top: 14px;" data-haptic>
+            Voorkeuren opslaan
+          </button>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal" id="cropModal" style="display:none;">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <h3 style="margin:0;">Foto bijsnijden</h3>
+      <button type="button" class="icon-btn" id="closeCropModal" aria-label="Sluiten">✕</button>
+    </div>
+
+    <div class="crop-wrap">
+      <img id="cropImage" alt="Crop image">
+    </div>
+
+    <div class="actions-wrap horizontal" style="margin-top:12px; justify-content:flex-end;">
+      <button class="btn btn-danger" type="button" id="cancelCroppedBtn">Annuleren</button>
+      <button class="btn btn-save" type="button" id="saveCroppedBtn" data-haptic>Opslaan</button>
+    </div>
+  </div>
 </div>
 {% endblock %}

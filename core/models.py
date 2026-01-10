@@ -474,6 +474,11 @@ class UserProfile(models.Model):
     work_fri_am = models.BooleanField("Vr ochtend", default=False)
     work_fri_pm = models.BooleanField("Vr middag", default=False)
 
+    # === Profielfoto ===
+    avatar = models.ImageField("Profielfoto", upload_to="avatars/", null=True, blank=True)
+    avatar_hash = models.CharField(max_length=16, blank=True, default="", db_index=True)
+    avatar_updated_at = models.DateTimeField(null=True, blank=True)
+
     def clear_workdays(self):
         for f in (
             "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
@@ -483,6 +488,34 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profiel van {self.user}"
+    
+class NotificationPreferences(models.Model):
+    profile = models.OneToOneField(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="notif_prefs",
+    )
+
+    # === Push (parent + children) ===
+    push_enabled = models.BooleanField(default=True)
+    push_new_roster = models.BooleanField(default=True)
+    push_new_agenda = models.BooleanField(default=True)
+    push_news_upload = models.BooleanField(default=True)
+    push_dienst_changed = models.BooleanField(default=True)
+
+    push_birthday_self = models.BooleanField(default=True)
+    push_birthday_apojansen = models.BooleanField(default=True)
+    push_uren_reminder = models.BooleanField(default=True)
+
+    # === Email (parent + children) ===
+    email_enabled = models.BooleanField(default=True)
+    email_birthday_self = models.BooleanField(default=True)
+    email_uren_reminder = models.BooleanField(default=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notificatievoorkeuren {self.profile.user}"
     
 class AgendaItem(models.Model):
     class Category(models.TextChoices):
@@ -522,7 +555,7 @@ class AgendaItem(models.Model):
 
     def __str__(self):
         return f"{self.get_category_display()}: {self.title} op {self.date}"
-    
+
 class NewsItem(models.Model):
     title = models.CharField(max_length=50)
     short_description = models.CharField(
