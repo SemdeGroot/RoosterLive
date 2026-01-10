@@ -215,6 +215,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=30, hour=7),
         "options": {"queue": "default"},
     },
+    "send_weekly_diensten_overzicht_fri_1900": {
+        "task": "core.tasks.beat.dienstenoverzicht.send_weekly_diensten_overzicht",
+        "schedule": crontab(minute=39, hour=19, day_of_week="sat"),
+        "options": {"queue": "default"},
+    },
 }
 
 # === Auth / Passwords ===
