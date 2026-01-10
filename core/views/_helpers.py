@@ -42,6 +42,7 @@ PERM_LABELS = {
     "can_manage_orgs":              "Mag organisaties beheren",
     "can_manage_tasks":              "Mag taken beheren",
     "can_manage_functies":              "Mag functies beheren",
+    "can_manage_bezorgen":              "Mag bezorgen beheren",
     "can_view_agenda":         "Mag agenda bekijken",
     "can_upload_agenda":       "Mag agenda aanpassen",
     "can_view_roster":         "Mag rooster bekijken",
@@ -102,6 +103,7 @@ PERM_LABELS = {
     # Bezorgers
     "can_view_bezorgers": "Mag Bezorgers pagina openen",
     "can_view_bakkenbezorgen": "Mag bakken bezorgen",
+    "can_view_afleverstatus": "Mag afleverstatus bekijken",
 }
 
 PERM_SECTIONS = [
@@ -126,9 +128,9 @@ PERM_SECTIONS = [
 
     ("Openbare Apotheek", ["can_view_openbare_apo"]),
     ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
-    ("Bezorgers",        ["can_view_bezorgers", "can_view_bakkenbezorgen"]),
+    ("Bezorgers",        ["can_view_bezorgers", "can_view_bakkenbezorgen", "can_view_afleverstatus"]),
     ("Profiel",        ["can_access_profiel"]),
-    ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs", "can_manage_tasks", "can_manage_functies"]),
+    ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs", "can_manage_tasks", "can_manage_functies", "can_manage_bezorgen"]),
 ]
 
 def sync_custom_permissions():

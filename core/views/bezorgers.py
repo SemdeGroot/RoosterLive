@@ -38,3 +38,14 @@ def bakkenbezorgen(request):
     return render(request, "bakkenbezorgen/index.html", {
         "page_title": "Bakken bezorgen",
     })
+
+# === Afleverstatus ===
+
+@login_required
+def afleverstatus(request):
+    if not can(request.user, "can_view_afleverstatus"):
+        return HttpResponseForbidden("Je hebt geen toegang tot deze pagina.")
+
+    return render(request, "afleverstatus/index.html", {
+        "page_title": "Afleverstatus",
+    })

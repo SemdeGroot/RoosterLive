@@ -80,6 +80,7 @@ class Roster(models.Model):
             ("can_manage_orgs",              "Mag organisaties beheren"),
             ("can_manage_tasks",              "Mag taken beheren"),
             ("can_manage_functies",              "Mag functies beheren"),
+            ("can_manage_bezorgen",              "Mag bezorgen beheren"),
             ("can_view_agenda",           "Mag agenda bekijken"),
             ("can_upload_agenda",         "Mag agenda uploaden"),
             ("can_view_roster",           "Mag rooster bekijken"),
@@ -149,6 +150,7 @@ class Roster(models.Model):
             # Bezorgers
             ("can_view_bezorgers",    "Mag Bezorgers openen"),
             ("can_view_bakkenbezorgen",    "Mag bakken bezorgen"),
+            ("can_view_afleverstatus",    "Mag afleverstatus bekijken"),
 
         ]
     def __str__(self):

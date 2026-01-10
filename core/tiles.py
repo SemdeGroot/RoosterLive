@@ -62,9 +62,10 @@ TILE_GROUPS = {
     ],
 
     "bezorgers": [
-        # Deze verwijst ook naar de dashboard view
         {"name": "Bakken bezorgen", "img": "delivery-completed.svg",
          "url_name": "bakkenbezorgen", "perm": "can_view_bakkenbezorgen"},
+        {"name": "Afleverstatus", "img": "bezorgstatus.svg",
+         "url_name": "afleverstatus", "perm": "can_view_afleverstatus"},
     ],
 
     # De subtiles voor Medicatiebeoordeling
@@ -123,6 +124,12 @@ TILE_GROUPS = {
             "name": "Functies", 
             "img": "functies.svg",
             "url_name": "admin_functies", 
+            "perm": "can_access_admin"
+        },
+        {
+            "name": "Bezorgen", 
+            "img": "admin_delivery.svg",
+            "url_name": "admin_bezorgen", 
             "perm": "can_access_admin"
         },
     ],

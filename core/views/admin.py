@@ -736,3 +736,14 @@ def delete_functie(request, pk):
     f.delete()  # echte delete
     messages.success(request, f"Functie '{naam}' verwijderd.")
     return redirect("admin_functies")
+
+# === Bezorgen ===
+
+@login_required
+def admin_bezorgen(request):
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Je hebt geen toegang tot deze pagina.")
+
+    return render(request, "admin/bezorgen.html", {
+        "page_title": "Bezorgen",
+    })

@@ -9,7 +9,7 @@ from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf, email_nazendingen_pdf
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
-from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie
+from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen
 from core.views.profiel import profiel_index, avatar_upload, avatar_remove
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
@@ -49,7 +49,7 @@ from core.views.passkeys import (
     passkey_should_offer,
     passkey_skip,
 )
-from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen
+from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen, afleverstatus
 
 urlpatterns = [
     path("", home, name="home"),
@@ -171,6 +171,7 @@ urlpatterns = [
     # Bezorgers
     path("bezorgers/", bezorgers_tiles, name="bezorgers_tiles"),
     path("bezorgers/bakken-bezorgen", bakkenbezorgen, name="bakkenbezorgen"),
+    path("bezorgers/afleverstatus", afleverstatus, name="afleverstatus"),
     # Beheer Dashboard / Landing
     path("beheer/", admin_dashboard, name="beheer_tiles"),
     # De beheer paginas
@@ -180,6 +181,7 @@ urlpatterns = [
     path("beheer/organisaties/", admin_orgs, name="admin_orgs"),
     path("beheer/taken/", admin_taken, name="admin_taken"),
     path("beheer/functies/", admin_functies, name="admin_functies"),
+    path("beheer/bezorgen/", admin_bezorgen, name="admin_bezorgen"),
     # Acties (Delete/Update)
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
     path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
