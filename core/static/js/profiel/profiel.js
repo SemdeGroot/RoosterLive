@@ -43,6 +43,13 @@
     return el ? el.value : "";
   }
 
+  // ===== helpers =====
+  function toBlobAsync(canvas, type, quality) {
+    return new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b), type, quality);
+    });
+  }
+
   // ===== AVATAR CROP + UPLOAD =====
   const avatarInput = $("avatarInput");
   const avatarFilename = $("avatarFilename");
@@ -86,26 +93,35 @@
   function startCropperFromFile(file) {
     if (!file || !cropImage) return;
 
-    // filename tonen
     if (avatarFilename) avatarFilename.textContent = file.name;
 
+    destroyCropper();
+
     const url = URL.createObjectURL(file);
-    cropImage.src = url;
 
-    openModal();
-
-    cropImage.onload = () => {
+    // iOS/mobile race fix: load handler eerst, dan src
+    const onLoad = () => {
       URL.revokeObjectURL(url);
 
-      destroyCropper();
-      cropper = new Cropper(cropImage, {
-        aspectRatio: 1,
-        viewMode: 1,
-        autoCropArea: 1,
-        dragMode: "move",
-        background: false,
+      // 1 frame wachten zodat modal/layout klopt op mobile
+      requestAnimationFrame(() => {
+        destroyCropper();
+        cropper = new Cropper(cropImage, {
+          aspectRatio: 1,
+          viewMode: 1,
+          autoCropArea: 1,
+          dragMode: "move",
+          background: false,
+          responsive: true,
+          checkOrientation: false,
+        });
       });
     };
+
+    cropImage.addEventListener("load", onLoad, { once: true });
+
+    openModal();
+    cropImage.src = url;
   }
 
   // zodra file gekozen is → meteen crop modal
@@ -121,7 +137,9 @@
   if (cancelCroppedBtn) cancelCroppedBtn.addEventListener("click", () => closeModal({ resetFile: true }));
 
   if (saveCroppedBtn) {
-    saveCroppedBtn.addEventListener("click", async () => {
+    saveCroppedBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
       if (!cropper || uploading) return;
 
       const canvas = cropper.getCroppedCanvas({ width: 512, height: 512 });
@@ -131,43 +149,51 @@
       saveCroppedBtn.disabled = true;
       saveCroppedBtn.textContent = "Bezig…";
 
-      canvas.toBlob(async (blob) => {
-        try {
-          if (!blob) throw new Error("Kon geen afbeelding maken.");
+      try {
+        // WebP werkt niet overal op iOS → fallback naar JPEG/PNG
+        let blob = await toBlobAsync(canvas, "image/webp", 0.90);
+        let filename = "avatar.webp";
 
-          const fd = new FormData();
-          fd.append("avatar", blob, "avatar.webp");
-
-          const res = await fetch("/profiel/avatar/upload/", {
-            method: "POST",
-            headers: { "X-CSRFToken": getCSRFToken() },
-            body: fd,
-          });
-
-          const data = await res.json().catch(() => ({}));
-
-          if (!res.ok) {
-            if (data?.flash?.text) showFlash(data.flash.level || "error", data.flash.text);
-            throw new Error(data?.error || "Upload mislukt.");
-          }
-
-          if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
-          if (removeAvatarBtn) removeAvatarBtn.disabled = false;
-
-          if (data?.flash?.text) showFlash(data.flash.level || "success", data.flash.text);
-          else showFlash("success", "Profielfoto opgeslagen.");
-
-          closeModal({ resetFile: true });
-        } catch (err) {
-          showFlash("error", err?.message || "Upload mislukt.");
-        } finally {
-          uploading = false;
-          if (saveCroppedBtn) {
-            saveCroppedBtn.disabled = false;
-            saveCroppedBtn.textContent = "Opslaan";
-          }
+        if (!blob) {
+          blob = await toBlobAsync(canvas, "image/jpeg", 0.92);
+          filename = "avatar.jpg";
         }
-      }, "image/webp", 0.90);
+        if (!blob) {
+          blob = await toBlobAsync(canvas, "image/png", 1.0);
+          filename = "avatar.png";
+        }
+        if (!blob) throw new Error("Kon geen afbeelding maken (browser beperking).");
+
+        const fd = new FormData();
+        fd.append("avatar", blob, filename);
+
+        const res = await fetch("/profiel/avatar/upload/", {
+          method: "POST",
+          headers: { "X-CSRFToken": getCSRFToken() },
+          body: fd,
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (data?.flash?.text) showFlash(data.flash.level || "error", data.flash.text);
+          throw new Error(data?.error || "Upload mislukt.");
+        }
+
+        if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
+        if (removeAvatarBtn) removeAvatarBtn.disabled = false;
+
+        if (data?.flash?.text) showFlash(data.flash.level || "success", data.flash.text);
+        else showFlash("success", "Profielfoto opgeslagen.");
+
+        closeModal({ resetFile: true });
+      } catch (err) {
+        showFlash("error", err?.message || "Upload mislukt.");
+      } finally {
+        uploading = false;
+        saveCroppedBtn.disabled = false;
+        saveCroppedBtn.textContent = "Opslaan";
+      }
     });
   }
 

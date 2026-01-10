@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static role_tags %}
+{% load static role_tags form_extras %}
 {% block title %}Profiel{% endblock %}
 {% block header_title %}Profiel{% endblock %}
 
@@ -41,7 +41,7 @@
               id="avatarInput"
               name="avatar"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               class="file-hidden"
             >
 
@@ -67,6 +67,58 @@
           </div>
 
         </div>
+      </section>
+
+      <!-- ✅ NIEUWE GEGEVENS-SECTIE -->
+      <hr class="crud-divider">
+
+      <section class="profile-section">
+        <h3 style="margin-top:16px !important;">Jouw gegevens</h3>
+
+        <div class="profile-info-grid">
+          <div class="profile-info-item">
+            <div class="profile-info-label">Naam</div>
+            <div class="profile-info-value">{{ user|dutch_name }}</div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">E-mail</div>
+            <div class="profile-info-value">{{ user.email|default:"—" }}</div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">Geboortedatum</div>
+            <div class="profile-info-value">
+              {% if profile.birth_date %}
+                {{ profile.birth_date|date:"d-m-Y" }}
+              {% else %}
+                —
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">Functie</div>
+            <div class="profile-info-value">{{ profile.function|default:"—" }}</div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">Dienstverband</div>
+            <div class="profile-info-value">{{ profile.get_dienstverband_display|default:"—" }}</div>
+          </div>
+
+          {% if profile.dienstverband == "vast" %}
+            <div class="profile-info-item">
+              <div class="profile-info-label">Vaste werkdagen</div>
+              <div class="profile-info-value">{{ profile|vaste_werkdagen_short }}</div>
+            </div>
+          {% endif %}
+
+        </div>
+
+        <p class="profile-help muted">
+          Klopt dit niet? Neem contact op met de beheerder.
+        </p>
       </section>
 
       <hr class="crud-divider">
@@ -118,10 +170,11 @@
               {% include "profiel/_switch.html" with id="id_email_uren_reminder" name="email_uren_reminder" label="Email reminder als je je uren nog niet hebt doorgegeven (voor oproepers met gewerkte shifts)" checked=prefs.email_uren_reminder %}
             </div>
           </div>
+
           <div class="profiel-btn-wrap">
-          <button class="btn btn-save" type="submit" style="margin-top: 14px;" data-haptic>
-            Voorkeuren opslaan
-          </button>
+            <button class="btn btn-save" type="submit" style="margin-top: 14px;" data-haptic>
+              Voorkeuren opslaan
+            </button>
           </div>
         </form>
       </section>

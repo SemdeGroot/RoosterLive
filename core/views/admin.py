@@ -38,7 +38,7 @@ def admin_dashboard(request):
     
     context = {
         "page_title": "Beheer",
-        "intro": "Beheer gebruikers, rechten en organisaties.",
+        "intro": "Beheer gebruikers, permissie groepen, afdelingen, organisaties, taken en functies.",
         "tiles": tiles,
         "back_url": "home", 
     }

@@ -57,3 +57,34 @@ def dutch_name(user):
         parts[-1] = parts[-1].capitalize()
         
     return " ".join(parts)
+
+@register.filter
+def vaste_werkdagen_short(profile):
+    """
+    Korte weergave vaste werkdagen voor 'vast' dienstverband:
+    - o = ochtend
+    - m = middag
+    - o/m = beide
+    Voorbeeld: "Ma o/m, Di m, Vr o"
+    """
+    if not profile or getattr(profile, "dienstverband", "") != "vast":
+        return ""
+
+    days = [
+        ("Ma", profile.work_mon_am, profile.work_mon_pm),
+        ("Di", profile.work_tue_am, profile.work_tue_pm),
+        ("Wo", profile.work_wed_am, profile.work_wed_pm),
+        ("Do", profile.work_thu_am, profile.work_thu_pm),
+        ("Vr", profile.work_fri_am, profile.work_fri_pm),
+    ]
+
+    out = []
+    for d, am, pm in days:
+        if am and pm:
+            out.append(f"{d} Och/Mid")
+        elif am:
+            out.append(f"{d} Och")
+        elif pm:
+            out.append(f"{d} Mid")
+
+    return ", ".join(out) if out else "—"

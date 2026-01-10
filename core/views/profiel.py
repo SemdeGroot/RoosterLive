@@ -135,6 +135,7 @@ def profiel_index(request):
 
     return render(request, "profiel/index.html", {
         "profile": profile,
+        "user": request.user,
         "prefs": prefs,
         "prefs_form": form,
     })

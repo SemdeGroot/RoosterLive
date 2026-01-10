@@ -5,10 +5,17 @@
   align-items: center;
 }
 
+.avatar-btn-row{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .avatar-preview-wrap { display: flex; justify-content: center; }
 .avatar-preview{
-  width: 96px;
-  height: 96px;
+  width: 128px;
+  height: 128px;
   border-radius: 999px;
   object-fit: cover;
   background: var(--panel);
@@ -18,10 +25,6 @@
 
 .avatar-preview.has-avatar{
   border: 1px solid var(--border);
-}
-
-@media (min-width: 900px) {
-  .avatar-preview { width: 128px; height: 128px; }
 }
 
 .notif-block {
@@ -164,4 +167,42 @@
 .profiel-btn-wrap{
   display: flex;
   justify-content: flex-end;   /* rechts */
+}
+
+.profile-info-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile-help{
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  color: var(--muted);
+}
+
+@media (min-width: 900px){
+  .profile-info-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.profile-info-item{
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.profile-info-label{
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 6px;
+}
+
+.profile-info-value{
+  font-weight: 600;
+  line-height: 1.25;
+  word-break: break-word; /* handig voor lange emails */
 }
