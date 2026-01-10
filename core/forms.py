@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences, Function
 
 UserModel = get_user_model()
 
@@ -861,6 +861,23 @@ class TaskForm(forms.ModelForm):
                 "min": "0",
                 "step": "1",
             })
+
+class FunctionForm(forms.ModelForm):
+    class Meta:
+        model = Function
+        fields = ["title", "ranking"]
+        widgets = {
+            "title": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Bijv. Teamleider",
+            }),
+            "ranking": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "min": "0",
+                "step": "1",
+                "placeholder": "0",
+            }),
+        }
 
 class NazendingForm(forms.ModelForm):
     class Meta:

@@ -79,6 +79,7 @@ class Roster(models.Model):
             ("can_manage_afdelingen",              "Mag afdelingen beheren"),
             ("can_manage_orgs",              "Mag organisaties beheren"),
             ("can_manage_tasks",              "Mag taken beheren"),
+            ("can_manage_functies",              "Mag functies beheren"),
             ("can_view_agenda",           "Mag agenda bekijken"),
             ("can_upload_agenda",         "Mag agenda uploaden"),
             ("can_view_roster",           "Mag rooster bekijken"),
@@ -328,6 +329,28 @@ class ShiftDraft(models.Model):
 
     def __str__(self):
         return f"[DRAFT {self.action}] {self.date} {self.user} {self.period}"
+    
+class Function(models.Model):
+    title = models.CharField(max_length=120)
+    ranking = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Lager nummer = hoger in de lijst."
+    )
+
+    class Meta:
+        verbose_name = "Functie"
+        verbose_name_plural = "Functies"
+        ordering = ["ranking", "title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["title"],
+                name="uniq_function_title",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.title} (#{self.ranking})"
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")

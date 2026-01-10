@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load static role_tags form_extras %}
+{% block title %}Functies beheren{% endblock %}
+{% block header_title %}Functies beheren{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-wrap">
+  <div class="card">
+    <div class="card-inner">
+
+      <div class="birthday-header agenda-section-header">
+        <!-- hergebruik een bestaand icoon om 404 te voorkomen -->
+        <img src="{% static 'img/taken.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+          <h2>Functies beheren</h2>
+          <p>Beheer functietitels en de volgorde (ranking: lager nummer = hoger).</p>
+        </div>
+        <a href="{% url 'beheer_tiles' %}" class="btn btn-save">
+          Terug naar dashboard
+        </a>
+      </div>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           FUNCTIE TOEVOEGEN
+      ========================== -->
+      <h3 style="margin-top:0;">Functie toevoegen</h3>
+
+      <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="form_kind" value="function">
+
+        <div class="form form-sticky-actions" style="padding:0;">
+          <div class="admin-grid" style="margin-bottom: 12px;">
+            <div>
+              <label for="{{ function_form.title.id_for_label }}">Functietitel:</label>
+              {{ function_form.title }}
+            </div>
+            <div>
+              <label for="{{ function_form.ranking.id_for_label }}">Ranking:</label>
+              {{ function_form.ranking }}
+            </div>
+          </div>
+
+          <button class="btn btn-save btn-block" type="submit" style="margin-top: 10px;">
+            Toevoegen
+          </button>
+        </div>
+      </form>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           BESTAANDE FUNCTIES
+      ========================== -->
+      <h3 style="margin-top:0;">Bestaande functies</h3>
+
+      <div class="search-bar">
+        <input type="text" id="functionSearch" placeholder="Zoek op functietitel…" class="admin-input">
+      </div>
+
+      <div data-crud data-table="#functionTable" data-rows="#functionTable .function-row" data-page-size="10">
+        <div class="table-scroll">
+          <table class="crud-table compact" id="functionTable">
+            <thead>
+              <tr>
+                <th>Functie</th>
+                <th>Ranking</th>
+                <th>Acties</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for f in functions %}
+              <tr class="function-row" id="function-row-{{ f.id }}">
+                <td style="font-weight: 600;">{{ f.title }}</td>
+                <td>{{ f.ranking }}</td>
+                <td>
+                  {% if can_manage %}
+                  <div class="actions-wrap horizontal">
+                    <button type="button"
+                            class="icon-btn"
+                            onclick="toggleFunctionEdit('{{ f.id }}')"
+                            aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                           stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+
+                    <form method="post"
+                          action="{% url 'delete_functie' f.id %}"
+                          onsubmit="return confirmFunctionDelete('{{ f.title|escapejs }}');">
+                      {% csrf_token %}
+                      <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                  {% else %}
+                    <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                  {% endif %}
+                </td>
+              </tr>
+
+              <tr id="function-edit-row-{{ f.id }}" class="edit-row" style="display:none;">
+                <td colspan="3">
+                  <div class="edit-wrap">
+                    <form method="post" action="{% url 'functie_update' f.id %}">
+                      {% csrf_token %}
+
+                      <div class="edit-grid">
+                        <div>
+                          <label>Functietitel:</label>
+                          <input class="admin-input" type="text" name="title"
+                                 value="{{ f.title }}" required style="margin-top:6px;">
+                        </div>
+
+                        <div>
+                          <label>Ranking:</label>
+                          <input class="admin-input" type="number" min="0" step="1" name="ranking"
+                                 value="{{ f.ranking }}" style="margin-top:6px;">
+                        </div>
+                      </div>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px;">
+                        <button class="btn btn-save" type="submit">Opslaan</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleFunctionEdit('{{ f.id }}')">
+                          Annuleren
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="crud-more-wrap">
+          <button class="btn" type="button" data-crud-more>Toon meer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleFunctionEdit(id) {
+    const row = document.getElementById(`function-edit-row-${id}`);
+    if (!row) return;
+    row.style.display = (row.style.display === "none" || row.style.display === "") ? "table-row" : "none";
+  }
+
+  function confirmFunctionDelete(name) {
+    return confirm(`Weet je zeker dat je functie "${name}" wilt verwijderen?`);
+  }
+
+  // simpele client-side search (zelfde vibe als taken)
+  document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("functionSearch");
+    if (!input) return;
+
+    input.addEventListener("input", function () {
+      const q = (input.value || "").toLowerCase();
+      document.querySelectorAll("#functionTable .function-row").forEach((tr) => {
+        const text = (tr.innerText || "").toLowerCase();
+        tr.style.display = text.includes(q) ? "" : "none";
+      });
+    });
+  });
+</script>
+
+{% endblock %}

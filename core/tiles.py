@@ -112,6 +112,12 @@ TILE_GROUPS = {
             "url_name": "admin_taken", 
             "perm": "can_access_admin"
         },
+        {
+            "name": "Functies", 
+            "img": "functies.svg",
+            "url_name": "admin_functies", 
+            "perm": "can_access_admin"
+        },
     ],
 }
 

@@ -37,6 +37,7 @@ PERM_LABELS = {
     "can_manage_afdelingen":              "Mag afdelingen beheren",
     "can_manage_orgs":              "Mag organisaties beheren",
     "can_manage_tasks":              "Mag taken beheren",
+    "can_manage_functies":              "Mag functies beheren",
     "can_view_agenda":         "Mag agenda bekijken",
     "can_upload_agenda":       "Mag agenda aanpassen",
     "can_view_roster":         "Mag rooster bekijken",
@@ -119,7 +120,7 @@ PERM_SECTIONS = [
     ("Openbare Apotheek", ["can_view_openbare_apo"]),
     ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
     ("Profiel",        ["can_access_profiel"]),
-    ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs", "can_manage_tasks"]),
+    ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs", "can_manage_tasks", "can_manage_functies"]),
 ]
 
 def sync_custom_permissions():

@@ -9,10 +9,10 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
-from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm
+from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm, FunctionForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task, Function
 from core.tiles import build_tiles
 
 User = get_user_model()
@@ -637,3 +637,94 @@ def delete_task(request, pk):
     t.delete()  # soft delete
     messages.success(request, f"Taak '{naam}' gedeactiveerd.")
     return redirect("admin_taken")
+
+# ==========================================
+# 7. Functies beheer
+# ==========================================
+
+@login_required
+def admin_functies(request):
+    # 1. View check
+    if not can(request.user, "can_access_admin"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    # 2. Manage check
+    can_manage = can(request.user, "can_manage_functies")
+
+    function_form = FunctionForm()
+
+    # ---- Nieuwe functie aanmaken ----
+    if request.method == "POST" and request.POST.get("form_kind") == "function":
+        if not can_manage:
+            messages.error(request, "Je hebt geen rechten om functies toe te voegen.")
+            return redirect("admin_functies")
+
+        function_form = FunctionForm(request.POST)
+        if function_form.is_valid():
+            obj = function_form.save()
+            messages.success(request, f"Functie '{obj.title}' aangemaakt.")
+            return redirect("admin_functies")
+        messages.error(request, "Kon functie niet aanmaken. Controleer de velden.")
+
+    functions = Function.objects.all().order_by("ranking", "title")
+
+    return render(request, "admin/functies.html", {
+        "functions": functions,
+        "function_form": function_form,
+        "can_manage": can_manage,
+    })
+
+@login_required
+@require_POST
+def functie_update(request, pk):
+    if not can(request.user, "can_manage_functies"):
+        messages.error(request, "Geen rechten om te wijzigen.")
+        return redirect("admin_functies")
+
+    f = get_object_or_404(Function, pk=pk)
+
+    title = (request.POST.get("title") or "").strip()
+    ranking_raw = (request.POST.get("ranking") or "").strip()
+
+    if not title:
+        messages.error(request, "Titel is verplicht.")
+        return redirect("admin_functies")
+
+    # ranking parse
+    if ranking_raw == "":
+        ranking = 0
+    else:
+        try:
+            ranking = int(ranking_raw)
+        except ValueError:
+            messages.error(request, "Ranking moet een geheel getal zijn.")
+            return redirect("admin_functies")
+        if ranking < 0:
+            messages.error(request, "Ranking mag niet negatief zijn.")
+            return redirect("admin_functies")
+
+    # unieke titel check (zonder is_active / all_objects)
+    if Function.objects.filter(title__iexact=title).exclude(pk=f.pk).exists():
+        messages.error(request, "Er bestaat al een functie met deze titel.")
+        return redirect("admin_functies")
+
+    f.title = title
+    f.ranking = ranking
+    f.save(update_fields=["title", "ranking"])
+
+    messages.success(request, f"Functie '{f.title}' is bijgewerkt.")
+    return redirect("admin_functies")
+
+
+@login_required
+@require_POST
+def delete_functie(request, pk):
+    if not can(request.user, "can_manage_functies"):
+        messages.error(request, "Geen rechten om functies te verwijderen.")
+        return redirect("admin_functies")
+
+    f = get_object_or_404(Function, pk=pk)
+    naam = f.title
+    f.delete()  # echte delete
+    messages.success(request, f"Functie '{naam}' verwijderd.")
+    return redirect("admin_functies")
