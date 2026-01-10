@@ -329,6 +329,7 @@ class NotificationPreferencesForm(forms.ModelForm):
             "email_enabled",
             "email_birthday_self",
             "email_uren_reminder",
+            "email_diensten_overzicht",
         ]
     
 class OrganizationEditForm(forms.Form):

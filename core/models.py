@@ -543,6 +543,7 @@ class NotificationPreferences(models.Model):
     email_enabled = models.BooleanField(default=True)
     email_birthday_self = models.BooleanField(default=True)
     email_uren_reminder = models.BooleanField(default=True)
+    email_diensten_overzicht = models.BooleanField(default=True)
 
     updated_at = models.DateTimeField(auto_now=True)
 

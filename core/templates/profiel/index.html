@@ -167,6 +167,7 @@
             <div class="notif-grid" data-child-of="id_email_enabled">
               {% include "profiel/_switch.html" with id="id_email_birthday_self" name="email_birthday_self" label="Email krijgen als je jarig bent" checked=prefs.email_birthday_self %}
               {% include "profiel/_switch.html" with id="id_email_uren_reminder" name="email_uren_reminder" label="Email reminder als je je uren nog niet hebt doorgegeven (voor oproepers met gewerkte shifts)" checked=prefs.email_uren_reminder %}
+              {% include "profiel/_switch.html" with id="id_email_diensten_overzicht" name="email_uren_reminder" label="Wekelijks e-mailoverzicht van je diensten voor volgende week" checked=prefs.email_diensten_overzicht %}
             </div>
           </div>
 
