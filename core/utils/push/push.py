@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from core.models import PushSubscription
-from core.views._helpers import can
+from core.views._helpers import can, wants_push
 
 
 def _build_vapid_claims(endpoint: str) -> dict:
@@ -65,8 +65,8 @@ def send_roster_updated_push(
     }
 
     # Alleen subscriptions waarvan de user het rooster mag zien
-    subs = PushSubscription.objects.select_related("user").all()
-    eligible_subs = [s for s in subs if can(s.user, "can_view_roster")]
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").all()
+    eligible_subs = [s for s in subs if can(s.user, "can_view_roster") and wants_push(s.user, "push_new_roster")]
 
     for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
@@ -110,8 +110,8 @@ def send_news_upload_push(uploader_first_name: str):
     }
 
     # Haal subscriptions op en filter op permissie
-    subs = PushSubscription.objects.select_related("user").all()
-    eligible_subs = [s for s in subs if can(s.user, "can_view_news")]
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").all()
+    eligible_subs = [s for s in subs if can(s.user, "can_view_news") and wants_push(s.user, "push_news_upload")]
 
     for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
@@ -157,8 +157,8 @@ def send_agenda_upload_push(category: str):
     }
 
     # Haal subscriptions op en filter op permissie
-    subs = PushSubscription.objects.select_related("user").all()
-    eligible_subs = [s for s in subs if can(s.user, "can_view_agenda")]
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").all()
+    eligible_subs = [s for s in subs if can(s.user, "can_view_agenda") and wants_push(s.user, "push_new_agenda")]
 
     for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
@@ -188,7 +188,7 @@ def send_laatste_pot_push(item_naam: str):
         "tag": "laatste-pot-update",
     }
 
-    subs = PushSubscription.objects.select_related("user").all()
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").all()
     # Filter op de specifieke permissie voor bestellingen
     eligible_subs = [s for s in subs if can(s.user, "can_perform_bestellingen")]
 
@@ -278,8 +278,8 @@ def send_user_shifts_changed_push(
     }
 
     # Alleen subscriptions van deze user, én alleen als die user dit onderdeel mag zien
-    subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
-    eligible_subs = [s for s in subs if can(s.user, "can_view_diensten")]
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").filter(user_id=user_id)
+    eligible_subs = [s for s in subs if can(s.user, "can_view_diensten") and wants_push(s.user, "push_dienst_changed")]
 
     for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
@@ -310,8 +310,9 @@ def send_uren_reminder_push(user_id, reminder_date):
     }
 
     # Alleen subscriptions van deze user
-    subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
-    for s in subs:
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").filter(user_id=user_id)
+    eligible_subs = [s for s in subs if can(s.user, "can_view_urendoorgeven") and wants_push(s.user, "push_uren_reminder")]
+    for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
         try:
             webpush(
@@ -340,9 +341,10 @@ def send_birthday_push_for_user(user_id, birthday_name):
     }
 
     # Haal de pushsubscriptions van de jarige gebruiker zelf
-    subs = PushSubscription.objects.select_related("user").filter(user_id=user_id)
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").filter(user_id=user_id)
+    eligible_subs = [s for s in subs if can(s.user, "can_view_agenda") and wants_push(s.user, "push_birthday_self")]
 
-    for s in subs:
+    for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
 
         try:
@@ -392,9 +394,10 @@ def send_birthday_push_for_others(birthday_user_ids: list[int], birthday_names: 
         "tag": f"birthday-others-{timezone.localdate().isoformat()}",
     }
 
-    subs = PushSubscription.objects.select_related("user").exclude(user_id__in=birthday_user_ids)
+    subs = PushSubscription.objects.select_related("user", "user__profile","user__profile__notif_prefs").exclude(user_id__in=birthday_user_ids)
+    eligible_subs = [s for s in subs if can(s.user, "can_view_agenda") and wants_push(s.user, "push_birthday_apojansen")]
 
-    for s in subs:
+    for s in eligible_subs:
         claims = _build_vapid_claims(s.endpoint)
         try:
             webpush(

@@ -8,12 +8,14 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.utils import timezone
 
+from core.views._helpers import wants_email
 from core.models import Shift, UrenInvoer, UserProfile
 from core.tasks.email_dispatcher import email_dispatcher_task
 from core.tasks.beat.cleanup import cleanup_uren_export_task
 from core.utils.beat.uren import export_uren_month_to_storage
 from core.utils.push.push import send_uren_reminder_push
 from core.utils.emails.urenreminder import send_uren_reminder_email
+
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def monthly_uren_export_task(self):
@@ -51,39 +53,55 @@ def monthly_uren_export_task(self):
         cleanup_uren_export_task.s(res.xlsx_storage_path, res.month.isoformat()).set(queue="default")
     )
 
+
 @shared_task
 def send_uren_reminder():
+    """
+    Draait op de 8e en 9e van elke maand (via celery beat).
+    Herinnert oproepmedewerkers als zij vorige maand diensten hadden,
+    maar nog geen uren hebben ingediend voor die maand.
+    """
     today = timezone.localdate()
-    first_of_this_month = today.replace(day=1)
-    
-    # 2 dagen voor de deadline (8e van de maand)
-    reminder_date = first_of_this_month + relativedelta(months=1, day=8)
 
-    # 1 dag voor de deadline (9e van de maand)
-    second_reminder_date = first_of_this_month + relativedelta(months=1, day=9)
+    # Deze task wordt op 8e en 9e aangeroepen, dus reminder_date = vandaag.
+    reminder_date = today
 
-    # Haal oproepmedewerkers op zonder ureninvoer
-    users_to_notify = UserProfile.objects.filter(
+    # Vorige maand (als month-first date)
+    last_month_first = today.replace(day=1) - relativedelta(months=1)
+    last_month_year = last_month_first.year
+    last_month_month = last_month_first.month
+
+    users_to_notify = UserProfile.objects.select_related("user", "notif_prefs").filter(
         dienstverband=UserProfile.Dienstverband.OPROEP
     )
 
     for user_profile in users_to_notify:
+        user = user_profile.user
+
+        # Heeft user shifts in vorige maand?
         shifts_for_last_month = Shift.objects.filter(
-            user=user_profile.user,
-            date__month=(today.month - 1) % 12
+            user=user,
+            date__year=last_month_year,
+            date__month=last_month_month,
         )
 
-        # Check of de gebruiker shifts heeft voor de vorige maand, maar geen uren heeft doorgegeven
-        if shifts_for_last_month.exists() and not UrenInvoer.objects.filter(
-            user=user_profile.user, month=(today.replace(day=1) - relativedelta(months=1)).date()).exists():
-            
-            # Pushmelding versturen
-            send_uren_reminder_push(user_profile.user.id, reminder_date)
-            
-            # E-mail sturen
-            send_uren_reminder_email(user_profile.user.email, user_profile.user.first_name, reminder_date)
-            
-            # Tweede herinnering voor de 9e (indien nodig)
-            if today == second_reminder_date:
-                send_uren_reminder_push(user_profile.user.id, second_reminder_date)
-                send_uren_reminder_email(user_profile.user.email, user_profile.user.first_name, second_reminder_date)
+        if not shifts_for_last_month.exists():
+            continue
+
+        # Heeft user uren al ingediend voor vorige maand?
+        has_uren = UrenInvoer.objects.filter(
+            user=user,
+            month=last_month_first,
+        ).exists()
+
+        if has_uren:
+            continue
+
+        prefs = getattr(user_profile, "notif_prefs", None)
+
+        # Pushmelding (push.py checkt pref + permissie)
+        send_uren_reminder_push(user.id, reminder_date)
+
+        # E-mail alleen als voorkeur aan staat
+        if user.email and wants_email(user, "email_uren_reminder", prefs=prefs):
+            send_uren_reminder_email(user.email, user.first_name, reminder_date)

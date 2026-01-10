@@ -6,13 +6,17 @@ from datetime import date
 
 from core.models import UserProfile
 from core.utils.push.push import send_birthday_push_for_user, send_birthday_push_for_others
+from core.views._helpers import wants_email
 from core.tasks.email_dispatcher import email_dispatcher_task
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_birthday_reminder(self):
     today = timezone.localdate()
 
-    profiles = UserProfile.objects.filter(birth_date__isnull=False, organization_id=1)
+    profiles = UserProfile.objects.select_related("user", "notif_prefs").filter(
+        birth_date__isnull=False,
+        organization_id=1
+    )
 
     birthday_profiles = []
     for profile in profiles:
@@ -34,16 +38,20 @@ def send_birthday_reminder(self):
 
     # Persoonlijk naar elke jarige
     for profile in birthday_profiles:
-        email_dispatcher_task.apply_async(
-            args=[{
-                "type": "birthday",
-                "payload": {
-                    "to_email": profile.user.email,
-                    "first_name": profile.user.first_name or "Collega",
-                }
-            }],
-            queue="mail",
-        )
+        prefs = getattr(profile, "notif_prefs", None)
+
+        if wants_email(profile.user, "email_birthday_self", prefs=prefs) and profile.user.email:
+            email_dispatcher_task.apply_async(
+                args=[{
+                    "type": "birthday",
+                    "payload": {
+                        "to_email": profile.user.email,
+                        "first_name": profile.user.first_name or "Collega",
+                    }
+                }],
+                queue="mail",
+            )
+
         send_birthday_push_for_user(profile.user_id, profile.user.first_name.capitalize())
 
     # Eén keer naar alle anderen (exclude alle jarigen)

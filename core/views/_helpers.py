@@ -1,4 +1,7 @@
 # core/views/_helpers.py
+from __future__ import annotations
+
+from typing import Optional
 from pathlib import Path
 import shutil
 
@@ -9,6 +12,7 @@ from django.contrib.staticfiles import finders
 from django.http import HttpRequest
 
 from core.permissions_cache import get_cached_permset
+from core.models import NotificationPreferences
 
 from weasyprint import HTML, CSS
 
@@ -308,3 +312,68 @@ def _render_pdf(html: str, *, base_url: str) -> bytes:
     """)
 
     return HTML(string=html, base_url=base_url).write_pdf(stylesheets=[css])
+
+# === Notification preferences helpers ===
+def _get_prefs(user) -> Optional[NotificationPreferences]:
+    """
+    Haal NotificationPreferences op voor een user, met 'zero extra queries' als
+    de relaties al via select_related zijn opgehaald.
+
+    We proberen in deze volgorde:
+    1) Als caller al een prefs-object op de user/profile heeft geprefetched (cached),
+       dan returnen we dat zonder DB-hit.
+    2) Anders fallback naar de DB query zoals je al had.
+    """
+    if not user or not getattr(user, "is_authenticated", False):
+        return None
+
+    # 1) Probeer prefetched/cached profile zonder query
+    #    (reverse one-to-one staat alleen in __dict__ als hij al opgehaald is)
+    profile = None
+    for attr in ("profile", "userprofile"):
+        if attr in getattr(user, "__dict__", {}):
+            profile = getattr(user, attr, None)
+            break
+
+    # 2) Probeer prefetched/cached notif_prefs zonder query
+    if profile is not None:
+        # NotificationPreferences heeft related_name="notif_prefs" op profile
+        if "notif_prefs" in getattr(profile, "__dict__", {}):
+            return getattr(profile, "notif_prefs", None)
+
+    # 3) Fallback: 1 query
+    return (
+        NotificationPreferences.objects
+        .select_related("profile")
+        .filter(profile__user=user)
+        .first()
+    )
+
+
+def wants_push(user, flag: str, default: bool = True, prefs: Optional[NotificationPreferences] = None) -> bool:
+    """
+    Check of user push-notificaties wil ontvangen voor een specifieke flag.
+    - Geen prefs-record? -> default (meestal True)
+    - push_enabled False? -> altijd False
+    - ontbrekende flag? -> default
+
+    Je kunt optioneel prefs meegeven om een query te vermijden.
+    """
+    prefs = prefs or _get_prefs(user)
+    if not prefs:
+        return default
+    if not prefs.push_enabled:
+        return False
+    return bool(getattr(prefs, flag, default))
+
+
+def wants_email(user, flag: str, default: bool = True, prefs: Optional[NotificationPreferences] = None) -> bool:
+    """
+    Zelfde als wants_push, maar voor email.
+    """
+    prefs = prefs or _get_prefs(user)
+    if not prefs:
+        return default
+    if not prefs.email_enabled:
+        return False
+    return bool(getattr(prefs, flag, default))
