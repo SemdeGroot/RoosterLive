@@ -151,6 +151,8 @@ class Roster(models.Model):
             ("can_view_bezorgers",    "Mag Bezorgers openen"),
             ("can_view_bakkenbezorgen",    "Mag bakken bezorgen"),
             ("can_view_afleverstatus",    "Mag afleverstatus bekijken"),
+            # KompasGPT
+            ("can_view_kompasgpt",    "Mag KompasGPT gebruiken"),
 
         ]
     def __str__(self):

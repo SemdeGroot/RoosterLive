@@ -50,6 +50,7 @@ from core.views.passkeys import (
     passkey_skip,
 )
 from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen, afleverstatus
+from core.views.kompasgpt import kompasgpt
 
 urlpatterns = [
     path("", home, name="home"),
@@ -196,6 +197,8 @@ urlpatterns = [
     path("beheer/taken/task/<int:pk>/delete/", delete_task, name="delete_task"),
     path("beheer/functies/<int:pk>/update/", functie_update, name="functie_update"),
     path("beheer/functies/<int:pk>/delete/", delete_functie, name="delete_functie"),
+    # KompasGPT
+    path("kompasgpt/", kompasgpt, name="kompasgpt"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
