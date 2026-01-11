@@ -1,8 +1,8 @@
 /* WHO IS WHO: 6 kolommen configuratie */
 table.whoiswho-table {
   --c1: 60px;   /* Avatar */
-  --c2: 160px;  /* Naam */
-  --c3: 150px;  /* Functie */
+  --c2: 150px;  /* Naam */
+  --c3: 140px;  /* Functie */
   --c4: 130px;  /* Dienstverband */
   --c5: 180px;  /* Werkdagen */
   --c6: 220px;  /* Contact (Mail + Tel) */
@@ -50,6 +50,6 @@ table.whoiswho-table {
 /* Mobiel: we gaan nu naar 1000px omdat de tabel rijker is geworden */
 @media (max-width: 900px) {
   table.whoiswho-table {
-    min-width: 1000px; 
+    min-width: 900px; 
   }
 }

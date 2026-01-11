@@ -81,11 +81,6 @@
           </div>
 
           <div class="profile-info-item">
-            <div class="profile-info-label">E-mail</div>
-            <div class="profile-info-value">{{ user.email|default:"—" }}</div>
-          </div>
-
-          <div class="profile-info-item">
             <div class="profile-info-label">Geboortedatum</div>
             <div class="profile-info-value">
               {% if profile.birth_date %}
@@ -94,6 +89,16 @@
                 —
               {% endif %}
             </div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">E-mail</div>
+            <div class="profile-info-value">{{ user.email|default:"—" }}</div>
+          </div>
+
+          <div class="profile-info-item">
+            <div class="profile-info-label">Telefoonnummer</div>
+            <div class="profile-info-value">{{ profile.phone_number|default:"—" }}</div>
           </div>
 
           <div class="profile-info-item">
