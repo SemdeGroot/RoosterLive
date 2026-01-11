@@ -47,7 +47,7 @@ TILE_GROUPS = {
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "KompasGPT", "img": "kompasgpt.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
+        {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
@@ -57,7 +57,7 @@ TILE_GROUPS = {
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
         {"name": "Review Planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "KompasGPT", "img": "kompasgpt.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
+        {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
         {"name": "Portavita Check", "img": "portavita.svg",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},

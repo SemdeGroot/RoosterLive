@@ -1060,3 +1060,21 @@ class UrenInvoer(models.Model):
 
     def __str__(self):
         return f"{self.user_id} - {self.month} ({self.hours_before_18}/{self.hours_after_18})"
+    
+# KompasGPT
+class ScrapedPage(models.Model):
+    CATEGORY_CHOICES = [
+        ('preparaat', 'Preparaat'),
+        ('groep', 'Groep'),
+        ('indicatie', 'Indicatie'),
+    ]
+    
+    url = models.URLField(unique=True)
+    title = models.CharField(max_length=512)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    content_hash = models.CharField(max_length=64)  # SHA-256
+    last_scraped = models.DateTimeField(auto_now=True)
+    gcs_path = models.CharField(max_length=1024, blank=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.category})"

@@ -4,10 +4,104 @@
 {% block title %}KompasGPT{% endblock %}
 {% block header_title %}KompasGPT{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/kompasgpt/kompasgpt.css' %}">
+
+  <!-- Marked (Markdown -> HTML) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+
+  <!-- DOMPurify (sanitize HTML) -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
+
+
+  <script src="{% static 'js/kompasgpt/kompasgpt.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">KompasGPT</h3>
-  <p>
-    Hier komt later de inhoud voor <strong>KompasGPT</strong>. Een project waarin ik een Retrieval Augmented Generation chatbot wil maken obv Farmacotherapeutisch Kompas teksten.
+<div class="admin-wrap">
+  <div class="card kgpt-card">
+    <div class="card-inner kgpt-card-inner">
+
+      <div class="birthday-header agenda-section-header">
+        <img src="{% static 'img/caduceus.svg' %}" alt="" class="birthday-icon">
+        <div class="birthday-header-text">
+          <h2>KompasGPT</h2>
+          <p>Chatbot op Farmacotherapeutisch Kompas teksten (RAG / File Search Store).</p>
+        </div>
+
+        <div class="header-actions">
+          <button id="clearBtn" class="btn btn-save" type="button">Chat wissen</button>
+        </div>
+      </div>
+
+      <hr class="crud-divider">
+
+      {% if error %}
+        <div class="kgpt-alert kgpt-alert-error">
+          <strong>Fout:</strong> {{ error }}
+        </div>
+      {% endif %}
+
+      <div class="kgpt-chat-shell">
+        <div id="chatBox" class="kgpt-chat" aria-live="polite">
+          {% if history and history|length > 0 %}
+            {% for msg in history %}
+              {% if msg.role == "user" %}
+                <div class="kgpt-msg kgpt-user">
+                  <div class="kgpt-meta">Jij</div>
+                  <div class="kgpt-bubble kgpt-bubble-user">
+                    {{ msg.content|linebreaksbr }}
+                  </div>
+                </div>
+              {% else %}
+                <div class="kgpt-msg kgpt-assistant">
+                  <div class="kgpt-meta">KompasGPT</div>
+                  <div class="kgpt-bubble kgpt-bubble-assistant">
+                    <div class="kgpt-md js-md">{{ msg.content }}</div>
+                  </div>
+
+                  {% if msg.sources %}
+                    <details class="kgpt-sources">
+                      <summary class="kgpt-sources-summary">Bronnen ({{ msg.sources|length }})</summary>
+                      <div class="kgpt-sources-list">
+                        {% for u in msg.sources %}
+                          <a class="kgpt-source-link" href="{{ u }}" target="_blank" rel="noopener noreferrer">{{ u }}</a>
+                        {% endfor %}
+                      </div>
+                    </details>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="kgpt-empty" id="emptyState">
+        Nog geen berichten. Stel een vraag over een geneesmiddel, groepstekst of indicatie die in het Farmacotherapeutisch Kompas staat.
+            </div>
+          {% endif %}
+        </div>
+
+        <form id="chatForm" method="post" autocomplete="off" class="kgpt-composer">
+          {% csrf_token %}
+
+          <div class="kgpt-composer-inner">
+            <textarea
+              class="kgpt-input kgpt-input-chat"
+              name="message"
+              id="messageInput"
+              rows="1"
+              placeholder="Stel een vraag…"
+            ></textarea>
+
+            <button id="sendBtn" class="btn btn-save kgpt-send" type="submit">
+              Versturen
+            </button>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}
