@@ -79,6 +79,11 @@ class SimpleUserCreateForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150, required=True)
     last_name = forms.CharField(label="Achternaam", max_length=150, required=True)
     email = forms.EmailField(label="E-mail", required=True)
+    phone_number = forms.CharField(
+        label="Telefoonnummer", 
+        required=False, 
+        widget=forms.TextInput(attrs={"class": "admin-input", "placeholder": "0612345678"})
+    )
     birth_date = forms.DateField(
         label="Geboortedatum",
         required=False,
@@ -142,6 +147,8 @@ class SimpleUserEditForm(forms.Form):
     first_name = forms.CharField(label="Voornaam", max_length=150, required=True)
     last_name = forms.CharField(label="Achternaam", max_length=150, required=True)
     email = forms.EmailField(label="E-mail", required=True)
+    phone_number = forms.CharField(label="Telefoonnummer", required=False, widget=forms.TextInput(attrs={"class": "admin-input"}))
+
 
     birth_date = forms.DateField(
         label="Geboortedatum",
@@ -220,6 +227,7 @@ class SimpleUserEditForm(forms.Form):
         profile = getattr(self.instance, "profile", None)
         if profile:
             self.fields["dienstverband"].initial = profile.dienstverband
+            self.fields["phone_number"].initial = profile.phone_number
 
             if profile.birth_date:
                 self.fields["birth_date"].initial = profile.birth_date.strftime("%d-%m-%Y")
@@ -267,6 +275,7 @@ class SimpleUserEditForm(forms.Form):
         first = self.cleaned_data["first_name"]
         last = self.cleaned_data["last_name"]
         email = self.cleaned_data["email"]
+        phone_number = self.cleaned_data.get("phone_number")
 
         group = self.cleaned_data.get("group")
         birth_date = self.cleaned_data.get("birth_date")
@@ -298,6 +307,7 @@ class SimpleUserEditForm(forms.Form):
         profile.organization = organization
         profile.dienstverband = dienstverband
         profile.function = function
+        profile.phone_number = phone_number
 
         if dienstverband == UserProfile.Dienstverband.OPROEP:
             profile.clear_workdays()

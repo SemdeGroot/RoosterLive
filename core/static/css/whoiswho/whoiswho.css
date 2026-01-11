@@ -1,0 +1,55 @@
+/* WHO IS WHO: 6 kolommen configuratie */
+table.whoiswho-table {
+  --c1: 60px;   /* Avatar */
+  --c2: 160px;  /* Naam */
+  --c3: 150px;  /* Functie */
+  --c4: 130px;  /* Dienstverband */
+  --c5: 180px;  /* Werkdagen */
+  --c6: 220px;  /* Contact (Mail + Tel) */
+}
+
+.who-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+.who-avatar.has-avatar {
+    border: 1px solid var(--border, #dbdbdb);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+/* Contact kolom styling */
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contact-info a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.contact-info a:hover {
+    color: var(--accent) !important;
+}
+
+.contact-info svg {
+    flex-shrink: 0;
+    color: var(--muted);
+}
+
+/* Mobiel: we gaan nu naar 1000px omdat de tabel rijker is geworden */
+@media (max-width: 900px) {
+  table.whoiswho-table {
+    min-width: 1000px; 
+  }
+}

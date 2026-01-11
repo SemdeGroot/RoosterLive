@@ -459,7 +459,6 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
-
 class UserProfile(models.Model):
     class Dienstverband(models.TextChoices):
         VAST = "vast", "Vast contract"
@@ -515,6 +514,8 @@ class UserProfile(models.Model):
     blank=True,
     related_name="profiles",
     )
+
+    phone_number = models.CharField("Telefoonnummer", max_length=15, blank=True, default="")
 
     def clear_workdays(self):
         for f in (

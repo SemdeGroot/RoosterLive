@@ -1,14 +1,98 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static form_extras %}
 
 {% block title %}Wie is wie?{% endblock %}
 {% block header_title %}Wie is wie?{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/profiel/profiel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/whoiswho/whoiswho.css' %}">
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="{% static 'js/whoiswho/whoiswho.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Wie is wie?</h3>
-  <p>
-    Hier komt later de inhoud voor <strong>Wie is wie?</strong>.
-  </p>
+<div class="admin-wrap">
+    <div class="card">
+        <div class="card-inner">
+            <div class="birthday-header agenda-section-header">
+                <img src="{% static 'img/wieiswie.svg' %}" alt="" class="birthday-icon">
+                <div class="birthday-header-text">
+                    <h2>Wie is Wie</h2>
+                    <p>Overzicht van alle collega's en hun contactgegevens.</p>
+                </div>
+            </div>
+
+            <hr class="crud-divider">
+
+            <div class="search-bar">
+                <input type="text" id="whoSearch" placeholder="Zoek op naam, functie, werkdag of contactgegevens…" class="admin-input">
+            </div>
+
+            <div data-crud 
+                 data-table="#whoTable" 
+                 data-rows="#whoTable .who-row" 
+                 data-page-size="10">
+                
+                <div class="table-scroll">
+                    <table class="crud-table compact whoiswho-table" id="whoTable">
+                        <thead>
+                            <tr>
+                                <th></th> 
+                                <th>Naam</th>
+                                <th>Functie</th>
+                                <th>Dienstverband</th>
+                                <th>Werkdagen</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in profiles %}
+                            <tr class="who-row">
+                                <td style="text-align: center;">
+                                    <img class="who-avatar {% if p.avatar %}has-avatar{% endif %}" 
+                                         src="{% if p.avatar %}{{ p.avatar.url }}{% else %}{% static 'img/user.svg' %}{% endif %}" 
+                                         alt="">
+                                </td>
+                                <td style="font-weight: 600;">{{ p.user|dutch_name }}</td>
+                                <td>{{ p.function.title|default:"—" }}</td>
+                                <td>
+                                    <span class="tag-dienstverband {{ p.dienstverband }}">
+                                        {{ p.get_dienstverband_display }}
+                                    </span>
+                                </td>
+                                <td style="font-size: 0.85em; color: var(--text-main);">
+                                    {{ p|vaste_werkdagen_short }}
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <a href="mailto:{{ p.user.email }}" class="muted" title="{{ p.user.email }}">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                            {{ p.user.email|default:"—" }}
+                                        </a>
+                                        {% if p.phone_number %}
+                                        <a href="tel:{{ p.phone_number }}" class="muted">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.18-2.18a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                            {{ p.phone_number }}
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="crud-more-wrap">
+                    <button class="btn btn-save btn-block" type="button" data-crud-more>
+                        Toon meer medewerkers
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
