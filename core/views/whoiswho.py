@@ -16,8 +16,13 @@ def whoiswho(request):
     # Filter op actieve gebruikers van Apotheek Jansen (ID 1)
     profiles = UserProfile.objects.filter(
         user__is_active=True,
-        organization_id=1  # Filter op Apotheek Jansen
-    ).select_related('user', 'function').order_by('user__first_name')
+        organization_id=1
+    ).select_related('user', 'function').order_by(
+        'function__ranking',     # 1. Eerst op ranking
+        'function__title',       # 2. Dan alfabetisch op functie titel
+        'user__first_name',      # 3. voornaam
+        'user__last_name'        # 4. Achternaam
+    )
 
     return render(request, "whoiswho/index.html", {
         "profiles": profiles,
