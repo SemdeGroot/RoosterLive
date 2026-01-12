@@ -1,3 +1,4 @@
+# core/views/kompasgpt.py
 import os
 from typing import List, Dict, Tuple
 import re
@@ -12,13 +13,13 @@ from google import genai
 from google.genai import types
 
 from core.views._helpers import can
-import json
 from django.core.cache import cache
 
 DOCMETA_TTL = 30 * 60  # 0.5 uur
 DOCMETA_KEY_PREFIX = "kompas:docmeta:"
 
 _DOC_RE = re.compile(r"^fileSearchStores/[^/]+/documents/[^/]+$")
+_BRON_LINE_RE = re.compile(r"^\*\*Bron:\*\*\s*(https?://\S+)\s*$", re.MULTILINE)
 
 def _extract_doc_names_from_response(resp) -> list[str]:
     doc_names: list[str] = []
@@ -64,6 +65,43 @@ def _extract_doc_names_from_response(resp) -> list[str]:
             out.append(d)
     return out
 
+def _extract_source_urls_from_grounding_text(resp) -> list[str]:
+    """
+    Fallback: zoek '**Bron:** <url>' in de opgehaalde chunk-teksten.
+    """
+    urls: list[str] = []
+    try:
+        candidates = getattr(resp, "candidates", None) or []
+        if not candidates:
+            return []
+
+        c0 = candidates[0]
+        gm = getattr(c0, "grounding_metadata", None)
+        if not gm:
+            return []
+
+        chunks = getattr(gm, "grounding_chunks", None) or []
+        for ch in chunks:
+            rc = getattr(ch, "retrieved_context", None)
+            if not rc:
+                continue
+            txt = getattr(rc, "text", None) or ""
+            for m in _BRON_LINE_RE.finditer(txt):
+                u = (m.group(1) or "").strip()
+                if u:
+                    urls.append(u)
+    except Exception:
+        return []
+
+    # dedupe keep order
+    seen = set()
+    out = []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            out.append(u)
+    return out
+
 def _docmeta_cached(client, doc_name: str) -> dict:
     key = DOCMETA_KEY_PREFIX + doc_name
     cached = cache.get(key)
@@ -89,10 +127,41 @@ def _docmeta_cached(client, doc_name: str) -> dict:
         "document": doc_name,
         "source_url": meta.get("source_url"),
         "category": meta.get("category"),
+        "atc": meta.get("atc"),
         "display_name": getattr(doc, "display_name", None) or getattr(doc, "displayName", None),
     }
     cache.set(key, payload, timeout=DOCMETA_TTL)
     return payload
+
+def _merge_and_dedupe_sources(doc_sources: list[dict], fallback_urls: list[str]) -> list[dict]:
+    """
+    Dedupe op source_url. Docmeta heeft voorrang (bevat category/display_name/atc).
+    """
+    out: list[dict] = []
+    seen = set()
+
+    # 1) eerst doc sources (rijker)
+    for s in doc_sources or []:
+        url = (s or {}).get("source_url")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        out.append(s)
+
+    # 2) daarna fallback-only urls
+    for u in fallback_urls or []:
+        if not u or u in seen:
+            continue
+        seen.add(u)
+        out.append({
+            "document": None,
+            "source_url": u,
+            "category": None,
+            "atc": None,
+            "display_name": None,
+        })
+
+    return out
 
 def _unique_sources_with_metadata(client, doc_names: list[str]) -> list[dict]:
     out = []
@@ -176,11 +245,11 @@ def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, Lis
 
     client = genai.Client(api_key=api_key)
 
-    history_text = _format_history_for_prompt(history, max_turns=10)
+    history_text = _format_history_for_prompt(history, max_turns=8)
 
     system_rules = (
         "Je bent KompasGPT. Gebruik uitsluitend informatie uit de opgehaalde passages "
-        "van het Farmacotherapeutisch Kompas via de File Search tool.\n"
+        "van het Farmacotherapeutisch Kompas.\n"
         "Als de passages onvoldoende informatie bevatten, zeg dan duidelijk dat je het niet zeker weet "
         "op basis van de bronnen en geef alleen wat je wél kunt afleiden uit de bronnen.\n"
         "Schrijf je antwoord in Markdown.\n"
@@ -217,11 +286,11 @@ def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, Lis
     answer = (text or "").strip() or str(resp)
 
     doc_names = _extract_doc_names_from_response(resp)
+    doc_sources = _unique_sources_with_metadata(client, doc_names)
+    fallback_urls = _extract_source_urls_from_grounding_text(resp)
+    sources = _merge_and_dedupe_sources(doc_sources, fallback_urls)
 
-    sources_meta = _unique_sources_with_metadata(client, doc_names)
-
-    return answer, sources_meta
-
+    return answer, sources
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -264,8 +333,11 @@ def kompasgpt(request):
                 error = str(e)
                 history.append({"role": "assistant", "content": f"**Fout:** {error}", "sources": []})
 
-            history = history[-30:]  # wat ruimer, zodat doorvragen werkt
-            request.session["kompasgpt_history"] = history
+            history_for_session = [
+                {"role": h["role"], "content": h["content"]} 
+                for h in history[-8:]
+            ]
+            request.session["kompasgpt_history"] = history_for_session
 
             if is_xhr:
                 last = history[-1] if history else {}

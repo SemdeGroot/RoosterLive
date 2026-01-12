@@ -80,6 +80,15 @@ if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py co
   exit 1
 fi
 
+echo "===> Syncing S3 bucket and cleaning up old files"
+BUCKET_NAME=$(grep AWS_STORAGE_BUCKET_NAME "${ENV_FILE}" | cut -d '=' -f2 | tr -d '"' | tr -d '\r')
+
+if [ -n "$BUCKET_NAME" ]; then
+  docker compose -f deploy/docker-compose.yml exec -T web sh -c "aws s3 sync /opt/rooster/app/staticfiles/ s3://${BUCKET_NAME}/static/ --delete" || echo "!!! S3 sync failed, but continuing deployment"
+else
+  echo "!!! BUCKET_NAME niet gevonden in .env, overgeslagen"
+fi
+
 echo "===> Waiting for health check of rooster-web"
 MAX_RETRIES=10
 SLEEP_SECONDS=10

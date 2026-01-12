@@ -135,6 +135,24 @@ class KompasScraper:
             "deadline exceeded",
         )
         return any(m in msg for m in transient_markers)
+    
+    _ATC_RE = re.compile(r"\b[A-Z]\d{2}[A-Z]{2}\d{2}\b")
+
+    def _extract_atc_from_markdown(self, md: str) -> Optional[str]:
+        """
+        Verwacht header zoals:
+        *Geneesmiddel | 11-beta-hydroxylaseremmers | V04CD01*
+        """
+        if not md:
+            return None
+
+        head = "\n".join(md.splitlines()[:80])  # header zit vrijwel altijd bovenin
+        if "Geneesmiddel" not in head:
+            return None
+
+        m = self._ATC_RE.search(head)
+        return m.group(0) if m else None
+
 
 
     def fetch_url(self, url: str) -> Optional[str]:
@@ -756,12 +774,11 @@ class KompasScraper:
             if not h2_text:
                 continue
 
-            anchor = self._get_h2_anchor(h2)
-            if anchor:
-                section_url = base_url.split("#")[0] + f"#{anchor}"
-                md += f"\n## [{h2_text}]({section_url})\n\n"
-            else:
-                md += f"\n## {h2_text}\n\n"
+            # H2 titel (zonder anchor/highlight)
+            md += f"\n## {h2_text}\n\n"
+
+            # Bron direct onder elke H2 (bewust zonder anchor)
+            md += f"**Bron:** {base_url}\n\n"
 
             section_md = self._render_section_after_heading(
                 heading=h2,
@@ -874,6 +891,8 @@ class KompasScraper:
         poll_interval = float(os.getenv("FK_GEMINI_POLL_INTERVAL", "4"))
         poll_timeout_s = float(os.getenv("FK_GEMINI_POLL_TIMEOUT", str(30 * 60)))  # 30 min
 
+        atc_code = self._extract_atc_from_markdown(content)
+
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as tmp:
@@ -886,6 +905,8 @@ class KompasScraper:
             }
             if category:
                 config["custom_metadata"].append({"key": "category", "string_value": category})
+            if atc_code:
+                config["custom_metadata"].append({"key": "atc", "string_value": atc_code})
 
             for attempt in range(max_retries + 1):
                 try:
