@@ -10,6 +10,8 @@ services:
       - TIMEOUT=60
     expose:
       - "8000"
+    volumes:
+      - ./staticfiles:/opt/rooster/app/staticfiles
     depends_on:
       - redis
       - pgbouncer

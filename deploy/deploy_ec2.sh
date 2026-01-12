@@ -16,6 +16,9 @@ echo "===> Deploying image tag: ${IMAGE_TAG}"
 
 cd "${REPO_DIR}"
 
+mkdir -p staticfiles
+sudo chmod 777 staticfiles
+
 echo "===> Fetching .env from SSM: ${SSM_ENV_PARAM}"
 aws ssm get-parameter \
   --name "${SSM_ENV_PARAM}" \
@@ -84,9 +87,11 @@ echo "===> Syncing S3 bucket and cleaning up old files"
 BUCKET_NAME=$(grep AWS_STORAGE_BUCKET_NAME "${ENV_FILE}" | cut -d '=' -f2 | tr -d '"' | tr -d '\r')
 
 if [ -n "$BUCKET_NAME" ]; then
-  docker compose -f deploy/docker-compose.yml exec -T web sh -c "aws s3 sync /opt/rooster/app/staticfiles/ s3://${BUCKET_NAME}/static/ --delete" || echo "!!! S3 sync failed, but continuing deployment"
+  echo "Syncing to bucket: ${BUCKET_NAME}"
+  # Voer sync uit vanaf de host. REPO_DIR is /opt/rooster/app
+  aws s3 sync "${REPO_DIR}/staticfiles/" "s3://${BUCKET_NAME}/static/" --delete --region "${REGION}"
 else
-  echo "!!! BUCKET_NAME niet gevonden in .env, overgeslagen"
+  echo "!!! BUCKET_NAME niet gevonden in .env, sync overgeslagen"
 fi
 
 echo "===> Waiting for health check of rooster-web"
