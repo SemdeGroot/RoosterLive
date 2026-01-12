@@ -1,7 +1,9 @@
 /* core/static/css/kompasgpt/kompasgpt.css */
 
 .kgpt-card { overflow: hidden; }
-.kgpt-card-inner { padding: 16px; }
+.kgpt-card-inner { padding: 16px; display: flex;
+  flex-direction: column;
+  min-height: 0;  } 
 
 .kgpt-alert{
   padding:12px;
@@ -12,23 +14,32 @@
 }
 .kgpt-alert-error{ border-color: rgba(255,0,0,0.25); }
 
-/* Chat layout: “real chatbot” feel */
 .kgpt-chat-shell{
-  display:flex;
-  flex-direction:column;
-  /* Hoogte: probeer zoveel mogelijk schermhoogte te pakken binnen je content */
-  height: clamp(520px, calc(100dvh - 260px), 900px);
-  background: transparent;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+  max-height: none !important;
 }
 
 /* Messages area */
 .kgpt-chat{
   flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding: 10px 6px 14px 6px;
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
+
+  padding-bottom: 40px; /* pas aan: 70-120px is meestal top */
+}
+
+/* Lege chat: minder ruimte bovenaan (dichter op divider) */
+.kgpt-chat:has(#emptyState){
+  padding-top: 2px;      /* was 10px */
+  padding-bottom: 6px;   /* optioneel */
+}
+
+.kgpt-chat:has(#emptyState) .kgpt-empty{
+  padding-top: 0;
+  margin-top: 0;
 }
 
 /* Empty state */
@@ -39,14 +50,34 @@
 }
 
 /* Message layout */
-.kgpt-msg{ max-width: 860px; width: 100%; }
-.kgpt-user{ align-self: flex-end; max-width: 85%; }
-.kgpt-assistant{ align-self: flex-start; max-width: 85%; }
+.kgpt-msg{
+  width: auto;          /* override width:100% */
+}
+.kgpt-user{
+  align-self: flex-end;
+  margin-left: auto;
+  max-width: 85%;
+  width: fit-content;   /* pill effect */
+}
+.kgpt-assistant{
+  align-self: flex-start;
+  margin-right: auto;
+  max-width: 85%;
+  width: fit-content;
+}
 
+/* Meta default: links (voor KompasGPT) */
 .kgpt-meta{
   font-size: 12px;
   color: var(--muted);
-  margin: 0 0 4px 2px;
+  text-align: left;
+  margin: 12px 0 4px 2px;
+}
+
+/* Alleen user meta rechts */
+.kgpt-user .kgpt-meta{
+  text-align: right;
+  margin: 0 2px 4px 0;
 }
 
 /* Bubble styling */
@@ -227,14 +258,6 @@
   border-bottom: 1px solid var(--border);
   padding: 8px;
   vertical-align: top;
-}
-
-/* Mobile tweaks */
-@media (max-width: 720px){
-  .kgpt-chat-shell{
-    height: calc(100dvh - 240px);
-  }
-  .kgpt-send{ min-width: 110px; }
 }
 
 /* --- Markdown output netjes --- */

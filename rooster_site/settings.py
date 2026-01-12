@@ -182,45 +182,55 @@ CELERY_TASK_ROUTES = {
     "core.tasks.send_news_uploaded_push_task": {"queue": "push"},
     "core.tasks.send_agenda_uploaded_push_task": {"queue": "push"},
     "core.tasks.send_laatste_pot_push_task": {"queue": "push"},
+    "tasks.run_kompas_scraper": {"queue": "scrape"},
 }
+# === Celery beat ===
+CELERY_BEAT_SCHEDULE = {}
 
-CELERY_BEAT_SCHEDULE = {
-    "weekly_cleanup_monday_0000": {
-        "task": "core.tasks.beat.cleanup.weekly_cleanup_task",
-        "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
-        "options": {"queue": "default"},
-    },
-    "weekly_fill_availability_monday_0003": {
-        "task": "core.tasks.beat.fill.weekly_fill_availability_task",
-        "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
-        "options": {"queue": "default"},
-    },
-    "monthly_uren_export_11th_0900": {
-        "task": "core.tasks.beat.uren.monthly_uren_export_task",
-        "schedule": crontab(minute=0, hour=7, day_of_month="11"),
-        "options": {"queue": "default"},
-    },
-    "send_uren_reminder_8th": {
-        "task": "core.tasks.beat.uren.send_uren_reminder",
-        "schedule": crontab(minute=0, hour=9, day_of_month="8"),
-        "options": {"queue": "default"},
-    },
-    "send_uren_reminder_9th": {
-        "task": "core.tasks.beat.uren.send_uren_reminder",
-        "schedule": crontab(minute=0, hour=9, day_of_month="9"),
-        "options": {"queue": "default"},
-    },
-    "send_birthday_reminder_0730": {
-        "task": "core.tasks.beat.birthday.send_birthday_reminder",
-        "schedule": crontab(minute=30, hour=7),
-        "options": {"queue": "default"},
-    },
-    "send_weekly_diensten_overzicht_fri_1900": {
-        "task": "core.tasks.beat.dienstenoverzicht.send_weekly_diensten_overzicht",
-        "schedule": crontab(minute=0, hour=19, day_of_week="fri"),
-        "options": {"queue": "default"},
-    },
-}
+if not DEBUG:
+    CELERY_BEAT_SCHEDULE = {
+        "weekly_cleanup_monday_0000": {
+            "task": "core.tasks.beat.cleanup.weekly_cleanup_task",
+            "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
+            "options": {"queue": "default"},
+        },
+        "weekly_fill_availability_monday_0003": {
+            "task": "core.tasks.beat.fill.weekly_fill_availability_task",
+            "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
+            "options": {"queue": "default"},
+        },
+        "monthly_uren_export_11th_0900": {
+            "task": "core.tasks.beat.uren.monthly_uren_export_task",
+            "schedule": crontab(minute=0, hour=7, day_of_month="11"),
+            "options": {"queue": "default"},
+        },
+        "send_uren_reminder_8th": {
+            "task": "core.tasks.beat.uren.send_uren_reminder",
+            "schedule": crontab(minute=0, hour=9, day_of_month="8"),
+            "options": {"queue": "default"},
+        },
+        "send_uren_reminder_9th": {
+            "task": "core.tasks.beat.uren.send_uren_reminder",
+            "schedule": crontab(minute=0, hour=9, day_of_month="9"),
+            "options": {"queue": "default"},
+        },
+        "send_birthday_reminder_0730": {
+            "task": "core.tasks.beat.birthday.send_birthday_reminder",
+            "schedule": crontab(minute=30, hour=7),
+            "options": {"queue": "default"},
+        },
+        "send_weekly_diensten_overzicht_fri_1900": {
+            "task": "core.tasks.beat.dienstenoverzicht.send_weekly_diensten_overzicht",
+            "schedule": crontab(minute=0, hour=19, day_of_week="fri"),
+            "options": {"queue": "default"},
+        },
+        "kompas_full_scrape_sat_0200": {
+            "task": "tasks.run_kompas_scraper",
+            "schedule": crontab(minute=0, hour=2, day_of_week="tue"),
+            "options": {"queue": "scrape"},
+            "args": (False,),  # test_mode=False -> volledige run
+        },
+    }
 
 # === Auth / Passwords ===
 AUTH_PASSWORD_VALIDATORS = [
@@ -348,26 +358,48 @@ ALLOWED_PHARMACY_NETWORKS = [
 ]
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
     },
-    'loggers': {
-        
-        # --- 2. NIET ZIEN: PDF Ruis (WeasyPrint & fontTools) ---
-        'weasyprint': {
-            'handlers': ['console'],
-            'level': 'WARNING',  # Verbergt info, toont alleen fouten
-            'propagate': False,
+    "loggers": {
+        # --- pdf demping ---
+        "weasyprint": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
-        'fontTools': {
-            'handlers': ['console'],
-            'level': 'WARNING',  # Verbergt "Decompiling glyf table..."
-            'propagate': False,
+        "fontTools": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
+
+        # --- demp HTTP request spam (Google SDK gebruikt httpx) ---
+        "httpx": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "httpcore": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # --- demp Google client logs (optioneel maar vaak fijn) ---
+        "google": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "google.api_core": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
     },
 }
 

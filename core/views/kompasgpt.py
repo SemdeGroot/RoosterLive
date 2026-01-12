@@ -1,6 +1,8 @@
 import os
 from typing import List, Dict, Tuple
-
+import re
+import random
+import time
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
@@ -10,6 +12,106 @@ from google import genai
 from google.genai import types
 
 from core.views._helpers import can
+import json
+from django.core.cache import cache
+
+DOCMETA_TTL = 30 * 60  # 0.5 uur
+DOCMETA_KEY_PREFIX = "kompas:docmeta:"
+
+_DOC_RE = re.compile(r"^fileSearchStores/[^/]+/documents/[^/]+$")
+
+def _extract_doc_names_from_response(resp) -> list[str]:
+    doc_names: list[str] = []
+
+    try:
+        candidates = getattr(resp, "candidates", None) or []
+        if not candidates:
+            return []
+
+        c0 = candidates[0]
+        gm = getattr(c0, "grounding_metadata", None)
+        if not gm:
+            return []
+
+        chunks = getattr(gm, "grounding_chunks", None) or []
+        for ch in chunks:
+            rc = getattr(ch, "retrieved_context", None)
+            if not rc:
+                continue
+
+            uri = getattr(rc, "uri", None) or getattr(rc, "document_name", None)
+            if not uri:
+                continue
+
+            # normaliseer naar .../documents/<id> als er extra pad aan hangt
+            if "/documents/" in uri and not _DOC_RE.match(uri):
+                base, rest = uri.split("/documents/", 1)
+                doc_id = rest.split("/", 1)[0]
+                uri = f"{base}/documents/{doc_id}"
+
+            if _DOC_RE.match(uri):
+                doc_names.append(uri)
+
+    except Exception:
+        pass
+
+    # dedupe keep order
+    seen = set()
+    out: list[str] = []
+    for d in doc_names:
+        if d and d not in seen:
+            seen.add(d)
+            out.append(d)
+    return out
+
+def _docmeta_cached(client, doc_name: str) -> dict:
+    key = DOCMETA_KEY_PREFIX + doc_name
+    cached = cache.get(key)
+    if cached:
+        return cached
+
+    doc = client.file_search_stores.documents.get(name=doc_name)
+
+    md = getattr(doc, "custom_metadata", None) or getattr(doc, "customMetadata", None) or []
+    meta = {}
+    for kv in md:
+        k = getattr(kv, "key", None) or (kv.get("key") if isinstance(kv, dict) else None)
+        v = (
+            getattr(kv, "string_value", None)
+            or getattr(kv, "stringValue", None)
+            or (kv.get("string_value") if isinstance(kv, dict) else None)
+            or (kv.get("stringValue") if isinstance(kv, dict) else None)
+        )
+        if k and v:
+            meta[k] = v
+
+    payload = {
+        "document": doc_name,
+        "source_url": meta.get("source_url"),
+        "category": meta.get("category"),
+        "display_name": getattr(doc, "display_name", None) or getattr(doc, "displayName", None),
+    }
+    cache.set(key, payload, timeout=DOCMETA_TTL)
+    return payload
+
+def _unique_sources_with_metadata(client, doc_names: list[str]) -> list[dict]:
+    out = []
+    seen_urls = set()
+    seen_docs = set()
+
+    for name in doc_names:
+        if not name or name in seen_docs:
+            continue
+        seen_docs.add(name)
+
+        meta = _docmeta_cached(client, name)
+        url = meta.get("source_url")
+        if not url or url in seen_urls:
+            continue
+        seen_urls.add(url)
+        out.append(meta)
+
+    return out
 
 
 def _format_history_for_prompt(history: List[Dict], max_turns: int = 8) -> str:
@@ -31,65 +133,44 @@ def _format_history_for_prompt(history: List[Dict], max_turns: int = 8) -> str:
         lines.append(f"Assistent: {content}")
     return "\n".join(lines).strip()
 
+def _should_retry_gemini_exc(e: Exception) -> bool:
+    msg = str(e).lower()
+    return (
+        "503" in msg
+        or "unavailable" in msg
+        or "overloaded" in msg
+        or "resource_exhausted" in msg
+        or "429" in msg
+        or "internal" in msg
+        or "500" in msg
+        or "502" in msg
+        or "504" in msg
+    )
 
-def _extract_sources_from_response(resp) -> List[str]:
-    """
-    Probeert links/uri’s te halen uit grounding metadata.
-    Dit is 'best effort' omdat SDK structs kunnen verschillen per versie.
-    """
-    urls = []
+def _generate_with_retry(client, *, model: str, contents: str, config, attempts: int = 5, base_sleep: float = 1.0):
+    last = None
+    for i in range(attempts):
+        try:
+            return client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config,
+            )
+        except Exception as e:
+            last = e
+            if not _should_retry_gemini_exc(e) or i == attempts - 1:
+                raise
+            # 1s, 2s, 4s, 8s... (max 10s) + beetje jitter
+            sleep_s = min(base_sleep * (2 ** i), 10.0) + random.uniform(0, 0.4)
+            time.sleep(sleep_s)
+    raise last  # theoretisch
 
-    try:
-        candidates = getattr(resp, "candidates", None) or []
-        if not candidates:
-            return []
-
-        c0 = candidates[0]
-        gm = getattr(c0, "grounding_metadata", None)
-        if not gm:
-            return []
-
-        chunks = getattr(gm, "grounding_chunks", None) or []
-        for ch in chunks:
-            # vaak: ch.web.uri of ch.retrieved_context.uri etc.
-            web = getattr(ch, "web", None)
-            if web:
-                uri = getattr(web, "uri", None)
-                if uri:
-                    urls.append(uri)
-
-            rc = getattr(ch, "retrieved_context", None)
-            if rc:
-                uri = getattr(rc, "uri", None)
-                if uri:
-                    urls.append(uri)
-
-        # fallback: sommige structs hebben 'sources'
-        srcs = getattr(gm, "sources", None) or []
-        for s in srcs:
-            uri = getattr(s, "uri", None) or getattr(s, "url", None)
-            if uri:
-                urls.append(uri)
-
-    except Exception:
-        pass
-
-    # dedupe keep order
-    seen = set()
-    out = []
-    for u in urls:
-        if u and u not in seen:
-            seen.add(u)
-            out.append(u)
-    return out
-
-
-def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, List[str]]:
-    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, List[dict]]:
+    api_key = os.getenv("GOOGLE_API_KEY")
     store_name = os.getenv("GEMINI_STORE_ID")  # "fileSearchStores/...."
 
     if not api_key:
-        raise RuntimeError("GOOGLE_API_KEY (of GEMINI_API_KEY) ontbreekt in env.")
+        raise RuntimeError("GOOGLE_API_KEY ontbreekt in env.")
     if not store_name:
         raise RuntimeError("GEMINI_STORE_ID ontbreekt in env (verwacht: fileSearchStores/<id>).")
 
@@ -123,16 +204,23 @@ def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, Lis
         ],
     )
 
-    resp = client.models.generate_content(
+    resp = _generate_with_retry(
+        client,
         model="gemini-2.5-flash",
         contents=prompt,
         config=config,
+        attempts=4, # max 4 pogingen
+        base_sleep=1.0, # start met 1sec, verhoogt exponentieel
     )
 
     text = getattr(resp, "text", None)
     answer = (text or "").strip() or str(resp)
-    sources = _extract_sources_from_response(resp)
-    return answer, sources
+
+    doc_names = _extract_doc_names_from_response(resp)
+
+    sources_meta = _unique_sources_with_metadata(client, doc_names)
+
+    return answer, sources_meta
 
 
 @login_required

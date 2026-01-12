@@ -45,15 +45,15 @@ class KompasScraper:
         self.session = requests.Session(impersonate="chrome120")
 
         # ---- Rate limiting / politeness defaults ----
-        self.max_preparaat_groups_per_run = int(os.getenv("FK_PREPARAAT_GROUPS_PER_RUN", "25"))
-        self.discovery_sleep_min = float(os.getenv("FK_DISCOVERY_SLEEP_MIN", "0.35"))
-        self.discovery_sleep_max = float(os.getenv("FK_DISCOVERY_SLEEP_MAX", "0.85"))
+        self.max_preparaat_groups_per_run = int(os.getenv("FK_PREPARAAT_GROUPS_PER_RUN", "9999"))
+        self.discovery_sleep_min = float(os.getenv("FK_DISCOVERY_SLEEP_MIN", "0.5"))
+        self.discovery_sleep_max = float(os.getenv("FK_DISCOVERY_SLEEP_MAX", "1.5"))
 
         # Infinite scroll autoload
-        self.max_groep_autoload_pages = int(os.getenv("FK_GROEP_AUTOLOAD_PAGES_MAX", "60"))
+        self.max_groep_autoload_pages = int(os.getenv("FK_GROEP_AUTOLOAD_PAGES_MAX", "999"))
 
         # Extractie: max aantal inject fetches per pagina
-        self.max_inject_fetches_per_page = int(os.getenv("FK_EXTRACT_INJECT_MAX", "12"))
+        self.max_inject_fetches_per_page = int(os.getenv("FK_EXTRACT_INJECT_MAX", "100"))
 
         # md dumps in MEDIA/tmp/kompasgpt (via default_storage)
         if tmp_dump_count is None:
@@ -99,17 +99,110 @@ class KompasScraper:
         self._log(f"Polite sleep ({where}): {s:.2f}s" if where else f"Polite sleep: {s:.2f}s")
         time.sleep(s)
 
+    def _parse_retry_after_seconds(self, value: str) -> Optional[int]:
+        if not value:
+            return None
+        v = value.strip()
+        return int(v) if v.isdigit() else None
+
+    def _exp_backoff_seconds(self, attempt: int, base: float, cap: float) -> float:
+        # exponential backoff: base * 2^attempt, met jitter
+        raw = min(cap, base * (2 ** attempt))
+        jitter = random.uniform(0.8, 1.2)
+        return max(0.0, raw * jitter)
+    
+    def _is_transient_gemini_error(self, e: Exception) -> bool:
+        msg = str(e).lower()
+
+        # voorkom dat eigen poll timeout eindeloos retried
+        if "poll timeout" in msg or "operation poll timeout" in msg:
+            return False
+
+        # status codes die vrijwel altijd transient zijn
+        transient_codes = ("429", "500", "502", "503", "504")
+        if any(code in msg for code in transient_codes):
+            return True
+
+        # alleen hele specifieke signalen (niet te brede woorden)
+        transient_markers = (
+            "too many requests",
+            "rate limit",
+            "quota exceeded",
+            "resource_exhausted",
+            "unavailable",
+            "overloaded",
+            "internal error",
+            "deadline exceeded",
+        )
+        return any(m in msg for m in transient_markers)
+
+
     def fetch_url(self, url: str) -> Optional[str]:
         if url in self._html_cache:
             return self._html_cache[url]
-        try:
-            res = self.session.get(url, headers=self.get_headers(), timeout=20)
-            res.raise_for_status()
-            self._html_cache[url] = res.text
-            return res.text
-        except Exception as e:
-            self._log(f"Fetch error voor {url}: {e}")
-            return None
+
+        # Config via env (veilige defaults)
+        max_retries = int(os.getenv("FK_HTTP_MAX_RETRIES", "3"))         # 3 retries -> totaal 4 attempts
+        timeout_s = float(os.getenv("FK_HTTP_TIMEOUT", "20"))
+
+        backoff_5xx_base = float(os.getenv("FK_BACKOFF_5XX_BASE", "3"))  # start 3s
+        backoff_5xx_cap  = float(os.getenv("FK_BACKOFF_5XX_CAP", "90"))  # max 90s
+
+        backoff_429_base = float(os.getenv("FK_BACKOFF_429_BASE", "30")) # start 30s
+        backoff_429_cap  = float(os.getenv("FK_BACKOFF_429_CAP", "300")) # max 5 min
+
+        last_err = None
+
+        for attempt in range(max_retries + 1):
+            # Polite delay vóór elke echte request
+            self._polite_sleep(where="fetch_url")
+
+            try:
+                res = self.session.get(url, headers=self.get_headers(), timeout=timeout_s)
+                status = res.status_code
+
+                # ---- 429 Too Many Requests ----
+                if status == 429:
+                    ra = self._parse_retry_after_seconds(res.headers.get("Retry-After", ""))
+                    wait = float(ra) if ra is not None else self._exp_backoff_seconds(
+                        attempt=attempt, base=backoff_429_base, cap=backoff_429_cap
+                    )
+
+                    self._log(f"HTTP 429 voor {url}. Backoff: {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
+                    if attempt >= max_retries:
+                        return None
+                    time.sleep(wait)
+                    continue
+
+                # ---- tijdelijk serverprobleem ----
+                if status in (500, 502, 503, 504):
+                    wait = self._exp_backoff_seconds(attempt=attempt, base=backoff_5xx_base, cap=backoff_5xx_cap)
+                    self._log(f"HTTP {status} voor {url}. Backoff: {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
+                    if attempt >= max_retries:
+                        return None
+                    time.sleep(wait)
+                    continue
+
+                # ---- “hard” client errors: meestal niet retryen ----
+                if status in (400, 401, 403, 404):
+                    self._log(f"HTTP {status} voor {url}. Niet retryen.")
+                    return None
+
+                # ---- ok / andere 2xx/3xx ----
+                res.raise_for_status()
+                self._html_cache[url] = res.text
+                return res.text
+
+            except Exception as e:
+                last_err = e
+                wait = self._exp_backoff_seconds(attempt=attempt, base=backoff_5xx_base, cap=backoff_5xx_cap)
+                self._log(f"Fetch exception voor {url}: {e} -> backoff {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
+                if attempt >= max_retries:
+                    return None
+                time.sleep(wait)
+
+        self._log(f"Fetch failed voor {url}: {last_err}")
+        return None
 
     # ----------------------------
     # URL helpers
@@ -774,45 +867,91 @@ class KompasScraper:
     # ============================
     # GEMINI / DB
     # ============================
-    def upload_to_gemini(self, title: str, content: str) -> bool:
+    def upload_to_gemini(self, title: str, content: str, source_url: str, category: str | None = None) -> bool:
+        max_retries = int(os.getenv("FK_GEMINI_MAX_RETRIES", "5"))  # 6 attempts
+        backoff_base = float(os.getenv("FK_GEMINI_BACKOFF_BASE", "5"))
+        backoff_cap  = float(os.getenv("FK_GEMINI_BACKOFF_CAP", "120"))
+        poll_interval = float(os.getenv("FK_GEMINI_POLL_INTERVAL", "4"))
+        poll_timeout_s = float(os.getenv("FK_GEMINI_POLL_TIMEOUT", str(30 * 60)))  # 30 min
+
+        tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as tmp:
                 tmp.write(content)
                 tmp_path = tmp.name
 
-            try:
-                operation = self.client.file_search_stores.upload_to_file_search_store(
-                    file_search_store_name=self.store_id,
-                    file=tmp_path,
-                    config={"display_name": title},
-                )
+            config = {
+                "display_name": title,
+                "custom_metadata": [{"key": "source_url", "string_value": source_url}],
+            }
+            if category:
+                config["custom_metadata"].append({"key": "category", "string_value": category})
 
-                while not operation.done:
-                    time.sleep(4)
-                    operation = self.client.operations.get(operation)
+            for attempt in range(max_retries + 1):
+                try:
+                    operation = self.client.file_search_stores.upload_to_file_search_store(
+                        file_search_store_name=self.store_id,
+                        file=tmp_path,
+                        config=config,
+                    )
 
-                return True
-            finally:
-                if os.path.exists(tmp_path):
-                    os.remove(tmp_path)
+                    # Polling met retry/backoff
+                    start_poll = time.time()
+                    while True:
+                        if getattr(operation, "done", False):
+                            # Sommige SDK's zetten error op operation.error
+                            op_err = getattr(operation, "error", None)
+                            if op_err:
+                                raise RuntimeError(f"Gemini operation error: {op_err}")
+                            return True
 
-        except Exception as e:
-            self._log(f"Gemini upload fout: {e}")
+                        if (time.time() - start_poll) > poll_timeout_s:
+                            raise TimeoutError("Gemini upload operation poll timeout")
+
+                        time.sleep(poll_interval)
+                        try:
+                            operation = self.client.operations.get(operation)
+                        except Exception as pe:
+                            if self._is_transient_gemini_error(pe):
+                                wait = self._exp_backoff_seconds(attempt=min(attempt, 6), base=backoff_base, cap=backoff_cap)
+                                self._log(f"Gemini poll transient error: {pe} -> retry in {wait:.1f}s")
+                                time.sleep(wait)
+                                continue
+                            raise
+
+                except Exception as e:
+                    # Niet-transient? Meteen stoppen
+                    if (attempt >= max_retries) or (not self._is_transient_gemini_error(e)):
+                        self._log(f"Gemini upload fout (geen retry meer): {e}")
+                        return False
+
+                    wait = self._exp_backoff_seconds(attempt=attempt, base=backoff_base, cap=backoff_cap)
+                    self._log(f"Gemini upload transient error: {e} -> retry in {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
+                    time.sleep(wait)
+
             return False
 
-    def process_url(self, item: Dict, dump_md: bool = False) -> Tuple[bool, Optional[str]]:
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+
+
+    def process_url(self, item: Dict, dump_md: bool = False) -> Tuple[str, Optional[str]]:
         """
-        Returns: (processed_ok, dumped_path)
+        status: "uploaded" | "unchanged" | "failed"
         """
+
         title, md_content = self.scrape_to_markdown(item["url"])
         if not md_content or not title:
-            return False, None
+            return "failed", None
 
         new_hash = hashlib.sha256(md_content.encode("utf-8")).hexdigest()
         page_obj, created = ScrapedPage.objects.get_or_create(url=item["url"])
 
-        if not created and page_obj.content_hash == new_hash:
-            return False, None
+        unchanged = (not created and page_obj.content_hash == new_hash)
 
         dumped_path = None
         if dump_md:
@@ -822,14 +961,17 @@ class KompasScraper:
                 category=item.get("category"),
             )
 
-        if self.upload_to_gemini(title, md_content):
+        if unchanged:
+            return "unchanged", dumped_path
+
+        if self.upload_to_gemini(title, md_content, source_url=item["url"], category=item.get("category")):
             page_obj.title = title
             page_obj.category = item["category"]
             page_obj.content_hash = new_hash
             page_obj.save()
-            return True, dumped_path
+            return "uploaded", dumped_path
 
-        return False, dumped_path
+        return "failed", dumped_path
 
     # ============================
     # BATCH HELPERS (10/10/10)
@@ -875,8 +1017,8 @@ class KompasScraper:
         }
 
         for item in picked:
-            ok, dumped_path = self.process_url(item, dump_md=dump_md)
-            if ok:
+            status, dumped_path = self.process_url(item, dump_md=dump_md)
+            if status == "uploaded":
                 results["processed"][item["category"]] += 1
             if dumped_path:
                 results["dumped_files"].append(dumped_path)

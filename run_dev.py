@@ -69,7 +69,7 @@ worker_proc = subprocess.Popen(
         "-A", "rooster_site",
         "worker",
         "-l", "info",
-        "-Q", "mail,default,push",
+        "-Q", "mail,default,push,scrape",
         "-Ofair",
         "--concurrency=1",
         "--pool=solo",

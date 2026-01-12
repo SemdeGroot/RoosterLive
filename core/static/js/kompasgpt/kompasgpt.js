@@ -9,6 +9,16 @@
     el.scrollTop = el.scrollHeight;
   }
 
+  // Alleen automatisch scrollen als user al (bijna) onderaan zit
+  function isNearBottom(el, threshold = 80) {
+    if (!el) return true;
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < threshold;
+  }
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
   function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str ?? "";
@@ -29,11 +39,10 @@
   function renderMarkdownToHtml(md) {
     const safeMd = normalizeMarkdown(md);
 
-    // marked config: behoud line breaks
     if (window.marked && typeof window.marked.setOptions === "function") {
       window.marked.setOptions({
         gfm: true,
-        breaks: true,     // <-- behoud enters als <br>
+        breaks: true,
         mangle: false,
         headerIds: false,
       });
@@ -43,7 +52,6 @@
     if (window.marked) {
       html = window.marked.parse(safeMd);
     } else {
-      // fallback: plain text
       html = `<div>${escapeHtml(safeMd).replace(/\n/g, "<br>")}</div>`;
     }
 
@@ -55,7 +63,6 @@
 
   function renderAllMarkdownInHistory() {
     qsa(".js-md").forEach((el) => {
-      // Pak exact de originele tekst (inclusief newlines/spaties zoals in DOM)
       const md = el.textContent ?? "";
       el.innerHTML = renderMarkdownToHtml(md);
       el.classList.add("kgpt-md-rendered");
@@ -65,14 +72,21 @@
   function buildSourcesDetails(sources) {
     if (!sources || !sources.length) return "";
 
-    const items = sources.map((u) => {
-      const safeU = escapeHtml(u);
-      return `<a class="kgpt-source-link" href="${safeU}" target="_blank" rel="noopener noreferrer">${safeU}</a>`;
+    // sources = [{document, source_url, display_name, category}, ...]
+    const links = sources
+      .map((s) => (s && s.source_url) ? String(s.source_url) : "")
+      .filter(Boolean);
+
+    if (!links.length) return "";
+
+    const items = links.map((url) => {
+      const safeUrl = escapeHtml(url);
+      return `<a class="kgpt-source-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
     }).join("");
 
     return `
       <details class="kgpt-sources">
-        <summary class="kgpt-sources-summary">Bronnen (${sources.length})</summary>
+        <summary class="kgpt-sources-summary">Bronnen (${links.length})</summary>
         <div class="kgpt-sources-list">${items}</div>
       </details>
     `;
@@ -99,36 +113,100 @@
     wrap.className = "kgpt-msg kgpt-user";
     wrap.innerHTML = `
       <div class="kgpt-meta kgpt-user-meta">Jij</div>
-      <div class="kgpt-bubble">${escapeHtml(content).replace(/\n/g, "<br>")}</div>
+      <div class="kgpt-bubble kgpt-bubble-user">
+        ${escapeHtml(content).replace(/\n/g, "<br>")}
+      </div>
     `;
     chat.appendChild(wrap);
-    scrollChatToBottom();
+
+    if (isNearBottom(chat)) scrollChatToBottom();
   }
 
   function appendAssistantTyping() {
     const chat = qs("#chatBox");
     if (!chat) return null;
 
+    const empty = qs("#emptyState");
+    if (empty) empty.remove();
+
     const wrap = document.createElement("div");
     wrap.className = "kgpt-msg kgpt-assistant kgpt-typing";
     wrap.innerHTML = `
       <div class="kgpt-meta">KompasGPT</div>
-      <div class="kgpt-bubble">${thinkingHtml()}</div>
+      <div class="kgpt-bubble kgpt-bubble-assistant">
+        ${thinkingHtml()}
+      </div>
     `;
+
     chat.appendChild(wrap);
-    scrollChatToBottom();
+    if (isNearBottom(chat)) scrollChatToBottom();
     return wrap;
   }
 
-  function appendAssistantFinal(answer, sources) {
+  /**
+   * Typewriter met live markdown (woord-chunks):
+   * - voegt meerdere "tokens" (woorden + spaties/newlines) per tick toe
+   * - rendert markdown throttled (renderEveryMs)
+   */
+  async function typewriterMarkdown(
+    el,
+    fullMd,
+    {
+      wps = 40,           // words per second (hoger = sneller)
+      chunkWords = 4,     // hoeveel woorden per tick (hoger = "meer in 1 keer")
+      renderEveryMs = 60, // hoe vaak live markdown renderen (lager = sneller "visueel", maar duurder)
+    } = {}
+  ) {
+    if (!el) return;
+
+    const md = (fullMd ?? "").toString();
+
+    // Split in "tokens" zodat spaties/newlines behouden blijven
+    // Resultaat: ["Woord", " ", "Woord", "\n", ...]
+    const tokens = md.match(/\S+|\s+/g) || [];
+    let idx = 0;
+    let buffer = "";
+    let lastRender = performance.now();
+
+    // Tick snelheid: hoeveel ticks per seconde we willen
+    // (wps / chunkWords) ticks per seconde
+    const ticksPerSec = Math.max(1, wps / Math.max(1, chunkWords));
+    const delay = Math.max(1, Math.round(1000 / ticksPerSec));
+
+    while (idx < tokens.length) {
+      // voeg tokens toe totdat we chunkWords "woorden" hebben toegevoegd
+      let wordsAdded = 0;
+      while (idx < tokens.length && wordsAdded < chunkWords) {
+        const t = tokens[idx++];
+        buffer += t;
+        if (!/^\s+$/.test(t)) wordsAdded += 1; // alleen niet-whitespace telt als "woord"
+      }
+
+      const now = performance.now();
+      const timeToRender = (now - lastRender) >= renderEveryMs;
+      const isDone = idx >= tokens.length;
+
+      if (timeToRender || isDone) {
+        el.innerHTML = renderMarkdownToHtml(buffer);
+        lastRender = now;
+      }
+
+      await sleep(delay);
+    }
+
+  }
+
+  async function appendAssistantFinal(answer, sources) {
     const chat = qs("#chatBox");
     if (!chat) return;
+
+    const wasAtBottom = isNearBottom(chat);
 
     const wrap = document.createElement("div");
     wrap.className = "kgpt-msg kgpt-assistant";
     wrap.innerHTML = `
       <div class="kgpt-meta">KompasGPT</div>
-      <div class="kgpt-bubble">
+      <div class="kgpt-bubble kgpt-bubble-assistant">
         <div class="kgpt-md js-md"></div>
       </div>
       ${buildSourcesDetails(sources)}
@@ -138,12 +216,15 @@
 
     const mdEl = wrap.querySelector(".js-md");
     if (mdEl) {
-      // Zet eerst textContent (veilig) en render dan markdown -> HTML
-      mdEl.textContent = answer || "";
-      mdEl.innerHTML = renderMarkdownToHtml(mdEl.textContent);
+      await typewriterMarkdown(mdEl, answer || "", {
+        wps: 55,        // sneller
+        chunkWords: 6,  // meer woorden per "sprong"
+        renderEveryMs: 50
+      });
     }
 
-    scrollChatToBottom();
+    // Alleen aan het einde scrollen als user al onderaan zat
+    if (wasAtBottom) scrollChatToBottom();
   }
 
   async function postForm(params) {
@@ -158,7 +239,7 @@
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const msg = data && data.error ? data.error : "Er ging iets mis.";
+      const msg = (data && data.error) ? data.error : "Er ging iets mis.";
       throw new Error(msg);
     }
     return data;
@@ -191,10 +272,10 @@
       });
 
       if (typingNode) typingNode.remove();
-      appendAssistantFinal(data.answer || "", data.sources || []);
+      await appendAssistantFinal(data.answer || "", data.sources || []);
     } catch (err) {
       if (typingNode) typingNode.remove();
-      appendAssistantFinal(`Fout: ${err.message}`, []);
+      await appendAssistantFinal(`**Fout:** ${err.message}`, []);
     } finally {
       setSendingState(false);
     }
@@ -214,19 +295,18 @@
       });
 
       chat.innerHTML = `<div class="kgpt-empty" id="emptyState">
-        Nog geen berichten. Stel een vraag over een geneesmiddel, groepstekst of indicatie die in het Farmacotherapeutisch Kompas staat.
+        Stel een vraag over een geneesmiddel, groepstekst of indicatie die in het Farmacotherapeutisch Kompas staat.
       </div>`;
       scrollChatToBottom();
     } catch (err) {
-      appendAssistantFinal(`Fout bij wissen: ${err.message}`, []);
+      await appendAssistantFinal(`**Fout bij wissen:** ${err.message}`, []);
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // 1) Render markdown van bestaande history direct bij page load
+    // bestaande history renderen
     renderAllMarkdownInHistory();
 
-    // 2) bindings
     const form = qs("#chatForm");
     const clearBtn = qs("#clearBtn");
     const messageEl = qs("#messageInput");

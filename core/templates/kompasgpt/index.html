@@ -27,7 +27,7 @@
         <img src="{% static 'img/caduceus.svg' %}" alt="" class="birthday-icon">
         <div class="birthday-header-text">
           <h2>KompasGPT</h2>
-          <p>Chatbot op Farmacotherapeutisch Kompas teksten (RAG / File Search Store).</p>
+        <p>Stel je vraag. KompasGPT zoekt met Retrieval Augmented Generation (RAG) in het Farmacotherapeutisch Kompas en antwoordt alleen op basis van de gevonden bronnen.</p>
         </div>
 
         <div class="header-actions">
@@ -65,9 +65,17 @@
                     <details class="kgpt-sources">
                       <summary class="kgpt-sources-summary">Bronnen ({{ msg.sources|length }})</summary>
                       <div class="kgpt-sources-list">
-                        {% for u in msg.sources %}
-                          <a class="kgpt-source-link" href="{{ u }}" target="_blank" rel="noopener noreferrer">{{ u }}</a>
-                        {% endfor %}
+                      {% for s in msg.sources %}
+                        {% if s.source_url %}
+                          <a class="kgpt-source-link"
+                            href="{{ s.source_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer">
+                            {{ s.source_url }}
+                          </a>
+                        {% endif %}
+                      {% endfor %}
+
                       </div>
                     </details>
                   {% endif %}
@@ -76,7 +84,7 @@
             {% endfor %}
           {% else %}
             <div class="kgpt-empty" id="emptyState">
-        Nog geen berichten. Stel een vraag over een geneesmiddel, groepstekst of indicatie die in het Farmacotherapeutisch Kompas staat.
+        Stel een vraag over een geneesmiddel, groepstekst of indicatie die in het Farmacotherapeutisch Kompas staat.
             </div>
           {% endif %}
         </div>
