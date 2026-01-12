@@ -16,9 +16,6 @@ echo "===> Deploying image tag: ${IMAGE_TAG}"
 
 cd "${REPO_DIR}"
 
-mkdir -p staticfiles
-sudo chmod 777 staticfiles
-
 echo "===> Fetching .env from SSM: ${SSM_ENV_PARAM}"
 aws ssm get-parameter \
   --name "${SSM_ENV_PARAM}" \
@@ -87,9 +84,27 @@ echo "===> Syncing S3 bucket and cleaning up old files"
 BUCKET_NAME=$(grep AWS_STORAGE_BUCKET_NAME "${ENV_FILE}" | cut -d '=' -f2 | tr -d '"' | tr -d '\r')
 
 if [ -n "$BUCKET_NAME" ]; then
-  echo "Syncing to bucket: ${BUCKET_NAME}"
-  # Voer sync uit vanaf de host. REPO_DIR is /opt/rooster/app
-  aws s3 sync "${REPO_DIR}/staticfiles/" "s3://${BUCKET_NAME}/static/" --delete --region "${REGION}"
+  # Maak een tijdelijke map op de host (EC2)
+  TEMP_STATIC="${REPO_DIR}/temp_static_deploy"
+  rm -rf "$TEMP_STATIC"
+  mkdir -p "$TEMP_STATIC"
+
+  # 3. Kopieer de bestanden van de container naar de host
+  echo "Extracting files from container..."
+  docker cp rooster-web:/opt/rooster/app/staticfiles/. "$TEMP_STATIC/"
+
+  # 4. Alleen syncen als de map niet leeg is
+  if [ "$(ls -A "$TEMP_STATIC")" ]; then
+    echo "Syncing to bucket: ${BUCKET_NAME}"
+    aws s3 sync "$TEMP_STATIC/" "s3://${BUCKET_NAME}/static/" --delete --region "${REGION}"
+  else
+    echo "!!! ERROR: Lokale static map is leeg. Sync afgebroken om S3 te beschermen!"
+    rm -rf "$TEMP_STATIC"
+    exit 1
+  fi
+
+  # Opruimen van de tijdelijke map
+  rm -rf "$TEMP_STATIC"
 else
   echo "!!! BUCKET_NAME niet gevonden in .env, sync overgeslagen"
 fi
