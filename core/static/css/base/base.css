@@ -33,7 +33,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   transform: translateY(40px);
 }
 
-/* Header – mobile first (flex) */
+/* Header: mobile first (flex) */
 .header{
   position:sticky; top:0; z-index:1000;
   display:flex; align-items:center; gap:12px;

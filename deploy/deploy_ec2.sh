@@ -80,6 +80,9 @@ if ! docker compose -f deploy/docker-compose.yml exec -T web python manage.py co
   exit 1
 fi
 
+echo "===> Syncing and cleaning S3"
+docker compose -f deploy/docker-compose.yml exec -T web python manage.py cleanup_s3_static
+
 echo "===> Waiting for health check of rooster-web"
 MAX_RETRIES=10
 SLEEP_SECONDS=10
