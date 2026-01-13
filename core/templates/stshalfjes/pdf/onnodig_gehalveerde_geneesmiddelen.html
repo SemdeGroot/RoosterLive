@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Onnodig gehalveerde geneesmiddelen</title>
+
+  <style>
+    .muted { color: #666; }
+
+    /* FOOTER: direct onder de tabel */
+    .pdf-footer {
+      font-size: 9pt;
+      color: #444;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+      page-break-inside: avoid;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.6fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .footer-block {
+      line-height: 1.25;
+      padding-right: 6px;
+    }
+
+    .footer-block:not(:last-child) {
+      border-right: 1px solid #ddd;
+      padding-right: 18px;
+    }
+
+    .footer-label {
+      font-weight: 700;
+      margin-bottom: 4px;
+      padding-bottom: 2px;
+      color: #111;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .footer-item { margin: 0; }
+
+    .footer-strong {
+      font-weight: 700;
+      color: #111;
+    }
+
+    .authorisation {
+      margin-top: 22px;
+      page-break-inside: avoid;
+    }
+
+    /* Tabel basis */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 10.5pt;
+    }
+    th, td {
+      padding: 8px 8px;
+      vertical-align: top;
+      border-bottom: 1px solid #eee;
+    }
+    thead th {
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+      font-weight: 700;
+      color: #111;
+      background: #fafafa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div class="pdf-header">
+    {% if logo_path %}
+      <img class="pdf-logo" src="file://{{ logo_path }}" alt="Logo">
+    {% endif %}
+
+    <div>
+      <h1 class="pdf-title">Onnodig gehalveerde geneesmiddelen</h1>
+
+      <div class="pdf-submeta">
+        <div><strong>Datum:</strong> {{ generated_at|date:"d-m-Y" }}</div>
+        {% if apotheek %}
+          <div><strong>Apotheek:</strong> {{ apotheek.name }}</div>
+        {% endif %}
+      </div>
+
+      {% if contact_email %}
+        <div class="prepared-by">
+          <span class="muted">{{ contact_email }}</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="section-title">Actueel overzicht onnodig gehalveerde geneesmiddelen</div>
+
+  <!-- TABEL -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:4%; text-align:center; color:#666;"></th>
+
+        {% if not apotheek %}
+          <th style="width:16%;">Apotheek</th>
+          <th style="width:14%;">Patiënt</th>
+          <th style="width:10%;">Geboortedatum</th>
+          <th style="width:28%;">Wordt gehalveerd</th>
+          <th style="width:28%;">Alternatief beschikbaar</th>
+        {% else %}
+          <th style="width:18%;">Patiënt</th>
+          <th style="width:12%;">Geboortedatum</th>
+          <th style="width:35%;">Wordt gehalveerd</th>
+          <th style="width:35%;">Alternatief beschikbaar</th>
+        {% endif %}
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td style="width:4%; text-align:center; color:#666;">{{ forloop.counter }}</td>
+
+          {% if not apotheek %}
+            <td style="width:16%;">{{ item.apotheek.name|default:"-" }}</td>
+            <td style="width:14%;">{{ item.patient_naam|default:"-" }}</td>
+            <td style="width:10%; color:#666;">
+              {% if item.patient_geboortedatum %}
+                {{ item.patient_geboortedatum|date:"d-m-Y" }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td style="width:28%;">
+              <strong>{{ item.item_gehalveerd.naam }}</strong><br>
+              <span class="muted">ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</span>
+            </td>
+            <td style="width:28%;">
+              <strong>{{ item.item_alternatief.naam }}</strong><br>
+              <span class="muted">ZI-nummer: {{ item.item_alternatief.zi_nummer }}</span>
+            </td>
+          {% else %}
+            <td style="width:18%;">{{ item.patient_naam|default:"-" }}</td>
+            <td style="width:12%; color:#666;">
+              {% if item.patient_geboortedatum %}
+                {{ item.patient_geboortedatum|date:"d-m-Y" }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td style="width:35%;">
+              <strong>{{ item.item_gehalveerd.naam }}</strong><br>
+              <span class="muted">ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</span>
+            </td>
+            <td style="width:35%;">
+              <strong>{{ item.item_alternatief.naam }}</strong><br>
+              <span class="muted">ZI-nummer: {{ item.item_alternatief.zi_nummer }}</span>
+            </td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="{% if apotheek %}5{% else %}6{% endif %}"
+              class="muted"
+              style="text-align:center; padding:20px;">
+            Geen meldingen gevonden.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="pdf-footer">
+    <div class="footer-grid">
+
+      <div class="footer-block">
+        <div class="footer-label">Apotheek Jansen</div>
+        <p class="footer-item">Kwaliteitshandboek</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Documentnummer</div>
+        <p class="footer-item">F-GDS-11</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Versie</div>
+        <p class="footer-item" style="display:flex; justify-content:space-between;">
+          <span class="footer-strong">2</span>
+          <span class="muted" style="font-style: italic;"> januari 2024</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AUTHORISATIE -->
+  <div class="authorisation">
+    <p style="margin-bottom: 8px; margin-top: 16px;">Goedgekeurd door,</p>
+
+    <p style="margin: 0 0 8px 0;">
+      <strong>Drs. Roel de Groot</strong>,<br>
+      <span class="muted">Specialist Openbaar Apotheker</span>
+    </p>
+
+    {% if signature_path %}
+      <img
+        src="file://{{ signature_path }}"
+        alt="Handtekening"
+        style="height:50px; display:block; margin:10px 0 0 0;"
+      >
+    {% endif %}
+  </div>
+
+</body>
+</html>

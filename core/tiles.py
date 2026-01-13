@@ -22,7 +22,6 @@ TILE_GROUPS = {
         {"name": "Diensten", "img": "diensten.svg", "url_name": "mijndiensten", "perm": "can_view_diensten"},
         {"name": "Uren doorgeven", "img": "uren_doorgeven.svg", "url_name": "urendoorgeven", "perm": "can_view_urendoorgeven"},
         {"name": "Ziek melden", "img": "ziek.svg", "url_name": "ziekmelden", "perm": "can_view_ziekmelden"},
-        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
         {"name": "Inschrijven", "img": "inschrijven.svg", "url_name": "inschrijvingen", "perm": "can_view_inschrijven"},
     ],
 
@@ -39,6 +38,7 @@ TILE_GROUPS = {
         {"name": "Geen levering",   "img": "no-delivery.svg",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
         {"name": "STS halfjes",     "img": "sts_halfjes.svg",       "url_name": "stshalfjes",       "perm": "can_view_baxter_sts_halfjes"},
         {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "laatstepotten",    "perm": "can_view_baxter_laatste_potten"},
+        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
        "openbare": [

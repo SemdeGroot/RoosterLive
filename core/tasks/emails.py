@@ -1,4 +1,4 @@
-from celery import shared_task
+from celery import shared_task, chord, group
 from core.tasks.email_dispatcher import email_dispatcher_task
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
@@ -108,3 +108,115 @@ def send_laatste_pot_email_task(self, item_naam: str):
             }],
             queue="mail",
         )
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def cleanup_storage_files_task(self, results, paths):
+    """
+    Cleanup voor meerdere files (chord callback).
+    Celery chord geeft altijd eerst 'results' mee.
+    """
+    from django.core.files.storage import default_storage
+
+    for p in paths or []:
+        try:
+            if default_storage.exists(p):
+                default_storage.delete(p)
+        except Exception:
+            pass
+
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_stshalfjes_pdf_task(self, organization_ids):
+    import os
+    from django.conf import settings
+    from django.utils import timezone
+    from django.template.loader import render_to_string
+    from django.core.files.base import ContentFile
+    from django.core.files.storage import default_storage
+
+    from core.models import STSHalfje, Organization
+    from core.views._helpers import _static_abs_path, _render_pdf
+
+    from core.tasks.email_dispatcher import email_dispatcher_task
+
+    contact_email = "baxterezorg@apotheekjansen.com"
+
+    orgs = Organization.objects.filter(id__in=organization_ids)
+
+    base_url = getattr(settings, "SITE_DOMAIN", "http://localhost:8000")
+    if not base_url.startswith("http"):
+        base_url = f"https://{base_url}"
+
+    ts = timezone.now().strftime("%Y%m%d_%H%M%S")
+    today_str = timezone.now().strftime("%d-%m-%Y")
+
+    # Inline logo voor mail (filesystem pad)
+    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "app_icon_trans-512x512.png")
+
+    mail_sigs = []
+    tmp_paths = []
+
+    for org in orgs:
+        primary = org.email or org.email2
+        if not primary:
+            continue
+
+        qs = (
+            STSHalfje.objects
+            .select_related("item_gehalveerd", "item_alternatief", "apotheek")
+            .filter(apotheek=org)
+            .order_by("-created_at")
+        )
+
+        # Voorkom extra .exists() query: maak 1x list
+        items = list(qs)
+        if not items:
+            continue
+
+        context = {
+            "items": items,
+            "apotheek": org,
+            "generated_at": timezone.localtime(timezone.now()),
+            "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
+            "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+            "contact_email": contact_email,
+        }
+
+        html = render_to_string(
+            "stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html",
+            context,
+        )
+
+        pdf_bytes = _render_pdf(html, base_url=base_url)
+
+        # Veilige filename (org.name kan rare chars bevatten)
+        safe_name = "".join(c if c.isalnum() or c in " _-" else "-" for c in (org.name or "apotheek"))
+        filename = f"Onnodig_gehalveerde_geneesmiddelen_{safe_name}_{today_str}.pdf"
+
+        pdf_path = f"tmp/stshalfjes/{ts}_{org.id}_{filename}"
+        pdf_path = default_storage.save(pdf_path, ContentFile(pdf_bytes))
+        tmp_paths.append(pdf_path)
+
+        sig = email_dispatcher_task.s({
+            "type": "stshalfjes_single",
+            "payload": {
+                "to_email": primary,
+                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "name": org.name,
+                "pdf_path": pdf_path,
+                "filename": filename,
+                "logo_path": logo_path,
+                "contact_email": contact_email,
+            }
+        }).set(queue="mail")
+
+        mail_sigs.append(sig)
+
+    # Niks te mailen? cleanup meteen
+    if not mail_sigs:
+        cleanup_storage_files_task.apply_async(args=[[], tmp_paths], queue="default")
+        return
+
+    # Na alle mails -> cleanup alle pdf files
+    chord(group(mail_sigs))(
+        cleanup_storage_files_task.s(paths=tmp_paths).set(queue="default")
+    )

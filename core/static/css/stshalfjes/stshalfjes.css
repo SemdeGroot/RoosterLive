@@ -1,31 +1,96 @@
-/* Kolom breedtes: 1: #, 2: Gehalveerd, 3: Alternatief, 4: Acties */
-table.stshalfjes-table {
-  --c1: 40px;   /* Index */
-  --c2: 300px;    /* Huidig middel */
-  --c3: 300px;    /* Alternatief middel */
-  --c4: 100px;  /* Acties */
+/* core/static/css/stshalfjes/stshalfjes.css */
+
+/* Add section panel */
+.add-section-panel {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-top: 5px;
 }
 
-.stshalfjes-edit-grid {
+/* 1 - 2 - 2 grid */
+.stshalfjes-edit-grid{
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: start;
 }
 
-.stshalfjes-table small {
-  color: var(--muted);
-  font-size: 0.85em;
+/* Full width row (apotheek) */
+.stshalfjes-grid-full{
+  grid-column: 1 / -1;
 }
 
-@media (max-width: 800px) {
-  .stshalfjes-edit-grid {
+/* Voorkom uitsteken */
+.stshalfjes-edit-grid input,
+.stshalfjes-edit-grid select,
+.stshalfjes-edit-grid textarea{
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Select2 altijd netjes */
+.select2-container{
+  width: 100% !important;
+  max-width: 100%;
+}
+.select2-container--open{
+  z-index: 9999;
+}
+
+/* Mobiel */
+@media (max-width: 720px){
+  .stshalfjes-edit-grid{
     grid-template-columns: 1fr;
   }
+  .stshalfjes-grid-full{
+    grid-column: auto;
+  }
 }
 
-/* Mobiel tweak: forceer min-width zodat scrollen werkt */
-@media (max-width: 900px) {
-  table.nazending-table {
-    min-width: 700px;
+/* Table kolombreedtes */
+table.stshalfjes-table {
+  --c1: 10px;   /* idx */
+  --c2: 160px;  /* apotheek */
+  --c3: 160px;  /* patiënt */
+  --c4: 150px;  /* dob */
+  --c5: 260px;  /* gehalveerd */
+  --c6: 260px;  /* alternatief */
+  --c7: 90px;   /* acties */
+}
+
+@media (max-width: 1000px){
+  table.stshalfjes-table{
+    min-width: 1090px;
   }
+}
+
+/* Field errors */
+.field-error{
+  color: var(--danger);
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+
+/* Email modal sizing (zelfde als nazendingen) */
+#emailModal .modal-content{
+  width: min(1100px, 96vw) !important;
+  max-width: none !important;
+
+  height: min(750px, 85vh) !important;
+  max-height: 85vh !important;
+
+  margin: 4vh auto !important;
+  overflow: auto !important;
+}
+
+#emailModal .select2-container{
+  width: 100% !important;
+}
+
+#emailModal .select2-selection__clear{
+  display: none !important;
 }

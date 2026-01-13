@@ -962,27 +962,53 @@ class LaatstePotForm(forms.ModelForm):
             self.initial['datum'] = timezone.now().strftime('%d-%m-%Y')
 
 class STSHalfjeForm(forms.ModelForm):
+    patient_geboortedatum_enc = forms.DateField(
+        required=False,
+        input_formats=["%d-%m-%Y"],
+        widget=forms.DateInput(attrs={
+            "placeholder": "dd-mm-jjjj",
+            "class": "admin-input js-date",
+            "autocomplete": "off",
+        }),
+        label="Geboortedatum",
+    )
+
     class Meta:
         model = STSHalfje
-        fields = ['item_gehalveerd', 'item_alternatief']
+        fields = [
+            "apotheek",
+            "patient_naam_enc",
+            "patient_geboortedatum_enc",
+            "item_gehalveerd",
+            "item_alternatief",
+        ]
+        labels = {
+            "patient_naam_enc": "Patiënt",
+            "apotheek": "Apotheek",
+        }
         widgets = {
-            'item_gehalveerd': forms.Select(attrs={
-                'class': 'select2-single', 
-                'style': 'width: 100%',
-                'data-placeholder': 'Zoek geneesmiddel dat gehalveerd wordt op naam of ZI-nummer...'
+            "patient_naam_enc": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Naam patiënt...",
+                "autocomplete": "off",
             }),
-            'item_alternatief': forms.Select(attrs={
-                'class': 'select2-single', 
-                'style': 'width: 100%',
-                'data-placeholder': 'Zoek het lagere sterkte alternatief op naam of ZI-nummer...'
+            "item_gehalveerd": forms.Select(attrs={
+                "class": "select2-single",
+                "style": "width: 100%",
+            }),
+            "item_alternatief": forms.Select(attrs={
+                "class": "select2-single",
+                "style": "width: 100%",
             }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Queryset ophalen voor beide velden, identiek aan laatste potten
-        self.fields['item_gehalveerd'].queryset = VoorraadItem.objects.all()
-        self.fields['item_alternatief'].queryset = VoorraadItem.objects.all()
+        self.fields["item_gehalveerd"].queryset = VoorraadItem.objects.all()
+        self.fields["item_alternatief"].queryset = VoorraadItem.objects.all()
+        self.fields["apotheek"].queryset = Organization.objects.filter(
+            org_type=Organization.ORG_TYPE_APOTHEEK
+        ).order_by("name")
 
 # Uren doorgeven incl CAO toeslag
 def _clean_1_decimal_decimal(value, field_label: str) -> Decimal:

@@ -106,6 +106,36 @@ def email_dispatcher_task(self, job: dict):
             first_name=p.get("first_name", "Collega"),
         )
         return
+    
+    if job_type == "stshalfjes_single":
+        from core.utils.emails.stshalfjes_email import send_single_stshalfjes_email
+
+        with default_storage.open(p["pdf_path"], "rb") as f:
+            pdf_content = f.read()
+
+        try:
+            send_single_stshalfjes_email(
+                to_email=p["to_email"],
+                name=p["name"],
+                pdf_content=pdf_content,
+                filename=p["filename"],
+                logo_path=p["logo_path"],
+                contact_email=p["contact_email"],
+            )
+        except Exception:
+            fallback = p.get("fallback_email")
+            if fallback and fallback != p["to_email"]:
+                send_single_stshalfjes_email(
+                    to_email=fallback,
+                    name=p["name"],
+                    pdf_content=pdf_content,
+                    filename=p["filename"],
+                    logo_path=p["logo_path"],
+                    contact_email=p["contact_email"],
+                )
+            else:
+                raise
+        return 
 
     raise ValueError(f"Unknown job type: {job_type}")
 

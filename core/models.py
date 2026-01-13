@@ -134,6 +134,7 @@ class Roster(models.Model):
             # STS halfjes
             ("can_view_baxter_sts_halfjes",     "Mag STS-halfjes bekijken"),
             ("can_edit_baxter_sts_halfjes",     "Mag STS-halfjes aanpassen"),
+            ("can_send_baxter_sts_halfjes",     "Mag STS-halfjes versturen"),
             # Laatste potten
             ("can_view_baxter_laatste_potten",  "Mag laatste potten bekijken"),
             ("can_edit_baxter_laatste_potten",  "Mag laatste potten aanpassen"),
@@ -966,17 +967,29 @@ class LaatstePot(models.Model):
 
 class STSHalfje(models.Model):
     item_gehalveerd = models.ForeignKey(
-        'VoorraadItem', 
-        on_delete=models.CASCADE, 
+        'VoorraadItem',
+        on_delete=models.CASCADE,
         related_name='sts_gehalveerd',
         verbose_name="Geneesmiddel dat gehalveerd wordt"
     )
     item_alternatief = models.ForeignKey(
-        'VoorraadItem', 
-        on_delete=models.CASCADE, 
+        'VoorraadItem',
+        on_delete=models.CASCADE,
         related_name='sts_alternatieven',
         verbose_name="Alternatieve sterkte"
     )
+
+    apotheek = models.ForeignKey(
+        'Organization',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sts_halfjes',
+        verbose_name="Apotheek"
+    )
+    patient_naam_enc = EncryptedCharField(max_length=255, blank=True, default="")
+    patient_geboortedatum_enc = EncryptedDateField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -986,6 +999,14 @@ class STSHalfje(models.Model):
 
     def __str__(self):
         return f"{self.item_gehalveerd.naam} -> {self.item_alternatief.naam}"
+    
+    @property
+    def patient_naam(self):
+        return self.patient_naam_enc
+
+    @property
+    def patient_geboortedatum(self):
+        return self.patient_geboortedatum_enc
     
 class UrenDoorgevenSettings(models.Model):
     """

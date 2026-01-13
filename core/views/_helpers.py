@@ -91,6 +91,7 @@ PERM_LABELS = {
     "can_edit_baxter_no_delivery":     "Mag 'Geen levering' aanpassen",
     "can_view_baxter_sts_halfjes":     "Mag STS-halfjes bekijken",
     "can_edit_baxter_sts_halfjes":     "Mag STS-halfjes aanpassen",
+    "can_send_baxter_sts_halfjes":     "Mag STS-halfjes versturen",
     "can_view_baxter_laatste_potten":  "Mag laatste potten bekijken",
     "can_edit_baxter_laatste_potten":  "Mag laatste potten aanpassen",
     "can_perform_bestellingen":     "Krijgt een melding bij toevoeging laatste potten",
@@ -123,7 +124,7 @@ PERM_SECTIONS = [
         "can_view_baxter",
         "can_view_baxter_omzettingslijst", "can_edit_baxter_omzettingslijst",
         "can_view_baxter_no_delivery",     "can_edit_baxter_no_delivery",
-        "can_view_baxter_sts_halfjes",     "can_edit_baxter_sts_halfjes",
+        "can_view_baxter_sts_halfjes",     "can_edit_baxter_sts_halfjes", "can_send_baxter_sts_halfjes",
         "can_view_baxter_laatste_potten",  "can_edit_baxter_laatste_potten", "can_perform_bestellingen",
         "can_view_av_medications", "can_upload_voorraad", "can_view_av_nazendingen", "can_upload_nazendingen"
     ]),

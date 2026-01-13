@@ -7,9 +7,12 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/stshalfjes/stshalfjes.css' %}">
+
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+
   <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="https://unpkg.com/imask"></script>
 {% endblock %}
 
 {% block content %}
@@ -18,42 +21,91 @@
     <div class="birthday-header agenda-section-header">
       <img src="{% static 'img/sts_halfjes.svg' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
-        <h2>STS Halfjes</h2>
+        <h2>Onnodige STS halfjes</h2>
         <p>Meld hier geneesmiddelen die onnodig gehalveerd worden bij de STS afdeling.</p>
       </div>
 
       <div class="header-actions">
-        <a href="{% url 'baxter_tiles' %}" class="btn">
-          Terug naar Baxterproductie
-        </a>
-        {% if can_edit %}
+        <a href="{% url 'baxter_tiles' %}" class="btn">Terug naar Baxterproductie</a>
+
         <button type="button" class="btn btn-save" onclick="toggleAddSection()">
           Toevoegen
         </button>
-        {% endif %}
       </div>
     </div>
 
     <div class="card-inner" style="padding-top:0;">
-      
+
       {% if can_edit %}
       <div id="addSection" style="display:none;" class="add-section-panel">
         <form method="post" autocomplete="off">
           {% csrf_token %}
           <input type="hidden" name="btn_add" value="1">
-          
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
           <div class="stshalfjes-edit-grid" style="margin-bottom: 15px;">
+
+            <div class="stshalfjes-grid-full">
+              <label class="select2-label">Apotheek</label>
+              <select
+                name="apotheek"
+                id="id_apotheek"
+                class="select2-apotheek"
+                style="width:100%;"
+                data-placeholder="Zoek apotheek..."
+              >
+                <option value="">----------</option>
+                {% for apo in apotheken %}
+                  <option value="{{ apo.id }}"
+                    {% if form.apotheek.value|stringformat:"s" == apo.id|stringformat:"s" %}selected{% endif %}>
+                    {{ apo.name }}
+                  </option>
+                {% endfor %}
+              </select>
+
+              {% if form.apotheek.errors %}
+                <div class="field-error">{{ form.apotheek.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="section-label">Patiënt</label>
+              {{ form.patient_naam_enc }}
+              {% if form.patient_naam_enc.errors %}
+                <div class="field-error">{{ form.patient_naam_enc.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="section-label">Geboortedatum</label>
+              {{ form.patient_geboortedatum_enc }}
+              {% if form.patient_geboortedatum_enc.errors %}
+                <div class="field-error">{{ form.patient_geboortedatum_enc.errors }}</div>
+              {% endif %}
+            </div>
+
+            {# 2 + 2 #}
             <div>
               <label class="select2-label">Item dat gehalveerd wordt</label>
               {{ form.item_gehalveerd }}
+              {% if form.item_gehalveerd.errors %}
+                <div class="field-error">{{ form.item_gehalveerd.errors }}</div>
+              {% endif %}
             </div>
+
             <div>
               <label class="select2-label">Alternatief (lagere sterkte)</label>
               {{ form.item_alternatief }}
+              {% if form.item_alternatief.errors %}
+                <div class="field-error">{{ form.item_alternatief.errors }}</div>
+              {% endif %}
             </div>
           </div>
 
-          <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <div class="actions-wrap horizontal" style="justify-content:flex-end;">
             <button type="button" class="btn btn-danger" onclick="toggleAddSection()">Annuleren</button>
             <button type="submit" class="btn btn-save">Opslaan</button>
           </div>
@@ -62,7 +114,7 @@
       {% endif %}
 
       <div class="search-bar">
-        <input type="text" id="stsSearch" placeholder="Zoek op naam of ZI-nummer..." class="admin-input">
+        <input type="text" id="stsSearch" placeholder="Zoek in tabel..." class="admin-input">
       </div>
 
       <div data-crud data-table="#stsTable" data-rows=".sts-row" data-page-size="10">
@@ -71,29 +123,48 @@
             <thead>
               <tr>
                 <th class="center-col"></th>
+                <th>Apotheek</th>
+                <th>Patiënt</th>
+                <th>Geboortedatum</th>
                 <th>Wordt gehalveerd</th>
                 <th>Alternatief beschikbaar</th>
                 <th>Acties</th>
               </tr>
             </thead>
+
             <tbody>
               {% for item in items %}
               <tr class="sts-row" id="row-{{ item.id }}">
                 <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+                <td class="wrap">{{ item.apotheek.name|default:"-" }}</td>
+                <td class="wrap">{{ item.patient_naam|default:"-" }}</td>
+                <td style="color: var(--muted);">
+                  {% if item.patient_geboortedatum %}
+                    {{ item.patient_geboortedatum|date:"d-m-Y" }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+
                 <td class="wrap">
                   <strong>{{ item.item_gehalveerd.naam }}</strong><br>
                   <small>ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</small>
                 </td>
+
                 <td class="wrap" style="color: var(--success-color);">
                   <strong>{{ item.item_alternatief.naam }}</strong><br>
                   <small>ZI-nummer: {{ item.item_alternatief.zi_nummer }}</small>
                 </td>
+
                 <td>
                   {% if can_edit %}
                   <div class="actions-wrap horizontal">
-                    <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')" aria-label="Bewerken">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
                     </button>
+
                     <form method="post" class="delete-confirm-form" style="display:inline;">
                       {% csrf_token %}
                       <input type="hidden" name="btn_delete" value="1">
@@ -108,96 +179,180 @@
                       </button>
                     </form>
                   </div>
+                  {% else %}
+                    <span style="color:var(--muted); font-size:0.9em; font-style:italic;">Geen rechten</span>
                   {% endif %}
                 </td>
               </tr>
 
               {% if can_edit %}
-              <tr id="edit-row-{{ item.id }}" style="display:none;">
-                <td colspan="4">
-                  <form method="post" class="edit-wrap">
-                    {% csrf_token %}
-                    <input type="hidden" name="btn_edit" value="1">
-                    <input type="hidden" name="item_id" value="{{ item.id }}">
-                    <div class="stshalfjes-edit-grid">
-                      <div>
-                        <label class="section-label">Huidig (halveren):</label>
-                        <select name="item_gehalveerd" class="select2-edit">
-                          <option value="{{ item.item_gehalveerd.zi_nummer }}" selected>
-                            {{ item.item_gehalveerd.naam }}
-                          </option>
-                        </select>
+              <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
+                <td colspan="7">
+                  <div class="edit-wrap">
+                    <form method="post" autocomplete="off">
+                      {% csrf_token %}
+                      <input type="hidden" name="btn_edit" value="1">
+                      <input type="hidden" name="item_id" value="{{ item.id }}">
+
+                      <div class="stshalfjes-edit-grid">
+
+                        <div class="stshalfjes-grid-full">
+                          <label class="select2-label">Apotheek</label>
+                          <select name="apotheek" class="select2-apotheek-edit" style="width:100%;" data-placeholder="Zoek apotheek...">
+                            <option value="">----------</option>
+                            {% for apo in apotheken %}
+                              <option value="{{ apo.id }}" {% if item.apotheek and item.apotheek.id == apo.id %}selected{% endif %}>
+                                {{ apo.name }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="section-label">Patiënt</label>
+                          <input
+                            type="text"
+                            name="patient_naam_enc"
+                            value="{{ item.patient_naam }}"
+                            class="admin-input"
+                            placeholder="Naam patiënt..."
+                            autocomplete="off"
+                          >
+                        </div>
+
+                        <div>
+                          <label class="section-label">Geboortedatum</label>
+                          <input
+                            type="text"
+                            name="patient_geboortedatum_enc"
+                            value="{% if item.patient_geboortedatum %}{{ item.patient_geboortedatum|date:'d-m-Y' }}{% endif %}"
+                            class="admin-input js-date"
+                            placeholder="dd-mm-jjjj"
+                            autocomplete="off"
+                          >
+                        </div>
+
+                        <div>
+                          <label class="section-label">Huidig (halveren):</label>
+                          <select name="item_gehalveerd" class="select2-edit" style="width:100%;">
+                            <option value="{{ item.item_gehalveerd_id }}" selected>
+                              {{ item.item_gehalveerd.naam }}
+                            </option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="section-label">Alternatief:</label>
+                          <select name="item_alternatief" class="select2-edit" style="width:100%;">
+                            <option value="{{ item.item_alternatief_id }}" selected>
+                              {{ item.item_alternatief.naam }}
+                            </option>
+                          </select>
+                        </div>
+
                       </div>
-                      <div>
-                        <label class="section-label">Alternatief:</label>
-                        <select name="item_alternatief" class="select2-edit">
-                          <option value="{{ item.item_alternatief.zi_nummer }}" selected>
-                            {{ item.item_alternatief.naam }}
-                          </option>
-                        </select>
+
+                      <div class="actions-wrap horizontal" style="margin-top:12px;">
+                        <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
+                        <button type="submit" class="btn btn-save">Opslaan</button>
                       </div>
-                    </div>
-                    <div class="actions-wrap horizontal" style="margin-top:10px;">
-                      <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
-                      <button type="submit" class="btn btn-save">Opslaan</button>
-                    </div>
-                  </form>
+                    </form>
+                  </div>
                 </td>
               </tr>
               {% endif %}
+
+              {% empty %}
+              <tr>
+                <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
+                  Nog geen meldingen gevonden.
+                </td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+
+        <div class="crud-more-wrap">
+          <button class="btn small" type="button" data-crud-more>Toon meer</button>
+        </div>
       </div>
+
+      {% if can_send %}
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-top:20px;
+      ">
+        <a href="{% url 'export_stshalfjes_pdf' %}" class="btn btn-save" target="_blank" rel="noopener">
+          Exporteer als PDF
+        </a>
+
+        <button
+          type="button"
+          onclick="toggleEmailModal()"
+          class="btn btn-save"
+          style="margin-left:auto;"
+        >
+          Verstuur PDF naar apotheken
+        </button>
+      </div>
+      {% endif %}
+
     </div>
   </div>
 </div>
+
+{# EMAIL MODAL #}
+{% if can_send %}
+<div id="emailModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content" style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:600px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <h2 style="margin:0; font-size: 1.4rem;">Overzicht versturen</h2>
+      <span onclick="toggleEmailModal()" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <form action="{% url 'email_stshalfjes_pdf' %}" method="post">
+      {% csrf_token %}
+
+      <div style="margin-bottom:20px;">
+        <label class="select2-label">Selecteer Apotheken</label>
+
+        <div style="margin-bottom:8px; display:flex; gap:10px;">
+          <button type="button" class="btn" onclick="selectAllApotheken()">Alles selecteren</button>
+          <button type="button" class="btn btn-danger" onclick="deselectAllApotheken()">Alles wissen</button>
+        </div>
+
+        <select name="recipients" id="id_recipients" multiple="multiple" style="width:100%;">
+          {% for apo in apotheken %}
+            <option value="{{ apo.id }}">
+              {{ apo.name }} {% if apo.email %}- {{ apo.email }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+
+        <p style="margin:12px 0 0 0; color:var(--muted); font-size:0.95em;">
+          Elke apotheek ontvangt alleen meldingen die aan die apotheek gekoppeld zijn.
+        </p>
+      </div>
+
+      <div style="text-align:right; margin-top:30px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <button type="button" onclick="toggleEmailModal()" class="btn btn-danger" style="margin-right:10px;">Annuleren</button>
+        <button type="submit" class="btn btn-save">Versturen</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{% static 'js/nazendingen/nazendingen.js' %}"></script>
+
 <script src="{% static 'js/base/confirm_delete.js' %}"></script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    liveSearch("stsSearch", "stsTable", "sts-row");
-    
-    // Initialiseer AJAX Select2 voor de add-sectie (identiek aan laatstepotten)
-    initSelect2($('#id_item_gehalveerd'));
-    initSelect2($('#id_item_alternatief'));
-  });
-
-  // Toggle logica identiek aan laatstepotten
-  function toggleEdit(id) {
-    const viewRow = document.getElementById('row-' + id);
-    const editRow = document.getElementById('edit-row-' + id);
-
-    if (!viewRow || !editRow) return;
-
-    if (editRow.style.display === 'none') {
-      viewRow.style.display = 'none';
-      editRow.style.display = 'table-row';
-
-      const $selects = $(editRow).find('.select2-edit');
-      $selects.each(function() {
-        if (!$(this).hasClass("select2-hidden-accessible")) {
-          initSelect2($(this), $('body')); 
-        }
-      });
-    } else {
-      viewRow.style.display = 'table-row';
-      editRow.style.display = 'none';
-      $(editRow).find('.select2-edit').select2('close');
-    }
-  }
-
-  function toggleAddSection() {
-    const section = document.getElementById('addSection');
-    if (!section) return;
-    section.style.display = (section.style.display === 'none') ? 'block' : 'none';
-  }
-</script>
+<script src="{% static 'js/stshalfjes/stshalfjes.js' %}"></script>
 {% endblock %}
