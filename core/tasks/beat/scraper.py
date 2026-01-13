@@ -7,7 +7,9 @@ from django.core.cache import cache
 import tempfile
 import time, random
 import os
+from datetime import timedelta
 
+from core.models import ScrapedPage
 from core.utils.kompasscraper.scraper import KompasScraper
 
 LOCK_KEY = "lock:kompas_scraper"
@@ -20,7 +22,7 @@ RECIPIENT = "semdegroot2003@gmail.com"
     time_limit=12 * 60 * 60,
     soft_time_limit=11 * 60 * 60,
 )
-def run_kompas_scraper(test_mode=False):
+def run_kompas_scraper(test_mode=False, categories=None):
     if not cache.add(LOCK_KEY, "1", timeout=LOCK_TTL):
         return "Kompas scraper draait al; nieuwe run overgeslagen."
 
@@ -61,10 +63,34 @@ def run_kompas_scraper(test_mode=False):
         scraper = KompasScraper(debug_limit=limit)
         
         log(f"START run (test_mode={test_mode})", flush=True)
-        urls = scraper.discovery_phase()
-        log(f"DISCOVERY total_urls={len(urls)}", flush=True)
+        all_discovered = scraper.discovery_phase(categories=categories)
+        # SELECTIE LOGICA
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        
+        # Haal alle bekende URLs op uit de DB
+        existing_urls_map = {
+            p.url: p.last_scraped 
+            for p in ScrapedPage.objects.filter(url__in=[item['url'] for item in all_discovered])
+        }
+        
+        new_items = []
+        outdated_items = []
 
-        # Kies random sample url per categorie (reservoir sampling)
+        for item in all_discovered:
+            url = item['url']
+            if url not in existing_urls_map:
+                new_items.append(item)
+            elif existing_urls_map[url] < seven_days_ago:
+                outdated_items.append(item)
+
+        # Prioriteit: Nieuw eerst, dan de rest, totaal max 350 (of 3 bij test_mode)
+        batch_limit = 3 if test_mode else 350
+        urls = (new_items + outdated_items)[:batch_limit]
+        
+        total_to_analyze = len(urls)
+        log(f"DISCOVERY: {len(all_discovered)} gevonden. BATCH: {total_to_analyze} (Nieuw: {len(new_items)}, Oud: {len(outdated_items)})", flush=True)
+
+        # Reservoir sampling voor samples (moet nu op de gefilterde 'urls' lijst)
         seen_cat = {"preparaat": 0, "groep": 0, "indicatie": 0}
         for it in urls:
             cat = it.get("category")
@@ -88,10 +114,18 @@ def run_kompas_scraper(test_mode=False):
             try:
                 status, dumped_path = scraper.process_url(item, dump_md=want_dump)
 
+                if analyzed % 20 == 0:
+                    import gc
+                    gc.collect()
+                    # Voeg deze log-regel toe:
+                    progress_pct = (analyzed / total_to_analyze) * 100
+                    log(f"PROGRESS: {analyzed}/{total_to_analyze} ({progress_pct:.1f}%) | "
+                        f"Uploaded: {uploaded}, Unchanged: {unchanged}, Errors: {errors}", flush=True)
                 if status == "uploaded":
                     uploaded += 1
                     consecutive_errors = 0
                 elif status == "unchanged":
+                    ScrapedPage.objects.filter(url=url).update(last_scraped=timezone.now())
                     unchanged += 1
                     consecutive_errors = 0
                 else:
@@ -184,3 +218,5 @@ def run_kompas_scraper(test_mode=False):
         except Exception:
             pass
         cache.delete(LOCK_KEY)
+        import gc
+        gc.collect()

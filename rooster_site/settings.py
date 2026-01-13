@@ -224,12 +224,12 @@ if not DEBUG:
             "schedule": crontab(minute=0, hour=19, day_of_week="fri"),
             "options": {"queue": "default"},
         },
-       # "kompas_full_scrape_sat_0200": {
-        #    "task": "tasks.run_kompas_scraper",
-         #   "schedule": crontab(minute=0, hour=2, day_of_week="tue"),
-          #  "options": {"queue": "scrape"},
-           # "args": (False,),  # test_mode=False -> volledige run
-        #},
+        "kompas_scrape_daily_batch": {
+            "task": "tasks.run_kompas_scraper",
+            "schedule": crontab(minute=0, hour=2),
+            "options": {"queue": "scrape"},
+            "args": (False,),  # test_mode=False -> volledige run
+        },
     }
 
 # === Auth / Passwords ===

@@ -7,6 +7,9 @@ import os
 import tempfile
 import re
 from typing import Optional, List, Dict, Set, Tuple
+import gc
+import copy
+from collections import deque
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag, NavigableString
@@ -69,7 +72,7 @@ class KompasScraper:
         self._tmp_dump_written = 0
 
         # simpele cache om dubbele fetches te vermijden binnen één run
-        self._html_cache: Dict[str, str] = {}
+        self._html_cache = deque(maxlen=5)
 
     # ----------------------------
     # LOG
@@ -153,70 +156,55 @@ class KompasScraper:
         m = self._ATC_RE.search(head)
         return m.group(0) if m else None
 
-
-
     def fetch_url(self, url: str) -> Optional[str]:
-        if url in self._html_cache:
-            return self._html_cache[url]
+        # Check mini-cache (deque)
+        for cached_url, content in self._html_cache:
+            if cached_url == url:
+                return content
 
         # Config via env (veilige defaults)
-        max_retries = int(os.getenv("FK_HTTP_MAX_RETRIES", "3"))         # 3 retries -> totaal 4 attempts
+        max_retries = int(os.getenv("FK_HTTP_MAX_RETRIES", "3"))
         timeout_s = float(os.getenv("FK_HTTP_TIMEOUT", "20"))
-
-        backoff_5xx_base = float(os.getenv("FK_BACKOFF_5XX_BASE", "3"))  # start 3s
-        backoff_5xx_cap  = float(os.getenv("FK_BACKOFF_5XX_CAP", "90"))  # max 90s
-
-        backoff_429_base = float(os.getenv("FK_BACKOFF_429_BASE", "30")) # start 30s
-        backoff_429_cap  = float(os.getenv("FK_BACKOFF_429_CAP", "300")) # max 5 min
+        backoff_5xx_base = float(os.getenv("FK_BACKOFF_5XX_BASE", "3"))
+        backoff_5xx_cap  = float(os.getenv("FK_BACKOFF_5XX_CAP", "90"))
+        backoff_429_base = float(os.getenv("FK_BACKOFF_429_BASE", "30"))
+        backoff_429_cap  = float(os.getenv("FK_BACKOFF_429_CAP", "300"))
 
         last_err = None
 
         for attempt in range(max_retries + 1):
-            # Polite delay vóór elke echte request
             self._polite_sleep(where="fetch_url")
 
             try:
                 res = self.session.get(url, headers=self.get_headers(), timeout=timeout_s)
                 status = res.status_code
 
-                # ---- 429 Too Many Requests ----
                 if status == 429:
                     ra = self._parse_retry_after_seconds(res.headers.get("Retry-After", ""))
-                    wait = float(ra) if ra is not None else self._exp_backoff_seconds(
-                        attempt=attempt, base=backoff_429_base, cap=backoff_429_cap
-                    )
-
-                    self._log(f"HTTP 429 voor {url}. Backoff: {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
-                    if attempt >= max_retries:
-                        return None
+                    wait = float(ra) if ra is not None else self._exp_backoff_seconds(attempt, backoff_429_base, backoff_429_cap)
+                    self._log(f"HTTP 429 voor {url}. Backoff: {wait:.1f}s")
                     time.sleep(wait)
                     continue
 
-                # ---- tijdelijk serverprobleem ----
                 if status in (500, 502, 503, 504):
-                    wait = self._exp_backoff_seconds(attempt=attempt, base=backoff_5xx_base, cap=backoff_5xx_cap)
-                    self._log(f"HTTP {status} voor {url}. Backoff: {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
-                    if attempt >= max_retries:
-                        return None
+                    wait = self._exp_backoff_seconds(attempt, backoff_5xx_base, backoff_5xx_cap)
+                    self._log(f"HTTP {status} voor {url}. Backoff: {wait:.1f}s")
                     time.sleep(wait)
                     continue
 
-                # ---- “hard” client errors: meestal niet retryen ----
                 if status in (400, 401, 403, 404):
-                    self._log(f"HTTP {status} voor {url}. Niet retryen.")
                     return None
 
-                # ---- ok / andere 2xx/3xx ----
                 res.raise_for_status()
-                self._html_cache[url] = res.text
-                return res.text
+                html_text = res.text
+                
+                # Opslaan in mini-cache
+                self._html_cache.append((url, html_text))
+                return html_text
 
             except Exception as e:
                 last_err = e
-                wait = self._exp_backoff_seconds(attempt=attempt, base=backoff_5xx_base, cap=backoff_5xx_cap)
-                self._log(f"Fetch exception voor {url}: {e} -> backoff {wait:.1f}s (attempt {attempt+1}/{max_retries+1})")
-                if attempt >= max_retries:
-                    return None
+                wait = self._exp_backoff_seconds(attempt, backoff_5xx_base, backoff_5xx_cap)
                 time.sleep(wait)
 
         self._log(f"Fetch failed voor {url}: {last_err}")
@@ -467,16 +455,23 @@ class KompasScraper:
         urls = [u for u in urls if not (u in seen or seen.add(u))]
         return urls
 
-    def discovery_phase(self) -> List[Dict]:
-        start_urls = {
+    def discovery_phase(self, categories: Optional[List[str]] = None) -> List[Dict]:
+        all_start_urls = {
             "preparaat": f"{self.base_url}/bladeren/preparaatteksten/groep",
             "groep": f"{self.base_url}/bladeren/groepsteksten/alfabet",
             "indicatie": f"{self.base_url}/bladeren/indicatieteksten/alfabet",
         }
+        
+        # Als categories None is, pakken we alles. Anders alleen de gevraagde.
+        selected_cats = categories if categories else list(all_start_urls.keys())
 
         final_queue: List[Dict] = []
 
-        for cat, start_url in start_urls.items():
+        for cat in selected_cats:
+            start_url = all_start_urls.get(cat)
+            if not start_url:
+                continue
+                
             html = self.fetch_url(start_url)
             if not html:
                 continue
@@ -496,6 +491,10 @@ class KompasScraper:
                 final_queue.extend(cat_links[:2])
             else:
                 final_queue.extend(cat_links)
+            
+            # Directe opruiming na elke categorie discovery
+            del soup
+            gc.collect()
 
         final_queue = self._dedupe_keep_order(final_queue)
         return final_queue
@@ -577,7 +576,7 @@ class KompasScraper:
         idx = 1
 
         for li in list_tag.find_all("li", recursive=False):
-            li_clone = BeautifulSoup(str(li), "html.parser").find()
+            li_clone = copy.deepcopy(li)
             if not isinstance(li_clone, Tag):
                 continue
 
@@ -651,18 +650,20 @@ class KompasScraper:
         if not isinstance(node, Tag) or self._should_skip_tag(node):
             return ""
 
+        # 1. Headers (h1 t/m h6)
         if re.fullmatch(r"h[1-6]", node.name or ""):
             prefix = self._heading_prefix(node.name)
-            clone = BeautifulSoup(str(node), "html.parser").find()
-            if isinstance(clone, Tag):
-                self._replace_links_with_md(clone)
-                t = self._normalize_text(clone.get_text(" ", strip=True))
-                if t:
-                    return f"\n{prefix} {t}\n\n"
+            node_copy = copy.deepcopy(node) # Lichte kopie in plaats van nieuwe BS instantie
+            self._replace_links_with_md(node_copy)
+            t = self._normalize_text(node_copy.get_text(" ", strip=True))
+            if t:
+                return f"\n{prefix} {t}\n\n"
             return ""
 
+        # 2. Paragrafen
         if node.name == "p":
             cls = " ".join(node.get("class", []))
+            # Check voor 'Ingevoegde' content (pat-inject)
             if "collapsible-loading-message" in cls:
                 a = node.select_one("a[href]")
                 if a:
@@ -671,35 +672,38 @@ class KompasScraper:
                     )
                 return ""
 
-            clone = BeautifulSoup(str(node), "html.parser").find()
-            if isinstance(clone, Tag):
-                self._replace_links_with_md(clone)
-                txt = self._normalize_text(clone.get_text(" ", strip=True))
-                if txt:
-                    return f"{txt}\n\n"
+            node_copy = copy.deepcopy(node)
+            self._replace_links_with_md(node_copy)
+            txt = self._normalize_text(node_copy.get_text(" ", strip=True))
+            if txt:
+                return f"{txt}\n\n"
             return ""
 
+        # 3. Blockquotes
         if node.name == "blockquote":
-            clone = BeautifulSoup(str(node), "html.parser").find()
-            if isinstance(clone, Tag):
-                self._replace_links_with_md(clone)
-                txt = self._normalize_text(clone.get_text(" ", strip=True))
-                if txt:
-                    return "\n".join([f"> {line}" for line in txt.splitlines()]) + "\n\n"
+            node_copy = copy.deepcopy(node)
+            self._replace_links_with_md(node_copy)
+            txt = self._normalize_text(node_copy.get_text(" ", strip=True))
+            if txt:
+                return "\n".join([f"> {line}" for line in txt.splitlines()]) + "\n\n"
             return ""
 
+        # 4. Code blokken
         if node.name == "pre":
             code = node.get_text("\n", strip=False).rstrip("\n").strip("\n")
             if code.strip():
                 return f"```\n{code}\n```\n\n"
             return ""
 
+        # 5. Lijsten (ul/ol) - maakt intern gebruik van helpers
         if node.name in ("ul", "ol"):
             return self._list_to_markdown(node)
 
+        # 6. Tabellen
         if node.name == "table":
             return self._table_to_markdown(node)
 
+        # 7. Losse links met injectie
         if node.name == "a":
             cls = " ".join(node.get("class", []))
             if "pat-inject" in cls and node.get("href"):
@@ -707,11 +711,13 @@ class KompasScraper:
                     node.get("href", ""), base_url=base_url, budget=budget, depth=depth
                 )
 
+        # 8. Breaks & Rules
         if node.name == "br":
             return "\n"
         if node.name == "hr":
             return "\n---\n\n"
 
+        # 9. Recursie voor kinderen (Containers zoals div, section, etc.)
         out = ""
         for child in node.children:
             if isinstance(child, Tag):
@@ -719,13 +725,13 @@ class KompasScraper:
                     continue
                 out += self._node_to_markdown(child, base_url=base_url, budget=budget, depth=depth)
 
+        # 10. Fallback voor containers die directe tekst bevatten zonder specifieke tags
         if not out.strip() and node.name in ("div", "section", "article", "span"):
-            clone = BeautifulSoup(str(node), "html.parser").find()
-            if isinstance(clone, Tag):
-                self._replace_links_with_md(clone)
-                txt = self._normalize_text(clone.get_text(" ", strip=True))
-                if txt and len(txt) >= 3:
-                    return f"{txt}\n\n"
+            node_copy = copy.deepcopy(node)
+            self._replace_links_with_md(node_copy)
+            txt = self._normalize_text(node_copy.get_text(" ", strip=True))
+            if txt and len(txt) >= 3:
+                return f"{txt}\n\n"
 
         return out
 
