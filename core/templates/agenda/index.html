@@ -129,7 +129,13 @@
 
                 <div class="birthday-right">
                   <span class="birthday-date">
-                    {{ item.date|date:"d-m-Y" }}
+                    <span class="date-line">{{ item.date|date:"d-m-Y" }}</span>
+
+                    {% if item.start_time and item.end_time %}
+                      <span class="time-line">
+                        {{ item.start_time|time:"H:i" }} – {{ item.end_time|time:"H:i" }}
+                      </span>
+                    {% endif %}
                   </span>
                 </div>
               </div>
@@ -348,7 +354,13 @@
 
                 <div class="birthday-right">
                   <span class="birthday-date">
-                    {{ item.date|date:"d-m-Y" }}
+                    <span class="date-line">{{ item.date|date:"d-m-Y" }}</span>
+
+                    {% if item.start_time and item.end_time %}
+                      <span class="time-line">
+                        {{ item.start_time|time:"H:i" }} – {{ item.end_time|time:"H:i" }}
+                      </span>
+                    {% endif %}
                   </span>
                 </div>
               </div>
