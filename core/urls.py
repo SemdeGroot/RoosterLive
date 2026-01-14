@@ -9,7 +9,7 @@ from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf, email_nazendingen_pdf
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
-from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen
+from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen, dagdeel_update
 from core.views.profiel import profiel_index, avatar_upload, avatar_remove
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
@@ -199,6 +199,7 @@ urlpatterns = [
     path("beheer/taken/task/<int:pk>/delete/", delete_task, name="delete_task"),
     path("beheer/functies/<int:pk>/update/", functie_update, name="functie_update"),
     path("beheer/functies/<int:pk>/delete/", delete_functie, name="delete_functie"),
+    path("beheer/dagdelen/<str:code>/update/", dagdeel_update, name="dagdeel_update"),
     # KompasGPT
     path("kompasgpt/", kompasgpt, name="kompasgpt"),
 

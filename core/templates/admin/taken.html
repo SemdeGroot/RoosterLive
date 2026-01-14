@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="https://unpkg.com/imask"></script>
   <script src="{% static 'js/admin/admin_panel.js' %}" defer></script>
 {% endblock %}
 
@@ -20,7 +21,7 @@
         <img src="{% static 'img/taken.svg' %}" alt="" class="birthday-icon">
         <div class="birthday-header-text">
           <h2>Taken beheren</h2>
-          <p>Beheer locaties en taken (taken zijn gekoppeld aan een locatie).</p>
+          <p>Beheer locaties, dagdelen en taken (taken zijn gekoppeld aan een locatie).</p>
         </div>
         <a href="{% url 'beheer_tiles' %}" class="btn btn-save">
           Terug naar dashboard
@@ -172,6 +173,98 @@
         <div class="crud-more-wrap">
           <button class="btn" type="button" data-crud-more>Toon meer</button>
         </div>
+      </div>
+
+      <hr class="crud-divider">
+
+      <!-- =========================
+           SHIFTS (DAGDELEN) - alleen tijden + toeslag editbaar
+      ========================== -->
+      <h3 style="margin-top:0;">Shifts (dagdelen)</h3>
+      <p class="admin-help">
+        De namen en volgorde staan vast. Je kunt alleen start/eind en de CAO-toeslag aanpassen.
+      </p>
+
+      <div class="table-scroll">
+        <table class="crud-table compact dagdeel-table" id="dagdeelTable">
+          <thead>
+            <tr>
+              <th>Shift</th>
+              <th>Start</th>
+              <th>Eind</th>
+              <th>Toeslag %</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for d in dagdelen %}
+            <tr class="dagdeel-row" id="dagdeel-row-{{ d.code }}">
+              <td style="font-weight:600;">{{ d.get_code_display }}</td>
+              <td>{{ d.start_time|time:"H:i" }}</td>
+              <td>{{ d.end_time|time:"H:i" }}</td>
+              <td>{{ d.allowance_pct }}%</td>
+              <td>
+                {% if can_manage %}
+                <div class="actions-wrap horizontal">
+                  <button type="button"
+                          class="icon-btn"
+                          onclick="toggleDagdeelEdit('{{ d.code }}')"
+                          aria-label="Bewerken">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </button>
+                </div>
+                {% else %}
+                  <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr id="dagdeel-edit-row-{{ d.code }}" class="edit-row" style="display:none;">
+              <td colspan="5">
+                <div class="edit-wrap">
+                  <form method="post" action="{% url 'dagdeel_update' d.code %}">
+                    {% csrf_token %}
+
+                    <div class="edit-grid">
+                      <div>
+                        <label>Starttijd:</label>
+                        <input class="admin-input js-time" type="text" inputmode="numeric" name="start_time"
+                              value="{{ d.start_time|time:'H:i' }}" placeholder="uu:mm" required>
+                      </div>
+
+                      <div>
+                        <label>Eindtijd:</label>
+                        <input class="admin-input js-time" type="text" inputmode="numeric" name="end_time"
+                              value="{{ d.end_time|time:'H:i' }}" placeholder="uu:mm" required>
+                      </div>
+
+                      <div>
+                        <label>Toeslag %:</label>
+                        <input class="admin-input" type="number" min="0" max="300" step="1" name="allowance_pct"
+                               value="{{ d.allowance_pct }}" required>
+                        <small class="admin-help">100 = geen toeslag, 120 = 20% toeslag.</small>
+                      </div>
+                    </div>
+
+                    <div class="actions-wrap horizontal" style="margin-top:12px;">
+                      <button class="btn btn-save" type="submit">Opslaan</button>
+                      <button type="button" class="btn btn-danger" onclick="toggleDagdeelEdit('{{ d.code }}')">
+                        Annuleren
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
 
       <hr class="crud-divider">
@@ -352,7 +445,7 @@
                         </div>
                       </div>
 
-                      <!-- Minimale bezetting (grid van 3) - alleen zichtbaar in edit -->
+                      <!-- Minimale bezetting -->
                       <div class="staffing-block">
                         <div class="staffing-title">Minimale bezetting</div>
 

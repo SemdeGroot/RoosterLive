@@ -25,6 +25,14 @@ window.toggleAfdelingEdit = function(id){
       : "none";
   };
 
+window.toggleDagdeelEdit = function(code){
+  const row = document.getElementById("dagdeel-edit-row-" + code);
+  if(!row) return;
+  row.style.display = (row.style.display === "none" || row.style.display === "")
+    ? "table-row"
+    : "none";
+};
+
 window.toggleLocationEdit = function(id){
   const row = document.getElementById("location-edit-row-" + id);
   if(!row) return;
@@ -108,6 +116,25 @@ function liveSearch(inputId, tableId, rowClass){
   });
 }
 
+function initTimeMasks(){
+  if (typeof IMask === "undefined") return;
+
+  document.querySelectorAll(".js-time").forEach((el) => {
+    // voorkom dubbele init
+    if (el.dataset.masked === "1") return;
+    el.dataset.masked = "1";
+
+    IMask(el, {
+      mask: "Hh:Mm",
+      blocks: {
+        Hh: { mask: IMask.MaskedRange, from: 0, to: 23, maxLength: 2 },
+        Mm: { mask: IMask.MaskedRange, from: 0, to: 59, maxLength: 2 },
+      },
+      overwrite: true,
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function(){
   liveSearch("userSearch",  "userTable",  "user-row");
   liveSearch("groupSearch", "groupTable", "group-row");
@@ -115,4 +142,6 @@ document.addEventListener("DOMContentLoaded", function(){
   liveSearch("afdelingSearch", "afdelingTable", "afdeling-row");
   liveSearch("locationSearch", "locationTable", "location-row");
   liveSearch("taskSearch", "taskTable", "task-row");
+
+  initTimeMasks();
 });

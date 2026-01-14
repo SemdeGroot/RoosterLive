@@ -40,7 +40,7 @@ PERM_LABELS = {
     "can_manage_groups":              "Mag groepen beheren",
     "can_manage_afdelingen":              "Mag afdelingen beheren",
     "can_manage_orgs":              "Mag organisaties beheren",
-    "can_manage_tasks":              "Mag taken beheren",
+    "can_manage_tasks":              "Mag taken, locaties en shifts beheren",
     "can_manage_functies":              "Mag functies beheren",
     "can_manage_bezorgen":              "Mag bezorgen beheren",
     "can_view_agenda":         "Mag agenda bekijken",

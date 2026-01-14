@@ -9,14 +9,16 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.db.models import F
-
-from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm, FunctionForm
+from datetime import time
+from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm, FunctionForm, DagdeelForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task, Function
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task, Function, Dagdeel
 from core.tiles import build_tiles
 
 User = get_user_model()
+
+# === Helpers ===
 
 WORK_FIELDS = (
     "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
@@ -469,6 +471,8 @@ def admin_taken(request):
 
     location_form = LocationForm()
     task_form = TaskForm()
+    dagdelen = Dagdeel.objects.all().order_by("sort_order")
+    dagdeel_form = DagdeelForm()
 
     # ---- Nieuwe locatie aanmaken ----
     if request.method == "POST" and request.POST.get("form_kind") == "location":
@@ -505,6 +509,8 @@ def admin_taken(request):
         "location_form": location_form,
         "task_form": task_form,
         "can_manage": can_manage,
+        "dagdelen": dagdelen,
+        "dagdeel_form": dagdeel_form,
     })
 
 
@@ -615,6 +621,43 @@ def task_update(request, pk):
 
     t.save()
     messages.success(request, f"Taak '{t.name}' is bijgewerkt.")
+    return redirect("admin_taken")
+
+@login_required
+@require_POST
+def dagdeel_update(request, code: str):
+    if not can(request.user, "can_manage_tasks"):
+        messages.error(request, "Geen rechten om shifts te wijzigen.")
+        return redirect("admin_taken")
+
+    d = get_object_or_404(Dagdeel, code=code)
+
+    form = DagdeelForm(request.POST, instance=d)
+    if form.is_valid():
+        form.save()  # triggert model.clean() via save()->full_clean()
+        messages.success(request, f"Shift '{d.get_code_display()}' is bijgewerkt.")
+        return redirect("admin_taken")
+
+    # ---------- Fouten tonen (max 3), zonder "__all__:" ----------
+    shown = 0
+
+    # 1) non-field errors eerst (dit zijn de "__all__" errors)
+    for e in form.non_field_errors():
+        messages.error(request, str(e))
+        shown += 1
+        if shown >= 3:
+            return redirect("admin_taken")
+
+    # 2) daarna field errors
+    for field, errs in form.errors.items():
+        if field == "__all__":
+            continue
+        for e in errs:
+            messages.error(request, f"{field}: {e}")
+            shown += 1
+            if shown >= 3:
+                return redirect("admin_taken")
+
     return redirect("admin_taken")
 
 @login_required

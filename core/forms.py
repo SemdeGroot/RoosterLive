@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences, Function
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences, Function, Dagdeel
 
 UserModel = get_user_model()
 
@@ -937,6 +937,48 @@ class TaskForm(forms.ModelForm):
                 "min": "0",
                 "step": "1",
             })
+            
+class DagdeelForm(forms.ModelForm):
+    # Forceer parsing van "HH:MM" (past perfect bij IMask)
+    start_time = forms.TimeField(
+        input_formats=["%H:%M"],
+        widget=forms.TextInput(
+            attrs={
+                "class": "admin-input js-time",
+                "type": "text",
+                "inputmode": "numeric",
+                "placeholder": "uu:mm",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    end_time = forms.TimeField(
+        input_formats=["%H:%M"],
+        widget=forms.TextInput(
+            attrs={
+                "class": "admin-input js-time",
+                "type": "text",
+                "inputmode": "numeric",
+                "placeholder": "uu:mm",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    class Meta:
+        model = Dagdeel
+        fields = ["start_time", "end_time", "allowance_pct"]
+        widgets = {
+            "allowance_pct": forms.NumberInput(
+                attrs={
+                    "class": "admin-input",
+                    "min": "0",
+                    "max": "300",
+                    "step": "1",
+                }
+            ),
+        }
 
 class FunctionForm(forms.ModelForm):
     class Meta:
@@ -996,7 +1038,7 @@ class LaatstePotForm(forms.ModelForm):
                 'placeholder': 'dd-mm-jjjj'
             }),
             'afhandeling': forms.Textarea(attrs={
-                'class': 'admin-input',
+                'class': 'form-input',
                 'rows': 3,
                 'placeholder': 'Hoe is dit afgehandeld?'
             }),

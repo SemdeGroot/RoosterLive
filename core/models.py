@@ -7,6 +7,7 @@ from fernet_fields import EncryptedCharField, EncryptedDateField, EncryptedTextF
 from django.core.validators import MinValueValidator
 import uuid
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 
 class SoftDeleteQuerySet(models.QuerySet):
     def active(self):
@@ -282,6 +283,120 @@ class Task(SoftDeleteModel):
 
     def __str__(self):
         return f"{self.name} ({self.location.name})"
+    
+class Dagdeel(models.Model):
+    CODE_MORNING     = "morning"      # Ochtend
+    CODE_AFTERNOON   = "afternoon"    # Middag
+    CODE_PRE_EVENING = "pre_evening"  # Vooravond
+    CODE_EVENING     = "evening"      # Avond
+    CODE_NIGHT       = "night"        # Nacht
+
+    CODE_CHOICES = [
+        (CODE_MORNING,     "Ochtend"),
+        (CODE_AFTERNOON,   "Middag"),
+        (CODE_PRE_EVENING, "Vooravond"),
+        (CODE_EVENING,     "Avond"),
+        (CODE_NIGHT,       "Nacht"),
+    ]
+
+    # Alleen deze 3 mogen als “normaal” ingepland worden in Availability/Shifts
+    PLANNING_CODES = (CODE_MORNING, CODE_AFTERNOON, CODE_PRE_EVENING)
+
+    code = models.CharField(max_length=12, choices=CODE_CHOICES, unique=True, db_index=True)
+
+    # label in frontend (maar wij gaan die vast zetten op basis van code)
+    name = models.CharField(max_length=40, default="", blank=True)
+
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    # 100 = geen toeslag, 120 = 20% extra
+    allowance_pct = models.PositiveSmallIntegerField(default=100, validators=[MinValueValidator(0)])
+
+    sort_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order"]
+        constraints = [
+            models.CheckConstraint(
+                check=Q(allowance_pct__gte=0) & Q(allowance_pct__lte=300),
+                name="dagdeel_allowance_pct_range_0_300",
+            ),
+        ]
+
+    @staticmethod
+    def _to_minutes(t):
+        return t.hour * 60 + t.minute
+
+    def _intervals(self):
+        """
+        Return 1 of 2 intervals in minuten [start,end) op dag-basis.
+        Als end <= start: wrap-around (over middernacht).
+        """
+        s = self._to_minutes(self.start_time)
+        e = self._to_minutes(self.end_time)
+        if e == s:
+            # 0 minuten duur is nooit ok
+            return []
+        if e > s:
+            return [(s, e)]
+        # wrap-around, bv 20:00 -> 00:00
+        return [(s, 1440), (0, e)]
+
+    def clean(self):
+        # basis guard
+        if not self.start_time or not self.end_time:
+            return
+
+        # duur mag niet 0
+        if self.start_time == self.end_time:
+            raise ValidationError("Starttijd en eindtijd mogen niet gelijk zijn.")
+
+        # Overlap check met wrap-around ondersteuning
+        my_intervals = self._intervals()
+        if not my_intervals:
+            raise ValidationError("Ongeldige tijdsduur voor dit dagdeel.")
+
+        others = Dagdeel.objects.exclude(pk=self.pk)
+        for o in others:
+            if not o.start_time or not o.end_time:
+                continue
+            other_intervals = o._intervals()
+            for (a, b) in my_intervals:
+                for (c, d) in other_intervals:
+                    # overlap: [a,b) en [c,d)
+                    if a < d and c < b:
+                        raise ValidationError(
+                            f"Overlappende tijden met '{o.get_code_display()}'."
+                        )
+
+    def save(self, *args, **kwargs):
+        # name + sort_order vast op basis van code
+        label_map = dict(self.CODE_CHOICES)
+        self.name = label_map.get(self.code, self.code)
+
+        order_map = {
+            self.CODE_MORNING: 10,
+            self.CODE_AFTERNOON: 20,
+            self.CODE_PRE_EVENING: 30,
+            self.CODE_EVENING: 40,
+            self.CODE_NIGHT: 50,
+        }
+        self.sort_order = order_map.get(self.code, 99)
+
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    @property
+    def allowance_multiplier(self) -> Decimal:
+        return (Decimal(self.allowance_pct) / Decimal("100.0"))
+
+    @property
+    def extra_pct(self) -> int:
+        return int(self.allowance_pct) - 100
+
+    def __str__(self):
+        return f"{self.get_code_display()} ({self.start_time}-{self.end_time}, {self.allowance_pct}%)"
 
 class Shift(models.Model):
     PERIOD_CHOICES = [
