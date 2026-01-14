@@ -956,6 +956,12 @@ class LaatstePot(models.Model):
         verbose_name="Geneesmiddel"
     )
     datum = models.DateField(default=timezone.now, verbose_name="Datum melding")
+    afhandeling = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Afhandeling",
+        help_text="Vrije tekst: hoe is dit afgehandeld?"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,16 +1,26 @@
-/* Kolom breedtes: 1: #, 2: ZI, 3: Naam, 4: Datum, 5: Acties */
+/* Kolom breedtes: 1: #, 2: ZI, 3: Naam, 4: Datum, 5: Afhandeling, 6: Acties */
 table.laatstepotten-table {
-  --c1: 40px;   /* Index */
-  --c2: 120px;  /* ZI */
-  --c3: 300px;   /* Naam (vult aan) */
-  --c4: 140px;  /* Datum */
-  --c5: 100px;  /* Acties */
+  --c1: 20px;    /* Index */
+  --c2: 120px;   /* ZI */
+  --c3: 220px;   /* Naam */
+  --c4: 120px;   /* Datum */
+  --c5: 300px;   /* Afhandeling */
+  --c6: 100px;   /* Acties */
 }
-
 .laatstepotten-edit-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 180px 1fr; /* datum smaller, afhandeling groter */
   gap: 16px;
+}
+
+/* 1e veld (Geneesmiddel) over volle breedte */
+.laatstepotten-edit-grid > div:nth-child(1) {
+  grid-column: 1 / -1;
+}
+
+/* textarea resize blijft ok */
+.laatstepotten-edit-grid textarea {
+  resize: vertical;
 }
 
 @media (max-width: 600px) {
@@ -22,7 +32,7 @@ table.laatstepotten-table {
 /* Mobiel tweak: forceer min-width zodat scrollen werkt */
 @media (max-width: 900px) {
   table.nazending-table {
-    min-width: 700px;
+    min-width: 900px;
   }
 }
 

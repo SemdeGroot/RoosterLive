@@ -541,7 +541,7 @@ class MyTOTPDeviceForm(TOTPDeviceForm):
             "inputmode": "numeric",
             "autocomplete": "one-time-code",
         })
-        
+
 class AgendaItemForm(forms.ModelForm):
     date = forms.DateField(
         input_formats=["%d-%m-%Y"],
@@ -988,22 +988,33 @@ class NazendingForm(forms.ModelForm):
 class LaatstePotForm(forms.ModelForm):
     class Meta:
         model = LaatstePot
-        fields = ['voorraad_item', 'datum']
+        fields = ['voorraad_item', 'datum', 'afhandeling']  # <-- afhandeling toegevoegd
         widgets = {
             'voorraad_item': forms.Select(attrs={'class': 'select2-single', 'style': 'width: 100%'}),
             'datum': forms.TextInput(attrs={
-                'class': 'admin-input js-date', 
+                'class': 'admin-input js-date',
                 'placeholder': 'dd-mm-jjjj'
+            }),
+            'afhandeling': forms.Textarea(attrs={
+                'class': 'admin-input',
+                'rows': 3,
+                'placeholder': 'Hoe is dit afgehandeld?'
             }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['datum'].input_formats = ['%d-%m-%Y']
         self.fields['voorraad_item'].queryset = VoorraadItem.objects.all()
 
         if not self.instance.pk:
+            # Add-form: datum initialiseren + afhandeling niet tonen / niet invulbaar
             self.initial['datum'] = timezone.now().strftime('%d-%m-%Y')
+            self.fields.pop('afhandeling', None)
+        else:
+            # Edit-form: afhandeling wél tonen
+            self.fields['afhandeling'].label = "Afhandeling"
 
 class STSHalfjeForm(forms.ModelForm):
     patient_geboortedatum_enc = forms.DateField(

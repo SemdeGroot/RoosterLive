@@ -113,7 +113,7 @@ def laatstepotten(request):
 
                     messages.success(
                         request,
-                        "Melding opgeslagen. Bestellers zijn per push en e-mail geïnformeerd.",
+                        "Melding opgeslagen. Bestellers zijn per push melding en e-mail geïnformeerd.",
                     )
                     return redirect("laatstepotten")
             else:

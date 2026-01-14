@@ -19,8 +19,8 @@ RECIPIENT = "semdegroot2003@gmail.com"
 
 @shared_task(
     name="tasks.run_kompas_scraper",
-    time_limit=12 * 60 * 60,
-    soft_time_limit=11 * 60 * 60,
+    time_limit=6 * 60 * 60,
+    soft_time_limit=5 * 60 * 60,
 )
 def run_kompas_scraper(test_mode=False, categories=None):
     if not cache.add(LOCK_KEY, "1", timeout=LOCK_TTL):

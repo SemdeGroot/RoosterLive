@@ -18,7 +18,7 @@
     <div class="birthday-header agenda-section-header">
       <img src="{% static 'img/laatstepotten.svg' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
-        <h2>Laatste Potten</h2>
+        <h2>Laatste potten</h2>
         <p>Meld hier wanneer de laatste pot van een geneesmiddel is aangebroken.</p>
       </div>
 
@@ -75,6 +75,7 @@
                 <th>ZI-nummer</th>
                 <th>Geneesmiddel</th>
                 <th>Datum</th>
+                <th>Afhandeling</th>
                 <th>Acties</th>
               </tr>
             </thead>
@@ -85,6 +86,7 @@
                 <td>{{ item.voorraad_item.zi_nummer }}</td>
                 <td class="wrap"><strong>{{ item.voorraad_item.naam }}</strong></td>
                 <td>{{ item.datum|date:"d-m-Y" }}</td>
+                <td class="wrap">{{ item.afhandeling|default:"" }}</td>
                 <td>
                   {% if can_edit %}
                   <div class="actions-wrap horizontal">
@@ -111,7 +113,7 @@
 
               {% if can_edit %}
               <tr id="edit-row-{{ item.id }}" style="display:none;">
-                <td colspan="5">
+                <td colspan="6">
                   <form method="post" class="edit-wrap">
                     {% csrf_token %}
                     <input type="hidden" name="btn_edit" value="1">
@@ -132,6 +134,10 @@
                         </em>
                       </p>
                       </div>
+                      <div>
+                      <label class="section-label">Afhandeling:</label>
+                      <textarea name="afhandeling" class="admin-input" rows="3">{{ item.afhandeling|default:"" }}</textarea>
+                    </div>
                     </div>
                     <div class="actions-wrap horizontal" style="margin-top:10px;">
                       <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
