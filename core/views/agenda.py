@@ -8,12 +8,14 @@ from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.utils import timezone
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 from ._helpers import can
 
 from core.models import UserProfile, AgendaItem
 from core.forms import AgendaItemForm
 from core.tasks import send_agenda_uploaded_push_task
+from core.utils.calendar_active import get_calendar_sync_status
 
 # Gebruik constante uit settings, fallback = 1
 ORG_ID_APOTHEEK_JANSEN = getattr(settings, "APOTHEEK_JANSEN_ORG_ID", 1)
@@ -190,6 +192,13 @@ def agenda(request):
         birthdays = upcoming
         cache.set(cache_key, birthdays, 60 * 60 * 8)
 
+    # --- Webcal link + sync status ---
+    token = request.user.profile.calendar_token
+    ics_path = reverse("diensten_webcal", args=[token])
+    https_url = request.build_absolute_uri(ics_path)
+    webcal_url = https_url.replace("https://", "webcal://").replace("http://", "webcal://")
+
+    sync_status = get_calendar_sync_status(request.user.id)
     context = {
         "can_edit": can_edit,
         "today": today,
@@ -202,5 +211,9 @@ def agenda(request):
         "new_general_form": new_general_form,
         "new_outing_form": new_outing_form,
         "open_edit_id": open_edit_id,
+        "webcal_https_url": https_url,
+        "webcal_url": webcal_url,
+        "calendar_active": sync_status.active,
+        "calendar_last_synced": sync_status.last_synced,
     }
     return render(request, "agenda/index.html", context)

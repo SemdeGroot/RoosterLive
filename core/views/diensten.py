@@ -7,8 +7,8 @@ from django.utils import timezone, translation
 from django.urls import reverse
 
 from core.models import Shift, Location
+from core.utils.calendar_active import get_calendar_sync_status
 from ._helpers import can
-
 
 def _monday_of_iso_week(some_date: date) -> date:
     return some_date - timedelta(days=some_date.weekday())
@@ -162,6 +162,7 @@ def mijndiensten_view(request):
     ics_path = reverse("diensten_webcal", args=[token])
     https_url = request.build_absolute_uri(ics_path)
     webcal_url = https_url.replace("https://", "webcal://").replace("http://", "webcal://")
+    sync_status = get_calendar_sync_status(request.user.id)
 
     return render(request, "diensten/index.html", {
         "monday": monday,
@@ -180,4 +181,7 @@ def mijndiensten_view(request):
 
         "webcal_https_url": https_url,
         "webcal_url": webcal_url,
+
+        "calendar_active": sync_status.active,
+        "calendar_last_synced": sync_status.last_synced,
     })

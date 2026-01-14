@@ -10,7 +10,7 @@ from django.http import Http404, HttpResponse, HttpResponseNotModified
 from django.utils import timezone
 
 from core.models import Shift, UserProfile, AgendaItem
-
+from core.utils.calendar_active import mark_calendar_active
 
 PERIOD_TIMES = {
     "morning": (time(8, 0), time(12, 30)),
@@ -245,17 +245,12 @@ def _build_cached_payload_for_user(user) -> dict:
         lines.append("END:VEVENT")
         
     for item in agenda_items:
-        # Hele dag event (DATE value)
-        dtstart_date = item.date.strftime("%Y%m%d")
-        dtend_date = (item.date + timedelta(days=1)).strftime("%Y%m%d")  # DTEND is exclusief
-
         if item.category == "outing":
             summary = f"Apotheek Jansen Uitje: {item.title}".strip()
         else:
             summary = f"Apotheek Jansen Algemeen: {item.title}".strip()
 
         description = (item.description or "").strip()
-
         uid = f"agenda-{item.id}@apotheekjansen"
         dt_event_mod = now.astimezone(dt_timezone.utc)
 
@@ -263,10 +258,27 @@ def _build_cached_payload_for_user(user) -> dict:
         lines.append(f"UID:{_ics_escape(uid)}")
         lines.append(f"DTSTAMP:{_fmt_dt_utc(dt_event_mod)}")
         lines.append(f"LAST-MODIFIED:{_fmt_dt_utc(dt_event_mod)}")
-        lines.append(f"DTSTART;VALUE=DATE:{dtstart_date}")
-        lines.append(f"DTEND;VALUE=DATE:{dtend_date}")
         lines.append(f"SUMMARY:{_ics_escape(summary)}")
         lines.append(f"DESCRIPTION:{_ics_escape(description)}")
+
+        if item.start_time and item.end_time:
+            # timed event
+            dt_start_local = datetime.combine(item.date, item.start_time, tzinfo=tz)
+            dt_end_local = datetime.combine(item.date, item.end_time, tzinfo=tz)
+
+            # safety: als er toch iets misgaat (zou door form-validatie niet mogen)
+            if dt_end_local <= dt_start_local:
+                dt_end_local = dt_end_local + timedelta(days=1)
+
+            lines.append(f"DTSTART:{_fmt_dt_utc(dt_start_local)}")
+            lines.append(f"DTEND:{_fmt_dt_utc(dt_end_local)}")
+        else:
+            # all-day event
+            dtstart_date = item.date.strftime("%Y%m%d")
+            dtend_date = (item.date + timedelta(days=1)).strftime("%Y%m%d")  # DTEND exclusief
+            lines.append(f"DTSTART;VALUE=DATE:{dtstart_date}")
+            lines.append(f"DTEND;VALUE=DATE:{dtend_date}")
+
         lines.append("END:VEVENT")
 
 
@@ -310,6 +322,7 @@ def diensten_webcal_view(request, token):
         raise Http404("Onbekende gebruiker.")
 
     user = profile.user
+    mark_calendar_active(user.id)
     key = _ics_cache_key(user.id)
 
     wants_gzip = _client_accepts_gzip(request)

@@ -209,10 +209,28 @@
 
     <!-- Desktop variant -->
     <div id="agendaDesktop" style="display:none;">
+    {% if calendar_active %}
+      <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background: rgba(0,255,0,0.06); margin-bottom:12px;">
+        <span aria-hidden="true" style="font-size:18px;">✅</span>
+        <div style="color:var(--text);">
+          <strong>Volgens ons systeem heb je je agenda-app al gesynchroniseerd.</strong>
+          {% if calendar_last_synced %}
+            <div style="color:var(--muted); font-size:0.92em; margin-top:2px;">
+              Laatst gesynchroniseerd: {{ calendar_last_synced|date:"d-m-Y H:i" }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <p style="margin-top:0; color:var(--muted);">
+        Wil je opnieuw synchroniseren of de link opnieuw toevoegen? Gebruik de link hieronder.
+      </p>
+    {% else %}
       <p style="margin-top:0; color:var(--muted);">
         Wil je je diensten in je agenda? Open de Jansen app op je telefoon en klik op de synchroniseer knop. Of kopieer de link hieronder en open die op je telefoon.
         Als je hem één keer toevoegt, worden wijzigingen automatisch bijgewerkt.
       </p>
+    {% endif %}
 
       <label class="section-label">Jouw agenda-link</label>
       <div style="display:flex; gap:10px; align-items:center;">
@@ -243,12 +261,32 @@
 
     <!-- Mobile variant -->
     <div id="agendaMobile" style="display:none;">
+{% if calendar_active %}
+  <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background: rgba(0,255,0,0.06); margin-bottom:12px;">
+    <span aria-hidden="true" style="font-size:18px;">✅</span>
+    <div>
+      <strong>Volgens ons systeem heb je je agenda-app al gesynchroniseerd.</strong>
+      {% if calendar_last_synced %}
+            <div style="color:var(--muted); font-size:0.92em; margin-top:2px;">
+              Laatst gesynchroniseerd: {{ calendar_last_synced|date:"d-m-Y H:i" }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <p style="margin-top:0; color:var(--muted);">
+        Wil je opnieuw synchroniseren? Open de agenda-app of kopieer de link.
+      </p>
+    {% else %}
       <p style="margin-top:0; color:var(--muted);">
         Voeg je diensten toe aan je agenda. Daarna worden wijzigingen automatisch bijgewerkt.
       </p>
+    {% endif %}
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-        <button type="button" id="openAgendaBtn" class="btn btn-save">Open agenda-app</button>
+        <button type="button" id="openAgendaBtn" class="btn btn-save">
+          {% if calendar_active %}Opnieuw synchroniseren{% else %}Open agenda-app{% endif %}
+        </button>
         <button type="button" id="copyWebcalBtnMobile" class="btn">Kopieer link</button>
       </div>
 

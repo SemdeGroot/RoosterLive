@@ -541,8 +541,7 @@ class MyTOTPDeviceForm(TOTPDeviceForm):
             "inputmode": "numeric",
             "autocomplete": "one-time-code",
         })
-
-
+        
 class AgendaItemForm(forms.ModelForm):
     date = forms.DateField(
         input_formats=["%d-%m-%Y"],
@@ -556,9 +555,40 @@ class AgendaItemForm(forms.ModelForm):
         ),
     )
 
+    # TimeFields met inputformat HH:MM
+    start_time = forms.TimeField(
+        required=False,
+        input_formats=["%H:%M"],
+        widget=forms.TextInput(
+            attrs={
+                "class": "js-time",
+                "placeholder": "uu:mm",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
+        ),
+        help_text="Optioneel: vul start- én eindtijd in. Laat leeg voor 'hele dag'.",
+        label="Starttijd",
+    )
+
+    end_time = forms.TimeField(
+        required=False,
+        input_formats=["%H:%M"],
+        widget=forms.TextInput(
+            attrs={
+                "class": "js-time",
+                "placeholder": "uu:mm",
+                "inputmode": "numeric",
+                "autocomplete": "off",
+            }
+        ),
+        help_text="Optioneel: vul start- én eindtijd in. Laat leeg voor 'hele dag'.",
+        label="Eindtijd",
+    )
+
     class Meta:
         model = AgendaItem
-        fields = ["title", "description", "date"]
+        fields = ["title", "description", "date", "start_time", "end_time"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -582,6 +612,20 @@ class AgendaItemForm(forms.ModelForm):
         if d < today:
             raise ValidationError("Datum mag niet in het verleden liggen.")
         return d
+
+    # cross-field validatie
+    def clean(self):
+        cleaned = super().clean()
+        st = cleaned.get("start_time")
+        et = cleaned.get("end_time")
+
+        if (st and not et) or (et and not st):
+            raise ValidationError("Vul zowel een starttijd als eindtijd in (of laat beide leeg voor hele dag).")
+
+        if st and et and st >= et:
+            raise ValidationError("Eindtijd moet later zijn dan starttijd.")
+
+        return cleaned
 
 class NewsItemForm(forms.ModelForm):
     MAX_FILE_SIZE_MB = 25  # limiet gelijk aan nginx

@@ -575,6 +575,8 @@ class AgendaItem(models.Model):
         help_text="Korte beschrijving (max. 100 tekens).",
     )
     date = models.DateField("Datum", db_index=True)
+    start_time = models.TimeField("Starttijd", null=True, blank=True)
+    end_time = models.TimeField("Eindtijd", null=True, blank=True)
 
     category = models.CharField(
         "Categorie",

@@ -6,7 +6,9 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+  <link rel="stylesheet" href="{% static 'css/diensten/diensten.css' %}">
   <script src="{% static 'js/agenda/agenda.js' %}" defer></script>
+  <script src="{% static 'js/diensten/diensten.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -20,23 +22,37 @@
         alt="Algemene agenda"
         class="birthday-icon"
       >
+
       <div class="birthday-header-text">
         <h2>Algemeen</h2>
         <p>Algemene agenda</p>
       </div>
 
-      {% if can_edit %}
+      <div class="header-actions">
         <button
           type="button"
-          class="btn btn-save js-toggle-form"
-          data-target="#agenda-form-general"
-          aria-expanded="false"
-          aria-controls="agenda-form-general"
-          title="Agendapunt toevoegen"
+          id="syncAgendaBtn"
+          class="btn btn-save"
+          data-webcal="{{ webcal_url }}"
+          data-https="{{ webcal_https_url }}"
+          title="Synchroniseer met agenda app"
         >
-          Toevoegen
+          Synchroniseer met agenda app
         </button>
-      {% endif %}
+
+        {% if can_edit %}
+          <button
+            type="button"
+            class="btn btn-save js-toggle-form"
+            data-target="#agenda-form-general"
+            aria-expanded="false"
+            aria-controls="agenda-form-general"
+            title="Agendapunt toevoegen"
+          >
+            Toevoegen
+          </button>
+        {% endif %}
+      </div>
     </div>
 
     {% if can_edit %}
@@ -71,6 +87,16 @@
           autocomplete="off"
           value="{{ new_general_form.date.value|default_if_none:'' }}"
         >
+        <label for="{{ new_general_form.start_time.id_for_label }}">Starttijd (optioneel):</label>
+        {{ new_general_form.start_time.errors }}
+        {{ new_general_form.start_time }}
+
+        <label for="{{ new_general_form.end_time.id_for_label }}" style="margin-top:10px;">Eindtijd (optioneel):</label>
+        {{ new_general_form.end_time.errors }}
+        {{ new_general_form.end_time }}
+        <small style="color:var(--muted); display:block; margin-top:0px;">
+          Vul start- én eindtijd in. Laat leeg voor "hele dag" in agenda.
+        </small>
 
         <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
           <button
@@ -185,6 +211,16 @@
                   autocomplete="off"
                   value="{% if edit_form.is_bound %}{{ edit_form.date.value|default_if_none:'' }}{% else %}{{ item.date|date:'d-m-Y' }}{% endif %}"
                 >
+                <label for="{{ edit_form.start_time.id_for_label }}">Starttijd (optioneel):</label>
+                {{ edit_form.start_time.errors }}
+                {{ edit_form.start_time }}
+
+                <label for="{{ edit_form.end_time.id_for_label }}" style="margin-top:10px;">Eindtijd (optioneel):</label>
+                {{ edit_form.end_time.errors }}
+                {{ edit_form.end_time }}
+                 <small style="color:var(--muted); display:block; margin-top:0px;">
+                  Vul start- én eindtijd in. Laat leeg voor "hele dag" in agenda.
+                </small>
 
                 <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
                   <button
@@ -270,6 +306,16 @@
           autocomplete="off"
           value="{{ new_outing_form.date.value|default_if_none:'' }}"
         >
+        <label for="{{ new_outing_form.start_time.id_for_label }}">Starttijd (optioneel):</label>
+        {{ new_outing_form.start_time.errors }}
+        {{ new_outing_form.start_time }}
+
+        <label for="{{ new_outing_form.end_time.id_for_label }}" style="margin-top:10px;">Eindtijd (optioneel):</label>
+        {{ new_outing_form.end_time.errors }}
+        {{ new_outing_form.end_time }}
+        <small style="color:var(--muted); display:block; margin-top:0px;">
+          Vul start- én eindtijd in. Laat leeg voor "hele dag" in agenda.
+        </small>
 
         <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
           <button
@@ -384,6 +430,16 @@
                   autocomplete="off"
                   value="{% if edit_form.is_bound %}{{ edit_form.date.value|default_if_none:'' }}{% else %}{{ item.date|date:'d-m-Y' }}{% endif %}"
                 >
+                <label for="{{ edit_form.start_time.id_for_label }}">Starttijd (optioneel):</label>
+                {{ edit_form.start_time.errors }}
+                {{ edit_form.start_time }}
+
+                <label for="{{ edit_form.end_time.id_for_label }}" style="margin-top:10px;">Eindtijd (optioneel):</label>
+                {{ edit_form.end_time.errors }}
+                {{ edit_form.end_time }}
+                <small style="color:var(--muted); display:block; margin-top:0px;">
+                  Vul start- én eindtijd in. Laat leeg voor "hele dag" in agenda.
+                </small>
 
                 <div class="actions-wrap horizontal" style="margin-top:12px; display:flex; justify-content:space-between; gap:16px;">
                   <button
@@ -468,6 +524,7 @@
       </p>
     {% endif %}
   </div>
+
 </div>
 
 {# IMask + toggle/cancel blijven zoals je had #}
@@ -523,6 +580,139 @@
         }
       });
     });
+    document.querySelectorAll(".js-time").forEach(function (input) {
+      IMask(input, {
+        mask: "H:M",
+        lazy: true,
+        overwrite: true,
+        blocks: {
+          H: { mask: IMask.MaskedRange, from: 0, to: 23, maxLength: 2 },
+          M: { mask: IMask.MaskedRange, from: 0, to: 59, maxLength: 2 }
+        }
+      });
+    });
   });
 </script>
+
+<!-- Modal -->
+<div id="agendaModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content diensten-modal"
+       style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:640px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <h2 style="margin:0; font-size: 1.4rem;">Agenda synchronisatie</h2>
+      <span id="agendaModalClose" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <!-- Desktop variant -->
+    <div id="agendaDesktop" style="display:none;">
+      <div class="form">
+      {% if calendar_active %}
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background: rgba(0,255,0,0.06); margin-bottom:12px;">
+          <span aria-hidden="true" style="font-size:18px;">✅</span>
+          <div style="color:var(--text);">
+            <strong>Volgens ons systeem heb je je agenda-app al gesynchroniseerd.</strong>
+            {% if calendar_last_synced %}
+              <div style="color:var(--muted); font-size:0.92em; margin-top:2px;">
+                Laatst gesynchroniseerd: {{ calendar_last_synced|date:"d-m-Y H:i" }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <p style="margin-top:0; color:var(--muted);">
+          Wil je opnieuw synchroniseren of de link opnieuw toevoegen? Gebruik de link hieronder.
+        </p>
+      {% else %}
+        <p style="margin-top:0; color:var(--muted);">
+          Wil je de Apotheek Jansen Agenda synchroniseren met jouw agenda app? Open de Jansen app op je telefoon en klik op de synchroniseer knop. Of kopieer de link hieronder en open die op je telefoon.
+          Als je hem één keer toevoegt, worden wijzigingen automatisch bijgewerkt.
+        </p>
+      {% endif %}
+
+      <label class="section-label">Jouw agenda-link</label>
+        <div style="display:flex; gap:10px;">
+          <input id="webcalInput" class="admin-input" type="text" readonly value="{{ webcal_url }}" style="flex:1;">
+          <button
+            type="button"
+            id="copyWebcalBtn"
+            class="btn"
+            style="height:54px; display:inline-flex; align-items:center;"
+          >
+            Kopieer
+          </button>
+        </div>
+
+      <div style="margin-top:14px; padding-top:16px; border-top: 1px solid var(--border);">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Zo voeg je hem toe op je telefoon:</strong><br>
+          1) Open de Jansen app op je telefoon of kopieer de link hierboven.<br>
+          2) Stuur de link naar jezelf (WhatsApp of e-mail) en open hem op je telefoon of typ hem over in je browser.<br>
+          3) Kies in je agenda-app voor <em>Abonneren</em> / <em>Kalender toevoegen</em> en bevestig.
+        </small>
+      </div>
+
+      <div style="margin-top:14px;">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Lukt openen niet?</strong><br>
+          Open je agenda-app en open <em>Instellingen</em>. Klik op <em>Kalender toevoegen</em> (of <em>Abonneren</em>) en plak daar de link.
+        </small>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
+        <button type="button" id="agendaModalOkDesktop" class="btn btn-danger">Sluiten</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- Mobile variant -->
+    <div id="agendaMobile" style="display:none;">
+      <div class="form">
+      {% if calendar_active %}
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background: rgba(0,255,0,0.06); margin-bottom:12px;">
+          <span aria-hidden="true" style="font-size:18px;">✅</span>
+          <div>
+            <strong>Volgens ons systeem heb je je agenda-app al gesynchroniseerd.</strong>
+            {% if calendar_last_synced %}
+              <div style="color:var(--muted); font-size:0.92em; margin-top:2px;">
+                Laatst gesynchroniseerd: {{ calendar_last_synced|date:"d-m-Y H:i" }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <p style="margin-top:0; color:var(--muted);">
+          Wil je opnieuw synchroniseren? Open de agenda-app of kopieer de link.
+        </p>
+      {% else %}
+        <p style="margin-top:0; color:var(--muted);">
+          Synchroniseer de Apotheek Jansen Agenda met jouw agenda app. Daarna worden wijzigingen automatisch bijgewerkt.
+        </p>
+      {% endif %}
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button type="button" id="openAgendaBtn" class="btn btn-save">
+          {% if calendar_active %}Opnieuw synchroniseren{% else %}Open agenda-app{% endif %}
+        </button>
+        <button type="button" id="copyWebcalBtnMobile" class="btn">Kopieer link</button>
+      </div>
+
+      <div style="margin-top:18px; padding-top:16px; border-top: 1px solid var(--border);">
+        <small style="color:var(--muted); display:block; line-height:1.5;">
+          <strong>Werkt de “Open agenda-app” knop niet?</strong><br>
+          1) Tik op <em>Kopieer link</em>.<br>
+          2) Open je agenda-app en ga naar <em>Instellingen</em>.<br>
+          3) Kies <em>Kalender toevoegen</em> of <em>Abonneren</em>.<br>
+          4) Plak de link en sla op.
+        </small>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" id="agendaModalOkMobile" class="btn btn-danger">Sluiten</button>
+      </div>
+    </div>
+    </div>
+
+  </div>
+</div>
 {% endblock %}
