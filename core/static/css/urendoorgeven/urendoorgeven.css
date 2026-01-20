@@ -35,60 +35,186 @@
   font-weight:600;
   border:1px solid var(--border, rgba(255,255,255,.10));
 }
+.badge.ok{ color: #16a34a;; }
+.badge.danger{ color: #7f1d1d; }
 
-.badge.ok{
-  color: #14532d;
+.hint{
+  color: var(--muted);
+  font-size: .85rem;
 }
 
-.badge.danger{
-  color: #7f1d1d;
+.form-help-text{
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.35;
 }
 
-.uren-grid-top{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-}
-
-@media (max-width: 900px){
-  .uren-grid-top{
-    grid-template-columns: 1fr;
-  }
-}
-
-.uren-toeslag-card,
-.uren-help-card{
+.uren-summary{
+  margin-top: 12px;
   border:1px solid var(--border, rgba(255,255,255,.08));
   background: var(--card-2, rgba(255,255,255,.03));
   border-radius: 14px;
   padding: 12px 14px;
 }
 
-.uren-toeslag-row{
+.uren-summary-row{
   display:flex;
-  align-items:center;
+  gap:18px;
   justify-content:space-between;
-  gap:10px;
+  flex-wrap:wrap;
 }
 
-.uren-toeslag-value{
-  font-size: 1.25rem;
+.uren-summary-value{
+  font-size: 1.2rem;
   font-weight: 800;
   margin-top: 4px;
 }
 
-.toeslag-form .admin-input{
-  margin-top: 6px;
-  width: 100%;
+.uren-km{
+  margin-top: 12px;
+  border:1px solid var(--border, rgba(255,255,255,.08));
+  background: var(--card-2, rgba(255,255,255,.03));
+  border-radius: 14px;
+  padding: 12px 14px;
 }
 
-.hint{
-  color: var(--muted);
+.uren-hours-input{ width: 110px; }
+.center-col{ text-align:center; }
+.wrap{ white-space: normal; }
+
+/* Table widths (table.css patroon) */
+table.urendoorgeven-toeslag-table{
+  --c1: 100px;
+  --c2: 60px;
+  --c3: 60px;
+  --c4: 80px;
+  --c5: 80px;
+}
+table.urendoorgeven-uren-table{
+  --c1: 20px;
+  --c2: 120px;
+  --c3: 100px;
+  --c4: 140px;
+  --c5: 100px;
+  --c6: 50px;
+}
+@media (max-width: 900px){
+  table.urendoorgeven-toeslag-table{ min-width: 400px; }
+  table.urendoorgeven-uren-table{ min-width: 550px; }
+}
+
+/* Flatpickr: groene marker op ingeplande dagen */
+.flatpickr-day.has-shift{
+  position: relative;
+}
+.flatpickr-day.has-shift::after{
+  content:"";
+  position:absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #16a34a;
+}
+
+/* Modal grid: altijd 1 kolom */
+.uren-modal-grid{
+  display: grid;
+  grid-template-columns: 1fr;   /* <-- altijd onder elkaar */
+  gap: 16px;
+  align-items: start;
+}
+
+
+.uren-modal-dagdelen{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top: 2px;
+}
+/* Modal dagdelen list */
+.uren-dagdeel-option{
+  display:flex;
+  flex-direction: column;       /* <-- belangrijk */
+  align-items: stretch;         /* full width */
+  gap:6px;                      /* ruimte tussen top-row en warning */
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border, rgba(255,255,255,.10));
+  background: rgba(255,255,255,.02);
+  user-select:none;
+}
+
+/* de bovenste rij blijft horizontaal */
+.uren-dagdeel-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+/* warning onderaan */
+.uren-dagdeel-option .hours-warning{
+  width:100%;
+  margin-top:0;     /* je hebt al gap */
+}
+
+
+.uren-dagdeel-option:hover{
+  background: rgba(255,255,255,.04);
+}
+
+.uren-dagdeel-option.active{
+  outline: 2px solid rgba(255,255,255,.18);
+}
+
+.uren-dagdeel-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.planned-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#16a34a;
+  display:inline-block;
+}
+
+.planned-dot.muted{
+  background: rgba(255,255,255,.18);
+}
+
+#autosaveStatus.autosave-ok { color: #16a34a; }   /* groen */
+#autosaveStatus.autosave-bad { color: var(--danger); }
+
+.hours-warning{
+  color: var(--danger);
   font-size: .85rem;
-  margin-top: -6px !important;
+  line-height: 1.25;
 }
 
-.uren-actions{
-  display: flex;
-  justify-content: flex-end;   /* rechts */
+/* Modal overlay padding (zoals card margins) */
+#addModal{
+  padding: 16px;                 /* links/rechts ruimte */
+  box-sizing: border-box;
+}
+
+/* Modal content: geen 90% + 10% auto + 25px padding */
+#addModal .modal-content{
+  width: 100% !important;
+  max-width: 760px;
+  margin: 0 auto !important;     /* center, geen 10% top margin */
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+
+/* Auto-save blok altijd op nieuwe regel */
+.uren-summary-row > div:last-child{
+  flex-basis: 100%;
 }

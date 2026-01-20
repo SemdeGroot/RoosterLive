@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenInvoer, UrenDoorgevenSettings, NotificationPreferences, Function, Dagdeel
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel
 
 UserModel = get_user_model()
 
@@ -1120,62 +1120,46 @@ class STSHalfjeForm(forms.ModelForm):
             org_type=Organization.ORG_TYPE_APOTHEEK
         ).order_by("name")
 
-# Uren doorgeven incl CAO toeslag
-def _clean_1_decimal_decimal(value, field_label: str) -> Decimal:
-    if value is None:
-        return Decimal("0.0")
-    if value < 0:
-        raise ValidationError(f"{field_label} mag niet negatief zijn.")
-    # forceer 1 decimaal
-    q = value.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
-    return q
+def _clean_1_decimal_decimal(v, label):
+    if v in (None, ""):
+        return None
+
+    if isinstance(v, str):
+        v = v.strip().replace(",", ".")
+    try:
+        d = Decimal(str(v))
+    except Exception:
+        raise ValidationError(f"{label} is ongeldig.")
+
+    return d.quantize(Decimal("0.1"))
 
 
-class UrenInvoerForm(forms.ModelForm):
+class UrenMaandForm(forms.ModelForm):
     class Meta:
-        model = UrenInvoer
-        fields = ["hours_before_18", "hours_after_18"]
+        model = UrenMaand
+        fields = ["kilometers"]
         widgets = {
-            "hours_before_18": forms.TextInput(attrs={
+            "kilometers": forms.NumberInput(attrs={
                 "class": "admin-input",
-                "inputmode": "decimal",
-                "placeholder": "0,0",
+                "inputmode": "numeric",
+                "min": "0",
+                "step": "1",
                 "autocomplete": "off",
-            }),
-            "hours_after_18": forms.TextInput(attrs={
-                "class": "admin-input",
-                "inputmode": "decimal",
-                "placeholder": "0,0",
-                "autocomplete": "off",
-            }),
-        }
-
-    def clean_hours_before_18(self):
-        v = self.cleaned_data.get("hours_before_18")
-        return _clean_1_decimal_decimal(v, "Uren tot 18:00")
-
-    def clean_hours_after_18(self):
-        v = self.cleaned_data.get("hours_after_18")
-        return _clean_1_decimal_decimal(v, "Uren na 18:00")
-
-
-class UrenDoorgevenSettingsForm(forms.ModelForm):
-    class Meta:
-        model = UrenDoorgevenSettings
-        fields = ["evening_allowance_pct"]
-        widgets = {
-            "evening_allowance_pct": forms.TextInput(attrs={
-                "class": "admin-input",
-                "inputmode": "decimal",
-                "placeholder": "Bijv. 25,00",
-                "autocomplete": "off",
+                "placeholder": "0",
             })
         }
 
-    def clean_evening_allowance_pct(self):
-        v = self.cleaned_data.get("evening_allowance_pct")
+    def clean_kilometers(self):
+        v = self.cleaned_data.get("kilometers")
         if v is None:
-            return Decimal("0.00")
-        if v < 0 or v > 200:
-            raise ValidationError("Toeslag % moet tussen 0 en 200 liggen.")
-        return v.quantize(Decimal("0.01"))
+            return 0
+        if v < 0:
+            raise ValidationError("Kilometers mogen niet negatief zijn.")
+        return v
+
+
+class Hours1DecimalField(forms.Form):
+    hours = forms.CharField(required=False)
+
+    def clean_hours(self):
+        return _clean_1_decimal_decimal(self.cleaned_data.get("hours"), "Gewerkte uren")

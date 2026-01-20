@@ -7,7 +7,7 @@ from .push import *     # noqa
 from .email_dispatcher import *
 # Beat
 from .beat.cleanup import *  # noqa
-from .beat.uren import *  # noqa
+#from .beat.uren import *  # noqa
 from .beat.push import *  # noqa
 from .beat.fill import *  # noqa
 from .beat.birthday import *  # noqa

@@ -1,139 +1,245 @@
 {% extends "base.html" %}
-{% load static role_tags form_extras %}
+{% load static %}
 
 {% block title %}Uren doorgeven{% endblock %}
 {% block header_title %}Uren doorgeven{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
   <link rel="stylesheet" href="{% static 'css/urendoorgeven/urendoorgeven.css' %}">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+
   <script src="{% static 'js/urendoorgeven/urendoorgeven.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
-<div class="admin-wrap">
-  <div class="card">
-    <div class="card-inner">
+<div class="card card-inner">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/uren_doorgeven.svg' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Uren doorgeven</h2>
+        <p>
+          Je vult uren in voor <strong>{{ active_month|date:"F Y" }}</strong>.
+          De deadline voor het invullen is: <strong>{{ deadline_local_str }}</strong>.
+        </p>
+      </div>
+      {# knop is verplaatst onder tabel #}
+    </div>
 
-      <div class="birthday-header agenda-section-header">
-        <img src="{% static 'img/uren_doorgeven.svg' %}" alt="" class="birthday-icon">
-        <div class="birthday-header-text">
-          <h2>Uren doorgeven</h2>
-          <p>
-            Geef hier je gewerkte uren door voor de maand <strong>{{ target_month|date:"F Y" }}</strong>.
-            Deadline: <strong>{{ deadline_local_str }}</strong>.
-          </p>
-        </div>
+    <div class="uren-deadline-bar" data-deadline="{{ deadline_iso }}" style="margin-top:10px;">
+      <div class="uren-deadline-left">
+        <span class="uren-deadline-label">Tijd tot deadline</span>
+        <span class="uren-deadline-timer" id="deadlineTimer">—</span>
+      </div>
+      <span class="badge ok">Beschikbaar</span>
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+
+      <h3 style="margin-top: 18px;">Overzicht shifts</h3>
+      <div class="table-scroll">
+        <table class="crud-table urendoorgeven-toeslag-table">
+          <thead>
+            <tr>
+              <th>Dagdeel</th>
+              <th>Start</th>
+              <th>Eind</th>
+              <th>Toeslag</th>
+              <th>Geschat (uur)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in toeslag_rows %}
+            <tr>
+              <td><strong>{{ r.dagdeel.get_code_display }}</strong></td>
+              <td>{{ r.dagdeel.start_time|time:"H:i" }}</td>
+              <td>{{ r.dagdeel.end_time|time:"H:i" }}</td>
+              <td>
+                {{ r.dagdeel.allowance_pct }}%
+                {% if r.dagdeel.extra_pct > 0 %}
+                  <span class="muted">(+{{ r.dagdeel.extra_pct }}%)</span>
+                {% else %}
+                  <span class="muted">(geen)</span>
+                {% endif %}
+              </td>
+              <td>{{ r.estimated_hours }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
 
-      <div class="uren-deadline-bar" style="margin-bottom: 16px;"
-           data-deadline="{{ deadline_iso }}"
-           data-deadline-passed="{{ deadline_passed|yesno:'1,0' }}">
-        <div class="uren-deadline-left">
-          <span class="uren-deadline-label">Tijd tot deadline</span>
-          <span class="uren-deadline-timer" id="deadlineTimer">—</span>
-        </div>
-        {% if deadline_passed %}
-          <span class="badge danger">Deadline voorbij</span>
-        {% else %}
-          <span class="badge ok">Beschikbaar</span>
-        {% endif %}
-      </div>
+      <h3 style="margin-top: 18px;">Uren invullen</h3>
 
-
-      <div class="uren-grid-top">
-        <div class="uren-help-card">
-          <div style="margin-top:6px;">
-            Vul je totale uren in voor de maand, gesplitst in
-            <strong>tot 18:00</strong> en <strong>na 18:00</strong>.
-          </div>
-        </div>
-        <div class="uren-toeslag-card">
-          <div class="uren-toeslag-row">
-            <div>
-              <div class="muted">CAO toeslag na 18:00</div>
-              <div class="uren-toeslag-value">
-                <span id="toeslagValue">{{ settings_obj.evening_allowance_pct }}%</span>
-              </div>
-            </div>
-
-            {% if can_edit %}
-            <button type="button" class="icon-btn" id="toeslagEditBtn" aria-label="Bewerk toeslag">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-                   stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-              </svg>
-            </button>
-            {% endif %}
-          </div>
-
-       {% if can_edit %}
-      <form method="post" id="toeslagForm" class="toeslag-form form" style="display:none;">
+      <form method="post" autocomplete="off" class="uren-form" id="urenForm"
+            data-window-start="{{ window_start_iso }}"
+            data-window-end="{{ window_end_iso }}">
         {% csrf_token %}
-        <input type="hidden" name="form_kind" value="settings">
+        <input type="hidden" name="action" value="save_all">
 
-        <div class="admin-grid">
-          <div>
-            <label for="{{ settings_form.evening_allowance_pct.id_for_label }}" class="muted">
-              Nieuwe toeslag %
-            </label>
-            {{ settings_form.evening_allowance_pct }}
-          </div>
+        <div class="table-scroll">
+          <table class="crud-table urendoorgeven-uren-table" id="urenTable">
+            <thead>
+              <tr>
+                <th class="center-col"></th>
+                <th>Datum</th>
+                <th>Dagdeel</th>
+                <th>Gewerkt</th>
+                <th>Totaal (gewogen)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="urenTbody">
+              {% for r in rows %}
+              <tr class="uren-row"
+                  data-date="{{ r.date|date:'Y-m-d' }}"
+                  data-dagdeel-id="{{ r.dagdeel.id }}"
+                  data-allowance-pct="{{ r.dagdeel.allowance_pct }}"
+              >
+                <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+
+                <td><strong>{{ r.date|date:"d-m-Y" }}</strong></td>
+
+                <td>
+                  {{ r.dagdeel.get_code_display }}
+                  <div class="muted" style="font-size:.85rem;">
+                    {{ r.dagdeel.start_time|time:"H:i" }}–{{ r.dagdeel.end_time|time:"H:i" }}
+                  </div>
+                </td>
+
+                <td>
+                  <input type="hidden" name="row_date" value="{{ r.date|date:'Y-m-d' }}">
+                  <input type="hidden" name="row_dagdeel_id" value="{{ r.dagdeel.id }}">
+
+                  <input
+                    type="text"
+                    name="row_hours"
+                    value="{{ r.actual_hours|default:'' }}"
+                    class="admin-input uren-hours-input"
+                    inputmode="decimal"
+                    placeholder="0,0"
+                    autocomplete="off"
+                  >
+                  <div class="hours-warning" style="margin-top:4px; display:none;"></div>
+
+                </td>
+
+                <td class="weighted-cell">
+                  <strong class="weighted-value">0,0</strong>
+                </td>
+
+                <td class="center-col">
+                  <button type="button" class="icon-btn danger js-remove-row" aria-label="Verwijderen">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              {% empty %}
+              <tr id="emptyRow">
+                <td colspan="6" class="muted">Nog geen regels. Klik op “Diensten toevoegen”.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
 
-        <div class="actions-wrap horizontal" style="margin-top:6px;">
-          <button class="btn btn-save" type="submit">Opslaan</button>
-          <button class="btn btn-danger" type="button" id="toeslagCancelBtn">Annuleren</button>
-        </div>
-      </form>
-      {% endif %}
-
-        </div>
-
+      <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+        <button type="button" class="btn btn-save" id="openAddModalBtn">Diensten toevoegen</button>
       </div>
 
-      <h3 style="margin-top: 20px;">Uren invoeren</h3>
-
-      <form method="post" autocomplete="off" class="uren-form">
-        {% csrf_token %}
-        <input type="hidden" name="form_kind" value="hours">
-
-        <div class="form form-sticky-actions" style="padding:0;">
-          <div class="admin-grid" style="margin-bottom: 12px;">
+        <div class="uren-summary">
+          <div class="uren-summary-row">
             <div>
-              <label for="{{ uren_form.hours_before_18.id_for_label }}">Uren tot 18:00</label>
-              {{ uren_form.hours_before_18 }}
-              <div class="hint">Max. 1 decimaal</div>
+              <div class="muted">Totaal gewerkte uren</div>
+              <div class="uren-summary-value" id="sumHours">0,0</div>
             </div>
-
             <div>
-              <label for="{{ uren_form.hours_after_18.id_for_label }}">
-                Uren na 18:00 <span class="muted">(met toeslag {{ settings_obj.evening_allowance_pct }}%)</span>
-              </label>
-              {{ uren_form.hours_after_18 }}
-              <div class="hint">Max. 1 decimaal</div>
+              <div class="muted">Totaal gewogen (incl. toeslag)</div>
+              <div class="uren-summary-value" id="sumWeighted">0,0</div>
+            </div>
+            <div>
+              <div class="muted">Auto-save</div>
+              <div class="uren-summary-value" style="font-size:1rem; font-weight:700;" id="autosaveStatus">—</div>
             </div>
           </div>
-
-          {% if deadline_passed %}
-          <div class="uren-actions">
-            <button class="btn btn-save btn-block" type="submit" disabled style="opacity:.6;">
-              Opslaan (deadline voorbij)
-            </button>
-          </div>
-          {% else %}
-          <div class="uren-actions">
-            <button class="btn btn-save" type="submit" data-haptic>
-              Opslaan
-            </button>
-          </div>
-          {% endif %}
         </div>
-      </form>
 
+        <div class="uren-km">
+          <label class="section-label">Aantal kilometers (i.o.m. Roel de Groot)</label>
+          {{ maand_form.kilometers }}
+        </div>
+
+        <div class="actions-wrap horizontal" style="margin-top: 12px; justify-content:flex-end;">
+          <button type="submit" class="btn btn-save" data-haptic>Opslaan</button>
+        </div>
+
+        <script type="application/json" id="dagdeelMeta">
+          {
+            {% for r in toeslag_rows %}
+              "{{ r.dagdeel.id }}": {
+                "label": "{{ r.dagdeel.get_code_display }}",
+                "allowance_pct": {{ r.dagdeel.allowance_pct }},
+                "start": "{{ r.dagdeel.start_time|time:'H:i' }}",
+                "end": "{{ r.dagdeel.end_time|time:'H:i' }}"
+              }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          }
+        </script>
+
+        {{ planned_dates|json_script:"plannedDatesJson" }}
+        {{ planned_by_date|json_script:"plannedByDateJson" }}
+        {{ existing_by_date|json_script:"existingByDateJson" }}
+
+      </form>
     </div>
   </div>
 </div>
+
+{# MODAL overlay #}
+<div id="addModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content" style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:760px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <div>
+        <h2 style="margin:0; font-size: 1.4rem;">Diensten toevoegen</h2>
+        <div class="muted" style="margin-top:6px;">
+          <span class="planned-dot"></span> groen = ingepland volgens ons systeem
+        </div>
+      </div>
+      <span id="closeAddModalBtn" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <div class="uren-modal-grid">
+      <div>
+        <label class="section-label">Datum</label>
+        <input type="text" class="admin-input" id="modalDate" placeholder="Kies datum..." autocomplete="off">
+        <div class="form-help-text"><em>Groene markering in kalender = je bent ingepland op die dag.</em></div>
+      </div>
+
+      <div>
+        <label class="section-label">Dagdelen + uren</label>
+        <div class="uren-modal-dagdelen" id="modalDagdeelList"></div>
+        <div class="form-help-text"><em>Vul uren in bij 1 of meerdere dagdelen en klik “Toevoegen & opslaan”.</em></div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top: 1px solid var(--border); padding-top: 18px;">
+      <button type="button" class="btn btn-danger" id="modalCancelBtn">Annuleren</button>
+      <button type="button" class="btn btn-save" id="modalAddBtn">Toevoegen & opslaan</button>
+    </div>
+
+    <div id="modalMsg" class="muted" style="margin-top:12px;"></div>
+  </div>
+</div>
+
 {% endblock %}

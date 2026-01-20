@@ -1153,79 +1153,89 @@ class STSHalfje(models.Model):
     def patient_geboortedatum(self):
         return self.patient_geboortedatum_enc
     
-class UrenDoorgevenSettings(models.Model):
+class UrenMaand(models.Model):
     """
-    Singleton settings model.
-    """
-    evening_allowance_pct = models.DecimalField(
-        "CAO toeslag % na 18:00",
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        help_text="Bijv. 25.00 voor 25% toeslag.",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="urendoorgeven_settings_updates",
-    )
-
-    @classmethod
-    def load(cls):
-        obj = cls.objects.first()
-        if obj:
-            return obj
-        return cls.objects.create()
-
-    def __str__(self):
-        return "Uren doorgeven instellingen"
-
-
-class UrenInvoer(models.Model):
-    """
-    Eén regel per gebruiker per maand (maand = eerste dag van de maand).
+    1 record per gebruiker per 'actieve maand' (month = eerste dag van die maand).
+    Bevat maand-meta zoals kilometers.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="uren_invoer",
+        related_name="uren_maanden",
     )
-
     month = models.DateField("Maand", db_index=True, help_text="Eerste dag van de maand.")
-    hours_before_18 = models.DecimalField(
-        "Uren tot 18:00",
-        max_digits=5,          # bv 999.9
-        decimal_places=1,
-        default=Decimal("0.0"),
-    )
-    hours_after_18 = models.DecimalField(
-        "Uren na 18:00",
-        max_digits=5,
-        decimal_places=1,
-        default=Decimal("0.0"),
-    )
 
-    evening_allowance_pct_used = models.DecimalField(
-        "Toeslag % gebruikt",
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        help_text="Snapshot van de instelling op moment van opslaan.",
-    )
-
-    submitted_at = models.DateTimeField("Ingediend op", auto_now=True)
+    kilometers = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["user", "month"], name="uniq_user_month_ureninvoer"),
+            models.UniqueConstraint(fields=["user", "month"], name="uniq_user_month_urenmaand"),
         ]
         ordering = ["-month", "user_id"]
 
     def __str__(self):
-        return f"{self.user_id} - {self.month} ({self.hours_before_18}/{self.hours_after_18})"
+        return f"{self.user_id} - {self.month} (km={self.kilometers})"
+
+
+class UrenRegel(models.Model):
+    """
+    1 regel per user per datum per dagdeel.
+    Shifts worden NIET bij GET aangemaakt; alleen bij save/upsert als user uren invult.
+    """
+    SOURCE_CHOICES = [
+        ("shift", "Shift"),
+        ("manual", "Manual"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="uren_regels",
+    )
+
+    # Denormalized voor snelle maandfiltering + uniekheid in admin/debug
+    month = models.DateField(db_index=True, help_text="Eerste dag van de actieve maand.")
+
+    date = models.DateField(db_index=True)
+
+    dagdeel = models.ForeignKey(
+        "Dagdeel",
+        on_delete=models.PROTECT,
+        related_name="uren_regels",
+    )
+
+    # Optioneel: link naar de shift die als suggestie is gebruikt
+    shift = models.ForeignKey(
+        "Shift",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="uren_regels",
+    )
+
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="manual", db_index=True)
+
+    actual_hours = models.DecimalField(
+        "Gewerkte uren",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        default=None,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "date", "dagdeel"], name="uniq_user_date_dagdeel_urenregel"),
+        ]
+        ordering = ["date", "dagdeel__sort_order", "id"]
+
+    def __str__(self):
+        return f"{self.user_id} {self.date} {self.dagdeel.code} ({self.actual_hours})"
     
 # KompasGPT
 class ScrapedPage(models.Model):

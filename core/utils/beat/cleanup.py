@@ -5,11 +5,13 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Optional
 
+from dateutil.relativedelta import relativedelta
+
 from django.db import transaction
 from django.db.models import Min
 from django.utils import timezone
 
-from core.models import ShiftDraft, Availability, UrenInvoer
+from core.models import ShiftDraft, Availability, UrenMaand, UrenRegel
 
 
 def _monday_of_week(d: date) -> date:
@@ -55,15 +57,88 @@ def cleanup_availability_new_week(*, today: Optional[date] = None) -> int:
 
     return int(deleted)
 
+
+def _month_first(d: date) -> date:
+    return d.replace(day=1)
+
+
+def _active_month(today: date) -> date:
+    """
+    Actieve maand voor urenperiode op basis van window 10e->10e:
+    - als vandaag dag < 10 => actieve maand = vorige maand
+    - anders => actieve maand = huidige maand
+    """
+    if today.day < 10:
+        return _month_first(today + relativedelta(months=-1))
+    return _month_first(today)
+
+
+@transaction.atomic
+def delete_uren_through_month(month_first: date) -> dict:
+    """
+    Verwijdert alle UrenRegel en UrenMaand records met month <= month_first.
+
+    Return: dict met aantallen.
+    """
+    # UrenRegel
+    regels_qs = UrenRegel.objects.filter(month__lte=month_first)
+    regels_count = regels_qs.count()
+    regels_qs.delete()
+
+    # UrenMaand
+    maand_qs = UrenMaand.objects.filter(month__lte=month_first)
+    maand_count = maand_qs.count()
+    maand_qs.delete()
+
+    return {
+        "uren_regel_deleted": int(regels_count),
+        "uren_maand_deleted": int(maand_count),
+    }
+
+
+def cleanup_uren_retention(
+    *,
+    today: Optional[date] = None,
+    keep_last_n_months: int = 3,
+) -> dict:
+    """
+    Cleanup policy voor nieuwe urenmodellen.
+
+    We houden standaard de laatste N maanden (op basis van 'actieve maand' logic).
+    Alles met month <= (active_month - keep_last_n_months) wordt verwijderd.
+
+    Voorbeeld:
+    - vandaag 2026-01-20 => active_month = 2026-01-01
+      keep_last_n_months=3 => cutoff_month = 2025-10-01
+      delete <= 2025-10-01
+
+    Return: dict met cutoff en aantallen.
+    """
+    if today is None:
+        today = timezone.localdate()
+
+    if keep_last_n_months < 1:
+        keep_last_n_months = 1
+
+    active = _active_month(today)
+    cutoff_month = _month_first(active + relativedelta(months=-keep_last_n_months))
+
+    result = delete_uren_through_month(cutoff_month)
+    result["cutoff_month"] = cutoff_month.isoformat()
+    result["active_month"] = active.isoformat()
+    result["keep_last_n_months"] = int(keep_last_n_months)
+    return result
+
+
+# Backwards-compatible alias (als je celery beat nog deze functie aanroept)
 @transaction.atomic
 def delete_ureninvoer_through_month(month_first: date) -> int:
     """
-    Verwijdert alle UrenInvoer regels met month <= month_first.
-    (Dus: alles t/m en inclusief de verwerkte maand.)
+    BACKWARDS COMPAT:
+    Oud: delete UrenInvoer month <= month_first
+    Nieuw: delete UrenRegel + UrenMaand month <= month_first
 
-    Return: aantal verwijderde records.
+    Return: totaal aantal verwijderde records (urenregels + maanden).
     """
-    qs = UrenInvoer.objects.filter(month__lte=month_first)
-    count = qs.count()
-    qs.delete()
-    return count
+    res = delete_uren_through_month(month_first)
+    return int(res["uren_regel_deleted"] + res["uren_maand_deleted"])
