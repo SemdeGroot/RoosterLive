@@ -88,9 +88,12 @@
         <thead>
           <tr>
             <th>Dag</th>
-            <th>Ochtend <small>08:00 - 12:30*</small></th>
-            <th>Middag <small>13:00 - 17:30*</small></th>
-            <th>Avond <small>18:00 - 20:00**</small></th>
+            {% for dd in dagdelen %}
+              <th>
+                {{ dd.name }}
+                <small>{{ dd.start_time|time:"H:i" }} - {{ dd.end_time|time:"H:i" }}</small>
+              </th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
@@ -102,9 +105,18 @@
                   <small>{{ r.date|date:"d-m" }}</small>
                 </div>
               </td>
-              <td><input type="checkbox" name="morning_{{ r.date|date:'Y-m-d' }}" {% if r.morning %}checked{% endif %}></td>
-              <td><input type="checkbox" name="afternoon_{{ r.date|date:'Y-m-d' }}" {% if r.afternoon %}checked{% endif %}></td>
-              <td><input type="checkbox" name="evening_{{ r.date|date:'Y-m-d' }}" {% if r.evening %}checked{% endif %}></td>
+
+              {% for dd in dagdelen %}
+                {% with key=dd.code|add:"_"|add:r.date|date:"Y-m-d" %}
+                  <td>
+                    <input
+                      type="checkbox"
+                      name="{{ dd.code }}_{{ r.date|date:'Y-m-d' }}"
+                      {% if dd.code in r.selected_codes %}checked{% endif %}
+                    >
+                  </td>
+                {% endwith %}
+              {% endfor %}
             </tr>
           {% endfor %}
         </tbody>
@@ -114,7 +126,7 @@
       <div class="availability-footer">
         <div class="availability-hints">
           <p><span>*</span> Als je zowel een ochtend als middagdienst hebt is er een half uur lunchpauze. Ook zijn er twee koffiepauzes.</p>
-          <p><span>**</span> De avond en zaterdag worden niet standaard ingeroosterd, alleen bij speciale gelegenheden zoals feestdagen. Je krijgt dan een hogere vergoeding.</p>
+          <p><span>**</span> Sommige dagdelen worden niet standaard ingepland, zoals de avond en zaterdag diensten.</p>
         </div>
         
         <div class="actions">

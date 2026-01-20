@@ -11,19 +11,7 @@ from django.utils import timezone
 
 from core.models import Shift, UserProfile, AgendaItem
 from core.utils.calendar_active import mark_calendar_active
-
-PERIOD_TIMES = {
-    "morning": (time(8, 0), time(12, 30)),
-    "afternoon": (time(13, 0), time(17, 30)),
-    "evening": (time(18, 0), time(20, 0)),
-}
-
-PERIOD_LABELS = {
-    "morning": "Ochtend",
-    "afternoon": "Middag",
-    "evening": "Avond",
-}
-
+from core.utils.dagdelen import get_period_meta
 
 def _ics_escape(s: str) -> str:
     s = (s or "").replace("\\", "\\\\")
@@ -204,7 +192,8 @@ def _build_cached_payload_for_user(user) -> dict:
     lines.append(f"X-WR-TIMEZONE:{_ics_escape(str(tz))}")
 
     for s in shifts:
-        start_t, end_t = PERIOD_TIMES.get(s.period, (time(9, 0), time(13, 0)))
+        meta = get_period_meta(s.period)
+        start_t, end_t = meta["start"], meta["end"]
         dt_start_local = datetime.combine(s.date, start_t, tzinfo=tz)
         dt_end_local = datetime.combine(s.date, end_t, tzinfo=tz)
 
@@ -217,7 +206,7 @@ def _build_cached_payload_for_user(user) -> dict:
         summary = f"Werken bij Apotheek Jansen – {task_name}".strip()
         location_line = " – ".join([x for x in [loc_name, loc_addr] if x]).strip()
 
-        desc_parts = [f"Dagdeel: {PERIOD_LABELS.get(s.period, s.period)}"]
+        desc_parts = [f"Dagdeel: {meta['label']}"]
         if loc_name:
             desc_parts.append(f"Locatie: {loc_name}")
         if loc_addr:

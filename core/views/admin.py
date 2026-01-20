@@ -13,7 +13,7 @@ from datetime import time
 from ..forms import GroupWithPermsForm, SimpleUserEditForm, OrganizationEditForm, AfdelingEditForm, StandaardInlogForm, LocationForm, TaskForm, FunctionForm, DagdeelForm
 from ._helpers import can, PERM_LABELS, PERM_SECTIONS, sync_custom_permissions
 from core.tasks import send_invite_email_task
-from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task, Function, Dagdeel
+from core.models import UserProfile, Organization, MedicatieReviewAfdeling, StandaardInlog, Location, Task, Function, Dagdeel, Availability
 from core.tiles import build_tiles
 
 User = get_user_model()
@@ -359,43 +359,69 @@ def user_update(request, user_id: int):
 
     u = get_object_or_404(User, pk=user_id)
 
-    # LET OP: edit-row inputs in je HTML hebben GEEN prefix → dus hier geen prefix gebruiken
     form = SimpleUserEditForm(request.POST, instance=u)
 
-    if form.is_valid():
-        try:
-            # BEFORE: onthoud oude vaste dagen + dienstverband
-            profile_before = UserProfile.objects.filter(user=u).first()
-            before_dienstverband = profile_before.dienstverband if profile_before else None
-            before_work = {f: getattr(profile_before, f, False) for f in WORK_FIELDS} if profile_before else {}
+    if not form.is_valid():
+        messages.error(request, "Opslaan mislukt.")
+        return redirect("admin_users")
 
-            form.save()
+    try:
+        profile_before = UserProfile.objects.filter(user=u).first()
+        before_dienstverband = profile_before.dienstverband if profile_before else None
+        before_work = {f: getattr(profile_before, f, False) for f in WORK_FIELDS} if profile_before else {}
 
-            # AFTER: pak nieuw profiel en bepaal of schema gewijzigd is
-            profile = UserProfile.objects.filter(user=u).first()
-            if profile and profile.dienstverband == UserProfile.Dienstverband.VAST:
-                after_work = {f: getattr(profile, f, False) for f in WORK_FIELDS}
-                work_changed = (before_work != after_work)
-                became_vast = (before_dienstverband != UserProfile.Dienstverband.VAST)
+        form.save()
 
-                from core.utils.beat.fill import (
-                    fill_availability_for_profile,
-                    rebuild_auto_availability_for_profile,
-                )
+        profile = UserProfile.objects.filter(user=u).first()
+        if not profile:
+            messages.success(request, "Gebruiker opgeslagen.")
+            return redirect("admin_users")
 
-                if work_changed or became_vast:
-                    rebuild_auto_availability_for_profile(profile, weeks_ahead=12)
-                else:
-                    fill_availability_for_profile(profile, weeks_ahead=12)
+        from core.utils.beat.fill import (
+            fill_availability_for_profile,
+            rebuild_auto_availability_for_profile,
+        )
+        from django.utils import timezone
+        from datetime import timedelta, date
+
+        # helper: window = huidige week t/m weeks_ahead
+        def _monday_of_week(d: date) -> date:
+            return d - timedelta(days=d.weekday())
+
+        today = timezone.localdate()
+        start = _monday_of_week(today)
+        end = _monday_of_week(today + timedelta(weeks=12)) + timedelta(days=6)
+
+        # CASE 1: gebruiker is NU oproep → verwijder auto-availabilities in window
+        if profile.dienstverband != UserProfile.Dienstverband.VAST:
+            # alleen opruimen als hij hiervoor vast was (anders onnodig)
+            if before_dienstverband == UserProfile.Dienstverband.VAST:
+                Availability.objects.filter(
+                    user=u,
+                    source="auto",
+                    date__gte=start,
+                    date__lte=end,
+                ).delete()
 
             messages.success(request, "Gebruiker opgeslagen.")
-        except Exception as e:
-            messages.error(request, f"Opslaan mislukt: {e}")
-    else:
-        messages.error(request, "Opslaan mislukt.")
+            return redirect("admin_users")
+
+        # CASE 2: gebruiker is NU vast → decide fill/rebuild
+        after_work = {f: getattr(profile, f, False) for f in WORK_FIELDS}
+        work_changed = (before_work != after_work)
+        became_vast = (before_dienstverband != UserProfile.Dienstverband.VAST)
+
+        if work_changed or became_vast:
+            rebuild_auto_availability_for_profile(profile, weeks_ahead=12, today=today)
+        else:
+            fill_availability_for_profile(profile, weeks_ahead=12, today=today)
+
+        messages.success(request, "Gebruiker opgeslagen.")
+
+    except Exception as e:
+        messages.error(request, f"Opslaan mislukt: {e}")
 
     return redirect("admin_users")
-
 
 @login_required
 @require_POST

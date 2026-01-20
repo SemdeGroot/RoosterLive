@@ -187,103 +187,6 @@ class StandaardInlog(models.Model):
     def __str__(self):
         return "Configuratie Standaard Inlog"
 
-class Availability(models.Model):
-    SOURCE_CHOICES = [
-        ("auto", "Auto"),
-        ("manual", "Manual"),
-    ]
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availabilities")
-    date = models.DateField(db_index=True)
-    morning = models.BooleanField(default=False)
-    afternoon = models.BooleanField(default=False)
-    evening = models.BooleanField(default=False)
-    source = models.CharField(
-        max_length=10,
-        choices=SOURCE_CHOICES,
-        default="manual",
-        db_index=True,
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ("user", "date")
-        ordering = ["date"]
-
-    def __str__(self):
-        return f"{self.user} @ {self.date} (o:{self.morning} m:{self.afternoon} a:{self.evening})"
-    
-class Location(SoftDeleteModel):
-    COLOR_CHOICES = [
-        ("green", "Groen"),
-        ("red", "Rood"),
-        ("blue", "Blauw"),
-    ]
-
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=255, blank=True, default="")
-    color = models.CharField(max_length=10, choices=COLOR_CHOICES, default="blue")
-
-    # Conditional unique constraint
-    class Meta:
-        verbose_name_plural = "Locations"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["name"],
-                condition=Q(is_active=True),
-                name="uniq_active_location_name",
-            )
-        ]
-
-    def __str__(self):
-        return self.name
-
-class Task(SoftDeleteModel):
-    name = models.CharField(max_length=100)
-    location = models.ForeignKey(
-        Location,
-        on_delete=models.PROTECT,
-        related_name="tasks"
-    )
-    description = models.TextField(blank=True, null=True)
-
-    # ===== Minimale bezetting (ma t/m za) =====
-    min_mon_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_mon_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_mon_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    min_tue_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_tue_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_tue_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    min_wed_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_wed_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_wed_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    min_thu_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_thu_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_thu_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    min_fri_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_fri_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_fri_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    min_sat_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_sat_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-    min_sat_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
-
-    class Meta:
-        verbose_name_plural = "Tasks"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["location", "name"],
-                condition=Q(is_active=True),
-                name="uniq_active_task_name_per_location",
-            )
-        ]
-
-    def __str__(self):
-        return f"{self.name} ({self.location.name})"
-    
 class Dagdeel(models.Model):
     CODE_MORNING     = "morning"      # Ochtend
     CODE_AFTERNOON   = "afternoon"    # Middag
@@ -397,6 +300,115 @@ class Dagdeel(models.Model):
 
     def __str__(self):
         return f"{self.get_code_display()} ({self.start_time}-{self.end_time}, {self.allowance_pct}%)"
+
+class Availability(models.Model):
+    SOURCE_CHOICES = [
+        ("auto", "Auto"),
+        ("manual", "Manual"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="availabilities",
+    )
+    date = models.DateField(db_index=True)
+
+    # dagdelen i.p.v. morning/afternoon/evening booleans
+    dagdelen = models.ManyToManyField(
+        "Dagdeel",
+        blank=True,
+        related_name="availabilities",
+        limit_choices_to={"code__in": Dagdeel.PLANNING_CODES},  # alleen “normale” codes
+    )
+
+    source = models.CharField(
+        max_length=10,
+        choices=SOURCE_CHOICES,
+        default="manual",
+        db_index=True,
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "date")
+        ordering = ["date"]
+
+    def __str__(self):
+        codes = list(self.dagdelen.values_list("code", flat=True))
+        return f"{self.user} @ {self.date} ({','.join(codes)})"
+    
+class Location(SoftDeleteModel):
+    COLOR_CHOICES = [
+        ("green", "Groen"),
+        ("red", "Rood"),
+        ("blue", "Blauw"),
+    ]
+
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255, blank=True, default="")
+    color = models.CharField(max_length=10, choices=COLOR_CHOICES, default="blue")
+
+    # Conditional unique constraint
+    class Meta:
+        verbose_name_plural = "Locations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"],
+                condition=Q(is_active=True),
+                name="uniq_active_location_name",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+class Task(SoftDeleteModel):
+    name = models.CharField(max_length=100)
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.PROTECT,
+        related_name="tasks"
+    )
+    description = models.TextField(blank=True, null=True)
+
+    # ===== Minimale bezetting (ma t/m za) =====
+    min_mon_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_mon_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_mon_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_tue_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_tue_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_tue_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_wed_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_wed_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_wed_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_thu_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_thu_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_thu_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_fri_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_fri_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_fri_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    min_sat_morning = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_sat_afternoon = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+    min_sat_evening = models.PositiveSmallIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    class Meta:
+        verbose_name_plural = "Tasks"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["location", "name"],
+                condition=Q(is_active=True),
+                name="uniq_active_task_name_per_location",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.location.name})"
 
 class Shift(models.Model):
     PERIOD_CHOICES = [
@@ -618,6 +630,16 @@ class UserProfile(models.Model):
     work_thu_pm = models.BooleanField("Do middag", default=False)
     work_fri_am = models.BooleanField("Vr ochtend", default=False)
     work_fri_pm = models.BooleanField("Vr middag", default=False)
+    # Avonden ook
+    work_mon_ev = models.BooleanField("Ma vooravond", default=False)
+    work_tue_ev = models.BooleanField("Di vooravond", default=False)
+    work_wed_ev = models.BooleanField("Wo vooravond", default=False)
+    work_thu_ev = models.BooleanField("Do vooravond", default=False)
+    work_fri_ev = models.BooleanField("Vr vooravond", default=False)
+    # zaterdag (ochtend/middag/vooravond)
+    work_sat_am = models.BooleanField("Za ochtend", default=False)
+    work_sat_pm = models.BooleanField("Za middag", default=False)
+    work_sat_ev = models.BooleanField("Za vooravond", default=False)
 
     # === Profielfoto ===
     avatar = models.ImageField("Profielfoto", upload_to="avatars/", null=True, blank=True)
@@ -638,7 +660,7 @@ class UserProfile(models.Model):
     def clear_workdays(self):
         for f in (
             "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
-            "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm",
+            "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm", "work_mon_ev", "work_tue_ev", "work_wed_ev", "work_thu_ev", "work_fri_ev", "work_sat_am", "work_sat_pm", "work_sat_ev"
         ):
             setattr(self, f, False)
 

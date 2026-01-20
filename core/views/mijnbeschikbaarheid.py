@@ -1,3 +1,4 @@
+# mijnbeschikbaarheid.py
 from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,7 +7,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from core.models import Availability
+from core.models import Availability, Dagdeel
 from ._helpers import can
 
 
@@ -30,12 +31,11 @@ def mijnbeschikbaarheid_view(request):
     translation.activate("nl")
 
     today = timezone.localdate()
-    WEEKS_AHEAD = 12  # 6 maanden vooruit
+    WEEKS_AHEAD = 12
 
-    min_monday = _monday_of_iso_week(today)                     # huidige week (ma)
+    min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    # ---- weekselectie (ongewijzigd) ----
     qs_week = request.GET.get("week")
     qs_monday = request.GET.get("monday")
     if qs_monday:
@@ -56,7 +56,6 @@ def mijnbeschikbaarheid_view(request):
     monday = _clamp_week(monday, min_monday, max_monday)
     week_end = monday + timedelta(days=5)
 
-    # Navigatie (alleen tussen huidige week en +6 maanden)
     prev_raw = monday - timedelta(weeks=1)
     next_raw = monday + timedelta(weeks=1)
     has_prev = prev_raw >= min_monday
@@ -64,25 +63,31 @@ def mijnbeschikbaarheid_view(request):
     prev_monday = prev_raw if has_prev else min_monday
     next_monday = next_raw if has_next else max_monday
 
-    # Ma–vr
     days = [monday + timedelta(days=i) for i in range(6)]
+
+    # Dynamische dagdelen (alleen PLANNING_CODES)
+    dagdelen = list(
+        Dagdeel.objects.filter(code__in=Dagdeel.PLANNING_CODES).order_by("sort_order")
+    )
 
     if request.method == "POST":
         redirect_to = request.POST.get("redirect_to_monday")
-        for d in days:
-            key_m = f"morning_{d.isoformat()}"
-            key_a = f"afternoon_{d.isoformat()}"
-            key_e = f"evening_{d.isoformat()}"
-            morning = key_m in request.POST
-            afternoon = key_a in request.POST
-            evening = key_e in request.POST
 
-            if morning or afternoon or evening:
-                Availability.objects.update_or_create(
+        for d in days:
+            selected_codes = []
+            for dd in dagdelen:
+                key = f"{dd.code}_{d.isoformat()}"  # bv "morning_2026-01-20"
+                if key in request.POST:
+                    selected_codes.append(dd.code)
+
+            if selected_codes:
+                av, _ = Availability.objects.update_or_create(
                     user=request.user,
                     date=d,
-                    defaults={"morning": morning, "afternoon": afternoon, "evening": evening, "source": "manual"},
+                    defaults={"source": "manual"},
                 )
+                selected_dagdelen = Dagdeel.objects.filter(code__in=selected_codes)
+                av.dagdelen.set(selected_dagdelen)
             else:
                 Availability.objects.filter(user=request.user, date=d).delete()
 
@@ -96,23 +101,22 @@ def mijnbeschikbaarheid_view(request):
                 pass
         return HttpResponseRedirect(f"{reverse('mijnbeschikbaarheid')}?monday={monday.isoformat()}")
 
-    # Bestaande waarden voor deze week
-    existing = {
-        av.date: av
-        for av in Availability.objects.filter(user=request.user, date__in=days)
-    }
+    # Prefetch dagdelen voor performance
+    existing_qs = (
+        Availability.objects.filter(user=request.user, date__in=days)
+        .prefetch_related("dagdelen")
+    )
+    existing = {av.date: av for av in existing_qs}
 
     rows = []
     for d in days:
         av = existing.get(d)
+        selected = set(av.dagdelen.values_list("code", flat=True)) if av else set()
         rows.append({
             "date": d,
-            "morning": bool(av and av.morning),
-            "afternoon": bool(av and av.afternoon),
-            "evening": bool(av and av.evening),
+            "selected_codes": selected,  # template checkt hierin
         })
 
-    # Dropdown: huidige week → +6 maanden
     week_options = []
     cur = min_monday
     while cur <= max_monday:
@@ -132,6 +136,7 @@ def mijnbeschikbaarheid_view(request):
         "monday": monday,
         "week_end": week_end,
         "rows": rows,
+        "dagdelen": dagdelen,  # voor dynamische kolommen + tijden
         "week_options": week_options,
         "min_monday": min_monday,
         "max_monday": max_monday,

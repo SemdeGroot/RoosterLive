@@ -96,31 +96,42 @@
           <div class="availability-block js-availability-block">
             <div class="availability-title">Vaste werkdagen</div>
 
-            <div class="availability-grid">
-              <div class="availability-head"></div>
-              <div class="availability-head">Ochtend</div>
-              <div class="availability-head">Middag</div>
+          <div class="availability-grid">
+            <div class="availability-head"></div>
+            <div class="availability-head">Ochtend</div>
+            <div class="availability-head">Middag</div>
+            <div class="availability-head">Vooravond</div>
 
-              <div class="availability-day">Maandag</div>
-              <div class="availability-cell">{{ user_form.work_mon_am }}</div>
-              <div class="availability-cell">{{ user_form.work_mon_pm }}</div>
+            <div class="availability-day">Maandag</div>
+            <div class="availability-cell">{{ user_form.work_mon_am }}</div>
+            <div class="availability-cell">{{ user_form.work_mon_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_mon_ev }}</div>
 
-              <div class="availability-day">Dinsdag</div>
-              <div class="availability-cell">{{ user_form.work_tue_am }}</div>
-              <div class="availability-cell">{{ user_form.work_tue_pm }}</div>
+            <div class="availability-day">Dinsdag</div>
+            <div class="availability-cell">{{ user_form.work_tue_am }}</div>
+            <div class="availability-cell">{{ user_form.work_tue_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_tue_ev }}</div>
 
-              <div class="availability-day">Woensdag</div>
-              <div class="availability-cell">{{ user_form.work_wed_am }}</div>
-              <div class="availability-cell">{{ user_form.work_wed_pm }}</div>
+            <div class="availability-day">Woensdag</div>
+            <div class="availability-cell">{{ user_form.work_wed_am }}</div>
+            <div class="availability-cell">{{ user_form.work_wed_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_wed_ev }}</div>
 
-              <div class="availability-day">Donderdag</div>
-              <div class="availability-cell">{{ user_form.work_thu_am }}</div>
-              <div class="availability-cell">{{ user_form.work_thu_pm }}</div>
+            <div class="availability-day">Donderdag</div>
+            <div class="availability-cell">{{ user_form.work_thu_am }}</div>
+            <div class="availability-cell">{{ user_form.work_thu_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_thu_ev }}</div>
 
-              <div class="availability-day">Vrijdag</div>
-              <div class="availability-cell">{{ user_form.work_fri_am }}</div>
-              <div class="availability-cell">{{ user_form.work_fri_pm }}</div>
-            </div>
+            <div class="availability-day">Vrijdag</div>
+            <div class="availability-cell">{{ user_form.work_fri_am }}</div>
+            <div class="availability-cell">{{ user_form.work_fri_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_fri_ev }}</div>
+
+            <div class="availability-day">Zaterdag</div>
+            <div class="availability-cell">{{ user_form.work_sat_am }}</div>
+            <div class="availability-cell">{{ user_form.work_sat_pm }}</div>
+            <div class="availability-cell">{{ user_form.work_sat_ev }}</div>
+          </div>
           </div>
 
           <button class="btn btn-save btn-block" type="submit">Aanmaken</button>
@@ -311,7 +322,7 @@
                         </div>
                       </div>
 
-                      {# ✅ rooster blok (alleen bij vast) #}
+                      {# rooster blok (alleen bij vast) #}
                       <div class="availability-block js-availability-block" style="margin-top:12px;">
                         <div class="availability-title">Vaste werkdagen</div>
 
@@ -319,6 +330,7 @@
                           <div class="availability-head"></div>
                           <div class="availability-head">Ochtend</div>
                           <div class="availability-head">Middag</div>
+                          <div class="availability-head">Vooravond</div>
 
                           <div class="availability-day">Maandag</div>
                           <div class="availability-cell">
@@ -326,6 +338,9 @@
                           </div>
                           <div class="availability-cell">
                             <input type="checkbox" name="work_mon_pm" {% if u.profile and u.profile.work_mon_pm %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_mon_ev" {% if u.profile and u.profile.work_mon_ev %}checked{% endif %}>
                           </div>
 
                           <div class="availability-day">Dinsdag</div>
@@ -335,6 +350,9 @@
                           <div class="availability-cell">
                             <input type="checkbox" name="work_tue_pm" {% if u.profile and u.profile.work_tue_pm %}checked{% endif %}>
                           </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_tue_ev" {% if u.profile and u.profile.work_tue_ev %}checked{% endif %}>
+                          </div>
 
                           <div class="availability-day">Woensdag</div>
                           <div class="availability-cell">
@@ -342,6 +360,9 @@
                           </div>
                           <div class="availability-cell">
                             <input type="checkbox" name="work_wed_pm" {% if u.profile and u.profile.work_wed_pm %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_wed_ev" {% if u.profile and u.profile.work_wed_ev %}checked{% endif %}>
                           </div>
 
                           <div class="availability-day">Donderdag</div>
@@ -351,6 +372,9 @@
                           <div class="availability-cell">
                             <input type="checkbox" name="work_thu_pm" {% if u.profile and u.profile.work_thu_pm %}checked{% endif %}>
                           </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_thu_ev" {% if u.profile and u.profile.work_thu_ev %}checked{% endif %}>
+                          </div>
 
                           <div class="availability-day">Vrijdag</div>
                           <div class="availability-cell">
@@ -358,6 +382,20 @@
                           </div>
                           <div class="availability-cell">
                             <input type="checkbox" name="work_fri_pm" {% if u.profile and u.profile.work_fri_pm %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_fri_ev" {% if u.profile and u.profile.work_fri_ev %}checked{% endif %}>
+                          </div>
+
+                          <div class="availability-day">Zaterdag</div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_sat_am" {% if u.profile and u.profile.work_sat_am %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_sat_pm" {% if u.profile and u.profile.work_sat_pm %}checked{% endif %}>
+                          </div>
+                          <div class="availability-cell">
+                            <input type="checkbox" name="work_sat_ev" {% if u.profile and u.profile.work_sat_ev %}checked{% endif %}>
                           </div>
                         </div>
                       </div>

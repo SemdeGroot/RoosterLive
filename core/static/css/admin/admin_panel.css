@@ -286,7 +286,7 @@ table.task-table{
 
 .availability-grid{
   display: grid;
-  grid-template-columns: 140px 80px 80px; /* dag | ochtend | middag */
+  grid-template-columns: 140px 80px 80px 80px; /* dag | ochtend | middag | avond */
   column-gap: 6px;   /* horizontaal dichter */
   row-gap: 6px;      /* verticaal gelijk */
   align-items: center;

@@ -9,6 +9,7 @@ from django.utils import timezone, translation
 from core.models import Shift, UserProfile
 from core.views._helpers import can, wants_email
 from core.utils.emails.email_dienstenoverzicht import send_diensten_overzicht_email
+from core.utils.dagdelen import get_period_meta
 
 
 def _monday_of_week(d: date) -> date:
@@ -49,12 +50,6 @@ def send_weekly_diensten_overzicht(self):
         .select_related("user", "notif_prefs")
         .filter(user__is_active=True)
     )
-
-    PERIOD_META = {
-        "morning": {"label": "Ochtend", "time": "08:00 - 12:30"},
-        "afternoon": {"label": "Middag", "time": "13:00 - 17:30"},
-        "evening": {"label": "Avond", "time": "18:00 - 20:00"},
-    }
 
     for profile in profiles:
         user = profile.user
@@ -103,11 +98,12 @@ def send_weekly_diensten_overzicht(self):
                 if not s:
                     continue
 
+                meta = get_period_meta(p)
                 day_rows.append({
                     "date": d,
                     "period": p,
-                    "period_label": PERIOD_META[p]["label"],
-                    "period_time": PERIOD_META[p]["time"],
+                    "period_label": meta["label"],
+                    "period_time": meta["time_str"],
                     "location": s.task.location.name if s.task and s.task.location else "",
                     "task": s.task.name if s.task else "",
                     "show_day": False,          # vullen we hieronder
@@ -118,11 +114,12 @@ def send_weekly_diensten_overzicht(self):
             if has_evening(d):
                 s = shift_map.get((d, "evening"))
                 if s:
+                    meta = get_period_meta("evening")
                     day_rows.append({
                         "date": d,
                         "period": "evening",
-                        "period_label": PERIOD_META["evening"]["label"],
-                        "period_time": PERIOD_META["evening"]["time"],
+                        "period_label": meta["label"],
+                        "period_time": meta["time_str"],
                         "location": s.task.location.name if s.task and s.task.location else "",
                         "task": s.task.name if s.task else "",
                         "show_day": False,
@@ -141,11 +138,12 @@ def send_weekly_diensten_overzicht(self):
             sat_periods = [p for p in ("morning", "afternoon", "evening") if (d, p) in shift_map]
             for idx, p in enumerate(sat_periods):
                 s = shift_map[(d, p)]
+                meta = get_period_meta(p)
                 rows.append({
                     "date": d,
                     "period": p,
-                    "period_label": PERIOD_META[p]["label"],
-                    "period_time": PERIOD_META[p]["time"],
+                    "period_label": meta["label"],
+                    "period_time": meta["time_str"],
                     "location": s.task.location.name if s.task and s.task.location else "",
                     "task": s.task.name if s.task else "",
                     "show_day": (idx == 0),

@@ -16,9 +16,14 @@ from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 
 from ._helpers import can
-from core.models import Availability, Location, Task, Shift, ShiftDraft
+from core.models import Availability, Location, Task, Shift, ShiftDraft, Dagdeel
 from core.views.mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
 
+PERIOD_TO_DAGDEEL_CODE = {
+    "morning": Dagdeel.CODE_MORNING,
+    "afternoon": Dagdeel.CODE_AFTERNOON,
+    "evening": Dagdeel.CODE_PRE_EVENING,  # dashboard avond = vooravond availability
+}
 
 def _user_group(u):
     g = u.groups.first() if hasattr(u, "groups") else None
@@ -100,8 +105,9 @@ def personeelsdashboard_view(request):
         Availability.objects
         .filter(date__in=days)
         .select_related("user")
-        .prefetch_related("user__groups")
+        .prefetch_related("dagdelen", "user__groups")
     )
+
 
     users = sorted(
         {av.user for av in av_qs},
@@ -109,10 +115,16 @@ def personeelsdashboard_view(request):
     )
 
     matrix = defaultdict(lambda: {d: {"morning": False, "afternoon": False, "evening": False} for d in days})
+
     for av in av_qs:
-        matrix[av.user][av.date]["morning"] = bool(getattr(av, "morning", False))
-        matrix[av.user][av.date]["afternoon"] = bool(getattr(av, "afternoon", False))
-        matrix[av.user][av.date]["evening"] = bool(getattr(av, "evening", False))
+        codes = set(av.dagdelen.values_list("code", flat=True))  # {"morning","pre_evening",...}
+
+        matrix[av.user][av.date]["morning"] = (Dagdeel.CODE_MORNING in codes)
+        matrix[av.user][av.date]["afternoon"] = (Dagdeel.CODE_AFTERNOON in codes)
+
+        # jouw dashboard gebruikt nog period="evening", maar availability gebruikt pre_evening
+        matrix[av.user][av.date]["evening"] = (Dagdeel.CODE_PRE_EVENING in codes)
+
 
     counts = {d: {"morning": 0, "afternoon": 0, "evening": 0} for d in days}
     for u in users:

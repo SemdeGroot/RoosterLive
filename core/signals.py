@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from core.models import Shift, Task, Location, UserProfile, AgendaItem, NotificationPreferences
+from core.models import Shift, Task, Location, UserProfile, AgendaItem, NotificationPreferences, Dagdeel
 from core.permissions_cache import bump_perm_version, delete_permset, get_cached_permset
 
 User = get_user_model()
@@ -140,3 +140,13 @@ def _invalidate_all_diensten_ics() -> None:
 @receiver(post_delete, sender=AgendaItem)
 def invalidate_diensten_ics_on_agendaitem_change(sender, instance, **kwargs):
     _invalidate_all_diensten_ics()
+
+@receiver(post_save, sender=Dagdeel)
+@receiver(post_delete, sender=Dagdeel)
+def invalidate_diensten_ics_on_dagdeel_change(sender, instance: Dagdeel, **kwargs):
+    # Alleen relevant voor dagdelen die in de diensten/availability gebruikt worden
+    if instance.code not in Dagdeel.PLANNING_CODES:
+        return
+
+    # Na commit (zeker als je Dagdeel update in een admin-transaction)
+    transaction.on_commit(_invalidate_all_diensten_ics)

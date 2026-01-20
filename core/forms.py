@@ -139,8 +139,12 @@ class SimpleUserCreateForm(forms.Form):
         return email
 
 WORK_FIELDS = (
-    "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",
-    "work_thu_am","work_thu_pm","work_fri_am","work_fri_pm",
+    "work_mon_am","work_mon_pm","work_mon_ev",
+    "work_tue_am","work_tue_pm","work_tue_ev",
+    "work_wed_am","work_wed_pm","work_wed_ev",
+    "work_thu_am","work_thu_pm","work_thu_ev",
+    "work_fri_am","work_fri_pm","work_fri_ev",
+    "work_sat_am","work_sat_pm","work_sat_ev",
 )
 
 class SimpleUserEditForm(forms.Form):
@@ -203,6 +207,15 @@ class SimpleUserEditForm(forms.Form):
     work_thu_pm = forms.BooleanField(required=False)
     work_fri_am = forms.BooleanField(required=False)
     work_fri_pm = forms.BooleanField(required=False)
+    work_mon_ev = forms.BooleanField(required=False)
+    work_tue_ev = forms.BooleanField(required=False)
+    work_wed_ev = forms.BooleanField(required=False)
+    work_thu_ev = forms.BooleanField(required=False)
+    work_fri_ev = forms.BooleanField(required=False)
+
+    work_sat_am = forms.BooleanField(required=False)
+    work_sat_pm = forms.BooleanField(required=False)
+    work_sat_ev = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         # instance is optioneel: bij create = None, bij edit = User instance

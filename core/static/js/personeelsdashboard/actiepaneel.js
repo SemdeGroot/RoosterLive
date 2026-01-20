@@ -14,7 +14,7 @@
   function periodLabel(p) {
     if (p === "morning") return "Ochtend";
     if (p === "afternoon") return "Middag";
-    if (p === "evening") return "Avond";
+    if (p === "evening") return "Vooravond";
     return p;
   }
 

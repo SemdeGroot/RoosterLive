@@ -198,7 +198,7 @@
 
                 <th class="slot-head">
                   <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|evening">
-                    <span class="slot-label">Avond</span>
+                    <span class="slot-label">Vooravond</span>
                     <span class="slot-count">({{ selected_day_ctx.evening_count }})</span>
                   </button>
                 </th>
@@ -245,7 +245,7 @@
                   <td class="slot-cell">
                     <div
                       class="avail-rect {% if r.cell.evening %}available{% endif %}"
-                      aria-label="Avond"
+                      aria-label="Vooravond"
                       role="button"
                       tabindex="{% if r.cell.evening %}0{% else %}-1{% endif %}"
                       data-user-id="{{ r.user_id }}"

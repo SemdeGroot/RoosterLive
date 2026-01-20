@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from core.models import Shift, Location
 from core.utils.calendar_active import get_calendar_sync_status
+from core.utils.dagdelen import get_period_meta
 from ._helpers import can
 
 def _monday_of_iso_week(some_date: date) -> date:
@@ -78,12 +79,6 @@ def mijndiensten_view(request):
     shift_map = {(s.date, s.period): s for s in shifts}
     show_saturday = any(s.date == saturday for s in shifts)
 
-    PERIOD_META = {
-        "morning": {"label": "Ochtend", "time": "08:00 - 12:30"},
-        "afternoon": {"label": "Middag", "time": "13:00 - 17:30"},
-        "evening": {"label": "Avond", "time": "18:00 - 20:00"},
-    }
-
     def has_evening(d: date) -> bool:
         return (d, "evening") in shift_map
 
@@ -92,11 +87,12 @@ def mijndiensten_view(request):
         if s and s.task and s.task.location:
             color = (s.task.location.color or "").strip()
 
+        meta = get_period_meta(p)
         return {
             "date": d,
             "period": p,
-            "period_label": PERIOD_META[p]["label"],
-            "period_time": PERIOD_META[p]["time"],
+            "period_label": meta["label"],
+            "period_time": meta["time_str"],
             "location": s.task.location.name if s else "",
             "task": s.task.name if s else "",
             "is_assigned": bool(s),
