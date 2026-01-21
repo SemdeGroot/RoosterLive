@@ -1,0 +1,27 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare:web": "node scripts/set-target-url.mjs",
+    "sync": "npm run prepare:web && npx cap sync",
+    "open:ios": "npm run sync && npx cap open ios",
+    "open:android": "npm run sync && npx cap open android"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
+    "@capacitor/ios": "^8.0.1",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.1",
+    "typescript": "^5.9.3"
+  }
+}

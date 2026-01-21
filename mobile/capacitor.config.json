@@ -1,0 +1,14 @@
+{
+  "appId": "com.apotheekjansen.app",
+  "appName": "Apotheek Jansen",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "cordova": {},
+  "linuxAndroidStudioPath": "/snap/android-studio/209/bin/studio.sh"
+}

@@ -3,3 +3,50 @@ venv/*
 cache/
 *__pycache__*
 .last_successful_image
+
+# =========================
+# Node / npm
+# =========================
+mobile/node_modules/
+mobile/npm-debug.log*
+mobile/yarn-debug.log*
+mobile/yarn-error.log*
+mobile/pnpm-debug.log*
+
+# =========================
+# Capacitor generated
+# =========================
+mobile/.capacitor/
+
+# =========================
+# Android (Gradle / Studio)
+# =========================
+mobile/android/.gradle/
+mobile/android/**/build/
+mobile/android/local.properties
+mobile/android/.idea/
+mobile/android/*.iml
+mobile/android/captures/
+mobile/android/.externalNativeBuild/
+mobile/android/.cxx/
+mobile/android/.kotlin/
+
+# =========================
+# iOS (Xcode / CocoaPods) - als je op macOS gaat bouwen
+# =========================
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/DerivedData/
+mobile/ios/build/
+mobile/ios/*.xcworkspace
+mobile/ios/*.xcuserstate
+mobile/ios/*.xcuserdata/
+
+# =========================
+# OS / IDE algemeen
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

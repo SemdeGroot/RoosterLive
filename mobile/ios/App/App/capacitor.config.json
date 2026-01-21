@@ -1,0 +1,15 @@
+{
+	"appId": "com.apotheekjansen.app",
+	"appName": "Apotheek Jansen",
+	"webDir": "www",
+	"bundledWebRuntime": false,
+	"server": {
+		"allowNavigation": [
+			"app.apotheekjansen.com",
+			"*.ngrok-free.dev",
+			"localhost",
+			"127.0.0.1"
+		]
+	},
+	"packageClassList": []
+}
