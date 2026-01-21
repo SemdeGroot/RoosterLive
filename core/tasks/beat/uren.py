@@ -125,6 +125,13 @@ def send_uren_reminder():
         # We willen dat dat de *vorige maand* is, dus geven last_month_first mee.
         send_uren_reminder_push(user.id, last_month_first)
 
-        # E-mail alleen als voorkeur aan staat
         if user.email and wants_email(user, "email_uren_reminder", prefs=prefs):
-            send_uren_reminder_email(user.email, user.first_name, last_month_first)
+            job = {
+                "type": "uren_reminder",
+                "payload": {
+                    "to_email": user.email,
+                    "first_name": user.first_name or "",
+                    "month_first": last_month_first.isoformat(),
+                },
+            }
+            email_dispatcher_task.delay(job)

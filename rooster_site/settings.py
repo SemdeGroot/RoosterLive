@@ -199,11 +199,11 @@ if not DEBUG:
             "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
             "options": {"queue": "default"},
         },
-        #"monthly_uren_export_11th_0900": {
-         #   "task": "core.tasks.beat.uren.monthly_uren_export_task",
-          #  "schedule": crontab(minute=0, hour=7, day_of_month="11"),
-           # "options": {"queue": "default"},
-        #},
+        "monthly_uren_export_11th_0900": {
+            "task": "core.tasks.beat.uren.monthly_uren_export_task",
+            "schedule": crontab(minute=0, hour=7, day_of_month="11"),
+            "options": {"queue": "default"},
+        },
         "send_uren_reminder_8th": {
             "task": "core.tasks.beat.uren.send_uren_reminder",
             "schedule": crontab(minute=0, hour=9, day_of_month="8"),

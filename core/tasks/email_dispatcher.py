@@ -1,4 +1,4 @@
-# core/tasks_email.py
+# core/tasks/email_dispatcher.py
 from celery import shared_task
 from django.core.files.storage import default_storage
 
@@ -95,6 +95,19 @@ def email_dispatcher_task(self, job: dict):
             filename=p["filename"],
             contact_email=p["contact_email"],
             logo_path=p.get("logo_path"),
+        )
+        return
+    
+    if job_type == "uren_reminder":
+        from datetime import date
+        from core.utils.emails.urenreminder import send_uren_reminder_email
+
+        reminder_month_first = date.fromisoformat(p["month_first"])
+
+        send_uren_reminder_email(
+            to_email=p["to_email"],
+            first_name=p.get("first_name", ""),
+            reminder_date=reminder_month_first,
         )
         return
     
