@@ -7,9 +7,10 @@ from celery import chord, group, shared_task
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.utils import timezone
+from datetime import date
 
 from core.views._helpers import wants_email
-from core.models import Shift, UrenInvoer, UserProfile
+from core.models import Shift, UrenRegel, UserProfile
 from core.tasks.email_dispatcher import email_dispatcher_task
 from core.tasks.beat.cleanup import cleanup_uren_export_task
 from core.utils.beat.uren import export_uren_month_to_storage
@@ -54,54 +55,76 @@ def monthly_uren_export_task(self):
     )
 
 
+def _month_first(d: date) -> date:
+    return d.replace(day=1)
+
+
 @shared_task
 def send_uren_reminder():
     """
     Draait op de 8e en 9e van elke maand (via celery beat).
-    Herinnert oproepmedewerkers als zij vorige maand diensten hadden,
-    maar nog geen uren hebben ingediend voor die maand.
+
+    Herinnert oproepmedewerkers als zij diensten hadden in de *vorige kalendermaand*
+    (1e t/m laatste dag), maar nog geen uren hebben ingevoerd voor die maand.
+
+    Uren-invoer = bestaan van minstens 1 UrenRegel met actual_hours != None voor month=last_month_first.
+    Kilometers worden genegeerd.
     """
     today = timezone.localdate()
+    reminder_date = today  # alleen 'vandaag' voor de push dispatcher; inhoud sturen we op basis van last_month_first
 
-    # Deze task wordt op 8e en 9e aangeroepen, dus reminder_date = vandaag.
-    reminder_date = today
+    # Vorige kalendermaand
+    last_month_first = _month_first(today) + relativedelta(months=-1)
+    last_month_end = _month_first(today)  # exclusive (1e van deze maand)
 
-    # Vorige maand (als month-first date)
-    last_month_first = today.replace(day=1) - relativedelta(months=1)
-    last_month_year = last_month_first.year
-    last_month_month = last_month_first.month
-
-    users_to_notify = UserProfile.objects.select_related("user", "notif_prefs").filter(
+    users_qs = UserProfile.objects.select_related("user", "notif_prefs").filter(
         dienstverband=UserProfile.Dienstverband.OPROEP
     )
 
-    for user_profile in users_to_notify:
-        user = user_profile.user
+    user_ids = list(users_qs.values_list("user_id", flat=True))
+    if not user_ids:
+        return
 
-        # Heeft user shifts in vorige maand?
-        shifts_for_last_month = Shift.objects.filter(
-            user=user,
-            date__year=last_month_year,
-            date__month=last_month_month,
-        )
+    # 1) Alleen oproepers met shifts in vorige kalendermaand
+    shift_user_ids = set(
+        Shift.objects.filter(
+            user_id__in=user_ids,
+            date__gte=last_month_first,
+            date__lt=last_month_end,
+        ).values_list("user_id", flat=True).distinct()
+    )
+    if not shift_user_ids:
+        return
 
-        if not shifts_for_last_month.exists():
-            continue
-
-        # Heeft user uren al ingediend voor vorige maand?
-        has_uren = UrenInvoer.objects.filter(
-            user=user,
+    # 2) Uren al ingevuld? (minstens 1 regel met actual_hours) voor month=last_month_first
+    users_with_hours = set(
+        UrenRegel.objects.filter(
+            user_id__in=shift_user_ids,
             month=last_month_first,
-        ).exists()
+            actual_hours__isnull=False,
+        ).values_list("user_id", flat=True).distinct()
+    )
 
-        if has_uren:
+    # 3) Notificeren: shifts wél, uren níet
+    users_to_remind = shift_user_ids - users_with_hours
+    if not users_to_remind:
+        return
+
+    # Maak mapping user_id -> profile (zodat we prefs/email niet opnieuw hoeven te query’en)
+    profiles_by_user_id = {p.user_id: p for p in users_qs}
+
+    for uid in users_to_remind:
+        prof = profiles_by_user_id.get(uid)
+        if not prof:
             continue
-
-        prefs = getattr(user_profile, "notif_prefs", None)
+        user = prof.user
+        prefs = getattr(prof, "notif_prefs", None)
 
         # Pushmelding (push.py checkt pref + permissie)
-        send_uren_reminder_push(user.id, reminder_date)
+        # NB: push/email tekst gebruikt reminder_date.strftime('%B %Y').
+        # We willen dat dat de *vorige maand* is, dus geven last_month_first mee.
+        send_uren_reminder_push(user.id, last_month_first)
 
         # E-mail alleen als voorkeur aan staat
         if user.email and wants_email(user, "email_uren_reminder", prefs=prefs):
-            send_uren_reminder_email(user.email, user.first_name, reminder_date)
+            send_uren_reminder_email(user.email, user.first_name, last_month_first)

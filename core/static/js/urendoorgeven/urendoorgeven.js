@@ -367,7 +367,7 @@
   function scheduleAutosave() {
     if (autosaveTimer) clearTimeout(autosaveTimer);
 
-    setAutosaveStatus("Wijzigingen...", null);
+    setAutosaveStatus("Opslaan...", null);
 
     autosaveTimer = setTimeout(async () => {
       const snapshot = buildSnapshot();

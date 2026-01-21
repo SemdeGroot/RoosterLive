@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 from datetime import date
-
+from django.utils import timezone
 from celery import shared_task
 from celery.schedules import crontab
 
 from django.core.files.storage import default_storage
 
-from core.utils.beat.cleanup import delete_ureninvoer_through_month
+from core.utils.beat.cleanup import cleanup_uren_retention
 
 @shared_task(ignore_result=True)
 def weekly_cleanup_task() -> dict:
@@ -31,8 +31,8 @@ def cleanup_uren_export_task(self, results, xlsx_path: str, month_first_iso: str
     """
     month_first = date.fromisoformat(month_first_iso)
 
-    # alles t/m deze maand weg
-    delete_ureninvoer_through_month(month_first)
+    # retention cleanup: bewaar bijv. laatste 3 maanden
+    cleanup_uren_retention(today=timezone.localdate(), keep_last_n_months=3)
 
     # excel weg (best effort)
     try:

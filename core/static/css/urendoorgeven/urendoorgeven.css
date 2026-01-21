@@ -86,8 +86,8 @@
 /* Table widths (table.css patroon) */
 table.urendoorgeven-toeslag-table{
   --c1: 100px;
-  --c2: 60px;
-  --c3: 60px;
+  --c2: 70px;
+  --c3: 70px;
   --c4: 80px;
   --c5: 80px;
 }
@@ -100,7 +100,7 @@ table.urendoorgeven-uren-table{
   --c6: 50px;
 }
 @media (max-width: 900px){
-  table.urendoorgeven-toeslag-table{ min-width: 400px; }
+  table.urendoorgeven-toeslag-table{ min-width: 450px; }
   table.urendoorgeven-uren-table{ min-width: 550px; }
 }
 

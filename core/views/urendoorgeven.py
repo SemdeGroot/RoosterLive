@@ -26,10 +26,10 @@ def _active_month(today: date) -> date:
 
 
 def _window_for_month(month_first: date):
-    start = month_first.replace(day=10)
-    end = (month_first + relativedelta(months=1)).replace(day=10)
+    # kalendermaand: 1e t/m 1e volgende maand (end exclusive)
+    start = month_first
+    end = month_first + relativedelta(months=1)
     return start, end
-
 
 def _deadline_dt_for_month(month_first: date) -> datetime:
     next_month = month_first + relativedelta(months=1)
@@ -141,6 +141,14 @@ def urendoorgeven_view(request):
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"ok": False, "error": "Periode verlopen. Ververs de pagina."}, status=400)
             messages.error(request, "Deze urenperiode is verlopen. Ververs de pagina.")
+            return redirect("urendoorgeven")
+        
+        # Guard: deadline verstreken (server-side)
+        if timezone.now() > deadline_dt:
+            msg = "Deadline verstreken. Je kunt geen uren meer aanpassen voor deze maand."
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"ok": False, "error": msg}, status=400)
+            messages.error(request, msg)
             return redirect("urendoorgeven")
 
         # A) MODAL batch upsert: één klik -> direct opslaan (date + meerdere dagdelen+hours)
