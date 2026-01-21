@@ -120,6 +120,21 @@ def email_dispatcher_task(self, job: dict):
         )
         return
     
+    if job_type == "diensten_overzicht":
+        from datetime import date
+        from core.utils.emails.email_dienstenoverzicht import send_diensten_overzicht_email
+
+        send_diensten_overzicht_email(
+            to_email=p["to_email"],
+            first_name=p.get("first_name", ""),
+            header_title=p["header_title"],
+            monday=date.fromisoformat(p["monday"]),
+            week_end=date.fromisoformat(p["week_end"]),
+            rows=p["rows"],
+            location_rows=p["location_rows"],
+        )
+        return
+    
     if job_type == "stshalfjes_single":
         from core.utils.emails.stshalfjes_email import send_single_stshalfjes_email
 

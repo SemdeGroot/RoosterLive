@@ -8,9 +8,8 @@ from django.utils import timezone, translation
 
 from core.models import Shift, UserProfile
 from core.views._helpers import can, wants_email
-from core.utils.emails.email_dienstenoverzicht import send_diensten_overzicht_email
 from core.utils.dagdelen import get_period_meta
-
+from core.tasks.email_dispatcher import email_dispatcher_task
 
 def _monday_of_week(d: date) -> date:
     return d - timedelta(days=d.weekday())
@@ -22,7 +21,6 @@ ROW_BG = {
     "red":   "#FDEDED",
     "blue":  "#EEF4FF",
 }
-
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_weekly_diensten_overzicht(self):
@@ -100,7 +98,7 @@ def send_weekly_diensten_overzicht(self):
 
                 meta = get_period_meta(p)
                 day_rows.append({
-                    "date": d,
+                    "date": d.isoformat(),  # <-- JSON-safe
                     "period": p,
                     "period_label": meta["label"],
                     "period_time": meta["time_str"],
@@ -116,7 +114,7 @@ def send_weekly_diensten_overzicht(self):
                 if s:
                     meta = get_period_meta("evening")
                     day_rows.append({
-                        "date": d,
+                        "date": d.isoformat(),  # <-- JSON-safe
                         "period": "evening",
                         "period_label": meta["label"],
                         "period_time": meta["time_str"],
@@ -140,7 +138,7 @@ def send_weekly_diensten_overzicht(self):
                 s = shift_map[(d, p)]
                 meta = get_period_meta(p)
                 rows.append({
-                    "date": d,
+                    "date": d.isoformat(),  # <-- JSON-safe
                     "period": p,
                     "period_label": meta["label"],
                     "period_time": meta["time_str"],
@@ -168,12 +166,17 @@ def send_weekly_diensten_overzicht(self):
                 "row_bg": ROW_BG.get(c, ""),
             })
 
-        send_diensten_overzicht_email(
-            to_email=user.email,
-            first_name=user.first_name,
-            header_title=header_title,
-            monday=next_monday,
-            week_end=week_end,
-            rows=rows,
-            location_rows=location_rows,
-        )
+        job = {
+            "type": "diensten_overzicht",
+            "payload": {
+                "to_email": user.email,
+                "first_name": user.first_name,
+                "header_title": header_title,
+                "monday": next_monday.isoformat(),
+                "week_end": week_end.isoformat(),
+                "rows": rows,
+                "location_rows": location_rows,
+            },
+        }
+
+        email_dispatcher_task.apply_async(args=[job], queue="mail")

@@ -28,7 +28,12 @@ def send_birthday_email(to_email, first_name):
       <p style="margin:24px 0 12px 0;">Met vriendelijke groet,<br>Het Apotheek Jansen Team</p>
     """
     
-    footer_text = "U ontvangt deze e-mail omdat u deel uitmaakt van Apotheek Jansen en vandaag jarig bent volgens ons systeem."
+    footer_text = (
+        'U ontvangt deze e-mail omdat u deel uitmaakt van Apotheek Jansen en vandaag jarig bent volgens ons systeem. '
+        'U kunt deze e-mailmeldingen uitschakelen via het tabblad '
+        '<a href="https://app.apotheekjansen.com/profiel" style="text-decoration:underline;">Profiel</a> '
+        'in de Jansen App.'
+    )
 
     context = {
         "content": html_body,

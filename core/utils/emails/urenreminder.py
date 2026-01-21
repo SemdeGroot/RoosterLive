@@ -37,12 +37,13 @@ def send_uren_reminder_email(to_email, first_name, reminder_date):
         Het Apotheek Jansen Team
       </p>
     """
-        
+
     footer_text = (
-        "Deze e-mail is verstuurd omdat u nog geen uren heeft doorgegeven, "
+        "U ontvangt deze e-mail omdat u nog geen uren heeft doorgegeven, "
         "terwijl er wel diensten voor u geregistreerd staan in de afgelopen maand. "
-        "Als u vragen heeft, neem dan contact op met de beheerder. "
-        "Dit is een automatische e-mail, antwoorden op dit bericht worden niet gelezen."
+        "U kunt deze e-mailmeldingen uitschakelen via het tabblad "
+        '<a href="https://app.apotheekjansen.com/profiel" style="text-decoration:underline;">Profiel</a> '
+        "in de Jansen App."
     )
 
     context = {

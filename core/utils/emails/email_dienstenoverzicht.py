@@ -30,7 +30,6 @@ def _fmt_weekday(d: date) -> str:
 def _fmt_dm(d: date) -> str:
     return date_format(d, "d-m")
 
-
 def send_diensten_overzicht_email(
     *,
     to_email: str,
@@ -43,7 +42,7 @@ def send_diensten_overzicht_email(
 ):
     """
     rows verwacht:
-      - date (date)
+      - date (date OF iso-string "YYYY-MM-DD")
       - show_day (bool)
       - period_label, period_time (str)
       - location, task (str)
@@ -78,7 +77,9 @@ def send_diensten_overzicht_email(
     # ========== Diensten tabel rows ==========
     body_rows_html: list[str] = []
     for r in rows:
-        d: date = r["date"]
+        d_raw = r["date"]
+        d = d_raw if isinstance(d_raw, date) else date.fromisoformat(d_raw)
+
         is_assigned = bool(r.get("is_assigned", True))  # default True voor backwards compat
         bg = (r.get("row_bg") or "").strip()
 
@@ -102,8 +103,6 @@ def send_diensten_overzicht_email(
           </div>
         """
 
-        # Let op: GEEN grote vaste widths meer.
-        # Dag + dagdeel compact, locatie/taak flexibel.
         body_rows_html.append(f"""
           <tr style="background:{row_bg};">
             <td style="padding:10px; border-bottom:1px solid #e5e7eb; vertical-align:top; width:90px;">
@@ -121,8 +120,6 @@ def send_diensten_overzicht_email(
           </tr>
         """)
 
-    # Wrapper: overflow-x alleen om de tabel (niet de hele mail)
-    # min-width op table voorkomt "in elkaar gedrukt"
     diensten_table_html = f"""
       <div style="margin:12px 0 16px;">
         <div style="color:#6b7280; margin:0 0 10px;">
@@ -220,8 +217,10 @@ def send_diensten_overzicht_email(
     """
 
     footer_text = (
-        "U ontvangt deze automatische e-mail omdat u heeft ingesteld dat u "
-        "wekelijks een dienstenoverzicht per e-mail wilt ontvangen."
+        'U ontvangt deze e-mail omdat er voor u diensten zijn ingepland voor de komende week. '
+        'U kunt deze e-mailmeldingen uitschakelen via het tabblad '
+        '<a href="https://app.apotheekjansen.com/profiel" style="text-decoration:underline;">Profiel</a> '
+        'in de Jansen App.'
     )
 
     context = {"content": html_body, "footer_text": footer_text}
