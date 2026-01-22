@@ -1,25 +1,12 @@
 <!doctype html>
-<html>
+<html lang="nl">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Apotheek Jansen</title>
-    <style>
-      body { font-family: system-ui; margin: 24px; }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apo Jansen</title>
   </head>
   <body>
-    <p>Loading…</p>
-    <script>
-      // Deze URL komt uit Capacitor config via een simpele conventie:
-      // we plakken hem in window.__TARGET_URL__ met een inline script (zie hieronder)
-      const url = window.__TARGET_URL__ || "https://app.apotheekjansen.com";
-      location.replace(url + (url.includes('?') ? '&' : '?') + 'source=capacitor');
-    </script>
-
-    <script>
-      // De truc: we injecteren target url via build-time env door in index.html een placeholder te replacen.
-      // Voor nu: hardcode fallback, maar we gaan in package.json scripts een replace doen.
-    </script>
+    <h1>Apo Jansen</h1>
+    <p>Fallback pagina. Normaal laadt de app de website via server.url.</p>
   </body>
 </html>

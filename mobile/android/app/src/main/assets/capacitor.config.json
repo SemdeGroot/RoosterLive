@@ -1,14 +1,17 @@
 {
 	"appId": "com.apotheekjansen.app",
-	"appName": "Apotheek Jansen",
+	"appName": "Apo Jansen",
 	"webDir": "www",
-	"bundledWebRuntime": false,
 	"server": {
-		"allowNavigation": [
-			"app.apotheekjansen.com",
-			"*.ngrok-free.dev",
-			"localhost",
-			"127.0.0.1"
-		]
+		"url": "https://treasonably-noncerebral-samir.ngrok-free.dev",
+		"cleartext": false
+	},
+	"plugins": {
+		"SystemBars": {
+			"insetsHandling": "css"
+		},
+		"StatusBar": {
+			"overlaysWebView": true
+		}
 	}
 }

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Apotheek Jansen</string>
-    <string name="title_activity_main">Apotheek Jansen</string>
+    <string name="app_name">Apo Jansen</string>
+    <string name="title_activity_main">Apo Jansen</string>
     <string name="package_name">com.apotheekjansen.app</string>
     <string name="custom_url_scheme">com.apotheekjansen.app</string>
 </resources>
