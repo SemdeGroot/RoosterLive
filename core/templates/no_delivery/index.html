@@ -469,19 +469,78 @@
               <button class="btn small" type="button" data-crud-more>Toon meer</button>
             </div>
           </div>
-            <div class="nd-bottom-actions">
-              <a
-                href="{% url 'export_no_delivery_pdf' %}?list_id={{ selected_list.id }}"
-                class="btn btn-save"
-                target="_blank"
-                rel="noopener"
-              >
-                Exporteer als PDF
-              </a>
-            </div>
+
+          {# BOTTOM ACTIONS: export + mail knop (zelfde UX als STS) #}
+          <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-top:20px;
+          ">
+            <a
+              href="{% url 'export_no_delivery_pdf' %}?list_id={{ selected_list.id }}"
+              class="btn btn-save"
+              target="_blank"
+              rel="noopener"
+            >
+              Exporteer als PDF
+            </a>
+
+            {% if can_send %}
+            <button
+              type="button"
+              onclick="toggleEmailModal()"
+              class="btn btn-save"
+              style="margin-left:auto;"
+            >
+              Verstuur PDF naar apotheken
+            </button>
+            {% endif %}
+          </div>
 
         </div>
       </div>
+
+      {# EMAIL MODAL (zelfde stijl als STS) #}
+      {% if can_send %}
+      <div id="emailModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+        <div class="modal-content" style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:600px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+            <h2 style="margin:0; font-size: 1.4rem;">Overzicht versturen</h2>
+            <span onclick="toggleEmailModal()" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+          </div>
+
+          <form action="{% url 'email_no_delivery_pdf' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="current_list_id" value="{{ selected_list.id }}">
+
+            <div style="margin-bottom:20px;">
+              <label class="select2-label">Selecteer niet-leverlijsten</label>
+
+              <div style="margin-bottom:8px; display:flex; gap:10px;">
+                <button type="button" class="btn btn-danger" onclick="deselectAllLists()">Alles wissen</button>
+              </div>
+
+              <select name="recipients" id="id_recipients" multiple="multiple" style="width:100%;">
+                {# leeg: wordt via AJAX geladen #}
+              </select>
+
+              <p style="margin:12px 0 0 0; color:var(--muted); font-size:0.95em;">
+                Per geselecteerde lijst wordt één PDF gegenereerd en verstuurd naar de gekoppelde apotheek.
+              </p>
+            </div>
+
+            <div style="text-align:right; margin-top:30px; border-top: 1px solid var(--border); padding-top: 20px;">
+              <button type="button" onclick="toggleEmailModal()" class="btn btn-danger" style="margin-right:10px;">Annuleren</button>
+              <button type="submit" class="btn btn-save">Versturen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
       {% else %}
       <div class="nd-panel" style="margin-top:14px;">
         <div class="nd-panel-header">

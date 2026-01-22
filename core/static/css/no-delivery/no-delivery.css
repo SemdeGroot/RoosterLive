@@ -168,3 +168,23 @@ table.no-delivery-table {
   gap:8px;
   margin-top:20px;
 }
+
+/* Email modal sizing (zelfde als STS halfjes / nazendingen) */
+#emailModal .modal-content{
+  width: min(1100px, 96vw) !important;
+  max-width: none !important;
+
+  height: min(750px, 85vh) !important;
+  max-height: 85vh !important;
+
+  margin: 4vh auto !important;
+  overflow: auto !important;
+}
+
+#emailModal .select2-container{
+  width: 100% !important;
+}
+
+#emailModal .select2-selection__clear{
+  display: none !important;
+}

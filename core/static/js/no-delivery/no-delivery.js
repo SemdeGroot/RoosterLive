@@ -1,16 +1,21 @@
 /* core/static/js/no_delivery/no_delivery.js */
 
 document.addEventListener("DOMContentLoaded", function () {
+  // Tabel search
   if (document.getElementById("noDeliverySearch")) {
     liveSearch("noDeliverySearch", "noDeliveryTable", "nd-row");
   }
 
+  // Date masks (alle .js-date)
   initDateMasks(document);
 
+  // Select2 initialisaties
   initApotheekSelect2($("#id_apotheek_list"));
   initListPickerSelect2($("#id_list_picker"));
-
   initGeneesmiddelSelect2($("#id_gevraagd_geneesmiddel"));
+
+  // Email modal select2 (als modal bestaat)
+  initEmailSelect2();
 });
 
 window.toggleAddListSection = function () {
@@ -21,7 +26,7 @@ window.toggleAddListSection = function () {
   section.style.display = open ? "block" : "none";
 
   if (open) {
-    initApotheekSelect2($("#id_apotheek_list"));
+    initApotheekSelect2($("#id_apotheek_list"), $(section));
   }
 };
 
@@ -34,7 +39,8 @@ window.toggleAddEntrySection = function () {
 
   if (open) {
     initDateMasks(section);
-    initGeneesmiddelSelect2($("#id_gevraagd_geneesmiddel"));
+    // dropdownParent = section zodat dropdown niet clipped
+    initGeneesmiddelSelect2($("#id_gevraagd_geneesmiddel"), $(section));
   }
 };
 
@@ -54,7 +60,8 @@ window.toggleEdit = function (id) {
     $meds.each(function () {
       const $el = $(this);
       if (!$el.hasClass("select2-hidden-accessible")) {
-        initGeneesmiddelSelect2($el, $("body"));
+        // dropdownParent = editRow zodat dropdown niet clipped
+        initGeneesmiddelSelect2($el, $(editRow));
       }
     });
   } else {
@@ -67,6 +74,85 @@ window.toggleEdit = function (id) {
   }
 };
 
+// --------------------
+// EMAIL MODAL (zelfde UX als STS halfjes)
+// --------------------
+window.toggleEmailModal = function () {
+  const modal = document.getElementById("emailModal");
+  if (!modal) return;
+
+  const open = modal.style.display !== "block";
+  modal.style.display = open ? "block" : "none";
+
+  if (open) {
+    // Zorg dat select2 goed init + juiste parent
+    initEmailSelect2();
+  } else {
+    // dropdown netjes sluiten als ie open stond
+    try {
+      $("#id_recipients").select2("close");
+    } catch (e) {}
+  }
+};
+
+// Klik op backdrop sluit modal
+window.addEventListener("click", function (event) {
+  const modal = document.getElementById("emailModal");
+  if (modal && event.target === modal) {
+    modal.style.display = "none";
+    try {
+      $("#id_recipients").select2("close");
+    } catch (e) {}
+  }
+});
+
+window.selectAllLists = function () {
+  // Met AJAX select2 kunnen we alleen al-geladen opties selecteren.
+  $("#id_recipients > option").prop("selected", true);
+  $("#id_recipients").trigger("change");
+};
+
+window.deselectAllLists = function () {
+  $("#id_recipients").val(null).trigger("change");
+};
+
+function initEmailSelect2() {
+  const $select = $("#id_recipients");
+  if (!$select.length) return;
+
+  // Als al geïnitialiseerd: alleen parent/breedte fixen en return
+  if ($select.hasClass("select2-hidden-accessible")) return;
+
+  const $modal = $("#emailModal");
+
+  $select.select2({
+    width: "100%",
+    placeholder: "Zoek en selecteer niet-leverlijsten...",
+    allowClear: false,
+    dropdownParent: $modal,     // belangrijk: anders clipped in modal
+    closeOnSelect: false,       // multi-select fijn UX
+    minimumInputLength: 0,
+    ajax: {
+      url: "/api/no-delivery-lists/",
+      dataType: "json",
+      delay: 200,
+      data: (params) => ({ q: params.term || "" }),
+      processResults: (data) => ({
+        results: data.results || [],
+      }),
+      cache: true,
+    },
+    language: {
+      searching: () => "Zoeken...",
+      noResults: () => "Geen resultaten",
+      errorLoading: () => "Resultaten konden niet worden geladen.",
+    },
+  });
+}
+
+// --------------------
+// Helpers
+// --------------------
 function liveSearch(inputId, tableId, rowClass) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -80,6 +166,7 @@ function liveSearch(inputId, tableId, rowClass) {
       row.style.display = text.includes(q) ? "" : "none";
     });
 
+    // reset paginatie van table.js (crud)
     const wrapper = document.querySelector(`[data-table="#${tableId}"]`);
     if (wrapper) wrapper.dispatchEvent(new Event("crud:reset"));
   });

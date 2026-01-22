@@ -132,6 +132,7 @@ class Roster(models.Model):
             # Geen levering
             ("can_view_baxter_no_delivery",     "Mag 'Geen levering' bekijken"),
             ("can_edit_baxter_no_delivery",     "Mag 'Geen levering' aanpassen"),
+            ("can_send_baxter_no_delivery",     "Mag 'Geen levering' versturen"),
             # STS halfjes
             ("can_view_baxter_sts_halfjes",     "Mag STS-halfjes bekijken"),
             ("can_edit_baxter_sts_halfjes",     "Mag STS-halfjes aanpassen"),

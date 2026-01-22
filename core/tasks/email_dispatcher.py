@@ -164,6 +164,40 @@ def email_dispatcher_task(self, job: dict):
             else:
                 raise
         return 
+    
+    if job_type == "no_delivery_single":
+        from core.utils.emails.no_delivery_email import send_single_no_delivery_email
+
+        with default_storage.open(p["pdf_path"], "rb") as f:
+            pdf_content = f.read()
+
+        try:
+            send_single_no_delivery_email(
+                to_email=p["to_email"],
+                name=p["name"],
+                pdf_content=pdf_content,
+                filename=p["filename"],
+                logo_path=p["logo_path"],
+                contact_email=p["contact_email"],
+                week=p["week"],
+                dag_label=p["dag_label"],
+            )
+        except Exception:
+            fallback = p.get("fallback_email")
+            if fallback and fallback != p["to_email"]:
+                send_single_no_delivery_email(
+                    to_email=fallback,
+                    name=p["name"],
+                    pdf_content=pdf_content,
+                    filename=p["filename"],
+                    logo_path=p["logo_path"],
+                    contact_email=p["contact_email"],
+                    week=p["week"],
+                    dag_label=p["dag_label"],
+                )
+            else:
+                raise
+        return
 
     raise ValueError(f"Unknown job type: {job_type}")
 

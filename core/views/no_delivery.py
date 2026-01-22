@@ -13,6 +13,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
 from datetime import date
+from core.tasks import send_no_delivery_pdf_task
 
 def _iso_weekday_from_dag(dag_code: str) -> int:
     """
@@ -45,6 +46,7 @@ def no_delivery(request):
         return HttpResponseForbidden("Je hebt geen toegang tot deze pagina.")
 
     can_edit = can(request.user, "can_edit_baxter_no_delivery")
+    can_send = can(request.user, "can_send_baxter_no_delivery")
 
     apotheken = Organization.objects.filter(
         org_type=Organization.ORG_TYPE_APOTHEEK
@@ -161,6 +163,7 @@ def no_delivery(request):
         "title": "Geen levering",
         "page_title": "Geen levering",
         "can_edit": can_edit,
+        "can_send": can_send,
         "apotheken": apotheken,
 
         "selected_list": selected_list,
@@ -265,7 +268,35 @@ def export_no_delivery_pdf(request):
     pdf_file = _render_pdf(html, base_url=request.build_absolute_uri("/"))
 
     apo_name = selected_list.apotheek.name if selected_list.apotheek else "Apotheek"
-    filename = f"Geen_levering_{apo_name}_W{selected_list.week}_{selected_list.dag}_{timezone.now().strftime('%d-%m-%Y')}.pdf"
+    filename = f"Niet-leverlijst_{apo_name}_Week{selected_list.week}_{selected_list.dag}_{timezone.now().strftime('%d-%m-%Y')}.pdf"
     response = HttpResponse(pdf_file, content_type="application/pdf")
     response["Content-Disposition"] = f'inline; filename="{filename}"'
     return response
+
+@ip_restricted
+@login_required
+def email_no_delivery_pdf(request):
+    """
+    Start celery: verstuurt per geselecteerde NoDeliveryList een PDF naar de gekoppelde apotheek.
+    """
+    if not can(request.user, "can_send_baxter_no_delivery"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    if request.method == "POST":
+        list_ids = request.POST.getlist("recipients")  # select2 multiple
+        list_ids = [int(i) for i in list_ids if str(i).isdigit()]
+
+        if not list_ids:
+            messages.warning(request, "Geen lijsten geselecteerd.")
+            return redirect("baxter_no_delivery")
+
+        send_no_delivery_pdf_task.delay(list_ids)
+        messages.success(request, f"De PDF wordt op de achtergrond verstuurd voor {len(list_ids)} geselecteerde lijst(en).")
+
+        # terug naar huidige lijst (als die open stond)
+        current_list_id = request.POST.get("current_list_id")
+        if current_list_id and str(current_list_id).isdigit():
+            return redirect(f"{request.path}?list_id={int(current_list_id)}")
+        return redirect("baxter_no_delivery")
+
+    return redirect("baxter_no_delivery")
