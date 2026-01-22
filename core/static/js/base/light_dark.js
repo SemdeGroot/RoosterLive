@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /**
-     * Past de theme-color meta tag aan.
+     * Past de theme-color meta tag aan EN de native status bar stijl.
      */
     function updateMetaTags(theme) {
         let meta = document.getElementById('meta-theme-color');
@@ -38,15 +38,22 @@ document.addEventListener('DOMContentLoaded', function () {
             document.head.appendChild(meta);
         }
 
-        const isLogin = document.body.classList.contains('login-page');
-        let themeColor;
-
-        if (theme === 'dark') {
-            themeColor = '#131a24'; 
-        } else {
-            themeColor = '#E3E8F0';
-        }
+        const isDark = (theme === 'dark');
+        const themeColor = isDark ? '#131a24' : '#E3E8F0';
 
         meta.setAttribute('content', themeColor);
+
+        // --- CAPACITOR STATUS BAR LOGICA ---
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+            const StatusBar = window.Capacitor.Plugins.StatusBar;
+
+            // Forceer transparantie (Android) zodat de header-kleur erachter zichtbaar blijft
+            StatusBar.setBackgroundColor({ color: '#00000000' });
+
+            // Update de icoonkleuren:
+            // Als het thema DARK is, willen we witte icoontjes ('DARK')
+            // Als het thema LIGHT is, willen we zwarte icoontjes ('LIGHT')
+            StatusBar.setStyle({ style: isDark ? 'DARK' : 'LIGHT' });
+        }
     }
 });

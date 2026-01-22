@@ -4,19 +4,15 @@
 	"webDir": "www",
 	"server": {
 		"url": "https://treasonably-noncerebral-samir.ngrok-free.dev",
-		"cleartext": false,
-		"allowNavigation": [
-			"treasonably-noncerebral-samir.ngrok-free.dev",
-			"app.apotheekjansen.com"
-		]
+		"cleartext": false
 	},
 	"plugins": {
 		"StatusBar": {
-			"style": "DARK",
-			"overlaysWebView": false
+			"overlaysWebView": true
 		}
 	},
 	"packageClassList": [
+		"SafeAreaPlugin",
 		"StatusBarPlugin"
 	]
 }

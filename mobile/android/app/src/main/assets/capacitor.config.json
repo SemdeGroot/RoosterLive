@@ -7,9 +7,6 @@
 		"cleartext": false
 	},
 	"plugins": {
-		"SystemBars": {
-			"insetsHandling": "css"
-		},
 		"StatusBar": {
 			"overlaysWebView": true
 		}

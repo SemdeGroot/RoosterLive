@@ -9,6 +9,7 @@
     "sync:android": "npx cap sync android"
   },
   "dependencies": {
+    "@capacitor-community/safe-area": "^8.0.1",
     "@capacitor/android": "^8.0.1",
     "@capacitor/core": "^8.0.0",
     "@capacitor/ios": "^8.0.1",

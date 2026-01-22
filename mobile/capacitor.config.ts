@@ -9,9 +9,6 @@ const config: CapacitorConfig = {
     cleartext: false
   },
     plugins: {
-    SystemBars: {
-        insetsHandling: 'css', // injecteert --safe-area-inset-* in de WebView
-    },
     StatusBar: {
         // mag blijven, maar overlays heeft geen effect op Android 15+
         overlaysWebView: true,

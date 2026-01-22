@@ -1,12 +1,14 @@
 // ---------- PULL TO REFRESH IN PWA STANDALONE ----------
 (function () {
+  const isCapacitor = !!window.Capacitor;
   const isStandalone =
     (window.matchMedia &&
       window.matchMedia('(display-mode: standalone)').matches) ||
-    window.navigator.standalone === true;
+    window.navigator.standalone === true ||
+    isCapacitor; // Voeg deze toe
 
   if (!isStandalone) {
-    return; // alleen in geïnstalleerde PWA
+    return; 
   }
 
   const ptr = document.getElementById('pull-to-refresh');

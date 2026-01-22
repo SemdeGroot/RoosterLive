@@ -24,6 +24,15 @@
       meta.id = 'meta-theme-color';
       meta.content = color;
       document.head.appendChild(meta);
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+          const StatusBar = window.Capacitor.Plugins.StatusBar;
+          
+          // Altijd transparant voor de Edge-to-Edge look
+          StatusBar.setBackgroundColor({ color: '#00000000' }); 
+          
+          // Icoonstijl zetten op basis van opgeslagen thema
+          StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
+      }
 
       // 2. Sidebar status (Onveranderd)
       try {
