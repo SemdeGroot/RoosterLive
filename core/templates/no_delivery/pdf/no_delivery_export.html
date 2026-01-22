@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Niet-leverlijst</title>
+
+  <style>
+    .muted { color: #666; }
+
+    /* HEADER (zelfde gevoel als STS halfjes) */
+    .pdf-header{
+        display: grid;
+        grid-template-columns: 92px 1fr; /* logo kolom + content */
+        gap: 16px;
+        align-items: start;
+        padding-bottom: 8px;     /* kleiner */
+        margin-bottom: 8px;      /* kleiner */
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Logo: zo hoog als het headerblok (metadata) */
+    .pdf-logo{
+        width: 92px;
+        height: auto;
+        max-height: 120px;       /* voorkomt absurd groot */
+        object-fit: contain;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .pdf-title{
+        margin: 0;
+        font-size: 18pt;
+        color:#111;
+        line-height: 1.1;
+    }
+
+    .pdf-submeta{
+        margin-top: 6px;
+        margin-bottom: 6px;
+        font-size: 10.5pt;
+        color:#111;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 18px;          /* kleiner: minder verticale witruimte */
+        max-width: 720px;
+    }
+
+    /* Dit voorkomt extra "lucht" onder meta */
+    .pdf-submeta > div{
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+    }
+
+    .prepared-by{
+        margin-top: 4px;         /* kleiner */
+        font-size: 10pt;
+    }
+
+    .section-title{
+        margin-top: 14px;        /* kleiner */
+        font-weight: 700;
+        color:#111;
+        font-size: 11.5pt;
+    }
+
+    /* Tabel basis */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 10.5pt;
+    }
+    th, td {
+        padding: 8px 8px;
+        vertical-align: top;
+        border-bottom: 1px solid #eee;
+    }
+    thead th {
+        border-bottom: 1px solid #ccc;
+        text-align: left;
+        font-weight: 700;
+        color: #111;
+        background: #fafafa;
+    }
+
+    /* FOOTER (ongewijzigd) */
+    .pdf-footer {
+        font-size: 9pt;
+        color: #444;
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1.6fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    .footer-block {
+        line-height: 1.25;
+        padding-right: 6px;
+    }
+    .footer-block:not(:last-child) {
+        border-right: 1px solid #ddd;
+        padding-right: 18px;
+    }
+    .footer-label {
+        font-weight: 700;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+        color: #111;
+        border-bottom: 1px solid #ddd;
+    }
+    .footer-item { margin: 0; }
+    .footer-strong { font-weight: 700; color: #111; }
+    .authorisation { margin-top: 22px; page-break-inside: avoid; }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="pdf-header">
+    <div>
+        {% if logo_path %}
+        <img class="pdf-logo" src="file://{{ logo_path }}" alt="Logo">
+        {% endif %}
+    </div>
+
+    <div>
+        <h1 class="pdf-title">Niet-leverlijst</h1>
+
+        <div class="pdf-submeta">
+        <div><strong>Gegenereerd:</strong> {{ generated_at|date:"d-m-Y" }}</div>
+        <div><strong>Apotheek:</strong> {{ selected_list.apotheek.name|default:"-" }}</div>
+
+        <div><strong>Week:</strong> {{ selected_list.week }}</div>
+        <div><strong>Dag:</strong> {{ selected_list.get_dag_display }}</div>
+
+        <div><strong>Datum:</strong>
+            {% if dag_datum %}
+            {{ dag_datum|date:"d-m-Y" }}
+            {% else %}
+            -
+            {% endif %}
+        </div>
+        <div><span class="muted">{{ contact_email }}</span></div>
+        </div>
+
+    </div>
+    </div>
+
+  <div class="section-title">Overzicht niet-geleverde geneesmiddelen</div>
+
+  <!-- TABEL -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:4%; text-align:center; color:#666;"></th>
+        <th style="width:10%;">Afdeling</th>
+        <th style="width:16%;">Patiënt</th>
+        <th style="width:11%;">Geboortedatum</th>
+        <th style="width:26%;">Gevraagd geneesmiddel</th>
+        <th style="width:11%;">Vanaf datum</th>
+        <th style="width:10%;">STS paraaf</th>
+        <th style="width:12%;">Roller paraaf</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for item in entries %}
+        <tr>
+          <td style="width:4%; text-align:center; color:#666;">{{ forloop.counter }}</td>
+
+          <td style="width:10%;">{{ item.afdeling|default:"-" }}</td>
+          <td style="width:16%;">{{ item.patient_naam|default:"-" }}</td>
+
+          <td style="width:11%; color:#666;">
+            {% if item.patient_geboortedatum %}
+              {{ item.patient_geboortedatum|date:"d-m-Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td style="width:26%;">
+            {% if item.gevraagd_geneesmiddel %}
+              <strong>{{ item.gevraagd_geneesmiddel.naam }}</strong><br>
+              <span class="muted">ZI-nummer: {{ item.gevraagd_geneesmiddel.zi_nummer }}</span>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td style="width:11%; color:#666;">
+            {% if item.vanaf_datum %}
+              {{ item.vanaf_datum|date:"d-m-Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td style="width:10%;">{{ item.sts_paraaf|default:"-" }}</td>
+          <td style="width:12%;">{{ item.roller_paraaf|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="8" class="muted" style="text-align:center; padding:20px;">
+            Geen entries gevonden.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="pdf-footer">
+    <div class="footer-grid">
+      <div class="footer-block">
+        <div class="footer-label">Apotheek Jansen</div>
+        <p class="footer-item">Kwaliteitshandboek</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Documentnummer</div>
+        <p class="footer-item">F-GDS-11</p>
+      </div>
+
+      <div class="footer-block">
+        <div class="footer-label">Versie</div>
+        <p class="footer-item" style="display:flex; justify-content:space-between;">
+          <span class="footer-strong">2</span>
+          <span class="muted" style="font-style: italic;"> januari 2024</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHORISATIE -->
+  <div class="authorisation">
+    <p style="margin-bottom: 8px; margin-top: 16px;">Goedgekeurd door,</p>
+
+    <p style="margin: 0 0 8px 0;">
+      <strong>Drs. Roel de Groot</strong>,<br>
+      <span class="muted">Specialist Openbaar Apotheker</span>
+    </p>
+
+    {% if signature_path %}
+      <img
+        src="file://{{ signature_path }}"
+        alt="Handtekening"
+        style="height:50px; display:block; margin:10px 0 0 0;"
+      >
+    {% endif %}
+  </div>
+
+</body>
+</html>

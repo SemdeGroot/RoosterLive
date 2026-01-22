@@ -469,6 +469,16 @@
               <button class="btn small" type="button" data-crud-more>Toon meer</button>
             </div>
           </div>
+            <div class="nd-bottom-actions">
+              <a
+                href="{% url 'export_no_delivery_pdf' %}?list_id={{ selected_list.id }}"
+                class="btn btn-save"
+                target="_blank"
+                rel="noopener"
+              >
+                Exporteer als PDF
+              </a>
+            </div>
 
         </div>
       </div>

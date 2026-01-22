@@ -9,6 +9,34 @@ from core.views._helpers import can
 from core.models import NoDeliveryList, NoDeliveryEntry, Organization
 from core.forms import NoDeliveryListForm, NoDeliveryEntryForm
 from core.decorators import ip_restricted
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.utils import timezone
+from datetime import date
+
+def _iso_weekday_from_dag(dag_code: str) -> int:
+    """
+    ISO weekday: maandag=1 ... zondag=7
+    Jouw model heeft MA..ZA, dus MA=1..ZA=6
+    """
+    mapping = {
+        "MA": 1,
+        "DI": 2,
+        "WO": 3,
+        "DO": 4,
+        "VR": 5,
+        "ZA": 6,
+    }
+    return mapping.get((dag_code or "").upper(), 1)
+
+
+def _date_from_year_week_dag(jaar: int, week: int, dag_code: str) -> date:
+    """
+    ISO week date: date.fromisocalendar(year, week, weekday)
+    """
+    weekday = _iso_weekday_from_dag(dag_code)
+    return date.fromisocalendar(int(jaar), int(week), int(weekday))
+
 
 @ip_restricted
 @login_required
@@ -175,3 +203,69 @@ def api_no_delivery_lists(request):
         results.append({"id": obj.id, "text": text})
 
     return JsonResponse({"results": results})
+
+@ip_restricted
+@login_required
+def export_no_delivery_pdf(request):
+    """
+    Exporteert de geselecteerde niet-leverlijst als PDF.
+    Vereist: ?list_id=<id>
+    """
+    if not can(request.user, "can_view_baxter_no_delivery"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    list_id = request.GET.get("list_id")
+    if not (list_id and str(list_id).isdigit()):
+        return HttpResponseForbidden("Geen geldige lijst geselecteerd.")
+
+    selected_list = (
+        NoDeliveryList.objects
+        .select_related("apotheek")
+        .filter(pk=int(list_id))
+        .first()
+    )
+    if not selected_list:
+        return HttpResponseForbidden("Lijst niet gevonden.")
+
+    entries = (
+        NoDeliveryEntry.objects
+        .select_related("gevraagd_geneesmiddel", "no_delivery_list", "no_delivery_list__apotheek")
+        .filter(no_delivery_list=selected_list)
+        .order_by("-updated_at", "-created_at")
+    )
+
+    # Bepaal datum van deze lijst (op basis van jaar/week/dag)
+    try:
+        dag_datum = _date_from_year_week_dag(selected_list.jaar, selected_list.week, selected_list.dag)
+    except Exception:
+        dag_datum = None  # fail-safe
+
+    # Zelfde assets als STS halfjes
+    from core.views._helpers import _static_abs_path, _render_pdf  # lokaal importeren mag ook
+    contact_email = "baxterezorg@apotheekjansen.com"
+
+    context = {
+        "selected_list": selected_list,
+        "entries": entries,
+
+        "generated_at": timezone.localtime(timezone.now()),
+        "dag_datum": dag_datum,
+
+        "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
+        "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+        "contact_email": contact_email,
+    }
+
+    html = render_to_string(
+        "no_delivery/pdf/no_delivery_export.html",  # ja: html-template met .pdf naam
+        context,
+        request=request,
+    )
+
+    pdf_file = _render_pdf(html, base_url=request.build_absolute_uri("/"))
+
+    apo_name = selected_list.apotheek.name if selected_list.apotheek else "Apotheek"
+    filename = f"Geen_levering_{apo_name}_W{selected_list.week}_{selected_list.dag}_{timezone.now().strftime('%d-%m-%Y')}.pdf"
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response

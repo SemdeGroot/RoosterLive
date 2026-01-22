@@ -161,3 +161,10 @@ table.no-delivery-table {
 .recent-pill.active{
   border-color: var(--primary);
 }
+
+.nd-bottom-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:20px;
+}
