@@ -1,0 +1,163 @@
+/* core/static/css/no_delivery/no_delivery.css */
+
+.nd-panel{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.nd-panel-header{
+  padding: 14px 14px 2px 14px;
+}
+
+.nd-panel-header-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.nd-panel-body{
+  padding: 14px;
+}
+
+.nd-divider{
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+
+.nd-inline-form{
+  margin-top: 6px;
+}
+
+.nd-inline-grid{
+  display:flex;
+  gap: 10px;
+  align-items:flex-end;
+}
+
+.nd-grow{
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+.nd-actions{
+  flex: 0 0 auto;
+  display:flex;
+  gap: 8px;
+}
+
+@media (max-width: 720px){
+  .nd-inline-grid{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .nd-actions{
+    justify-content: flex-end;
+  }
+}
+
+.add-section-panel {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-top: 5px;
+}
+
+/* ENTRY GRID (2 - 2 - 1 - 2 via template met .nd-grid-full) */
+.no-delivery-edit-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 720px){
+  .no-delivery-edit-grid{
+    grid-template-columns: 1fr;
+  }
+  /* op mobiel moet full-width gewoon weer "normaal" zijn */
+  .nd-grid-full{
+    grid-column: auto;
+  }
+}
+
+.no-delivery-list-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.nd-grid-full{
+  grid-column: 1 / -1;
+}
+
+.no-delivery-edit-grid input,
+.no-delivery-edit-grid select,
+.no-delivery-edit-grid textarea,
+.no-delivery-list-grid input,
+.no-delivery-list-grid select{
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.select2-container{
+  width: 100% !important;
+  max-width: 100%;
+}
+.select2-container--open{
+  z-index: 9999;
+}
+
+table.no-delivery-table {
+  --c1: 10px;
+  --c2: 100px;
+  --c3: 140px;
+  --c4: 150px;
+  --c5: 220px;
+  --c6: 120px;
+  --c7: 60px;
+  --c8: 80px;
+  --c9: 120px;
+}
+
+@media (max-width: 1150px){
+  table.no-delivery-table{
+    min-width: 1000px;
+  }
+}
+
+.field-error{
+  color: var(--danger);
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+
+.recent-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recent-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.92em;
+}
+
+.recent-pill.active{
+  border-color: var(--primary);
+}

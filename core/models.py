@@ -1152,6 +1152,107 @@ class STSHalfje(models.Model):
     @property
     def patient_geboortedatum(self):
         return self.patient_geboortedatum_enc
+  
+class NoDeliveryList(models.Model):
+    DAG_MA = "MA"
+    DAG_DI = "DI"
+    DAG_WO = "WO"
+    DAG_DO = "DO"
+    DAG_VR = "VR"
+    DAG_ZA = "ZA"
+
+    DAG_CHOICES = (
+        (DAG_MA, "Maandag"),
+        (DAG_DI, "Dinsdag"),
+        (DAG_WO, "Woensdag"),
+        (DAG_DO, "Donderdag"),
+        (DAG_VR, "Vrijdag"),
+        (DAG_ZA, "Zaterdag"),
+    )
+
+    apotheek = models.ForeignKey(
+        Organization,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="no_delivery_lists",
+        verbose_name="Apotheek",
+    )
+
+    jaar = models.IntegerField(verbose_name="Jaar")
+    week = models.IntegerField(verbose_name="Week")
+
+    dag = models.CharField(
+        max_length=2,
+        choices=DAG_CHOICES,
+        default=DAG_MA,
+        verbose_name="Dag",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # <-- nieuw
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+        verbose_name = "Geen levering lijst"
+        verbose_name_plural = "Geen levering lijsten"
+        unique_together = ("apotheek", "jaar", "week", "dag")
+
+    def __str__(self):
+        apo = self.apotheek.name if self.apotheek else "-"
+        return f"{apo} - {self.jaar} W{self.week} - {self.get_dag_display()}"
+
+    @property
+    def dag_label(self):
+        return self.get_dag_display()
+
+
+class NoDeliveryEntry(models.Model):
+    no_delivery_list = models.ForeignKey(
+        NoDeliveryList,
+        on_delete=models.CASCADE,
+        related_name="entries",
+        verbose_name="Geen levering lijst",
+    )
+
+    afdeling = models.CharField(max_length=10, blank=True, default="", verbose_name="Afdeling")
+
+    patient_naam_enc = EncryptedCharField(max_length=255, blank=True, default="")
+    patient_geboortedatum_enc = EncryptedDateField(null=True, blank=True)
+
+    gevraagd_geneesmiddel = models.ForeignKey(
+        VoorraadItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="no_delivery_entries",
+        verbose_name="Gevraagd geneesmiddel",
+    )
+
+    vanaf_datum = models.DateField(null=True, blank=True, verbose_name="Vanaf datum")
+
+    sts_paraaf = models.CharField(max_length=50, blank=True, default="", verbose_name="STS paraaf")
+    roller_paraaf = models.CharField(max_length=50, blank=True, default="", verbose_name="Roller paraaf")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # <-- nieuw (optioneel maar handig)
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+        verbose_name = "Geen levering entry"
+        verbose_name_plural = "Geen levering entries"
+
+    def __str__(self):
+        apo = self.no_delivery_list.apotheek.name if self.no_delivery_list and self.no_delivery_list.apotheek else "-"
+        return f"{apo} - {self.afdeling} - {self.patient_naam or '-'}"
+
+    @property
+    def patient_naam(self):
+        return self.patient_naam_enc
+
+    @property
+    def patient_geboortedatum(self):
+        return self.patient_geboortedatum_enc
     
 class UrenMaand(models.Model):
     """

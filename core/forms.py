@@ -12,7 +12,7 @@ from .views._helpers import PERM_LABELS, PERM_SECTIONS
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel, NoDeliveryEntry, NoDeliveryList
 
 UserModel = get_user_model()
 
@@ -1119,6 +1119,112 @@ class STSHalfjeForm(forms.ModelForm):
         self.fields["apotheek"].queryset = Organization.objects.filter(
             org_type=Organization.ORG_TYPE_APOTHEEK
         ).order_by("name")
+        
+class NoDeliveryListForm(forms.ModelForm):
+    class Meta:
+        model = NoDeliveryList
+        fields = ["apotheek", "jaar", "week", "dag"]
+        labels = {
+            "apotheek": "Apotheek",
+            "jaar": "Jaar",
+            "week": "Week",
+            "dag": "Dag",
+        }
+        widgets = {
+            "jaar": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "placeholder": "2026",
+                "min": 2000,
+                "max": 2100,
+            }),
+            "week": forms.NumberInput(attrs={
+                "class": "admin-input",
+                "placeholder": "1-53",
+                "min": 1,
+                "max": 53,
+            }),
+            # dropdown
+            "dag": forms.Select(attrs={
+                "class": "admin-input",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["apotheek"].queryset = Organization.objects.filter(
+            org_type=Organization.ORG_TYPE_APOTHEEK
+        ).order_by("name")
+
+
+class NoDeliveryEntryForm(forms.ModelForm):
+    patient_geboortedatum_enc = forms.DateField(
+        required=False,
+        input_formats=["%d-%m-%Y"],
+        widget=forms.DateInput(attrs={
+            "placeholder": "dd-mm-jjjj",
+            "class": "admin-input js-date",
+            "autocomplete": "off",
+        }),
+        label="Geboortedatum",
+    )
+
+    vanaf_datum = forms.DateField(
+        required=False,
+        input_formats=["%d-%m-%Y"],
+        widget=forms.DateInput(attrs={
+            "placeholder": "dd-mm-jjjj",
+            "class": "admin-input js-date",
+            "autocomplete": "off",
+        }),
+        label="Vanaf datum",
+    )
+
+    class Meta:
+        model = NoDeliveryEntry
+        fields = [
+            "afdeling",
+            "patient_naam_enc",
+            "patient_geboortedatum_enc",
+            "gevraagd_geneesmiddel",
+            "vanaf_datum",
+            "sts_paraaf",
+            "roller_paraaf",
+        ]
+        labels = {
+            "patient_naam_enc": "Patiënt",
+            "gevraagd_geneesmiddel": "Gevraagd geneesmiddel",
+        }
+        widgets = {
+            "afdeling": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Afdeling...",
+                "autocomplete": "off",
+            }),
+            "patient_naam_enc": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Naam patiënt...",
+                "autocomplete": "off",
+            }),
+            "gevraagd_geneesmiddel": forms.Select(attrs={
+                "class": "select2-single",
+                "style": "width: 100%",
+            }),
+            "sts_paraaf": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Paraaf...",
+                "autocomplete": "off",
+            }),
+            "roller_paraaf": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Paraaf...",
+                "autocomplete": "off",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # select2 ajax endpoint gebruikt /api/voorraad-zoeken/
+        self.fields["gevraagd_geneesmiddel"].queryset = VoorraadItem.objects.all()
 
 def _clean_1_decimal_decimal(v, label):
     if v in (None, ""):

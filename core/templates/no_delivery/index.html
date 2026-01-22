@@ -1,13 +1,497 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Geen levering{% endblock %}
 {% block header_title %}Geen levering{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/no-delivery/no-delivery.css' %}">
+
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+
+  <script src="{% static 'js/base/table.js' %}" defer></script>
+  <script src="https://unpkg.com/imask"></script>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Geen levering</h3>
-  <p>
-    Hier komt later de registratie of afhandeling van orders zonder levering.
-  </p>
+<div class="card card-inner">
+  <div class="agenda-section">
+
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/no-delivery.svg' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Geen levering</h2>
+        <p>Beheer niet-leverlijsten per apotheek, week en dag.</p>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'baxter_tiles' %}" class="btn">Terug naar Baxterproductie</a>
+      </div>
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+
+      <div class="nd-panel">
+        <div class="nd-panel-header nd-panel-header-row">
+          <div>
+            <h3 style="margin:0;">Selecteer apotheek</h3>
+
+              <div style="margin-top:4px; color:var(--muted);">
+                Voeg hier niet-leverlijsten toe of selecteer lijsten om te openen
+              </div>
+          </div>
+
+          {% if can_edit %}
+            <button type="button" class="btn btn-save" onclick="toggleAddListSection()">Niet-leverlijst toevoegen</button>
+          {% endif %}
+        </div>
+
+        <div class="nd-panel-body">
+
+          {% if can_edit %}
+          <div id="addListSection" style="display:none;" class="add-section-panel">
+            <form method="post" autocomplete="off">
+              {% csrf_token %}
+              <input type="hidden" name="btn_add_list" value="1">
+
+              <div class="no-delivery-list-grid">
+
+                <div class="nd-grid-full">
+                  <label class="select2-label">Apotheek</label>
+                  <select
+                    name="apotheek"
+                    id="id_apotheek_list"
+                    class="select2-apotheek"
+                    style="width:100%;"
+                    data-placeholder="Zoek apotheek..."
+                  >
+                    <option value="">----------</option>
+                    {% for apo in apotheken %}
+                      <option value="{{ apo.id }}"
+                        {% if list_form.apotheek.value|stringformat:"s" == apo.id|stringformat:"s" %}selected{% endif %}>
+                        {{ apo.name }}
+                      </option>
+                    {% endfor %}
+                  </select>
+
+                  {% if list_form.apotheek.errors %}
+                    <div class="field-error">{{ list_form.apotheek.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Jaar</label>
+                  {{ list_form.jaar }}
+                  {% if list_form.jaar.errors %}
+                    <div class="field-error">{{ list_form.jaar.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Week</label>
+                  {{ list_form.week }}
+                  {% if list_form.week.errors %}
+                    <div class="field-error">{{ list_form.week.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="nd-grid-full">
+                  <label class="section-label">Dag</label>
+                  {{ list_form.dag }}
+                  {% if list_form.dag.errors %}
+                    <div class="field-error">{{ list_form.dag.errors }}</div>
+                  {% endif %}
+                </div>
+
+              </div>
+
+              <div class="actions-wrap horizontal" style="justify-content:flex-end; margin-top:12px;">
+                <button type="button" class="btn btn-danger" onclick="toggleAddListSection()">Annuleren</button>
+                <button type="submit" class="btn btn-save">Aanmaken</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          <form method="post" autocomplete="off" class="nd-inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="btn_select_list" value="1">
+
+            <div class="nd-inline-grid">
+              <div class="nd-grow">
+                <label class="select2-label">Zoek niet-leverlijst op apotheek, week of dag</label>
+                <select
+                  id="id_list_picker"
+                  name="selected_list_id"
+                  style="width:100%;"
+                  data-placeholder="Zoek op apotheek, week of dag..."
+                >
+                  {% if selected_list %}
+                    <option value="{{ selected_list.id }}" selected>
+                      {{ selected_list.apotheek.name }} - {{ selected_list.jaar }} - Week {{ selected_list.week }} - {{ selected_list.get_dag_display }}
+                    </option>
+                  {% endif %}
+                </select>
+              </div>
+
+              <div class="nd-actions">
+                <button type="submit" class="btn">Open</button>
+              </div>
+            </div>
+          </form>
+
+          <div style="margin-top:20px;">
+            <label class="section-label" style="margin-bottom:8px; display:block;">Laatste 5 niet-leverlijsten (klik om te openen)</label>
+            <div class="recent-list">
+              {% for l in recent_lists %}
+                <a class="recent-pill {% if selected_list and selected_list.id == l.id %}active{% endif %}"
+                   href="?list_id={{ l.id }}">
+                {{ l.apotheek.name }} - {{ l.jaar }} - Week {{ l.week }} - {{ l.get_dag_display }}
+                </a>
+              {% empty %}
+                <span style="color:var(--muted); font-size:0.95em;">Nog geen recente lijsten.</span>
+              {% endfor %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {% if selected_list %}
+      <div class="nd-panel" style="margin-top:14px;">
+        <div class="nd-panel-header nd-panel-header-row">
+          <div>
+            <h3 style="margin:0;">Niet geleverde geneesmiddelen</h3>
+            <div style="margin-top:4px; color:var(--muted);">
+              <strong>{{ selected_list.apotheek.name }}</strong>
+              - {{ selected_list.jaar }} - Week {{ selected_list.week }} - {{ selected_list.get_dag_display }}
+            </div>
+          </div>
+
+          {% if can_edit %}
+          <button type="button" class="btn btn-save" onclick="toggleAddEntrySection()">Geneesmiddel toevoegen</button>
+          {% endif %}
+        </div>
+
+        <div class="nd-panel-body">
+
+          {% if can_edit %}
+          <div id="addEntrySection" style="display:none;" class="add-section-panel">
+            <form method="post" autocomplete="off">
+              {% csrf_token %}
+              <input type="hidden" name="btn_add_entry" value="1">
+              <input type="hidden" name="list_id" value="{{ selected_list.id }}">
+
+              {% if entry_form.non_field_errors %}
+                <div class="alert alert-danger">{{ entry_form.non_field_errors }}</div>
+              {% endif %}
+
+              {# 2 - 2 - 1 - 2 + vanaf datum vóór geneesmiddel #}
+              <div class="no-delivery-edit-grid" style="margin-bottom: 15px;">
+
+                <div>
+                  <label class="section-label">Afdeling</label>
+                  {{ entry_form.afdeling }}
+                  {% if entry_form.afdeling.errors %}
+                    <div class="field-error">{{ entry_form.afdeling.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Patiënt</label>
+                  {{ entry_form.patient_naam_enc }}
+                  {% if entry_form.patient_naam_enc.errors %}
+                    <div class="field-error">{{ entry_form.patient_naam_enc.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Geboortedatum</label>
+                  {{ entry_form.patient_geboortedatum_enc }}
+                  {% if entry_form.patient_geboortedatum_enc.errors %}
+                    <div class="field-error">{{ entry_form.patient_geboortedatum_enc.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Vanaf datum</label>
+                  {{ entry_form.vanaf_datum }}
+                  {% if entry_form.vanaf_datum.errors %}
+                    <div class="field-error">{{ entry_form.vanaf_datum.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="nd-grid-full">
+                  <label class="select2-label">Gevraagd geneesmiddel</label>
+                  {{ entry_form.gevraagd_geneesmiddel }}
+                  {% if entry_form.gevraagd_geneesmiddel.errors %}
+                    <div class="field-error">{{ entry_form.gevraagd_geneesmiddel.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">STS paraaf</label>
+                  {{ entry_form.sts_paraaf }}
+                  {% if entry_form.sts_paraaf.errors %}
+                    <div class="field-error">{{ entry_form.sts_paraaf.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="section-label">Roller paraaf</label>
+                  {{ entry_form.roller_paraaf }}
+                  {% if entry_form.roller_paraaf.errors %}
+                    <div class="field-error">{{ entry_form.roller_paraaf.errors }}</div>
+                  {% endif %}
+                </div>
+
+              </div>
+
+              <div class="actions-wrap horizontal" style="justify-content:flex-end;">
+                <button type="button" class="btn btn-danger" onclick="toggleAddEntrySection()">Annuleren</button>
+                <button type="submit" class="btn btn-save">Opslaan</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          <div class="search-bar">
+            <input type="text" id="noDeliverySearch" placeholder="Typ om te zoeken in tabel..." class="admin-input">
+          </div>
+
+          <div data-crud data-table="#noDeliveryTable" data-rows=".nd-row" data-page-size="10">
+            <div class="table-scroll">
+              <table class="crud-table no-delivery-table" id="noDeliveryTable">
+                <thead>
+                  <tr>
+                    <th class="center-col"></th>
+                    <th>Afdeling</th>
+                    <th>Patiënt</th>
+                    <th>Geboortedatum</th>
+                    <th>Gevraagd geneesmiddel</th>
+                    <th>Vanaf datum</th>
+                    <th>STS</th>
+                    <th>Roller</th>
+                    <th>Acties</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for item in entries %}
+                  <tr class="nd-row" id="row-{{ item.id }}">
+                    <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
+
+                    <td class="wrap">{{ item.afdeling|default:"-" }}</td>
+                    <td class="wrap">{{ item.patient_naam|default:"-" }}</td>
+
+                    <td style="color: var(--muted);">
+                      {% if item.patient_geboortedatum %}
+                        {{ item.patient_geboortedatum|date:"d-m-Y" }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+
+                    <td class="wrap">
+                      {% if item.gevraagd_geneesmiddel %}
+                        <strong>{{ item.gevraagd_geneesmiddel.naam }}</strong><br>
+                        <small>ZI-nummer: {{ item.gevraagd_geneesmiddel.zi_nummer }}</small>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+
+                    <td style="color: var(--muted);">
+                      {% if item.vanaf_datum %}
+                        {{ item.vanaf_datum|date:"d-m-Y" }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+
+                    <td class="wrap">{{ item.sts_paraaf|default:"-" }}</td>
+                    <td class="wrap">{{ item.roller_paraaf|default:"-" }}</td>
+
+                    <td>
+                      {% if can_edit %}
+                      <div class="actions-wrap horizontal">
+                        <button type="button" class="icon-btn" onclick="toggleEdit('{{ item.id }}')" aria-label="Bewerken">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                          </svg>
+                        </button>
+
+                        <form method="post" class="delete-confirm-form" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="btn_delete_entry" value="1">
+                          <input type="hidden" name="list_id" value="{{ selected_list.id }}">
+                          <input type="hidden" name="entry_id" value="{{ item.id }}">
+                          <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/>
+                              <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
+                      {% else %}
+                        <span style="color:var(--muted); font-size:0.9em; font-style:italic;">Geen rechten</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                  {% if can_edit %}
+                  <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
+                    <td colspan="9">
+                      <div class="edit-wrap">
+                        <form method="post" autocomplete="off">
+                          {% csrf_token %}
+                          <input type="hidden" name="btn_edit_entry" value="1">
+                          <input type="hidden" name="list_id" value="{{ selected_list.id }}">
+                          <input type="hidden" name="entry_id" value="{{ item.id }}">
+
+                          {# 2 - 2 - 1 - 2 + vanaf datum vóór geneesmiddel #}
+                          <div class="no-delivery-edit-grid">
+
+                            <div>
+                              <label class="section-label">Afdeling</label>
+                              <input
+                                type="text"
+                                name="afdeling"
+                                value="{{ item.afdeling }}"
+                                class="admin-input"
+                                placeholder="Afdeling..."
+                                autocomplete="off"
+                              >
+                            </div>
+
+                            <div>
+                              <label class="section-label">Patiënt</label>
+                              <input
+                                type="text"
+                                name="patient_naam_enc"
+                                value="{{ item.patient_naam }}"
+                                class="admin-input"
+                                placeholder="Naam patiënt..."
+                                autocomplete="off"
+                              >
+                            </div>
+
+                            <div>
+                              <label class="section-label">Geboortedatum</label>
+                              <input
+                                type="text"
+                                name="patient_geboortedatum_enc"
+                                value="{% if item.patient_geboortedatum %}{{ item.patient_geboortedatum|date:'d-m-Y' }}{% endif %}"
+                                class="admin-input js-date"
+                                placeholder="dd-mm-jjjj"
+                                autocomplete="off"
+                              >
+                            </div>
+
+                            <div>
+                              <label class="section-label">Vanaf datum</label>
+                              <input
+                                type="text"
+                                name="vanaf_datum"
+                                value="{% if item.vanaf_datum %}{{ item.vanaf_datum|date:'d-m-Y' }}{% endif %}"
+                                class="admin-input js-date"
+                                placeholder="dd-mm-jjjj"
+                                autocomplete="off"
+                              >
+                            </div>
+
+                            <div class="nd-grid-full">
+                              <label class="select2-label">Gevraagd geneesmiddel</label>
+                              <select name="gevraagd_geneesmiddel" class="select2-edit" style="width:100%;">
+                                {% if item.gevraagd_geneesmiddel_id %}
+                                  <option value="{{ item.gevraagd_geneesmiddel_id }}" selected>
+                                    {{ item.gevraagd_geneesmiddel.naam }}
+                                  </option>
+                                {% else %}
+                                  <option value="" selected>----------</option>
+                                {% endif %}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label class="section-label">STS paraaf</label>
+                              <input
+                                type="text"
+                                name="sts_paraaf"
+                                value="{{ item.sts_paraaf }}"
+                                class="admin-input"
+                                placeholder="Paraaf..."
+                                autocomplete="off"
+                              >
+                            </div>
+
+                            <div>
+                              <label class="section-label">Roller paraaf</label>
+                              <input
+                                type="text"
+                                name="roller_paraaf"
+                                value="{{ item.roller_paraaf }}"
+                                class="admin-input"
+                                placeholder="Paraaf..."
+                                autocomplete="off"
+                              >
+                            </div>
+
+                          </div>
+
+                          <div class="actions-wrap horizontal" style="margin-top:12px;">
+                            <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ item.id }}')">Annuleren</button>
+                            <button type="submit" class="btn btn-save">Opslaan</button>
+                          </div>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  {% empty %}
+                  <tr>
+                    <td colspan="9" style="text-align:center; padding:20px; color:var(--muted);">
+                      Nog geen entries gevonden.
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="crud-more-wrap">
+              <button class="btn small" type="button" data-crud-more>Toon meer</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% else %}
+      <div class="nd-panel" style="margin-top:14px;">
+        <div class="nd-panel-header">
+          <h3 style="margin:0;">Patiënten / entries</h3>
+        </div>
+        <div class="nd-panel-body" style="color:var(--muted);">
+          Kies eerst hierboven een apotheek/week/dag lijst of maak een nieuwe lijst aan.
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script src="{% static 'js/base/confirm_delete.js' %}"></script>
+<script src="{% static 'js/no-delivery/no-delivery.js' %}"></script>
 {% endblock %}

@@ -11,8 +11,9 @@ from core.models import STSHalfje, Organization
 from core.forms import STSHalfjeForm
 from core.views._helpers import can, _static_abs_path, _render_pdf
 from core.tasks import send_stshalfjes_pdf_task
+from core.decorators import ip_restricted
 
-
+@ip_restricted
 @login_required
 def stshalfjes(request):
     """
@@ -78,7 +79,7 @@ def stshalfjes(request):
     }
     return render(request, "stshalfjes/index.html", context)
 
-
+@ip_restricted
 @login_required
 def export_stshalfjes_pdf(request):
     """
@@ -120,7 +121,7 @@ def export_stshalfjes_pdf(request):
     response["Content-Disposition"] = f'inline; filename="{filename}"'  # opent direct
     return response
 
-
+@ip_restricted
 @login_required
 def email_stshalfjes_pdf(request):
     """

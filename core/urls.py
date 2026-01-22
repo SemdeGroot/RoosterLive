@@ -32,7 +32,7 @@ from core.views.onboarding_forms import onboarding_formulieren
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
 from core.views.omzettingslijst import omzettingslijst
-from core.views.no_delivery import no_delivery
+from core.views.no_delivery import no_delivery, api_no_delivery_lists
 from core.views.stshalfjes import stshalfjes, export_stshalfjes_pdf, email_stshalfjes_pdf
 from core.views.laatstepotten import laatstepotten
 from core.views.openbare import openbare_tiles
@@ -131,6 +131,7 @@ urlpatterns = [
 
     path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),
     path("baxter/geen-levering/", no_delivery, name="baxter_no_delivery"),
+    path("api/no-delivery-lists/", api_no_delivery_lists, name="api_no_delivery_lists"),
     path("baxter/sts-halfjes/", stshalfjes, name="stshalfjes"),
     path("baxter/sts-halfjes/export-pdf/", export_stshalfjes_pdf, name="export_stshalfjes_pdf"),
     path("baxter/sts-halfjes/email-pdf/", email_stshalfjes_pdf, name="email_stshalfjes_pdf"),
