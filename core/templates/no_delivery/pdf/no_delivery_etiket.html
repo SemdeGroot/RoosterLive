@@ -1,0 +1,187 @@
+{# templates/no_delivery/pdf/no_delivery_etiket.html #}
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  <style>
+    @page{
+      /* Veelgebruikt labelformaat voor kleine Zebra etiketten */
+      size: 57mm 32mm;
+      margin: 0;
+    }
+
+    html, body{
+      width: 57mm;
+      height: 32mm;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+    }
+
+    /* --- SAFE AREA (Zebra) --- */
+    .label{
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      padding: 3.2mm;          /* iets ruimer = veiliger voor printers */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;         /* nooit buiten label renderen */
+    }
+
+    /* --- HEADER: klein linksboven, logo verticaal gecentreerd met tekst --- */
+    .hdr{
+      display: flex;
+      align-items: center;      /* ✅ logo verticaal centreren met tekstblok */
+      gap: 1.8mm;
+      margin-bottom: 1.2mm;
+      flex: 0 0 auto;
+    }
+
+    .hdr img{
+      width: 3.8mm;
+      height: 3.8mm;
+      object-fit: contain;
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .hdr .meta{
+      line-height: 1.08;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;             /* ellipsis werkt */
+    }
+
+    .hdr .meta .org{
+      font-size: 5.6pt;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+      color: #0b2a5b;            /* donkerblauw mag, geen achtergrond */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 42mm;
+    }
+
+    .hdr .meta .who{
+      font-size: 4.9pt;
+      color: #333;
+      margin-top: 0.2mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 42mm;
+    }
+
+    .hdr .meta .addr{
+      font-size: 4.7pt;
+      color: #555;
+      margin-top: 0.15mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 42mm;
+    }
+
+    /* --- BODY: "Niet geleverd" blok gecentreerd in etiket --- */
+    .body{
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;       /* horizontaal centreren */
+      text-align: center;
+      justify-content: center;   /* verticaal centreren binnen resterende ruimte */
+      padding-top: 0.6mm;        /* kleine shift naar beneden (fijner voor marge boven) */
+      padding-bottom: 0.6mm;
+      min-height: 0;
+    }
+
+    .badge{
+      font-size: 5.6pt;
+      font-weight: 800;
+      letter-spacing: 0.35px;
+      color: #111;
+      margin: 0 0 0.8mm 0;
+      text-transform: uppercase;
+    }
+
+    .drug{
+      font-size: 6.2pt;
+      font-weight: 800;
+      letter-spacing: 0.1px;
+      color: #0b2a5b;
+      margin: 0 0 0.8mm 0;
+
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .line{
+      font-size: 5.0pt;
+      color: #111;
+      margin: 0.25mm 0;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .muted{ color: #444; }
+
+    .ftr{
+      flex: 0 0 auto;
+      margin-top: 0.8mm;
+      font-size: 4.4pt;
+      color: #666;
+      text-align: center;
+      line-height: 1;
+      white-space: nowrap;
+      padding-right: 0.6mm;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="label">
+
+    <div class="hdr">
+      {% if logo_path %}
+        <img src="file://{{ logo_path }}" alt="Apotheek Jansen" />
+      {% endif %}
+      <div class="meta">
+        <div class="org">Apotheek Jansen</div>
+        <div class="who">Roel de Groot - Specialist Openbaar Apotheker</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="badge">Niet geleverd:</div>
+
+      <div class="drug">
+        {{ geneesmiddel|default:"-" }}
+      </div>
+
+      <div class="line muted">
+        Vanaf: {% if vanaf_datum %}{{ vanaf_datum|date:"d-m-Y" }}{% else %}-{% endif %}
+      </div>
+
+      <div class="line">
+        {{ patient_naam|default:"-" }} - {% if geboortedatum %}{{ geboortedatum|date:"d-m-Y" }}{% else %}-{% endif %}
+      </div>
+    </div>
+
+    <div class="ftr">
+      {% if generated_at %}{{ generated_at|date:"d-m-Y" }}{% endif %}
+    </div>
+
+  </div>
+</body>
+</html>

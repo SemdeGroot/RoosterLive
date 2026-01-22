@@ -270,11 +270,22 @@ def send_no_delivery_pdf_task(self, no_delivery_list_ids):
 
         entries = list(lst.entries.all())
         if not entries:
-            continue
+                continue
 
-        # Als jij in je export-view al dag_datum berekent, kun je hier exact dezelfde helper gebruiken.
-        # Ik laat dag_datum optioneel: als je het in template nodig hebt, zet hem hier.
-        dag_datum = None
+        # Bepaal datum van deze lijst (op basis van jaar/week/dag)
+        from datetime import date
+
+        def _iso_weekday_from_dag(dag_code: str) -> int:
+            mapping = {"MA": 1, "DI": 2, "WO": 3, "DO": 4, "VR": 5, "ZA": 6}
+            return mapping.get((dag_code or "").upper(), 1)
+
+        def _date_from_year_week_dag(jaar: int, week: int, dag_code: str) -> date:
+            return date.fromisocalendar(int(jaar), int(week), _iso_weekday_from_dag(dag_code))
+
+        try:
+            dag_datum = _date_from_year_week_dag(lst.jaar, lst.week, lst.dag)
+        except Exception:
+            dag_datum = None
 
         context = {
             "selected_list": lst,
@@ -287,6 +298,7 @@ def send_no_delivery_pdf_task(self, no_delivery_list_ids):
         }
 
         html = render_to_string("no_delivery/pdf/no_delivery_export.html", context)
+
 
         pdf_bytes = _render_pdf(html, base_url=base_url)
 

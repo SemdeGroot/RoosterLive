@@ -1,11 +1,12 @@
 # core/views/no_delivery.py
-
+import re
+from django.utils.text import slugify
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 
-from core.views._helpers import can
+from core.views._helpers import can, _render_pdf, _static_abs_path
 from core.models import NoDeliveryList, NoDeliveryEntry, Organization
 from core.forms import NoDeliveryListForm, NoDeliveryEntryForm
 from core.decorators import ip_restricted
@@ -300,3 +301,61 @@ def email_no_delivery_pdf(request):
         return redirect("baxter_no_delivery")
 
     return redirect("baxter_no_delivery")
+
+@ip_restricted
+@login_required
+def export_no_delivery_label_pdf(request, entry_id: int):
+    if not can(request.user, "can_edit_baxter_no_delivery"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    entry = get_object_or_404(
+        NoDeliveryEntry.objects.select_related(
+            "no_delivery_list",
+            "no_delivery_list__apotheek",
+            "gevraagd_geneesmiddel",
+        ),
+        pk=entry_id,
+    )
+
+    gm = entry.gevraagd_geneesmiddel
+    geneesmiddel = gm.naam if gm else "-"
+    vanaf_datum = entry.vanaf_datum
+
+    patient_naam = entry.patient_naam or "-"
+    geboortedatum = entry.patient_geboortedatum
+
+    context = {
+        "entry": entry,
+        "generated_at": timezone.localtime(timezone.now()),
+        "geneesmiddel": geneesmiddel,
+        "vanaf_datum": vanaf_datum,
+        "patient_naam": patient_naam,
+        "geboortedatum": geboortedatum,
+        "logo_path": _static_abs_path("pwa/icons/favicon-32x32.png"),
+    }
+
+    html = render_to_string(
+        "no_delivery/pdf/no_delivery_etiket.html",
+        context,
+        request=request,
+    )
+
+    pdf_bytes = _render_pdf(html, base_url=request.build_absolute_uri("/"))
+
+    # --- veilige bestandsnaam (snake_case-ish) ---
+    raw_name = entry.patient_naam or f"entry_{entry_id}"
+
+    # slugify maakt "jan jansen" -> "jan-jansen" (veilig)
+    safe = slugify(raw_name)
+
+    # jij wil snake_case: vervang '-' door '_'
+    safe = safe.replace("-", "_")
+
+    # limit lengte (Windows / printers / mailclients)
+    safe = (safe[:40] or "patient").strip("_")
+
+    filename = f"etiket_geen_levering_{safe}.pdf"
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response

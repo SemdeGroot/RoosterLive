@@ -124,12 +124,12 @@ table.no-delivery-table {
   --c6: 120px;
   --c7: 60px;
   --c8: 80px;
-  --c9: 120px;
+  --c9: 140px;
 }
 
 @media (max-width: 1150px){
   table.no-delivery-table{
-    min-width: 1000px;
+    min-width: 1020px;
   }
 }
 
@@ -187,4 +187,15 @@ table.no-delivery-table {
 
 #emailModal .select2-selection__clear{
   display: none !important;
+}
+
+/* Groene (success) icon button voor etiket-export */
+.icon-btn.success {
+  background: #1E5128;
+  border-color: #1E5128; 
+}
+
+.icon-btn.success:hover {
+  background: #2D6A3E;
+  border-color: #2D6A3E;
 }
