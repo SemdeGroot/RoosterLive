@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Je bent offline</title>
+
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      let meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.id = 'meta-theme-color';
+      meta.content = color;
+      document.head.appendChild(meta);
+    })();
+  </script>
+
+  <meta name="color-scheme" content="dark light">
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    /* EXACT dezelfde variabelen als colors.css */
+
+    /* Standaard: Dark Mode (Alle variabelen) */
+    :root {
+      /* Kleuren die veranderen in light mode */
+      --bg: #0d131b;
+      --panel: #131a24;
+      --panel-2: #101720;
+      --tiles: #17212b;
+      --text: #e6edf3;
+      --text-button: #e6edf3;
+      --muted: #9fb2c8;
+      --border: #223144;
+      --shadow: rgba(0,0,0,.52);
+      --button-color: #17212b;
+      --button-hover: #1f2d3d;
+      --logout-color: #ff6b6b;
+      --danger: #6a150e;
+      --danger-hover: #841c12;
+
+      /* Kleuren die hetzelfde blijven in beide modi */
+      --accent: #072a72;
+      --ios-accent: #007AFF;
+      --button-hover-blue: #0a317f;
+      --button-hovermain: #1f2d3d;
+      --danger-border: #4a1a1a;
+
+      /* Meta theme-color variabelen voor de browser balk (voor JS) */
+      --theme-meta-base: #131a24;  /* base.html kleur */
+      --theme-meta-login: #0d131b; /* _base.html kleur */
+
+      /* Locatie kleuren */
+      --loc-green-bg: rgba(0, 160, 90, 0.10);
+      --loc-red-bg: rgba(220, 60, 60, 0.10);
+      --loc-blue-bg: rgba(60, 120, 220, 0.10);
+    }
+
+    /* Light Mode overschrijvingen */
+    [data-theme='light'] {
+      --bg: #D4D9E6;
+      --panel: #E3E8F0;
+      --panel-2: #D1D8E6;
+      --tiles: #D1D8E6;
+      --text: #000000;
+      --muted: #2F3B46;
+      --border: #7A8694;
+      --shadow: rgba(0, 0, 0, 0.05);
+      --button-color: #BCC7D2;
+      --button-hover: #A6B5C3;
+      --logout-color: #D85D5D;
+      --danger: #9B2D28;
+      --danger-hover: #AF332E;
+      --danger-border: #892823;
+
+      /* Meta theme-color variabelen voor light mode */
+      --theme-meta-base: #E3E8F0;  /* base.html kleur */
+      --theme-meta-login: #D4D9E6; /* _base.html kleur */
+
+      /* Locatie kleuren */
+      --loc-green-bg: rgba(0, 160, 90, 0.07);
+      --loc-red-bg: rgba(220, 60, 60, 0.07);
+      --loc-blue-bg: rgba(60, 120, 220, 0.07);
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding-bottom: 60px; /* Optische correctie voor PWA statusbar */
+    }
+
+    .card {
+      width: 100%;
+      max-width: 360px;
+      padding: 32px 24px;
+      background: var(--panel-2);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px var(--shadow);
+      box-sizing: border-box;
+    }
+
+    .app-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      border-radius: 16px;
+      display: block;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 16px 0;
+      color: var(--muted);
+    }
+
+    .small {
+      opacity: .6;
+      font-size: 13px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      color: var(--text);
+      background: var(--button-color);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font: inherit;
+      display: inline-flex;
+      transition: all .2s ease;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background: var(--button-hover);
+      border-color: var(--accent);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <img src="/static/img/app_icon_trans-512x512.png" alt="App" class="app-icon">
+    <h1>Je bent offline</h1>
+    <p>Er is geen netwerkverbinding.<br>Controleer je internetverbinding.</p>
+    <button class="btn" onclick="window.location.reload()">Opnieuw proberen</button>
+    <p class="small">Deze pagina verschijnt automatisch bij offline gebruik.</p>
+  </div>
+</body>
+</html>
