@@ -129,6 +129,7 @@ class Roster(models.Model):
             # Baxter subpagina’s – Omzettingslijst
             ("can_view_baxter_omzettingslijst", "Mag Baxter-omzettingslijst bekijken"),
             ("can_edit_baxter_omzettingslijst", "Mag Baxter-omzettingslijst aanpassen"),
+            ("can_send_baxter_omzettingslijst", "Mag Baxter-omzettingslijst versturen"),
             # Geen levering
             ("can_view_baxter_no_delivery",     "Mag 'Geen levering' bekijken"),
             ("can_edit_baxter_no_delivery",     "Mag 'Geen levering' aanpassen"),
@@ -1255,6 +1256,125 @@ class NoDeliveryEntry(models.Model):
     def patient_geboortedatum(self):
         return self.patient_geboortedatum_enc
     
+
+class Omzettingslijst(models.Model):
+    DAG_MA = "MA"
+    DAG_DI = "DI"
+    DAG_WO = "WO"
+    DAG_DO = "DO"
+    DAG_VR = "VR"
+    DAG_ZA = "ZA"
+
+    DAG_CHOICES = (
+        (DAG_MA, "Maandag"),
+        (DAG_DI, "Dinsdag"),
+        (DAG_WO, "Woensdag"),
+        (DAG_DO, "Donderdag"),
+        (DAG_VR, "Vrijdag"),
+        (DAG_ZA, "Zaterdag"),
+    )
+
+    apotheek = models.ForeignKey(
+        Organization,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="omzettingslijsten",
+        verbose_name="Apotheek",
+    )
+
+    jaar = models.IntegerField(verbose_name="Jaar")
+    week = models.IntegerField(verbose_name="Week")
+
+    dag = models.CharField(
+        max_length=2,
+        choices=DAG_CHOICES,
+        default=DAG_MA,
+        verbose_name="Dag",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+        verbose_name = "Omzettingslijst"
+        verbose_name_plural = "Omzettingslijsten"
+        unique_together = ("apotheek", "jaar", "week", "dag")
+
+    def __str__(self):
+        apo = self.apotheek.name if self.apotheek else "-"
+        return f"{apo} - {self.jaar} W{self.week} - {self.get_dag_display()}"
+
+    @property
+    def dag_label(self):
+        return self.get_dag_display()
+
+
+class OmzettingslijstEntry(models.Model):
+    omzettingslijst = models.ForeignKey(
+        Omzettingslijst,
+        on_delete=models.CASCADE,
+        related_name="entries",
+        verbose_name="Omzettingslijst",
+    )
+
+    afdeling = models.CharField(max_length=10, blank=True, default="", verbose_name="Afdeling")
+
+    patient_naam_enc = EncryptedCharField(max_length=255, blank=True, default="")
+    patient_geboortedatum_enc = EncryptedDateField(null=True, blank=True)
+
+    gevraagd_geneesmiddel = models.ForeignKey(
+        VoorraadItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="omzettingslijst_entries_gevraagd",
+        verbose_name="Gevraagd geneesmiddel",
+    )
+
+    geleverd_geneesmiddel = models.ForeignKey(
+        VoorraadItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="omzettingslijst_entries_geleverd",
+        verbose_name="Geleverd geneesmiddel",
+    )
+
+    omschrijving_geneesmiddel = models.CharField(
+        max_length=80,
+        blank=True,
+        default="",
+        verbose_name="Omschrijving geneesmiddel",
+        help_text="Bijv: tabl. rond wit 500",
+    )
+
+    vanaf_datum = models.DateField(null=True, blank=True, verbose_name="Vanaf datum")
+
+    sts_paraaf = models.CharField(max_length=50, blank=True, default="", verbose_name="STS paraaf")
+    roller_paraaf = models.CharField(max_length=50, blank=True, default="", verbose_name="Roller paraaf")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-created_at"]
+        verbose_name = "Omzettingslijst entry"
+        verbose_name_plural = "Omzettingslijst entries"
+
+    def __str__(self):
+        apo = self.omzettingslijst.apotheek.name if self.omzettingslijst and self.omzettingslijst.apotheek else "-"
+        return f"{apo} - {self.afdeling} - {self.patient_naam or '-'}"
+
+    @property
+    def patient_naam(self):
+        return self.patient_naam_enc
+
+    @property
+    def patient_geboortedatum(self):
+        return self.patient_geboortedatum_enc
+
 class UrenMaand(models.Model):
     """
     1 record per gebruiker per 'actieve maand' (month = eerste dag van die maand).

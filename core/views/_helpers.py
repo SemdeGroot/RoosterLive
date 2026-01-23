@@ -87,6 +87,7 @@ PERM_LABELS = {
     "can_view_baxter":                 "Mag Baxter openen",
     "can_view_baxter_omzettingslijst": "Mag Baxter-omzettingslijst bekijken",
     "can_edit_baxter_omzettingslijst": "Mag Baxter-omzettingslijst aanpassen",
+    "can_send_baxter_omzettingslijst": "Mag Baxter-omzettingslijst versturen",
     "can_view_baxter_no_delivery":     "Mag 'Geen levering' bekijken",
     "can_edit_baxter_no_delivery":     "Mag 'Geen levering' aanpassen",
     "can_send_baxter_no_delivery":     "Mag 'Geen levering' versturen",
@@ -123,7 +124,7 @@ PERM_SECTIONS = [
 
     ("Baxter", [
         "can_view_baxter",
-        "can_view_baxter_omzettingslijst", "can_edit_baxter_omzettingslijst",
+        "can_view_baxter_omzettingslijst", "can_edit_baxter_omzettingslijst", "can_send_baxter_omzettingslijst",
         "can_view_baxter_no_delivery",     "can_edit_baxter_no_delivery", "can_send_baxter_no_delivery",
         "can_view_baxter_sts_halfjes",     "can_edit_baxter_sts_halfjes", "can_send_baxter_sts_halfjes",
         "can_view_baxter_laatste_potten",  "can_edit_baxter_laatste_potten", "can_perform_bestellingen",

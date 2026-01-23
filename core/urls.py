@@ -31,7 +31,7 @@ from core.views.diensten_webcal import diensten_webcal_view
 from core.views.onboarding_forms import onboarding_formulieren
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
-from core.views.omzettingslijst import omzettingslijst
+from core.views.omzettingslijst import omzettingslijst, api_omzettingslijsten, export_omzettingslijst_pdf, email_omzettingslijst_pdf, export_omzettingslijst_label_pdf
 from core.views.no_delivery import no_delivery, api_no_delivery_lists, export_no_delivery_pdf, email_no_delivery_pdf, export_no_delivery_label_pdf
 from core.views.stshalfjes import stshalfjes, export_stshalfjes_pdf, email_stshalfjes_pdf
 from core.views.laatstepotten import laatstepotten
@@ -130,6 +130,10 @@ urlpatterns = [
     path("onboarding/checklist/", checklist, name="checklist"),
 
     path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),
+    path("api/omzettingslijsten/", api_omzettingslijsten, name="api_omzettingslijsten"),
+    path("baxter/omzettingslijst/export-pdf/", export_omzettingslijst_pdf, name="export_omzettingslijst_pdf"),
+    path("baxter/omzettingslijst/email/", email_omzettingslijst_pdf, name="email_omzettingslijst_pdf"),
+    path("omzettingslijst/label/<int:entry_id>/", export_omzettingslijst_label_pdf, name="export_omzettingslijst_label_pdf"),
     path("baxter/geen-levering/", no_delivery, name="baxter_no_delivery"),
     path("api/no-delivery-lists/", api_no_delivery_lists, name="api_no_delivery_lists"),
     path("baxter/geen-levering/export-pdf/", export_no_delivery_pdf, name="export_no_delivery_pdf"),

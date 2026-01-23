@@ -1,15 +1,10 @@
-{# templates/no_delivery/pdf/no_delivery_etiket.html #}
 <!doctype html>
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
   <title></title>
   <style>
-    @page{
-      /* Veelgebruikt labelformaat voor kleine Zebra etiketten */
-      size: 70mm 30mm;
-      margin: 0;
-    }
+    @page{ size: 70mm 30mm; margin: 0; }
 
     html, body{
       width: 70mm;
@@ -21,23 +16,22 @@
       color: #111;
     }
 
-    /* --- SAFE AREA (Zebra) --- */
     .label{
       box-sizing: border-box;
       width: 100%;
       height: 100%;
-      padding: 3.2mm;          /* iets ruimer = veiliger voor printers */
+      padding: 3.2mm;
       display: flex;
       flex-direction: column;
-      overflow: hidden;         /* nooit buiten label renderen */
+      overflow: hidden;
     }
 
-    /* --- HEADER: klein linksboven, logo verticaal gecentreerd met tekst --- */
+    /* HEADER */
     .hdr{
       display: flex;
       align-items: center;
       gap: 1.8mm;
-      margin-bottom: 1.2mm;
+      margin: 0 0 1.2mm 0;
       flex: 0 0 auto;
     }
 
@@ -54,17 +48,19 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-width: 0;             /* ellipsis werkt */
+      min-width: 0;
     }
 
+    /* GEEN ellipsis meer in header */
     .hdr .meta .org{
       font-size: 5.6pt;
       font-weight: 700;
       letter-spacing: 0.1px;
-      color: #0b2a5b;            /* donkerblauw mag, geen achtergrond */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      color: #0b2a5b;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
       max-width: 42mm;
     }
 
@@ -72,33 +68,34 @@
       font-size: 4.9pt;
       color: #333;
       margin-top: 0.2mm;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
       max-width: 42mm;
     }
 
-    .hdr .meta .addr{
-      font-size: 4.7pt;
-      color: #555;
-      margin-top: 0.15mm;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 42mm;
+    /* BODY */
+    :root{
+      --line-gap: 0.45mm;
     }
 
-    /* --- BODY: "Niet geleverd" blok gecentreerd in etiket --- */
     .body{
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      align-items: center;       /* horizontaal centreren */
-      text-align: center;
-      justify-content: center;   /* verticaal centreren binnen resterende ruimte */
-      padding-top: 0.6mm;        /* kleine shift naar beneden (fijner voor marge boven) */
+      align-items: center;
+      justify-content: center;
+
+      /* 1 bron van waarheid voor alle verticale afstanden */
+      gap: var(--line-gap);
+
+      /* haal margins uit children => spacing blijft overal gelijk */
+      padding-top: 0.6mm;
       padding-bottom: 0.6mm;
       min-height: 0;
+      width: 100%;
+      text-align: center;
     }
 
     .badge{
@@ -106,41 +103,52 @@
       font-weight: 800;
       letter-spacing: 0.35px;
       color: #111;
-      margin: 0 0 0.8mm 0;
       text-transform: uppercase;
+
+      /* geen extra margin; gap regelt alles */
+      margin: 0;
     }
 
+    /* 1 regel = geen eigen margins meer */
+    .line{
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    /* DRUG: geen ellipsis, mag wrappen */
     .drug{
-    font-size: 6.2pt;
-    font-weight: 800;
-    letter-spacing: 0.1px;
-    color: #0b2a5b;
-    margin: 0 0 0.8mm 0;
+      font-size: 5.8pt;
+      font-weight: 800;
+      letter-spacing: 0.1px;
+      color: #0b2a5b;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
 
-    max-width: 100%;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip; 
-    overflow-wrap: anywhere; 
-    word-break: break-word;
-  }
-
-  .line{
-    font-size: 5.0pt;
-    color: #111;
-    margin: 0.25mm 0;
-
-    max-width: 100%;
-    white-space: normal;        /* <-- wrap aan */
-    overflow: visible;          /* <-- geen clipping/ellipsis */
-    text-overflow: clip;        /* <-- geen ellipsis */
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
+    .swap{
+      font-size: 5.0pt;
+      color: #111;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+    }
 
     .muted{ color: #444; }
 
+    .naar-label{
+  font-size: 5.0pt;     /* kleiner dan drug */
+  font-weight: 600;     /* minder zwaar dan drug */
+  letter-spacing: 0;
+}
+
+    /* FOOTER */
     .ftr{
       flex: 0 0 auto;
       margin-top: 0.8mm;
@@ -168,17 +176,22 @@
     </div>
 
     <div class="body">
-      <div class="badge">Niet geleverd:</div>
+      <div class="badge">Omzetting:</div>
 
-      <div class="drug">
-        {{ geneesmiddel|default:"-" }}
+      <div class="line drug">
+        {{ gevraagd|default:"-" }}
       </div>
 
-      <div class="line muted">
+<div class="line drug">
+  <span class="naar-label muted">naar:&nbsp;</span>{{ geleverd|default:"-" }}
+</div>
+
+
+      <div class="line swap muted">
         Vanaf: {% if vanaf_datum %}{{ vanaf_datum|date:"d-m-Y" }}{% else %}-{% endif %}
       </div>
 
-      <div class="line">
+      <div class="line swap">
         {{ patient_naam|default:"-" }} - {% if geboortedatum %}{{ geboortedatum|date:"d-m-Y" }}{% else %}-{% endif %}
       </div>
     </div>

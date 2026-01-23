@@ -1,0 +1,187 @@
+.ol-panel{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ol-panel-header{
+  padding: 14px 14px 2px 14px;
+}
+
+.ol-panel-header-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.ol-panel-body{
+  padding: 14px;
+}
+
+.ol-inline-form{
+  margin-top: 6px;
+}
+
+.ol-inline-grid{
+  display:flex;
+  gap: 10px;
+  align-items:flex-end;
+}
+
+.ol-grow{
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+.ol-actions{
+  flex: 0 0 auto;
+  display:flex;
+  gap: 8px;
+}
+
+@media (max-width: 720px){
+  .ol-inline-grid{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ol-actions{
+    justify-content: flex-end;
+  }
+}
+
+.add-section-panel {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-top: 5px;
+}
+
+/* ENTRY GRID */
+.omzettingslijst-edit-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 720px){
+  .omzettingslijst-edit-grid{
+    grid-template-columns: 1fr;
+  }
+  .ol-grid-full{
+    grid-column: auto;
+  }
+}
+
+.omzettingslijst-list-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.ol-grid-full{
+  grid-column: 1 / -1;
+}
+
+.omzettingslijst-edit-grid input,
+.omzettingslijst-edit-grid select,
+.omzettingslijst-edit-grid textarea,
+.omzettingslijst-list-grid input,
+.omzettingslijst-list-grid select{
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.select2-container{
+  width: 100% !important;
+  max-width: 100%;
+}
+.select2-container--open{
+  z-index: 9999;
+}
+
+/* Tabel sizing */
+table.omzettingslijst-table {
+  --c1: 10px;
+  --c2: 90px;
+  --c3: 140px;
+  --c4: 150px;
+  --c5: 220px;  /* gevraagd */
+  --c6: 220px;  /* geleverd */
+  --c7: 180px;  /* omschrijving */
+  --c8: 120px;  /* vanaf */
+  --c9: 60px;   /* sts */
+  --c10: 80px;  /* roller */
+  --c11: 140px; /* acties */
+}
+
+@media (max-width: 1440px){
+  table.omzettingslijst-table{
+    min-width: 1440px;
+  }
+}
+
+.field-error{
+  color: var(--danger);
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+
+.recent-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recent-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.92em;
+}
+
+.recent-pill.active{
+  border-color: var(--primary);
+}
+
+/* Email modal sizing */
+#emailModal .modal-content{
+  width: min(1100px, 96vw) !important;
+  max-width: none !important;
+
+  height: min(750px, 85vh) !important;
+  max-height: 85vh !important;
+
+  margin: 4vh auto !important;
+  overflow: auto !important;
+}
+
+#emailModal .select2-container{
+  width: 100% !important;
+}
+
+#emailModal .select2-selection__clear{
+  display: none !important;
+}
+
+/* Groene icon button voor etiket-export */
+.icon-btn.success {
+  background: #1E5128;
+  border-color: #1E5128;
+}
+.icon-btn.success:hover {
+  background: #2D6A3E;
+  border-color: #2D6A3E;
+}

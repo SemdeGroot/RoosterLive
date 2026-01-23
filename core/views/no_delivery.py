@@ -101,21 +101,21 @@ def no_delivery(request):
                 entry.save()
                 selected_list.save(update_fields=["updated_at"])
 
-                messages.success(request, "Geneesmiddel succesvol toegevoegd.")
+                messages.success(request, "Niet geleverd geneesmiddel succesvol toegevoegd.")
                 return redirect(f"{request.path}?list_id={selected_list.id}")
-            messages.error(request, "Controleer de invoer van het geneesmiddel.")
+            messages.error(request, "Controleer de invoer van het niet geleverde geneesmiddel.")
 
         # 4) Entry edit
         elif "btn_edit_entry" in request.POST:
             entry_id = request.POST.get("entry_id")
             if not (entry_id and str(entry_id).isdigit()):
-                messages.error(request, "Ongeldig geneesmiddel.")
+                messages.error(request, "Ongeldig niet geleverd geneesmiddel.")
                 return redirect(request.path)
 
             instance = get_object_or_404(NoDeliveryEntry, pk=int(entry_id))
 
             if selected_list and instance.no_delivery_list_id != selected_list.id:
-                messages.error(request, "Geneesmiddel hoort niet bij de geselecteerde niet-leverlijst.")
+                messages.error(request, "Niet geleverd geneesmiddel hoort niet bij de geselecteerde niet-leverlijst.")
                 return redirect(f"{request.path}?list_id={selected_list.id}")
 
             form = NoDeliveryEntryForm(request.POST, instance=instance)
@@ -130,19 +130,19 @@ def no_delivery(request):
         elif "btn_delete_entry" in request.POST:
             entry_id = request.POST.get("entry_id")
             if not (entry_id and str(entry_id).isdigit()):
-                messages.error(request, "Ongeldig geneesmiddel.")
+                messages.error(request, "Ongeldig niet geleverd geneesmiddel.")
                 return redirect(request.path)
 
             instance = get_object_or_404(NoDeliveryEntry, pk=int(entry_id))
 
             if selected_list and instance.no_delivery_list_id != selected_list.id:
-                messages.error(request, "Geneesmiddel hoort niet bij de geselecteerde niet-leverlijst.")
+                messages.error(request, "Niet geleverd geneesmiddel hoort niet bij de geselecteerde niet-leverlijst.")
                 return redirect(f"{request.path}?list_id={selected_list.id}")
 
             lst = instance.no_delivery_list
             instance.delete()
             lst.save(update_fields=["updated_at"])
-            messages.success(request, "Geneesmiddel succesvol verwijderd.")
+            messages.success(request, "Niet geleverd geneesmiddel succesvol verwijderd.")
             return redirect(f"{request.path}?list_id={selected_list.id}" if selected_list else request.path)
 
     # “Laatste 5” uit DB (meest recent updated/created)
