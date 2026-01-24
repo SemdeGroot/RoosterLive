@@ -1,3 +1,9 @@
+:root {
+  /* Gebruik env() maar vertrouw op de JS-injectie of de 32px/20px fallback */
+  --sat: env(safe-area-inset-top, 32px);
+  --sab: env(safe-area-inset-bottom, 20px);
+}
+
 *{ box-sizing:border-box }
 html, body{ height:100%; }
 html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -12,20 +18,26 @@ body {
   overflow-y: auto;     /* sta verticale scroll toe */
 }
 
-/* Center + safe areas voor PWA */
-.login-app{
-  min-height: 100dvh;  /* stabiele viewport op mobiel */
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  padding-left:calc(env(safe-area-inset-left) + 16px);
-  padding-right:calc(env(safe-area-inset-right) + 16px);
-  padding-top:calc(env(safe-area-inset-top) + 16px);
-  padding-bottom:calc(env(safe-area-inset-bottom) + 16px);
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
+/* Center + safe areas voor Capacitor & PWA */
+.login-app {
+  /* Gebruik 100% met min-height voor maximale stabiliteit */
+  min-height: 100vh; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Gebruik de variabelen met de harde fallbacks uit :root */
+  padding-top: calc(20px + var(--sat));
+  padding-bottom: calc(20px + var(--sab));
+  
+  /* Horizontale safe areas voor landscape modus (vooral iOS) */
+  padding-left: calc(env(safe-area-inset-left, 0px) + 20px);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 20px);
+  
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
 }
 
 /* fallback voor oudere browsers zonder dvh */

@@ -2,6 +2,7 @@
 	"appId": "com.apotheekjansen.app",
 	"appName": "Apo Jansen",
 	"webDir": "www",
+	"backgroundColor": "#0d131b",
 	"server": {
 		"url": "https://treasonably-noncerebral-samir.ngrok-free.dev",
 		"cleartext": false
@@ -12,7 +13,6 @@
 		}
 	},
 	"packageClassList": [
-		"SafeAreaPlugin",
 		"StatusBarPlugin"
 	]
 }

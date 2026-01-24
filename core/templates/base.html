@@ -13,7 +13,7 @@
 
   <script>
     (function() {
-      // 1. Thema & Meta-color initialisatie (Onveranderd)
+      // 1. Thema & Meta-color initialisatie
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const doc = document.documentElement;
       doc.setAttribute('data-theme', savedTheme);
@@ -24,46 +24,38 @@
       meta.id = 'meta-theme-color';
       meta.content = color;
       document.head.appendChild(meta);
+
+      // 2. Capacitor Statusbar Icoontjes
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
-          const StatusBar = window.Capacitor.Plugins.StatusBar;
-          
-          // Altijd transparant voor de Edge-to-Edge look
-          StatusBar.setBackgroundColor({ color: '#00000000' }); 
-          
-          // Icoonstijl zetten op basis van opgeslagen thema
-          StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
+        window.Capacitor.Plugins.StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
       }
 
-      // 2. Sidebar status (Onveranderd)
+      // 3. Android Safe Area Fallback injectie
+      if (/Android/i.test(navigator.userAgent)) {
+        doc.style.setProperty('--sat', '30px');
+        doc.style.setProperty('--sab', '20px');
+      }
+
+      // 4. Sidebar status
       try {
         localStorage.setItem('sidebarCollapsed_v1', '1');
       } catch {}
       doc.classList.remove('sidebar-open');
 
-      // 3. Verbeterde Switch observer voor meerdere switches
+      // 5. Mode Switch Observer
       const isLight = (savedTheme === 'light');
-      
       const observer = new MutationObserver((mutations) => {
         const switches = document.querySelectorAll('.mode-switch-input');
-        
         switches.forEach(sw => {
-          // Alleen aanpassen als de status nog niet overeenkomt 
-          // Dit voorkomt onnodige acties
           if (sw.checked !== isLight) {
             sw.checked = isLight;
           }
         });
-
-        // We stoppen pas als de pagina klaar is met laden, 
-        // zodat we zeker weten dat we zowel desktop als mobile hebben gehad.
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
           observer.disconnect();
         }
       });
-
       observer.observe(doc, { childList: true, subtree: true });
-
-      // Extra veiligheid: stop observer als DOM klaar is
       window.addEventListener('DOMContentLoaded', () => observer.disconnect());
     })();
   </script>

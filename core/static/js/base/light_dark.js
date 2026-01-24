@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function updateMetaTags(theme) {
         let meta = document.getElementById('meta-theme-color');
-        
         if (!meta) {
             meta = document.createElement('meta');
             meta.id = 'meta-theme-color';
@@ -40,19 +39,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const isDark = (theme === 'dark');
         const themeColor = isDark ? '#131a24' : '#E3E8F0';
-
         meta.setAttribute('content', themeColor);
 
-        // --- CAPACITOR STATUS BAR LOGICA ---
+        // --- DE FIX VOOR DE ICOONTJES ---
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
             const StatusBar = window.Capacitor.Plugins.StatusBar;
-
-            // Forceer transparantie (Android) zodat de header-kleur erachter zichtbaar blijft
-            StatusBar.setBackgroundColor({ color: '#00000000' });
-
-            // Update de icoonkleuren:
-            // Als het thema DARK is, willen we witte icoontjes ('DARK')
-            // Als het thema LIGHT is, willen we zwarte icoontjes ('LIGHT')
+            
+            // Style.Dark zorgt voor WITTE icoontjes (voor op een donkere achtergrond)
+            // Style.Light zorgt voor ZWARTE icoontjes (voor op een lichte achtergrond)
             StatusBar.setStyle({ style: isDark ? 'DARK' : 'LIGHT' });
         }
     }

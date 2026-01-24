@@ -9,27 +9,27 @@
 
   <script>
     (function() {
-      // Bepaal thema vanuit localStorage
+      // 1. Thema & Meta-color initialisatie
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
 
-      // Gebruik de specifieke kleuren voor deze pagina
       const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
-      
-      // Maak de meta tag aan met ID (zodat light_dark.js hem herkent)
       let meta = document.createElement('meta');
       meta.name = 'theme-color';
       meta.id = 'meta-theme-color';
       meta.content = color;
       document.head.appendChild(meta);
+
+      // 2. Capacitor Statusbar Icoontjes (Direct zetten)
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
-          const StatusBar = window.Capacitor.Plugins.StatusBar;
-          
-          // Altijd transparant voor de Edge-to-Edge look
-          StatusBar.setBackgroundColor({ color: '#00000000' }); 
-          
-          // Icoonstijl zetten op basis van opgeslagen thema
-          StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
+        // DARK = witte icoontjes voor donkere achtergrond
+        window.Capacitor.Plugins.StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
+      }
+
+      // 3. Android Safe Area Fallback injectie
+      if (/Android/i.test(navigator.userAgent)) {
+        document.documentElement.style.setProperty('--sat', '30px');
+        document.documentElement.style.setProperty('--sab', '20px');
       }
     })();
   </script>

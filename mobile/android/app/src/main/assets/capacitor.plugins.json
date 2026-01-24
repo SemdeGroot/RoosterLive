@@ -1,9 +1,5 @@
 [
 	{
-		"pkg": "@capacitor-community/safe-area",
-		"classpath": "com.getcapacitor.community.safearea.SafeAreaPlugin"
-	},
-	{
 		"pkg": "@capacitor/status-bar",
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
 	}
