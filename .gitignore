@@ -4,7 +4,9 @@ cache/
 *__pycache__*
 .last_successful_image
 keys/*
-
+# Firebase configuratiebestanden (bevatten API keys)
+**/google-services.json
+**/GoogleService-Info.plist
 # =========================
 # Node / npm
 # =========================
