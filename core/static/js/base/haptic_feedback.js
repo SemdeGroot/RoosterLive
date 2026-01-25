@@ -22,41 +22,62 @@
     bindHaptics();
   }
 
-  // EXACT same haptic logic as your refresh.js (+ stop propagation of synthetic click)
-  function hapticTick() {
-    if (navigator.vibrate) {
-      navigator.vibrate(40);
-      return;
+  async function hapticTick() {
+      // 1) Native Capacitor haptics als we echt native draaien
+      try {
+        const Cap = window.Capacitor;
+
+        // Capacitor v8: Cap.isNativePlatform() bestaat.
+        const isNative =
+          !!Cap &&
+          typeof Cap.isNativePlatform === "function" &&
+          Cap.isNativePlatform();
+
+        const Haptics = Cap?.Plugins?.Haptics;
+
+        if (isNative && Haptics && typeof Haptics.impact === "function") {
+          // ImpactStyle: "LIGHT" | "MEDIUM" | "HEAVY"
+          await Haptics.impact({ style: "LIGHT" });
+          return;
+        }
+      } catch (e) {
+        // als native faalt → fallback hieronder
+      }
+
+      // 2) Web/PWA fallback: bestaande vibrate + iOS switch/label hack
+      if (navigator.vibrate) {
+        navigator.vibrate(40);
+        return;
+      }
+
+      const el = document.createElement("div");
+      const id = "haptic-" + Math.random().toString(36).slice(2);
+
+      el.innerHTML =
+        '<input type="checkbox" id="' + id + '" switch />' +
+        '<label for="' + id + '"></label>';
+
+      el.style.cssText =
+        "position:fixed;left:-9999px;top:auto;width:1px;height:1px;" +
+        "overflow:hidden;opacity:0;pointer-events:none;";
+
+      // Prevent the synthetic label click from reaching document click handlers
+      el.addEventListener(
+        "click",
+        (ev) => {
+          ev.stopPropagation();
+          ev.stopImmediatePropagation();
+        },
+        true
+      );
+
+      document.body.appendChild(el);
+
+      const label = el.querySelector("label");
+      if (label) label.click();
+
+      setTimeout(() => el.remove(), 500);
     }
-
-    const el = document.createElement("div");
-    const id = "haptic-" + Math.random().toString(36).slice(2);
-
-    el.innerHTML =
-      '<input type="checkbox" id="' + id + '" switch />' +
-      '<label for="' + id + '"></label>';
-
-    el.style.cssText =
-      "position:fixed;left:-9999px;top:auto;width:1px;height:1px;" +
-      "overflow:hidden;opacity:0;pointer-events:none;";
-
-    // Prevent the synthetic label click from reaching document click handlers
-    el.addEventListener(
-      "click",
-      (ev) => {
-        ev.stopPropagation();
-        ev.stopImmediatePropagation();
-      },
-      true
-    );
-
-    document.body.appendChild(el);
-
-    const label = el.querySelector("label");
-    if (label) label.click();
-
-    setTimeout(() => el.remove(), 500);
-  }
 
   function bindHaptics(selector = "[data-haptic]") {
     const nodes = Array.from(document.querySelectorAll(selector));

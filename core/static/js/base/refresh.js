@@ -5,7 +5,7 @@
     (window.matchMedia &&
       window.matchMedia('(display-mode: standalone)').matches) ||
     window.navigator.standalone === true ||
-    isCapacitor; // Voeg deze toe
+    isCapacitor;
 
   if (!isStandalone) {
     return; 
@@ -65,36 +65,48 @@
     observer.observe(sentinel);
   })();
 
-  // Eén tikje haptic feedback (Android: vibrate, iOS: switch-hack)
-  function hapticTick() {
+  async function hapticTick() {
+    // 1) Capacitor native eerst
+    try {
+      const Cap = window.Capacitor;
+      const isNative =
+        !!Cap &&
+        typeof Cap.isNativePlatform === "function" &&
+        Cap.isNativePlatform();
+
+      const Haptics = Cap?.Plugins?.Haptics;
+
+      if (isNative && Haptics && typeof Haptics.impact === "function") {
+        await Haptics.impact({ style: "LIGHT" }); // of "MEDIUM"
+        return;
+      }
+    } catch (_) {
+      // fall through naar web fallback
+    }
+
+    // 2) Web/PWA fallback (ongewijzigd)
     if (navigator.vibrate) {
-      // Android / sommige browsers
-      navigator.vibrate(40); // kort voelbaar tikje
+      navigator.vibrate(40);
       return;
     }
 
-    // iOS fallback: onzichtbare switch togglen voor haptics
-    const el = document.createElement('div');
-    const id = 'haptic-' + Math.random().toString(36).slice(2);
+    const el = document.createElement("div");
+    const id = "haptic-" + Math.random().toString(36).slice(2);
 
     el.innerHTML =
       '<input type="checkbox" id="' + id + '" switch />' +
       '<label for="' + id + '"></label>';
 
     el.style.cssText =
-      'position:fixed;left:-9999px;top:auto;width:1px;height:1px;' +
-      'overflow:hidden;opacity:0;pointer-events:none;';
+      "position:fixed;left:-9999px;top:auto;width:1px;height:1px;" +
+      "overflow:hidden;opacity:0;pointer-events:none;";
 
     document.body.appendChild(el);
 
-    const label = el.querySelector('label');
-    if (label) {
-      label.click(); // triggert de haptic
-    }
+    const label = el.querySelector("label");
+    if (label) label.click();
 
-    setTimeout(() => {
-      el.remove();
-    }, 500);
+    setTimeout(() => el.remove(), 500);
   }
 
   function updateDotsByProgress(progress) {
