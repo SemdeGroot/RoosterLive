@@ -41,7 +41,6 @@ mobile/ios/Pods/
 mobile/ios/.symlinks/
 mobile/ios/DerivedData/
 mobile/ios/build/
-mobile/ios/*.xcworkspace
 mobile/ios/*.xcuserstate
 mobile/ios/*.xcuserdata/
 
