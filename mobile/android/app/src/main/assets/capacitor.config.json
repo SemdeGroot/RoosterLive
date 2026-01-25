@@ -9,7 +9,15 @@
 	},
 	"plugins": {
 		"StatusBar": {
-			"overlaysWebView": true
+			"overlaysWebView": true,
+			"style": "DARK",
+			"backgroundColor": "#0d131b"
+		},
+		"SplashScreen": {
+			"launchShowDuration": 3000,
+			"launchAutoHide": true,
+			"backgroundColor": "#0d131b",
+			"androidScaleType": "CENTER"
 		}
 	}
 }

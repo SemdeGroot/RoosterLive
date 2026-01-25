@@ -12,9 +12,11 @@
     "@capacitor/android": "^8.0.1",
     "@capacitor/core": "^8.0.0",
     "@capacitor/ios": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.0.0",
     "typescript": "^5.9.3"
   }

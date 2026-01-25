@@ -29,7 +29,7 @@
       // 3. Android Safe Area Fallback injectie
       if (/Android/i.test(navigator.userAgent)) {
         document.documentElement.style.setProperty('--sat', '30px');
-        document.documentElement.style.setProperty('--sab', '20px');
+        document.documentElement.style.setProperty('--sab', '22px');
       }
     })();
   </script>
@@ -146,5 +146,20 @@
   <script src="{% static 'js/base/refresh.js' %}"></script>
   <script src="{% static 'js/base/base.js' %}" defer></script>
   <script src="/static/js/base/haptic_feedback.js"></script>
+  <script>
+  window.addEventListener('load', () => {
+    // Check of we in de Capacitor app zitten
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+      const { SplashScreen } = window.Capacitor.Plugins;
+      
+      // Geef de browser heel even de tijd om de eerste frames te tekenen
+      setTimeout(async () => {
+        await SplashScreen.hide({
+          fadeOutDuration: 400 // Maakt de overgang naar Django heel soepel
+        });
+      }, 100);
+    }
+  });
+</script>
 </body>
 </html>

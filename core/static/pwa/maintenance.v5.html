@@ -65,5 +65,16 @@
     <button class="btn" onclick="window.location.reload()">Herladen</button>
     <p class="small">Groetjes, Het Apotheek Jansen Team</p>
   </div>
+  <script>
+  window.addEventListener('load', () => {
+    if (window.Capacitor && window.Capacitor.isPluginAvailable('SplashScreen')) {
+      setTimeout(async () => {
+        try {
+          await window.Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 400 });
+        } catch (e) { console.error(e); }
+      }, 100);
+    }
+  });
+</script>
 </body>
 </html>

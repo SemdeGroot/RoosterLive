@@ -1,6 +1,6 @@
 :root {
   --sat: env(safe-area-inset-top, 30px);
-  --sab: env(safe-area-inset-bottom, 20px);
+  --sab: env(safe-area-inset-bottom, 22px);
 }
 
 *{box-sizing:border-box}
