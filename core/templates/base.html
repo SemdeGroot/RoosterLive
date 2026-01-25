@@ -291,25 +291,27 @@
 <script src="{% static 'js/auth/passkeys.js' %}" defer></script>
 <script src="{% static 'js/base/installprompt.js' %}"></script>
 <script src="{% static 'js/base/refresh.js' %}"></script>
-
-{% block extra_js %}{% endblock %}
 <script>
-  window.addEventListener('load', () => {
-    // Check of we in de Capacitor app zitten
-    if (window.Capacitor && window.Capacitor.isPluginAvailable('SplashScreen')) {
-      const SplashScreen = window.Capacitor.Plugins.SplashScreen;
-      
-      setTimeout(async () => {
-        try {
-          await SplashScreen.hide({
-            fadeOutDuration: 400 
-          });
-        } catch (e) {
-          console.warn('SplashScreen hide failed', e);
-        }
-      }, 100);
-    }
-  });
+(function () {
+  if (!window.Capacitor?.isNativePlatform?.()) return;
+
+  let done = false;
+  const hideSplashOnce = async () => {
+    if (done) return;
+    done = true;
+    try { await window.Capacitor.Plugins.SplashScreen.hide(); } catch {}
+  };
+
+  // Wacht tot ALLES echt klaar is (images/css)
+  window.addEventListener("load", () => {
+    // 1 extra frame om zeker te zijn dat de eerste paint stabiliseert
+    requestAnimationFrame(() => requestAnimationFrame(hideSplashOnce));
+  }, { once: true });
+
+  // safety fallback
+  setTimeout(hideSplashOnce, 12000);
+})();
 </script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

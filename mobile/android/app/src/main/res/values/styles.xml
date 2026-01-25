@@ -9,7 +9,7 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">#0d131b</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">#0d131b</item>
         <item name="android:windowTranslucentStatus">true</item>
