@@ -21,7 +21,11 @@
 		}
 	},
 	"packageClassList": [
+		"FCMPlugin",
+		"DevicePlugin",
 		"HapticsPlugin",
+		"LocalNotificationsPlugin",
+		"PushNotificationsPlugin",
 		"SplashScreenPlugin",
 		"StatusBarPlugin"
 	]

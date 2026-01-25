@@ -15,6 +15,7 @@ from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api, publish_shifts_api
 from core.views import push as push_views
+from core.views.push_native import native_push_subscribe, native_push_unsubscribe
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
 from core.views import agenda as agenda_views
 from core.views import medicatiebeoordeling as med_views
@@ -213,6 +214,8 @@ urlpatterns = [
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
+    path("api/push/native/subscribe/", native_push_subscribe, name="native_push_subscribe"),
+    path("api/push/native/unsubscribe/", native_push_unsubscribe, name="native_push_unsubscribe"),
     
     path(
         "favicon.ico",

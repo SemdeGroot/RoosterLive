@@ -501,6 +501,29 @@ class PushSubscription(models.Model):
     def __str__(self):
         return f"{self.user} – {self.endpoint[:40]}…"
 
+class NativePushToken(models.Model):
+    PLATFORM_CHOICES = (
+        ("ios", "iOS"),
+        ("android", "Android"),
+        ("web", "Web"),
+        ("", "Unknown"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="native_push_tokens",
+    )
+    token = models.CharField(max_length=512, unique=True)  # FCM/APNS token
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, blank=True, default="")
+    device_id = models.CharField(max_length=128, blank=True, db_index=True, default="")
+    user_agent = models.CharField(max_length=300, blank=True, default="")
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} – {self.platform} – {self.token[:20]}…"
+
 class WebAuthnPasskey(models.Model):
     """
     Eén WebAuthn/passkey credential per gebruiker per device.

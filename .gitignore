@@ -3,6 +3,7 @@ venv/*
 cache/
 *__pycache__*
 .last_successful_image
+keys/*
 
 # =========================
 # Node / npm
