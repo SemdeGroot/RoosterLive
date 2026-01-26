@@ -141,6 +141,7 @@
     
   </main>
   <script src="{% static 'js/base/light_dark.js' %}" defer></script>
+    <script src="{% static 'js/auth/native_biometrics.js' %}"></script>
   <script src="{% static 'js/auth/login.js' %}"></script>
   <script src="{% static 'js/auth/passkeys.js' %}"></script>
   <script src="{% static 'js/base/refresh.js' %}"></script>
@@ -157,16 +158,14 @@
     try { await window.Capacitor.Plugins.SplashScreen.hide(); } catch {}
   };
 
-  // Wacht tot ALLES echt klaar is (images/css)
-  window.addEventListener("load", () => {
-    // 1 extra frame om zeker te zijn dat de eerste paint stabiliseert
+  // sneller dan window.load; wacht alleen tot DOM er is + 2 frames voor stabiele paint
+  window.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() => requestAnimationFrame(hideSplashOnce));
   }, { once: true });
 
   // safety fallback
-  setTimeout(hideSplashOnce, 12000);
+  setTimeout(hideSplashOnce, 8000);
 })();
 </script>
-
 </body>
 </html>

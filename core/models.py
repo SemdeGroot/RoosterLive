@@ -8,6 +8,7 @@ from django.core.validators import MinValueValidator
 import uuid
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+import secrets
 
 class SoftDeleteQuerySet(models.QuerySet):
     def active(self):
@@ -570,6 +571,73 @@ class WebAuthnPasskey(models.Model):
     def __str__(self):
         base = self.nickname or f"Passkey {self.pk}"
         return f"{base} – {self.user}"
+
+class NativeBiometricDevice(models.Model):
+    """
+    Native (Capacitor) "biometric login" koppeling voor een WebView app die Django sessions gebruikt.
+
+    Concept:
+      - App genereert een random device_secret (32 bytes) en bewaart die in Keychain/Keystore (biometrie-gated).
+      - Server bewaart alleen een HASH van die secret.
+      - Bij login stuurt app device_id + secret -> server verifieert hash -> login(request, user) -> session cookie.
+    """
+
+    PLATFORM_CHOICES = (
+        ("ios", "iOS"),
+        ("android", "Android"),
+        ("other", "Other"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="native_biometric_devices",
+    )
+
+    # Stabiel per app-install (of per device), niet je JS device_hash.
+    device_id = models.CharField(max_length=128, db_index=True)
+
+    # Optioneel voor UX
+    nickname = models.CharField(max_length=100, blank=True)
+
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default="other")
+
+    # Hash van het device_secret (geen plain secret opslaan!)
+    secret_hash = models.CharField(max_length=128)
+
+    # Rotatie: je kunt later een nieuwe secret zetten en de oude ongeldig maken
+    secret_version = models.PositiveIntegerField(default=1)
+
+    is_active = models.BooleanField(default=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Native biometric device"
+        verbose_name_plural = "Native biometric devices"
+        indexes = [
+            models.Index(fields=["device_id"]),
+            models.Index(fields=["user", "device_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "device_id"], name="uniq_user_device_id")
+        ]
+
+    def __str__(self) -> str:
+        base = self.nickname or self.device_id
+        return f"{base} – {self.user}"
+
+    def revoke(self):
+        self.is_active = False
+        self.revoked_at = timezone.now()
+        self.save(update_fields=["is_active", "revoked_at"])
+
+    @staticmethod
+    def new_device_secret() -> str:
+        # Base64url-achtige string zonder "="; makkelijk te transporteren
+        return secrets.token_urlsafe(32)
     
 class Organization(models.Model):
     ORG_TYPE_APOTHEEK = "apotheek"

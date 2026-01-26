@@ -3,7 +3,8 @@ from two_factor.views import SetupView, QRGeneratorView
 from django.urls import reverse
 from two_factor.views.core import LoginView as TwoFALoginView
 from two_factor.utils import get_otpauth_url, totp_digits
-from core.forms import IdentifierAuthenticationForm, MyAuthenticationTokenForm, MyTOTPDeviceForm 
+from core.forms import IdentifierAuthenticationForm, MyAuthenticationTokenForm, MyTOTPDeviceForm
+from django.http import HttpRequest 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout, login as auth_login, get_user_model
@@ -19,9 +20,31 @@ from binascii import unhexlify
 from two_factor.utils import get_otpauth_url, totp_digits
 from urllib.parse import quote, urlencode
 from urllib.parse import quote as urlquote  # voor veilige next= urls
-from core.models import WebAuthnPasskey, StandaardInlog
+from core.models import WebAuthnPasskey, StandaardInlog, NativeBiometricDevice
 from core.utils.network import is_in_pharmacy_network
 from core.views._helpers import is_mobile_request
+
+from django.contrib.auth import login, get_user_model
+from core.models import StandaardInlog
+
+def is_capacitor_request(request):
+    # werkt bij POST (login submit)
+    if request.method == "POST" and request.POST.get("is_capacitor") == "1":
+        return True
+
+    # optioneel: ook bij GET (handig op setup pagina's)
+    if request.GET.get("is_capacitor") == "1":
+        return True
+
+    return False
+
+def biometric_capable_request(request):
+    if request.method == "POST":
+        v = request.POST.get("biometric_capable")
+        if v in ("0", "1"):
+            request.session["biometric_capable"] = (v == "1")
+    return bool(request.session.get("biometric_capable"))
+
 
 class CustomSetupView(SetupView):
     # Geen welkomst- en methodestap
@@ -129,14 +152,32 @@ class CustomLoginView(TwoFALoginView):
         user = self.get_user()
         base_url = super().get_success_url()
 
-        # Desktop / niet-mobiel → nooit naar passkey_setup
         if not is_mobile_request(self.request):
             return base_url
 
         has_passkey = WebAuthnPasskey.objects.filter(user=user).exists()
-        skip_passkeys = self.request.session.get("webauthn_skip_devices")  # dict met device_hash -> True
+        has_native_bio = NativeBiometricDevice.objects.filter(user=user, is_active=True).exists()
 
-        if not has_passkey and not skip_passkeys:
+        skip_passkeys = bool(self.request.session.get("webauthn_skip_devices"))
+        skip_native_offer = bool(self.request.session.get("native_bio_skip_offer"))
+
+        # Capacitor: alleen offer native biometrics als device biometrie kan
+        if is_capacitor_request(self.request):
+            bio_capable = biometric_capable_request(self.request)
+
+            # Device zonder biometrie -> NOOIT passkey offer; gewoon door naar base_url (jouw 2FA/home flow)
+            if not bio_capable:
+                return base_url
+
+            # Device mét biometrie -> alleen offer native setup als nog niet actief en niet geskipt
+            if (not has_native_bio) and (not skip_native_offer):
+                setup_url = reverse("native_biometric_setup")
+                return f"{setup_url}?next={urlquote(base_url)}"
+
+            return base_url
+
+        # Browser/PWA: jouw bestaande passkey logic
+        if (not has_passkey) and (not has_native_bio) and (not skip_passkeys):
             setup_url = reverse("passkey_setup")
             return f"{setup_url}?next={urlquote(base_url)}"
 
@@ -201,10 +242,6 @@ def logout_view(request):
     logout(request)
     messages.info(request, "Je bent uitgelogd.")
     return redirect(reverse("two_factor:login"))
-
-from django.contrib.auth import login, get_user_model
-from core.models import StandaardInlog
-from core.utils.network import is_in_pharmacy_network
 
 @require_POST
 def kiosk_login_view(request):

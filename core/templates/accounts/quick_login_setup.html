@@ -1,0 +1,167 @@
+{% extends "two_factor/_base.html" %}
+{% load static i18n %}
+
+{% block login_header_image %}
+  <div class="twofa-image-wrap">
+    <img src="{% static 'img/biometric.svg' %}" alt="Snel inloggen" class="twofa-image" style="width: 80px">
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  {# ========= Capacitor (Native) → BIOMETRIE ========= #}
+  <section id="biometricSetupSection" class="passkey-setup" style="display:none;">
+    <h1 style="text-align:center;">Snel inloggen met biometrie</h1>
+    <p class="twofa-logintext muted">
+      In de app kun je Face ID, Touch ID of een andere biometrische beveiliging gebruiken
+      om voortaan <strong>zonder 2FA-code</strong> in te loggen.
+    </p>
+    <p class="twofa-logintext">
+      We koppelen dit éénmalig aan dit apparaat. Daarna kun je met één tik inloggen.
+    </p>
+
+    <div class="passkey-actions" style="margin-top:1.5rem; text-align:center;">
+      <button type="button" class="btn btn-save" style="padding: 12px;" id="biometricSetupBtn" data-haptic>
+        Instellen
+      </button>
+      <a href="{{ next_url }}" id="biometricSkipBtn" class="passkey-skip-btn">
+        Overslaan
+      </a>
+    </div>
+
+    <p id="biometricMessage" class="passkey-message" aria-live="polite"></p>
+  </section>
+
+
+  {# ========= PWA/Browser → PASSKEY ========= #}
+  <section id="passkeySetupSection" class="passkey-setup" style="display:none;">
+    <h1 style="text-align:center;">Snel inloggen met een passkey</h1>
+    <p class="twofa-logintext muted">
+      Op dit apparaat kun je Face ID, Touch ID of een andere biometrische beveiliging gebruiken
+      om voortaan <strong>zonder 2FA-code</strong> in te loggen.
+    </p>
+    <p class="twofa-logintext">
+      We koppelen éénmalig een passkey aan dit specifieke apparaat. Daarna kun je met één tik inloggen.
+    </p>
+
+    <div class="passkey-actions" style="margin-top:1.5rem; text-align:center;">
+      <button type="button" class="btn btn-save" style="padding: 12px;" id="passkeySetupBtn" data-haptic>
+        Instellen
+      </button>
+      <a href="{{ next_url }}" id="passkeySkipBtn" class="passkey-skip-btn">
+        Overslaan
+      </a>
+    </div>
+
+    <p id="passkeyMessage" class="passkey-message" aria-live="polite"></p>
+  </section>
+
+  <script src="{% static 'js/auth/native_biometrics.js' %}"></script>
+  <script src="{% static 'js/auth/passkeys.js' %}"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const nextUrl = "{{ next_url|escapejs }}";
+
+    const setMsg = (el, text, cls) => {
+      if (!el) return;
+      el.className = "passkey-message" + (cls ? " " + cls : "");
+      el.textContent = text || "";
+    };
+
+    const cookieCSRF = () => {
+      const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : "{{ csrf_token }}";
+    };
+
+    const isCapacitorNative =
+      !!window.nativeBiometricFlows?.isCapacitorNative?.() &&
+      window.nativeBiometricFlows.isCapacitorNative();
+
+    const onHttps = location.protocol === "https:" || location.hostname === "localhost";
+    const isWebAuthnSupported = () => (
+      typeof window.PublicKeyCredential !== "undefined" &&
+      typeof window.navigator.credentials !== "undefined" &&
+      typeof window.navigator.credentials.get === "function"
+    );
+
+    // Skip: native vs passkey
+    const handleSkip = async (e) => {
+      if (e) e.preventDefault();
+
+      try {
+        if (window.nativeBiometricFlows?.isCapacitorNative?.() && window.nativeBiometricFlows.isCapacitorNative()) {
+          const device_id = await window.nativeBiometricFlows.getDeviceId();
+          await window.nativeBiometricFlows.skipOffer(device_id);
+          window.location.href = nextUrl;
+          return;
+        }
+
+        let device_hash = "";
+        if (typeof window.getDeviceHash === "function") {
+          device_hash = await window.getDeviceHash();
+        }
+
+        await fetch("/api/passkeys/skip/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": cookieCSRF(),
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ device_hash }),
+        });
+      } catch (err) {
+        console.error("Skip registreren mislukt", err);
+      }
+
+      window.location.href = nextUrl;
+    };
+
+    // ========= 1) CAPACITOR → BIOMETRIE =========
+    if (isCapacitorNative) {
+      const section = document.getElementById("biometricSetupSection");
+      const btn     = document.getElementById("biometricSetupBtn");
+      const msgEl   = document.getElementById("biometricMessage");
+      const skipBtn = document.getElementById("biometricSkipBtn");
+
+      if (section) section.style.display = "";
+
+      if (btn) {
+        btn.addEventListener("click", async () => {
+          try {
+            setMsg(msgEl, "Biometrie wordt ingesteld…", "waiting");
+            await window.nativeBiometricFlows.enable({ nickname: "App toestel" });
+            setMsg(msgEl, "Gelukt. Je wordt doorgestuurd…", "ok");
+            setTimeout(() => { window.location.href = nextUrl || "/"; }, 700);
+          } catch (e) {
+            console.error(e);
+            setMsg(msgEl, (e && e.message) ? e.message : "Instellen mislukt.", "error");
+          }
+        });
+      }
+
+      if (skipBtn) skipBtn.addEventListener("click", handleSkip);
+      return;
+    }
+
+    // ========= 2) PWA/BROWSER → PASSKEYS =========
+    if (!onHttps || !isWebAuthnSupported()) {
+      window.location.href = nextUrl || "/";
+      return;
+    }
+
+    const section = document.getElementById("passkeySetupSection");
+    const btn     = document.getElementById("passkeySetupBtn");
+    const msgEl   = document.getElementById("passkeyMessage");
+    const skipBtn = document.getElementById("passkeySkipBtn");
+
+    if (section) section.style.display = "";
+
+    if (btn && window.setupPasskey) {
+      btn.addEventListener("click", () => window.setupPasskey(nextUrl, msgEl));
+    }
+
+    if (skipBtn) skipBtn.addEventListener("click", handleSkip);
+  });
+  </script>
+{% endblock %}

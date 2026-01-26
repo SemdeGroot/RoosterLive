@@ -36,6 +36,22 @@ path(
     ),
     name="service_worker.v20",
 ),
+# Android Asset Links
+    path(
+        '.well-known/assetlinks.json',
+        TemplateView.as_view(
+            template_name='well_known/assetlinks.json', 
+            content_type='application/json'
+        )
+    ),
+    # iOS Apple App Site Association
+    path(
+        '.well-known/apple-app-site-association',
+        TemplateView.as_view(
+            template_name='well_known/apple-app-site-association', 
+            content_type='application/json'
+        )
+    ),
 ]
 
 # Static alleen in DEBUG via Django (prod doet static via S3)

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
+  const isCapacitor = !!(window.Capacitor?.getPlatform && ["ios","android"].includes(window.Capacitor.getPlatform()));
   const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
 
   // Helpers
@@ -99,24 +100,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // AUTO-TRIGGER in standalone met onthouden username
+  // AUTO-TRIGGER in standalone met onthouden username (alleen PWA, niet Capacitor)
   try {
     const lastUsername = localStorage.getItem('lastUsername') || '';
-    if (isStandalone && lastUsername) {
+    if (isStandalone && !isCapacitor && lastUsername) {
       if (idInput) idInput.value = lastUsername;
-      void tryWebAuthn(lastUsername); // ← start direct Face ID / passkey
+      void tryWebAuthn(lastUsername);
     }
   } catch {}
 
   // (Optioneel) op Enter in het usernameveld direct WebAuthn proberen
   const form = document.querySelector('form');
-  if (form && idInput) {
+  if (form && idInput && !isCapacitor) {
     idInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         void tryWebAuthn(idInput.value.trim());
       }
     });
+  }
+
+  function setStatus(txt) {
+    const el = document.getElementById("passkeyStatus");
+    if (!el) return;
+    el.textContent = txt || "";
+    el.className = "passkey-message" + (txt ? " waiting" : "");
   }
 
   (function () {

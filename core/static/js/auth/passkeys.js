@@ -14,6 +14,13 @@
     passkeyStatusEl.className = base + extra;
     passkeyStatusEl.textContent = text || "";
   }
+  function isCapacitorNative() {
+    return !!window.Capacitor && (
+      typeof window.Capacitor.isNativePlatform === "function"
+        ? window.Capacitor.isNativePlatform()
+        : !!window.Capacitor.isNativePlatform
+    );
+  }
 
   function clearPasskeyStatus() {
     if (!passkeyStatusEl) return;
@@ -268,6 +275,7 @@
   async function tryPasskeyOnLoginForm() {
     const form = findLoginForm();
     if (!form) return;
+    if (isCapacitorNative()) return;
 
     const usernameInput = form.querySelector(
       'input[name="username"], input[name$="-username"]'
@@ -393,6 +401,7 @@
   async function checkOfferPasskey() {
     if (!onHttps || !isWebAuthnSupported() || !isMobile()) return;
     if (!window.getDeviceHash) return;
+    if (isCapacitorNative()) return;
 
     const device_hash = await window.getDeviceHash();
     const next = window.location.pathname + window.location.search;
@@ -417,7 +426,6 @@
   // ---------- PUBLIC API ----------
   window._passkeys = window._passkeys || {};
   window._passkeys.tryPasskeyOnLoginForm = tryPasskeyOnLoginForm;
-  window._passkeys.checkOfferPasskey = checkOfferPasskey;
 
   document.addEventListener("DOMContentLoaded", () => {
     tryPasskeyOnLoginForm();

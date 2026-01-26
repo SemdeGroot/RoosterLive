@@ -1,5 +1,4 @@
 # core/views/passkeys.py
-
 import json
 from urllib.parse import urlencode
 
@@ -105,10 +104,10 @@ def _is_passkey_skip_for_device(request: HttpRequest, device_hash: str) -> bool:
 # =========================
 
 class PasskeySetupView(TemplateView):
-    template_name = "accounts/passkey_setup.html"
+    template_name = "accounts/quick_login_setup.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Geen passkey-setup op desktop
+        # Je oude "geen setup op desktop" mag blijven
         if not is_mobile_request(request):
             next_url = request.GET.get("next") or reverse("home")
             return redirect(next_url)
@@ -116,10 +115,8 @@ class PasskeySetupView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        next_url = self.request.GET.get("next") or "/"
-        ctx["next_url"] = next_url
+        ctx["next_url"] = self.request.GET.get("next") or "/"
         return ctx
-
 
 # =========================
 # REGISTRATIE: opties leveren

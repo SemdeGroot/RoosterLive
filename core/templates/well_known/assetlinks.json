@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.apotheekjansen.app",
+    "sha256_cert_fingerprints": ["B3:91:3E:8A:8A:57:7C:D1:71:14:2E:B3:75:8E:99:32:DD:17:86:BF:25:5F:64:DB:75:35:F2:C2:C9:07:72:A6"]
+  }
+}]
