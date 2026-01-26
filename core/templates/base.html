@@ -30,12 +30,6 @@
         window.Capacitor.Plugins.StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
       }
 
-      // 3. Android Safe Area Fallback injectie
-      if (/Android/i.test(navigator.userAgent)) {
-        doc.style.setProperty('--sat', '30px');
-        doc.style.setProperty('--sab', '22px');
-      }
-
       // 4. Sidebar status
       try {
         localStorage.setItem('sidebarCollapsed_v1', '1');

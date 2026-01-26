@@ -1,6 +1,11 @@
-:root {
-  --sat: env(safe-area-inset-top, 30px);
-  --sab: env(safe-area-inset-bottom, 22px);
+:root{
+  --inset-top: env(safe-area-inset-top, 0px);
+  --inset-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* jouw eigen gewenste extra padding */
+  --pad-top: 12px;
+  --pad-bottom: 12px;
+  --pad-x: 16px;
 }
 
 *{box-sizing:border-box}
@@ -49,10 +54,10 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   border-bottom: 1px solid var(--border);
   max-width: 100vw;
   /* De 12px is je eigen witruimte, --sat is de statusbalk hoogte */
-  padding-top: calc(12px + var(--sat)); 
-  padding-bottom: 12px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-top: calc(var(--pad-top) + var(--inset-top));
+  padding-bottom: var(--pad-bottom);
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
 }
 
 .logo-wrap{
@@ -447,8 +452,8 @@ th,td{
 .footer{
   position:sticky; bottom:0; z-index:1000;
   display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px;
-  padding-bottom: calc(12px + var(--sab, 24px)); 
-  padding-top: 12px;
+  padding-top: var(--pad-bottom);
+  padding-bottom: calc(var(--pad-bottom) + var(--inset-bottom));
   background:var(--panel);
   border-top:1px solid var(--border);
   box-shadow:0 -4px 14px var(--shadow);

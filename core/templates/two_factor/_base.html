@@ -25,12 +25,7 @@
         // DARK = witte icoontjes voor donkere achtergrond
         window.Capacitor.Plugins.StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
       }
-
-      // 3. Android Safe Area Fallback injectie
-      if (/Android/i.test(navigator.userAgent)) {
-        document.documentElement.style.setProperty('--sat', '30px');
-        document.documentElement.style.setProperty('--sab', '22px');
-      }
+      
     })();
   </script>
 
