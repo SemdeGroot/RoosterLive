@@ -128,7 +128,7 @@
       <hr class="crud-divider">
 
       <section class="profile-section">
-        <h3 style="margin-top:20px;">Notificaties</h3>
+          <h3 style="margin:0;">Notificaties</h3>
 
         <form method="post" autocomplete="off" class="form form-sticky-actions" style="padding:0;">
           {% csrf_token %}
@@ -139,7 +139,7 @@
               <h4 style="margin:0;">Push meldingen</h4>
               <div class="switch-row">
                 <span class="muted">Push meldingen ontvangen</span>
-                <label class="switch">
+                <label class="switch" data-haptic>
                   <input type="checkbox" name="push_enabled" id="id_push_enabled" {% if prefs.push_enabled %}checked{% endif %}>
                   <span class="slider"></span>
                 </label>
@@ -162,7 +162,7 @@
               <h4 style="margin:0;">Email meldingen</h4>
               <div class="switch-row">
                 <span class="muted">Email meldingen ontvangen</span>
-                <label class="switch">
+                <label class="switch" data-haptic>
                   <input type="checkbox" name="email_enabled" id="id_email_enabled" {% if prefs.email_enabled %}checked{% endif %}>
                   <span class="slider"></span>
                 </label>
@@ -182,6 +182,13 @@
             </button>
           </div>
         </form>
+          <form method="post" autocomplete="off" class="notif-test-form">
+            {% csrf_token %}
+            <input type="hidden" name="form_kind" value="test_push">
+            <button class="btn btn-save" type="submit" data-haptic>
+              Stuur testnotificatie
+            </button>
+          </form>
       </section>
 
     </div>

@@ -41,3 +41,8 @@ def send_user_shifts_changed_push_task(
         changed_count=changed_count,
         removed_count=removed_count,
     )
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_test_push_task(self, user_id: int):
+    from core.utils.push.push import send_test_push
+    send_test_push(user_id=user_id)

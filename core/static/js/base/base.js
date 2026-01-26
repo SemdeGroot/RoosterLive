@@ -123,7 +123,8 @@ if (navigator.serviceWorker) {
             extra,
             schedule: { at: new Date(Date.now() + 50) },
             channelId: 'GENERAL_HIGH',
-            sound: 'default',   
+            sound: 'default',
+            smallIcon: 'ic_stat_notification',   
           },
         ],
       });

@@ -101,6 +101,7 @@ def _send_native_push_to_users(payload: dict, users):
                 notification=messaging.AndroidNotification(
                     channel_id=ANDROID_CHANNEL_ID_HIGH,
                     sound="default",
+                    icon="ic_stat_notification",
                 ),
             ),
             apns=messaging.APNSConfig(
@@ -408,5 +409,37 @@ def send_birthday_push_for_others(birthday_user_ids: list[int], birthday_names: 
     eligible_users_native = _eligible_users("can_view_agenda", "push_birthday_apojansen")
     # exclude jarigen
     eligible_users_native = [u for u in eligible_users_native if u.id not in set(birthday_user_ids)]
+
+    _send_both(payload, eligible_subs, eligible_users_native)
+
+def send_test_push(user_id: int):
+    User = get_user_model()
+    user = User.objects.filter(id=user_id).select_related("profile", "profile__notif_prefs").first()
+    if not user:
+        return
+
+    if not can(user, "can_access_profiel"):
+        return
+
+    prefs = getattr(user.profile, "notif_prefs", None)
+    if not prefs or not prefs.push_enabled:
+        return
+
+    now = timezone.now()
+    payload = {
+        "title": "Testnotificatie",
+        "body": "Dit is een testnotificatie!",
+        "url": "/profiel/",
+        "tag": f"test-push-{user_id}-{now.strftime('%Y%m%d%H%M%S')}",
+    }
+
+    # webpush: alleen deze user
+    subs = PushSubscription.objects.select_related(
+        "user", "user__profile", "user__profile__notif_prefs"
+    ).filter(user_id=user_id)
+    eligible_subs = [s for s in subs if can(s.user, "can_access_profiel") and s.user.profile.notif_prefs.push_enabled]
+
+    # native: alleen deze user
+    eligible_users_native = [user] if prefs.push_enabled else []
 
     _send_both(payload, eligible_subs, eligible_users_native)

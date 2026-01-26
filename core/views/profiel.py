@@ -17,6 +17,7 @@ from core.forms import NotificationPreferencesForm
 from core.models import NotificationPreferences, UserProfile
 from core.views._helpers import can
 from core.views._upload_helpers import hash_bytes, read_upload_bytes, _save_bytes, _delete_path
+from core.tasks import send_test_push_task
 
 # ===== Rekognition settings =====
 REKOGNITION_MIN_CONF = 75
@@ -128,6 +129,18 @@ def profiel_index(request):
                 return redirect(request.path)
             else:
                 messages.error(request, "Kon notificatievoorkeuren niet opslaan.")
+
+        elif form_kind == "test_push":
+            if not prefs.push_enabled:
+                messages.error(request, "Push meldingen staan uit. Zet ze aan om een testnotificatie te ontvangen.")
+                return redirect(request.path)
+
+            from core.tasks import send_test_push_task
+            send_test_push_task.delay(request.user.id)
+
+            messages.success(request, "Testnotificatie is verstuurd (queued).")
+            return redirect(request.path)
+
         else:
             form = NotificationPreferencesForm(instance=prefs)
     else:
