@@ -248,3 +248,28 @@
   line-height: 1.25;
   word-break: break-word; /* handig voor lange emails */
 }
+/* Actions bar onder notificaties */
+.notif-actions{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  margin-top: 14px;
+}
+
+/* geen “plakken” door form-reset */
+.notif-actions form{
+  display: block !important;
+  margin: 0 !important;
+}
+
+/* mobiel: onder elkaar met ruimte */
+@media (max-width: 520px){
+  .notif-actions{
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .notif-actions button{
+    width: 100% !important;
+  }
+}
