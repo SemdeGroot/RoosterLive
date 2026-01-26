@@ -1,6 +1,45 @@
 (function () {
   function $(id) { return document.getElementById(id); }
 
+  // ===== CAPACITOR HELPERS (nieuw) =====
+  function isCapacitorNative() {
+    const cap = window.Capacitor;
+    if (!cap) return false;
+
+    // Capacitor 5/6/7/8 hebben vaak isNativePlatform()
+    if (typeof cap.isNativePlatform === "function") {
+      try { return cap.isNativePlatform(); } catch (_) { /* ignore */ }
+    }
+
+    // fallback
+    const platform = (typeof cap.getPlatform === "function") ? cap.getPlatform() : "web";
+    return platform !== "web";
+  }
+
+  function getCapacitorCameraPlugin() {
+    const cap = window.Capacitor;
+    if (!cap || !cap.Plugins) return null;
+    return cap.Plugins.Camera || null;
+  }
+
+  async function capacitorPhotoToFile(photo) {
+    // We gebruiken webPath (meest betrouwbaar voor fetch → blob)
+    const webPath = photo && photo.webPath ? photo.webPath : null;
+    if (!webPath) throw new Error("Geen webPath teruggekregen van Camera plugin.");
+
+    const resp = await fetch(webPath);
+    const blob = await resp.blob();
+
+    const format = (photo && photo.format ? String(photo.format) : "").toLowerCase();
+    const ext =
+      format ||
+      (blob.type && blob.type.includes("png") ? "png" :
+      (blob.type && blob.type.includes("webp") ? "webp" : "jpg"));
+
+    const filename = `avatar.${ext}`;
+    return new File([blob], filename, { type: blob.type || `image/${ext}` });
+  }
+
   // ===== NOTIF UI =====
   function syncChildBlocks() {
     document.querySelectorAll("[data-child-of]").forEach((block) => {
@@ -73,6 +112,9 @@
   const saveCroppedBtn = $("saveCroppedBtn");
   const avatarPreview = $("avatarPreview");
 
+  // label die nu je file input triggert (nieuw: intercept in native)
+  const avatarPickLabel = document.querySelector('label[for="avatarInput"]');
+
   let cropper = null;
   let uploading = false;
   let cropperReady = false;
@@ -115,7 +157,7 @@
 
     setSaveState(false, "Laden…");
     destroyCropper();
-    
+
     if (avatarFilename) avatarFilename.textContent = file.name || "";
 
     // 1. Toon de modal direct (nodig voor berekening)
@@ -165,7 +207,40 @@
     };
     tempImg.src = url;
   }
-  // Event Listeners voor de Input en Modal buttons
+
+  // in Capacitor native: open fotobibliotheek i.p.v. file input
+  if (avatarPickLabel) {
+    avatarPickLabel.addEventListener("click", async (e) => {
+      if (!isCapacitorNative()) return; // browser: normale input open
+      const Camera = getCapacitorCameraPlugin();
+      if (!Camera) return; // fallback: laat label z'n default doen
+
+      e.preventDefault();
+
+      try {
+        // Strings werken zonder enums/imports
+        const photo = await Camera.getPhoto({
+          quality: 92,
+          resultType: "uri", // CameraResultType.Uri
+          source: "photos",  // CameraSource.Photos (native fotobibliotheek)
+          // allowEditing: false, // jij cropt zelf
+        });
+
+        if (!photo) return;
+
+        const file = await capacitorPhotoToFile(photo);
+        startCropperFromFile(file);
+
+      } catch (err) {
+        // User-cancel is normaal; geen harde flash nodig
+        // Als je wél wilt melden:
+        // showFlash("error", "Kon fotobibliotheek niet openen.");
+        console.error(err);
+      }
+    });
+  }
+
+  // Event Listeners voor de Input en Modal buttons (bestaand)
   if (avatarInput) {
     avatarInput.addEventListener("change", () => {
       const file = avatarInput.files && avatarInput.files[0] ? avatarInput.files[0] : null;
@@ -210,46 +285,46 @@
           blob = await toBlobAsync(canvas, "image/jpeg", 0.92);
           filename = "avatar.jpg";
         }
-        
+
         if (!blob) throw new Error("Kon geen afbeelding maken.");
 
         const fd = new FormData();
-          fd.append("avatar", blob, filename);
+        fd.append("avatar", blob, filename);
 
-          const res = await fetch("/profiel/avatar/upload/", {
-            method: "POST",
-            headers: { "X-CSRFToken": getCSRFToken() },
-            body: fd,
-          });
+        const res = await fetch("/profiel/avatar/upload/", {
+          method: "POST",
+          headers: { "X-CSRFToken": getCSRFToken() },
+          body: fd,
+        });
 
-          // Probeer ALTIJD de JSON te parsen, ook bij status 400/500
-          const data = await res.json().catch(() => ({}));
+        // Probeer ALTIJD de JSON te parsen, ook bij status 400/500
+        const data = await res.json().catch(() => ({}));
 
-          if (!res.ok) {
-            // Check of de server een specifieke flash melding heeft gestuurd (zoals Rekognition)
-            if (data.flash && data.flash.text) {
-              showFlash(data.flash.level || "error", data.flash.text);
-            } else {
-              showFlash("error", data.error || "Er ging iets mis bij het uploaden.");
-            }
-            // BELANGRIJK: stop hier, want res.ok is false
-            uploading = false;
-            setSaveState(true, "Opslaan");
-            return; 
+        if (!res.ok) {
+          // Check of de server een specifieke flash melding heeft gestuurd (zoals Rekognition)
+          if (data.flash && data.flash.text) {
+            showFlash(data.flash.level || "error", data.flash.text);
+          } else {
+            showFlash("error", data.error || "Er ging iets mis bij het uploaden.");
           }
-
-          // Succes geval
-          if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
-          showFlash("success", "Profielfoto opgeslagen.");
-          closeModal({ resetFile: true });
-
-        } catch (err) {
-          console.error(err);
-          showFlash("error", "Netwerkfout of server onbereikbaar.");
-        } finally {
+          // BELANGRIJK: stop hier, want res.ok is false
           uploading = false;
           setSaveState(true, "Opslaan");
+          return;
         }
+
+        // Succes geval
+        if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
+        showFlash("success", "Profielfoto opgeslagen.");
+        closeModal({ resetFile: true });
+
+      } catch (err) {
+        console.error(err);
+        showFlash("error", "Netwerkfout of server onbereikbaar.");
+      } finally {
+        uploading = false;
+        setSaveState(true, "Opslaan");
+      }
     });
   }
 

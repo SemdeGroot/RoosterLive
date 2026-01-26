@@ -22,6 +22,7 @@
 	},
 	"packageClassList": [
 		"FCMPlugin",
+		"CAPCameraPlugin",
 		"DevicePlugin",
 		"HapticsPlugin",
 		"LocalNotificationsPlugin",

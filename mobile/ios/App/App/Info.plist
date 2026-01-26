@@ -48,6 +48,15 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
-	<string>We use Face ID to let users securely and quickly login.</string>
+	<string>We gebruiken Face ID zodat je veilig en snel kunt inloggen.</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>We hebben toegang tot je camera nodig om een profielfoto te kunnen maken.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We hebben toegang tot je fotobibliotheek nodig zodat je een profielfoto kunt kiezen.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We hebben toestemming nodig om een gekozen profielfoto eventueel op te slaan in je fotobibliotheek.</string>
 </dict>
 </plist>

@@ -178,17 +178,25 @@
     <button class="btn" onclick="window.location.reload()">Opnieuw proberen</button>
     <p class="small">Deze pagina verschijnt automatisch bij offline gebruik.</p>
   </div>
-  <script>
-  window.addEventListener('load', () => {
-    // Capacitor injecteert de plugins automatisch in het window object
-    if (window.Capacitor && window.Capacitor.isPluginAvailable('SplashScreen')) {
-      setTimeout(async () => {
-        try {
-          await window.Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 400 });
-        } catch (e) { console.error(e); }
-      }, 100);
-    }
-  });
+<script>
+(function () {
+  if (!window.Capacitor?.isNativePlatform?.()) return;
+
+  let done = false;
+  const hideSplashOnce = async () => {
+    if (done) return;
+    done = true;
+    try { await window.Capacitor.Plugins.SplashScreen.hide(); } catch {}
+  };
+
+  // sneller dan window.load; wacht alleen tot DOM er is + 2 frames voor stabiele paint
+  window.addEventListener("DOMContentLoaded", () => {
+    requestAnimationFrame(() => requestAnimationFrame(hideSplashOnce));
+  }, { once: true });
+
+  // safety fallback
+  setTimeout(hideSplashOnce, 8000);
+})();
 </script>
 </body>
 </html>

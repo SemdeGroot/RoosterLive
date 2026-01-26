@@ -4,6 +4,10 @@
 		"classpath": "com.getcapacitor.community.fcm.FCMPlugin"
 	},
 	{
+		"pkg": "@capacitor/camera",
+		"classpath": "com.capacitorjs.plugins.camera.CameraPlugin"
+	},
+	{
 		"pkg": "@capacitor/device",
 		"classpath": "com.capacitorjs.plugins.device.DevicePlugin"
 	},
