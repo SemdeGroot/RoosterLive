@@ -165,13 +165,18 @@ class CustomLoginView(TwoFALoginView):
         if is_capacitor_request(self.request):
             bio_capable = biometric_capable_request(self.request)
 
-            # Device zonder biometrie -> NOOIT passkey offer; gewoon door naar base_url (jouw 2FA/home flow)
+            # NEW: secret aanwezig? (0/1 uit hidden field)
+            secret_present = (self.request.POST.get("biometric_secret_present") == "1")
+
+            # Device zonder biometrie -> NOOIT offers; gewoon door naar base_url
             if not bio_capable:
                 return base_url
 
-            # Device mét biometrie -> alleen offer native setup als nog niet actief en niet geskipt
-            if (not has_native_bio) and (not skip_native_offer):
-                setup_url = reverse("native_biometric_setup")
+            # Device mét biometrie:
+            # - Als secret ontbreekt (reinstall): na 2FA mogen we setup aanbieden
+            # - Anders: alleen als nog niet actief
+            if (not skip_native_offer) and ((not secret_present) or (not has_native_bio)):
+                setup_url = reverse("passkey_setup")
                 return f"{setup_url}?next={urlquote(base_url)}"
 
             return base_url

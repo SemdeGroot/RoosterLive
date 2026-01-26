@@ -25,6 +25,10 @@
         // DARK = witte icoontjes voor donkere achtergrond
         window.Capacitor.Plugins.StatusBar.setStyle({ style: (savedTheme === 'dark') ? 'DARK' : 'LIGHT' });
       }
+      // 3. Alleen Android safe inset
+      if (!/Android/i.test(navigator.userAgent)) return;
+      doc.style.setProperty('--inset-top', '30px');
+      doc.style.setProperty('--inset-bottom', '22px');
       
     })();
   </script>

@@ -23,7 +23,8 @@
     {% csrf_token %}
     {{ wizard.management_form }}
     <input type="hidden" name="is_capacitor" id="is_capacitor" value="0">
-    <input type="hidden" name="biometric_capable" id="biometric_capable" value="unknown">
+    <input type="hidden" name="biometric_capable" id="biometric_capable" value="0">
+    <input type="hidden" name="biometric_secret_present" id="biometric_secret_present" value="0">
 
     {# STAP 1: username + password #}
     {% if form.username and form.password %}

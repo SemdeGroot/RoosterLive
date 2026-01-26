@@ -16,6 +16,7 @@ html,body{
   color:var(--text);
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
   overflow-x:hidden;
+  overflow-anchor: none;
 }
 /* Verwijder standaard tap-highlight en klik box op alle elementen */
 * {
@@ -34,7 +35,6 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   max-width:100vw;
   overflow-x:hidden;
   background: var(--bg);
-  min-height: 100vh;
   transition: transform 0.18s ease-out;
 }
 

@@ -202,8 +202,23 @@ def clear_dir(p: Path):
 
 def is_mobile_request(request) -> bool:
     ua = (request.META.get("HTTP_USER_AGENT") or "").lower()
-    # Simpele maar effectieve check, gelijk aan je JS isMobile()
-    return any(s in ua for s in ["android", "iphone", "ipad", "ipod"])
+
+    # iOS devices
+    if any(x in ua for x in ("iphone", "ipod")):
+        return True
+
+    # iPadOS: kan "ipad" missen en zich als "macintosh" voordoen,
+    # maar bevat vaak "mobile" wanneer het echt iPad is.
+    if "ipad" in ua:
+        return True
+    if "macintosh" in ua and "mobile" in ua:
+        return True
+
+    # Android (phones/tablets/webviews)
+    if "android" in ua:
+        return True
+
+    return False
 
 # === PDF export helpers === 
 def _static_abs_path(static_path: str) -> str:

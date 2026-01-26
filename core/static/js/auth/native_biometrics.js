@@ -66,6 +66,7 @@
     statusEl.className = base + extra;
     statusEl.textContent = text || "";
   }
+
   function clearStatus() {
     if (!statusEl) return;
     statusEl.className = "passkey-message";
@@ -144,6 +145,31 @@
     }
   }
 
+  async function secureSet(key, value) {
+    const S = _securePlugin();
+    if (!S) throw new Error("Secure Storage plugin niet beschikbaar.");
+
+    if (typeof S.set === "function") {
+      await S.set({ key, value: String(value ?? "") });
+      return;
+    }
+    if (typeof S.setValue === "function") {
+      await S.setValue({ key, value: String(value ?? "") });
+      return;
+    }
+    throw new Error("Secure Storage plugin heeft geen set/setValue.");
+  }
+
+  function randomSecret(bytes = 32) {
+    // base64url random
+    const arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    return btoa(String.fromCharCode(...arr))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+  }
+
   // =========================
   // Server calls (passkey-style)
   // =========================
@@ -186,20 +212,6 @@
     return data;
   }
 
-  async function shouldOfferNativeBio(device_id, next) {
-    const resp = await fetch("/api/native-biometrics/should-offer/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCSRF(),
-      },
-      credentials: "same-origin",
-      body: JSON.stringify({ device_id, next }),
-    });
-    if (!resp.ok) return { offer: false };
-    return resp.json().catch(() => ({ offer: false }));
-  }
-
   async function skipNativeBioOffer(device_id) {
     await fetch("/api/native-biometrics/skip/", {
       method: "POST",
@@ -210,6 +222,48 @@
       credentials: "same-origin",
       body: JSON.stringify({ device_id }),
     }).catch(() => {});
+  }
+
+  async function enableNativeBiometrics({ nickname } = {}) {
+    if (!isCapacitorNative()) throw new Error("Niet in Capacitor native context.");
+
+    // Belangrijk: pairing alleen na echte biometrie prompt
+    await biometricVerify({ reason: "Bevestig met biometrie om biometrische login in te stellen." });
+
+    const device_id = await getNativeDeviceId();
+
+    // Nieuwe secret genereren en lokaal opslaan (reinstall-safe)
+    const device_secret = randomSecret(32);
+    await secureSet(SECRET_KEY, device_secret);
+
+    const platform =
+      (typeof window.Capacitor?.getPlatform === "function" ? window.Capacitor.getPlatform() : "other") || "other";
+
+    const resp = await fetch("/api/native-biometrics/enable/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRF(),
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        device_id,
+        device_secret,
+        platform,
+        nickname: nickname || "App toestel",
+      }),
+    });
+
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || !data.ok) {
+      // cleanup: geen half-ingestelde secret laten hangen
+      try {
+        await secureSet(SECRET_KEY, "");
+      } catch {}
+      throw new Error((data && data.error) || "Instellen mislukt.");
+    }
+
+    return data;
   }
 
   // =========================
@@ -250,12 +304,10 @@
     const usernameInput = form.querySelector(
       'input[name="username"], input[name$="-username"], input[name="id_identifier"]'
     );
-    const passwordInput = form.querySelector(
-      'input[name="password"], input[name$="-password"]'
-    );
+    const passwordInput = form.querySelector('input[name="password"], input[name$="-password"]');
     if (!usernameInput || !passwordInput) return;
 
-    // Zorg dat we niet per ongeluk dubbel binden
+    // voorkom dubbel binden
     if (form.dataset.nativeBioBound === "1") return;
     form.dataset.nativeBioBound = "1";
 
@@ -264,23 +316,41 @@
       const password = passwordInput.value || "";
       if (!username || !password) return;
 
+      // Alleen Capacitor stap 1 intercepten
       ev.preventDefault();
       clearStatus();
 
       try {
+        // Als er géén secret is (reinstall), NOOIT prompten.
+        // Gewoon reguliere 2FA flow (form.submit -> django-two-factor).
+        let device_secret = "";
+        try {
+          device_secret = await secureGet(SECRET_KEY);
+        } catch {
+          device_secret = "";
+        }
+        if (!device_secret) {
+          form.submit();
+          return;
+        }
+
+        // 1) check username+password via JSON endpoint
         setStatus("Controleren…", "waiting");
         const data = await passwordLoginWithNativeBio(username, password);
 
-        // geen native bio op dit device/user => normale flow (2FA)
+        // geen native bio actief voor user+device => normale 2FA flow
         if (!data.has_native_bio) {
           clearStatus();
           form.submit();
           return;
         }
 
-        // 2) toon prompt en doe native bio login
+        // 2) wel secret + server says has_native_bio -> prompt en native login
         setStatus("Bevestig met biometrie…", "waiting");
-        await loginWithNativeBiometricsFlow();
+        await biometricVerify({ reason: "Bevestig met biometrie om in te loggen." });
+
+        const device_id = await getNativeDeviceId();
+        await nativeBiometricLogin(device_id, device_secret);
 
         setStatus("Inloggen gelukt. Je wordt doorgestuurd…", "ok");
         const redirectUrl = data.redirect_url || getNextParam() || "/";
@@ -294,28 +364,12 @@
     });
   }
 
-  async function checkOfferNativeBiometrics() {
-    if (!isCapacitorNative()) return;
-
-    let device_id;
-    try {
-      device_id = await getNativeDeviceId();
-    } catch {
-      return;
-    }
-
-    const next = window.location.pathname + window.location.search;
-    const data = await shouldOfferNativeBio(device_id, next).catch(() => ({ offer: false }));
-    if (data && data.offer && data.setup_url) {
-      window.location.href = data.setup_url;
-    }
-  }
-
   // =========================
   // Expose + auto-run (zoals passkeys)
   // =========================
   window.nativeBiometricFlows = {
     login: loginWithNativeBiometricsFlow,
+    enable: enableNativeBiometrics, // <-- FIX: setup.html verwacht deze
     tryOnLoginForm: tryNativeBiometricOnLoginForm,
     skipOffer: skipNativeBioOffer,
     getDeviceId: getNativeDeviceId,
@@ -324,20 +378,39 @@
   };
 
   document.addEventListener("DOMContentLoaded", async () => {
-    // net als passkeys: meteen koppelen aan login submit
+    // is_capacitor flag
     const cap = document.getElementById("is_capacitor");
-    if (cap && isCapacitorNative()) cap.value = "1";
+    if (cap) cap.value = isCapacitorNative() ? "1" : "0";
 
-    // capability flag zetten voor server-success-url logic
+    // biometric_capable flag (default 0)
     const bio = document.getElementById("biometric_capable");
     if (bio) {
-      bio.value = "0"; // default
+      bio.value = "0";
       if (isCapacitorNative()) {
-        const capable = await detectBiometricCapable();
-        bio.value = capable ? "1" : "0";
+        try {
+          const capable = await detectBiometricCapable();
+          bio.value = capable ? "1" : "0";
+        } catch {
+          bio.value = "0";
+        }
       }
     }
 
+    // biometric_secret_present flag (default 0)
+    const secretEl = document.getElementById("biometric_secret_present");
+    if (secretEl) {
+      secretEl.value = "0";
+      if (isCapacitorNative()) {
+        try {
+          const s = await secureGet(SECRET_KEY);
+          secretEl.value = s ? "1" : "0";
+        } catch {
+          secretEl.value = "0";
+        }
+      }
+    }
+
+    // Koppel biometrische login intercept aan submit (stap 1)
     tryNativeBiometricOnLoginForm();
   });
 })();

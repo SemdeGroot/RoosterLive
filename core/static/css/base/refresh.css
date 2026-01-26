@@ -13,7 +13,7 @@
   justify-content: center;
 
   /* Iets boven je titels blijven */
-  padding-top: calc(env(safe-area-inset-top, 0px) + 2px);
+  padding-top: calc(var(--inset-top) + 2px);
 
   transform: translateY(calc(var(--ptr-translate) - 120%));
   opacity: var(--ptr-opacity);

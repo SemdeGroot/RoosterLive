@@ -52,7 +52,7 @@
   padding:0; display:flex; flex-direction:column; z-index:1200;
   transform:translateX(100%); transition:transform .25s ease;
   overflow-y:auto;
-  padding-bottom: calc(12px + var(--inset-bottom)) !important;
+  padding-bottom: calc(var(--inset-bottom)) !important;
 }
 .nav-panel.open{ transform:translateX(0); }
 
