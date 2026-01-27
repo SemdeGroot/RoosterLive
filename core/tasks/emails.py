@@ -30,7 +30,11 @@ def send_nazendingen_pdf_task(self, organization_ids):
     from core.tasks.email_dispatcher import email_dispatcher_task, cleanup_storage_file_task
 
     contact_email = "baxterezorg@apotheekjansen.com"
-    nazendingen = Nazending.objects.select_related('voorraad_item').order_by('-datum')
+    nazendingen = (
+        Nazending.objects
+        .select_related("voorraad_item")
+        .order_by("voorraad_item__naam", "voorraad_item__zi_nummer")
+    )
 
     context = {
         "nazendingen": nazendingen,

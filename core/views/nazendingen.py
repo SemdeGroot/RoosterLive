@@ -78,7 +78,11 @@ def nazendingen_view(request):
         form = NazendingForm()
 
     # --- DATA OPHALEN ---
-    nazendingen = Nazending.objects.select_related('voorraad_item').order_by('datum')
+    nazendingen = (
+        Nazending.objects
+        .select_related("voorraad_item")
+        .order_by("voorraad_item__naam", "voorraad_item__zi_nummer")
+    )
     apotheken = Organization.objects.filter(org_type=Organization.ORG_TYPE_APOTHEEK).order_by('name')
 
     context = {
@@ -99,8 +103,12 @@ def export_nazendingen_pdf(request):
     if not can(request.user, "can_view_av_nazendingen"):
         return HttpResponseForbidden("Geen toegang tot nazendingen.")
 
-    # 2. Data ophalen (alles, gesorteerd op datum)
-    nazendingen = Nazending.objects.select_related('voorraad_item').order_by('-datum')
+    # 2. Data ophalen (alles, gesorteerd op gnm)
+    nazendingen = (
+        Nazending.objects
+        .select_related("voorraad_item")
+        .order_by("voorraad_item__naam", "voorraad_item__zi_nummer")
+    )
 
     # 3. Context opbouwen
     context = {
