@@ -4,7 +4,7 @@
   <script src="{% static 'django_browser_reload/reload.js' %}"></script>
 {% endif %}
 <!doctype html>
-<html lang="nl">
+<html lang="nl" data-auth="{% if request.user.is_authenticated %}1{% else %}0{% endif %}">
 <head>
   <meta charset="utf-8" />  
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -286,6 +286,7 @@
   window.PWA.VAPID_PUBLIC_KEY = "BLuUoPe86VS0fs2JyKKTNi2llpDso3tWd7CSxwZEOAoksOD9oUxxPA5pmrTZ8XUZYHS1A7RWmYc0Jnnf-nrYWrQ=";
 </script>
 <script src="{% static 'js/base/nav.js' %}" defer></script>
+<script src="{% static 'js/base/push.js' %}" defer></script>
 <script src="{% static 'js/base/base.js' %}" defer></script>
 <script src="{% static 'js/auth/native_biometrics.js' %}" defer></script>
 <script src="{% static 'js/auth/passkeys.js' %}" defer></script>

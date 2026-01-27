@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="nl">
+<html lang="nl" data-auth="{% if request.user.is_authenticated %}1{% else %}0{% endif %}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
@@ -144,6 +144,7 @@
   <script src="{% static 'js/auth/login.js' %}"></script>
   <script src="{% static 'js/auth/passkeys.js' %}"></script>
   <script src="{% static 'js/base/refresh.js' %}"></script>
+  <script src="{% static 'js/base/push.js' %}" defer></script>
   <script src="{% static 'js/base/base.js' %}" defer></script>
   <script src="/static/js/base/haptic_feedback.js"></script>
 <script>
