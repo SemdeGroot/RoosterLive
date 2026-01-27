@@ -31,9 +31,10 @@
       }
 
       // 3. Alleen Android safe inset
-      if (!/Android/i.test(navigator.userAgent)) return;
-      doc.style.setProperty('--inset-top', '30px');
-      doc.style.setProperty('--inset-bottom', '22px');
+      if (/Android/i.test(navigator.userAgent)) {
+        doc.style.setProperty('--inset-top', '30px');
+        doc.style.setProperty('--inset-bottom', '22px');
+      }
 
       // 4. Sidebar status
       try {
