@@ -76,3 +76,20 @@
 .news-body.is-hidden{
   display: none !important;
 }
+
+.media-loader,
+.media-error {
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.media-loader {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.media-error {
+  background: rgba(255, 0, 0, 0.08);
+}

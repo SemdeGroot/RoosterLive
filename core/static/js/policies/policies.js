@@ -70,6 +70,39 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 10000);
     });
   });
+    function showLoading(host, text) {
+      // voorkom dubbele loaders
+      if (host.querySelector("[data-loader]")) return;
+
+      var loader = document.createElement("div");
+      loader.setAttribute("data-loader", "1");
+      loader.className = "media-loader";
+      loader.textContent = text || "Afbeelding laden...";
+      host.appendChild(loader);
+    }
+
+    function hideLoading(host) {
+      var loader = host.querySelector("[data-loader]");
+      if (loader) loader.remove();
+    }
+
+    function showError(host, text) {
+      // voorkom dubbele errors
+      if (host.querySelector("[data-media-error]")) return;
+
+      var err = document.createElement("div");
+      err.setAttribute("data-media-error", "1");
+      err.className = "media-error";
+      err.textContent = text || "Kon media niet laden.";
+      host.appendChild(err);
+    }
+
+    function waitForImage(img) {
+      return new Promise(function (resolve, reject) {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", reject, { once: true });
+      });
+    }
 
   // === Lazy media loader (zoals news, maar endpoint /werkafspraken/media/<id>/) ===
   async function loadMediaIfNeeded(liEl) {
@@ -80,23 +113,34 @@ document.addEventListener("DOMContentLoaded", function () {
     var itemId = host.getAttribute("data-item-id");
     if (!itemId) return;
 
+    showLoading(host, "Afbeelding laden...");
+
     try {
       var resp = await fetch("/werkafspraken/media/" + itemId + "/", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-      if (!resp.ok) return;
+      if (!resp.ok) {
+        hideLoading(host);
+        showError(host, "Kon media niet laden.");
+        return;
+      }
 
       var data = await resp.json();
+
       if (!data || !data.has_file) {
+        hideLoading(host);
         host.dataset.loaded = "1";
         return;
       }
+
+      var waits = [];
 
       if (data.type === "image" && data.url) {
         var img = document.createElement("img");
         img.src = data.url;
         img.alt = "Werkafspraak afbeelding";
         host.appendChild(img);
+        waits.push(waitForImage(img));
       }
 
       if (data.type === "pdf" && Array.isArray(data.urls)) {
@@ -105,12 +149,19 @@ document.addEventListener("DOMContentLoaded", function () {
           img.src = url;
           img.alt = "Werkafspraak PDF pagina";
           host.appendChild(img);
+          waits.push(waitForImage(img));
         });
       }
 
+      if (waits.length) {
+        await Promise.allSettled(waits);
+      }
+
+      hideLoading(host);
       host.dataset.loaded = "1";
     } catch (err) {
-      // silent fail
+      hideLoading(host);
+      showError(host, "Kon media niet laden.");
     }
   }
 

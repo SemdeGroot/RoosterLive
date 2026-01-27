@@ -71,49 +71,105 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  function showLoading(host, text) {
+    // voorkom dubbele loaders
+    if (host.querySelector("[data-loader]")) return;
+
+    var loader = document.createElement("div");
+    loader.setAttribute("data-loader", "1");
+    loader.className = "media-loader";
+    loader.textContent = text || "Afbeelding laden...";
+    host.appendChild(loader);
+  }
+
+  function hideLoading(host) {
+    var loader = host.querySelector("[data-loader]");
+    if (loader) loader.remove();
+  }
+
+  function showError(host, text) {
+    // voorkom dubbele errors
+    if (host.querySelector("[data-media-error]")) return;
+
+    var err = document.createElement("div");
+    err.setAttribute("data-media-error", "1");
+    err.className = "media-error";
+    err.textContent = text || "Kon media niet laden.";
+    host.appendChild(err);
+  }
+
+  function waitForImage(img) {
+    return new Promise(function (resolve, reject) {
+      img.addEventListener("load", resolve, { once: true });
+      img.addEventListener("error", reject, { once: true });
+    });
+  }
+
   // === Lazy media loader ===
   async function loadMediaIfNeeded(liEl) {
-    var host = liEl.querySelector("[data-media-host]");
-    if (!host) return;
+  var host = liEl.querySelector("[data-media-host]");
+  if (!host) return;
 
-    if (host.dataset.loaded === "1") return;
+  if (host.dataset.loaded === "1") return;
 
-    var itemId = host.getAttribute("data-item-id");
-    if (!itemId) return;
+  var itemId = host.getAttribute("data-item-id");
+  if (!itemId) return;
 
-    try {
-      var resp = await fetch("/nieuws/media/" + itemId + "/", {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-      if (!resp.ok) return;
+  // UI state: loading
+  showLoading(host, "Afbeelding laden...");
 
-      var data = await resp.json();
-      if (!data || !data.has_file) {
-        host.dataset.loaded = "1";
-        return;
-      }
-
-      if (data.type === "image" && data.url) {
-        var img = document.createElement("img");
-        img.src = data.url;
-        img.alt = "Nieuws afbeelding";
-        host.appendChild(img);
-      }
-
-      if (data.type === "pdf" && Array.isArray(data.urls)) {
-        data.urls.forEach(function (url) {
-          var img = document.createElement("img");
-          img.src = url;
-          img.alt = "Nieuws PDF pagina";
-          host.appendChild(img);
-        });
-      }
-
-      host.dataset.loaded = "1";
-    } catch (err) {
-      // silent fail
+  try {
+    var resp = await fetch("/nieuws/media/" + itemId + "/", {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    });
+    if (!resp.ok) {
+      hideLoading(host);
+      showError(host, "Kon media niet laden.");
+      return;
     }
+
+    var data = await resp.json();
+
+    if (!data || !data.has_file) {
+      hideLoading(host);
+      host.dataset.loaded = "1";
+      return;
+    }
+
+    // Verzamel alle image-load promises zodat je loader pas weg haalt
+    // zodra alles echt geladen is (of faalt).
+    var waits = [];
+
+    if (data.type === "image" && data.url) {
+      var img = document.createElement("img");
+      img.src = data.url;
+      img.alt = "Nieuws afbeelding";
+      host.appendChild(img);
+      waits.push(waitForImage(img));
+    }
+
+    if (data.type === "pdf" && Array.isArray(data.urls)) {
+      data.urls.forEach(function (url) {
+        var img = document.createElement("img");
+        img.src = url;
+        img.alt = "Nieuws PDF pagina";
+        host.appendChild(img);
+        waits.push(waitForImage(img));
+      });
+    }
+
+    // Wacht tot alle afbeeldingen geladen zijn
+    if (waits.length) {
+      await Promise.allSettled(waits);
+    }
+
+    hideLoading(host);
+    host.dataset.loaded = "1";
+  } catch (err) {
+    hideLoading(host);
+    showError(host, "Kon media niet laden.");
   }
+}
 
   // === Inklappen/uitklappen van nieuwsitems ===
   document.querySelectorAll(".news-item").forEach(function (item) {
