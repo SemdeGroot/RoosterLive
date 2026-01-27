@@ -308,7 +308,7 @@ def export_omzettingslijst_label_pdf(request, entry_id: int):
         "vanaf_datum": vanaf_datum,
         "patient_naam": patient_naam,
         "geboortedatum": geboortedatum,
-        "logo_path": _static_abs_path("pwa/icons/favicon-32x32.png"),
+        "logo_path": _static_abs_path("img/app_icon_black_trans-512x512.png"),
     }
 
     html = render_to_string(
