@@ -40,6 +40,7 @@ from core.views.openbare import openbare_tiles
 from core.views.instellings import instellings_tiles
 from core.views.reviewplanner import reviewplanner
 from core.views.portavita import portavita_check
+from core.views.houdbaarheidcheck import houdbaarheidcheck
 from core.views.health import health
 from core.views.passkeys import PasskeySetupView, passkey_registration_options,passkey_register, passkey_password_login, passkey_authenticate,passkey_should_offer, passkey_skip
 from core.views.native_biometric import native_biometric_enable,native_biometric_login, native_biometric_revoke, native_biometric_skip, native_biometric_password_login
@@ -141,8 +142,9 @@ urlpatterns = [
     path('afdeling/<int:pk>/clear/', med_views.clear_afdeling_review, name='medicatiebeoordeling_clear_afdeling'),
     path("medicatiebeoordeling/delete/patient/<int:pk>/", med_views.delete_patient, name="medicatiebeoordeling_delete_patient"),
     # Reviwiew planner
-    path("reviewplanner/", reviewplanner, name="reviewplanner"),
+    path("review-planner/", reviewplanner, name="reviewplanner"),
     path("portavita-check/", portavita_check, name="portavita-check"),
+    path("houdbaarheid-check/", houdbaarheidcheck, name="houdbaarheidcheck"),
     # Profiel
     path("profiel/", profiel_index, name="profiel"),
     path("profiel/avatar/upload/", avatar_upload, name="profiel_avatar_upload"),

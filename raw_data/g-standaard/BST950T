@@ -1,0 +1,157 @@
+09500000001Terhandstelling                                             terh                          15600000011561000002156200000115630000010000000015640000020
+09500000002Terhandstelling, bereiding                                  terh-bereid                   15600000011561000002156200000215630000010000000015640000020
+09500000003Terhandstelling, bijz. bereiding                            terh-bijzon                   15600000011561000002156200000315630000010000000015640000020
+09500000004Weekterhandstelling                                         wk-terh                       15600000021561000002156200000115630000010000000015640000020
+09500000005Weekterhandstelling, bereiding                              wk-terh-bereid                15600000021561000002156200000215630000010000000015640000020
+09500000006Weekterhandstelling, bijz. bereiding                        wk-terh-bijzon                15600000021561000002156200000315630000010000000015640000020
+09500000007Terhandstelling (1e)                                        terh-1e                       15600000011561000001156200000115630000010000000015640000020
+09500000008Terhandstelling (1e), bereiding                             terh-1e-bereid                15600000011561000001156200000215630000010000000015640000020
+09500000009Terhandstelling (1e), bijz. bereiding                       terh-1e-bijzon                15600000011561000001156200000315630000010000000015640000020
+09500000010Weekterhandstelling (1e)                                    wk-terh-1e                    15600000021561000001156200000115630000010000000015640000020
+09500000011Weekterhandstelling (1e), bereiding                         wk-terh-1e-bereid             15600000021561000001156200000215630000010000000015640000020
+09500000012Weekterhandstelling (1e), bijz. bereiding                   wk-terh-1e-bijzon             15600000021561000001156200000315630000010000000015640000020
+09500000013Terhandstelling, ANZ                                        terh-ANZ                      15600000011561000002156200000115630000020000000015640000020
+09500000014Terhandstelling, bereiding, ANZ                             terh-bereid-ANZ               15600000011561000002156200000215630000020000000015640000020
+09500000015Terhandstelling, bijz. bereiding, ANZ                       terh-bijzon-ANZ               15600000011561000002156200000315630000020000000015640000020
+09500000016Weekterhandstelling, ANZ                                    wk-terh-ANZ                   15600000021561000002156200000115630000020000000015640000020
+09500000017Weekterhandstelling, bereiding, ANZ                         wk-terh-bereid-ANZ            15600000021561000002156200000215630000020000000015640000020
+09500000018Weekterhandstelling, bijz. bereiding, ANZ                   wk-terh-bijzon-ANZ            15600000021561000002156200000315630000020000000015640000020
+09500000019Terhandstelling (1e), ANZ                                   terh-1e-ANZ                   15600000011561000001156200000115630000020000000015640000020
+09500000020Terhandstelling (1e), bereiding, ANZ                        terh-1e-bereid-ANZ            15600000011561000001156200000215630000020000000015640000020
+09500000021Terhandstelling (1e), bijz. bereiding, ANZ                  terh-1e-bijzon-ANZ            15600000011561000001156200000315630000020000000015640000020
+09500000022Weekterhandstelling (1e), ANZ                               wk-terh-1e-ANZ                15600000021561000001156200000115630000020000000015640000020
+09500000023Weekterhandstelling (1e), bereiding, ANZ                    wk-terh-1e-bereid-ANZ         15600000021561000001156200000215630000020000000015640000020
+09500000024Weekterhandstelling (1e), bijz. bereiding, ANZ              wk-terh-1e-bijzon-ANZ         15600000021561000001156200000315630000020000000015640000020
+09500000025Terhandstelling, thuis                                      terh-thu                      15600000011561000002156200000115630000010000000015640000010
+09500000026Terhandstelling, bereiding, thuis                           terh-bereid-thu               15600000011561000002156200000215630000010000000015640000010
+09500000027Terhandstelling, bijz. bereiding, thuis                     terh-bijzon-thu               15600000011561000002156200000315630000010000000015640000010
+09500000028Weekterhandstelling, thuis                                  wk-terh-thu                   15600000021561000002156200000115630000010000000015640000010
+09500000029Weekterhandstelling, bereiding, thuis                       wk-terh-bereid-thu            15600000021561000002156200000215630000010000000015640000010
+09500000030Weekterhandstelling, bijz. bereiding, thuis                 wk-terh-bijzon-thu            15600000021561000002156200000315630000010000000015640000010
+09500000031Terhandstelling (1e), thuis                                 terh-1e-thu                   15600000011561000001156200000115630000010000000015640000010
+09500000032Terhandstelling (1e), bereiding, thuis                      terh-1e-bereid-thu            15600000011561000001156200000215630000010000000015640000010
+09500000033Terhandstelling (1e), bijz. bereiding, thuis                terh-1e-bijzon-thu            15600000011561000001156200000315630000010000000015640000010
+09500000034Weekterhandstelling (1e), thuis                             wk-terh-1e-thu                15600000021561000001156200000115630000010000000015640000010
+09500000035Weekterhandstelling (1e), bereiding, thuis                  wk-terh-1e-bereid-thu         15600000021561000001156200000215630000010000000015640000010
+09500000036Weekterhandstelling (1e), bijz. bereiding, thuis            wk-terh-1e-bijzon-thu         15600000021561000001156200000315630000010000000015640000010
+09500000037Terhandstelling, ANZ, thuis                                 terh-ANZ-thu                  15600000011561000002156200000115630000020000000015640000010
+09500000038Terhandstelling, bereiding, ANZ, thuis                      terh-bereid-ANZ-thu           15600000011561000002156200000215630000020000000015640000010
+09500000039Terhandstelling, bijz. bereiding, ANZ, thuis                terh-bijzon-ANZ-thu           15600000011561000002156200000315630000020000000015640000010
+09500000040Weekterhandstelling, ANZ, thuis                             wk-terh-ANZ-thu               15600000021561000002156200000115630000020000000015640000010
+09500000041Weekterhandstelling, bereiding, ANZ, thuis                  wk-terh-bereid-ANZ-thu        15600000021561000002156200000215630000020000000015640000010
+09500000042Weekterhandstelling, bijz. bereiding, ANZ,thuis             wk-terh-bijzon-ANZ-thu        15600000021561000002156200000315630000020000000015640000010
+09500000043Terhandstelling (1e), ANZ, thuis                            terh-1e-ANZ-thu               15600000011561000001156200000115630000020000000015640000010
+09500000044Terhandstelling (1e), bereiding, ANZ, thuis                 terh-1e-bereid-ANZ-thu        15600000011561000001156200000215630000020000000015640000010
+09500000045Terhandstelling (1e),bijz.bereiding, ANZ,thuis              terh-1e-bijzon-ANZ-thu        15600000011561000001156200000315630000020000000015640000010
+09500000046Weekterhandstelling (1e), ANZ, thuis                        wk-terh-1e-ANZ-thu            15600000021561000001156200000115630000020000000015640000010
+09500000047Weekterhandstelling (1e), bereiding, ANZ, thuis             wk-terh-1e-bereid-ANZ-thu     15600000021561000001156200000215630000020000000015640000010
+09500000048Weekterhandstelling (1e),bijz.bereiding,ANZ,thuis           wk-terh-1e-bijzon-ANZ-thu     15600000021561000001156200000315630000020000000015640000010
+095000000492-Wekenterhandstelling                                      2wk-terh                      15600000041561000002156200000115630000010000000015640000020
+095000000502-Wekenterhandstelling, bereiding                           2wk-terh-bereid               15600000041561000002156200000215630000010000000015640000020
+095000000512-Wekenterhandstelling, bijz. bereiding                     2wk-terh-bijzon               15600000041561000002156200000315630000010000000015640000020
+095000000522-Wekenterhandstelling (1e)                                 2wk-terh-1e                   15600000041561000001156200000115630000010000000015640000020
+095000000532-Wekenterhandstelling (1e), bereiding                      2wk-terh-1e-bereid            15600000041561000001156200000215630000010000000015640000020
+095000000542-Wekenterhandstelling (1e), bijz. bereiding                2wk-terh-1e-bijzon            15600000041561000001156200000315630000010000000015640000020
+095000000552-Wekenterhandstelling, ANZ                                 2wk-terh-ANZ                  15600000041561000002156200000115630000020000000015640000020
+095000000562-Wekenterhandstelling, bereiding, ANZ                      2wk-terh-bereid-ANZ           15600000041561000002156200000215630000020000000015640000020
+095000000572-Wekenterhandstelling, bijz. bereiding, ANZ                2wk-terh-bijzon-ANZ           15600000041561000002156200000315630000020000000015640000020
+095000000582-Wekenterhandstelling (1e), ANZ                            2wk-terh-1e-ANZ               15600000041561000001156200000115630000020000000015640000020
+095000000592-Wekenterhandstelling (1e), bereiding, ANZ                 2wk-terh-1e-bereid-ANZ        15600000041561000001156200000215630000020000000015640000020
+095000000602-Wekenterhandstelling (1e), bijz. bereiding, ANZ           2wk-terh-1e-bijzon-ANZ        15600000041561000001156200000315630000020000000015640000020
+095000000612-Wekenterhandstelling, thuis                               2wk-terh-thu                  15600000041561000002156200000115630000010000000015640000010
+095000000622-Wekenterhandstelling, bereiding, thuis                    2wk-terh-bereid-thu           15600000041561000002156200000215630000010000000015640000010
+095000000632-Wekenterhandstelling, bijz. bereiding, thuis              2wk-terh-bijzon-thu           15600000041561000002156200000315630000010000000015640000010
+095000000642-Wekenterhandstelling (1e), thuis                          2wk-terh-1e-thu               15600000041561000001156200000115630000010000000015640000010
+095000000652-Wekenterhandstelling (1e), bereiding, thuis               2wk-terh-1e-bereid-thu        15600000041561000001156200000215630000010000000015640000010
+095000000662-Wekenterhandstelling (1e), bijz.bereiding,thuis           2wk-terh-1e-bijzon-thu        15600000041561000001156200000315630000010000000015640000010
+095000000672-Wekenterhandstelling, ANZ, thuis                          2wk-terh-ANZ-thu              15600000041561000002156200000115630000020000000015640000010
+095000000682-Wekenterhandstelling, bereiding, ANZ, thuis               2wk-terh-bereid-ANZ-thu       15600000041561000002156200000215630000020000000015640000010
+095000000692-Wekenterhandstelling, bijz. bereiding, ANZ,thuis          2wk-terh-bijzon-ANZ-thu       15600000041561000002156200000315630000020000000015640000010
+095000000702-Wekenterhandstelling (1e), ANZ, thuis                     2wk-terh-1e-ANZ-thu           15600000041561000001156200000115630000020000000015640000010
+095000000712-Wekenterhandstelling (1e), bereiding, ANZ, thuis          2wk-terh-1e-bereid-ANZ-thu    15600000041561000001156200000215630000020000000015640000010
+095000000722-Wekenterhandstelling(1e),bijz.bereidng,ANZ,thuis          2wk-terh-1e-bijzon-ANZ-thu    15600000041561000001156200000315630000020000000015640000010
+095000000733-Wekenterhandstelling                                      3wk-terh                      15600000051561000002156200000115630000010000000015640000020
+095000000743-Wekenterhandstelling, bereiding                           3wk-terh-bereid               15600000051561000002156200000215630000010000000015640000020
+095000000753-Wekenterhandstelling, bijz. bereiding                     3wk-terh-bijzon               15600000051561000002156200000315630000010000000015640000020
+095000000763-Wekenterhandstelling (1e)                                 3wk-terh-1e                   15600000051561000001156200000115630000010000000015640000020
+095000000773-Wekenterhandstelling (1e), bereiding                      3wk-terh-1e-bereid            15600000051561000001156200000215630000010000000015640000020
+095000000783-Wekenterhandstelling (1e), bijz. bereiding                3wk-terh-1e-bijzon            15600000051561000001156200000315630000010000000015640000020
+095000000793-Wekenterhandstelling, ANZ                                 3wk-terh-ANZ                  15600000051561000002156200000115630000020000000015640000020
+095000000803-Wekenterhandstelling, bereiding, ANZ                      3wk-terh-bereid-ANZ           15600000051561000002156200000215630000020000000015640000020
+095000000813-Wekenterhandstelling, bijz. bereiding, ANZ                3wk-terh-bijzon-ANZ           15600000051561000002156200000315630000020000000015640000020
+095000000823-Wekenterhandstelling (1e), ANZ                            3wk-terh-1e-ANZ               15600000051561000001156200000115630000020000000015640000020
+095000000833-Wekenterhandstelling (1e), bereiding, ANZ                 3wk-terh-1e-bereid-ANZ        15600000051561000001156200000215630000020000000015640000020
+095000000843-Wekenterhandstelling (1e), bijz.bereiding ANZ             3wk-terh-1e-bijzon-ANZ        15600000051561000001156200000315630000020000000015640000020
+095000000853-Wekenterhandstelling, thuis                               3wk-terh-thu                  15600000051561000002156200000115630000010000000015640000010
+095000000863-Wekenterhandstelling, bereiding, thuis                    3wk-terh-bereid-thu           15600000051561000002156200000215630000010000000015640000010
+095000000873-Wekenterhandstelling, bijz. bereiding, thuis              3wk-terh-bijzon-thu           15600000051561000002156200000315630000010000000015640000010
+095000000883-Wekenterhandstelling (1e), thuis                          3wk-terh-1e-thu               15600000051561000001156200000115630000010000000015640000010
+095000000893-Wekenterhandstelling (1e), bereiding, thuis               3wk-terh-1e-bereid-thu        15600000051561000001156200000215630000010000000015640000010
+095000000903-Wekenterhandstelling (1e), bijz.bereiding,thuis           3wk-terh-1e-bijzon-thu        15600000051561000001156200000315630000010000000015640000010
+095000000913-Wekenterhandstelling, ANZ, thuis                          3wk-terh-ANZ-thu              15600000051561000002156200000115630000020000000015640000010
+095000000923-Wekenterhandstelling, bereiding, ANZ, thuis               3wk-terh-bereid-ANZ-thu       15600000051561000002156200000215630000020000000015640000010
+095000000933-Wekenterhandstelling, bijz. bereiding, ANZ,thuis          3wk-terh-bijzon-ANZ-thu       15600000051561000002156200000315630000020000000015640000010
+095000000943-Wekenterhandstelling (1e), ANZ, thuis                     3wk-terh-1e-ANZ-thu           15600000051561000001156200000115630000020000000015640000010
+095000000953-Wekenterhandstelling (1e), bereiding, ANZ, thuis          3wk-terh-1e-bereid-ANZ-thu    15600000051561000001156200000215630000020000000015640000010
+095000000963-Wekenterhandstelling(1e),bijz.bereidig,ANZ,thuis          3wk-terh-1e-bijzon-ANZ-thu    15600000051561000001156200000315630000020000000015640000010
+09500000097Terhandstelling met begeleidingsgesprek                     terh-1e-BNG                   15600000011561000004156200000115630000010000000015640000020
+09500000098Terhandstelling met begeleidingsgesprek, bereiding          terh-1e-BNG-bereid            15600000011561000004156200000215630000010000000015640000020
+09500000099Terhandstelling met gesprek, bijz. bereiding                terh-1e-BNG-bijzon            15600000011561000004156200000315630000010000000015640000020
+09500000100Weekterhandstelling met begeleidingsgesprek                 wk-terh-1e-BNG                15600000021561000004156200000115630000010000000015640000020
+09500000101Weekterhandstelling met gesprek, bereiding                  wk-terh-1e-BNG-bereid         15600000021561000004156200000215630000010000000015640000020
+09500000102Weekterhandstelling met gesprek, bijz. bereiding            wk-terh-1e-BNG-bijzon         15600000021561000004156200000315630000010000000015640000020
+09500000103Terhandstelling met begeleidingsgesprek, ANZ                terh-1e-BNG-ANZ               15600000011561000004156200000115630000020000000015640000020
+09500000104Terhandstelling met gesprek, bereiding, ANZ                 terh-1e-BNG-bereid-ANZ        15600000011561000004156200000215630000020000000015640000020
+09500000105Terhandstelling met gesprek, bijz. bereiding ANZ            terh-1e-BNG-bijzon-ANZ        15600000011561000004156200000315630000020000000015640000020
+09500000106Weekterhandstelling met gesprek, ANZ                        wk-terh-1e-BNG-ANZ            15600000021561000004156200000115630000020000000015640000020
+09500000107Weekterhandstelling met gesprek, bereiding, ANZ             wk-terh-1e-BNG-bereid-ANZ     15600000021561000004156200000215630000020000000015640000020
+09500000108Weekterhandstelling, gesprek, bijz. bereiding, ANZ          wk-terh-1e-BNG-bijzon-ANZ     15600000021561000004156200000315630000020000000015640000020
+09500000109Terhandstelling met begeleidingsgesprek, thuis              terh-1e-BNG-thu               15600000011561000004156200000115630000010000000015640000010
+09500000110Terhandstelling met gesprek, bereiding, thuis               terh-1e-BNG-bereid-thu        15600000011561000004156200000215630000010000000015640000010
+09500000111Terhandstelling, gesprek, bijz. bereiding, thuis            terh-1e-BNG-bijzon-thu        15600000011561000004156200000315630000010000000015640000010
+09500000112Weekterhandstelling met begeleidingsgesprek, thuis          wk-terh-1e-BNG-thu            15600000021561000004156200000115630000010000000015640000010
+09500000113Weekterhandstelling met gesprek, bereiding, thuis           wk-terh-1e-BNG-bereid-thu     15600000021561000004156200000215630000010000000015640000010
+09500000114Weekterhandstelling, gesprek, bijz. bereid, thuis           wk-terh-1e-BNG-bijzon-thu     15600000021561000004156200000315630000010000000015640000010
+09500000115Terhandstelling met gesprek, ANZ, thuis                     terh-1e-BNG-ANZ-thu           15600000011561000004156200000115630000020000000015640000010
+09500000116Terhandstelling met gesprek, bereiding, ANZ, thuis          terh-1e-BNG-bereid-ANZ-thu    15600000011561000004156200000215630000020000000015640000010
+09500000117Terhandstelling, gesprek, bijz. bereid, ANZ, thuis          terh-1e-BNG-bijzon-ANZ-thu    15600000011561000004156200000315630000020000000015640000010
+09500000118Weekterhandstelling met gesprek, ANZ, thuis                 wk-terh-1e-BNG-ANZ-thu        15600000021561000004156200000115630000020000000015640000010
+09500000119Weekterhandstelling, gesprek, bereid, ANZ, thuis            wk-terh-1e-BNG-bereid-ANZ-thu 15600000021561000004156200000215630000020000000015640000010
+09500000120Weekterhandstell, gesprek, bijz. bereid, ANZ thuis          wk-terh-1e-BNG-bijzon-ANZ-thu 15600000021561000004156200000315630000020000000015640000010
+095000001212-Wekenterhandstelling met begeleidingsgesprek              2wk-terh-1e-BNG               15600000041561000004156200000115630000010000000015640000020
+095000001222-Wekenterhandstelling met gesprek, bereiding               2wk-terh-1e-BNG-bereid        15600000041561000004156200000215630000010000000015640000020
+095000001232-Wekenterhandstelling, gesprek, bijz. bereiding            2wk-terh-1e-BNG-bijzon        15600000041561000004156200000315630000010000000015640000020
+095000001242-Wekenterhandstelling, begeleidingsgesprek, ANZ            2wk-terh-1e-BNG-ANZ           15600000041561000004156200000115630000020000000015640000020
+095000001252-Wekenterhandstelling, gesprek, bereiding, ANZ             2wk-terh-1e-BNG-bereid-ANZ    15600000041561000004156200000215630000020000000015640000020
+095000001262-Wekenterhandstelling,gesprek,bijz. bereiding,ANZ          2wk-terh-1e-BNG-bijzon-ANZ    15600000041561000004156200000315630000020000000015640000020
+095000001272-Wekenterhandstelling met gesprek, thuis                   2wk-terh-1e-BNG-thu           15600000041561000004156200000115630000010000000015640000010
+095000001282-Wekenterhandstelling, gesprek, bereiding, thuis           2wk-terh-1e-BNG-bereid-thu    15600000041561000004156200000215630000010000000015640000010
+095000001292-Wekenterhandstell, gesprek, bijz. bereid, thuis           2wk-terh-1e-BNG-bijzon-thu    15600000041561000004156200000315630000010000000015640000010
+095000001302-Wekenterhandstelling met gesprek, ANZ, thuis              2wk-terh-1e-BNG-ANZ-thu       15600000041561000004156200000115630000020000000015640000010
+095000001312-Wekenterhandstelling, gesprek bereid, ANZ, thuis          2wk-terh-1e-BNG-bereid-ANZ-thu15600000041561000004156200000215630000020000000015640000010
+095000001322-Wekenterhandstell, gespr, bijz. bereid,ANZ,thuis          2wk-terh-1e-BNG-bijzon-ANZ-thu15600000041561000004156200000315630000020000000015640000010
+095000001333-Wekenterhandstelling met begeleidingsgesprek              3wk-terh-1e-BNG               15600000051561000004156200000115630000010000000015640000020
+095000001343-Wekenterhandstelling met gesprek, bereiding               3wk-terh-1e-BNG-bereid        15600000051561000004156200000215630000010000000015640000020
+095000001353-Wekenterhandstelling, gesprek, bijz. bereiding            3wk-terh-1e-BNG-bijzon        15600000051561000004156200000315630000010000000015640000020
+095000001363-Wekenterhandstelling, begeleidingsgesprek, ANZ            3wk-terh-1e-BNG-ANZ           15600000051561000004156200000115630000020000000015640000020
+095000001373-Wekenterhandstelling, gesprek, bereiding, ANZ             3wk-terh-1e-BNG-bereid-ANZ    15600000051561000004156200000215630000020000000015640000020
+095000001383-Wekenterhandstelling,gesprek,bijz. bereiding,ANZ          3wk-terh-1e-BNG-bijzon-ANZ    15600000051561000004156200000315630000020000000015640000020
+095000001393-Wekenterhandstelling met gesprek, thuis                   3wk-terh-1e-BNG-thu           15600000051561000004156200000115630000010000000015640000010
+095000001403-Wekenterhandstelling, gesprek, bereiding, thuis           3wk-terh-1e-BNG-bereid-thu    15600000051561000004156200000215630000010000000015640000010
+095000001413-Wekenterhandstell, gesprek, bijz. bereid, thuis           3wk-terh-1e-BNG-bijzon-thu    15600000051561000004156200000315630000010000000015640000010
+095000001423-Wekenterhandstelling met gesprek, ANZ, thuis              3wk-terh-1e-BNG-ANZ-thu       15600000051561000004156200000115630000020000000015640000010
+095000001433-Wekenterhandstelling, gesprek bereid, ANZ, thuis          3wk-terh-1e-BNG-bereid-ANZ-thu15600000051561000004156200000215630000020000000015640000010
+095000001443-Wekenterhandstell, gespr, bijz. bereid,ANZ,thuis          3wk-terh-1e-BNG-bijzon-ANZ-thu15600000051561000004156200000315630000020000000015640000010
+09500000145Vervolguitgifte 4 maanden                                   vervolg-4mnd                  15600000061561000002156200000115630000010000000015640000020
+09500000146Vervolguitgifte 6 maanden                                   vervolg-6mnd                  15600000071561000002156200000115630000010000000015640000020
+09500000147Vervolguitgifte 9 maanden                                   vervolg-9mnd                  15600000081561000002156200000115630000010000000015640000020
+09500000148Vervolguitgifte 12 maanden                                  vervolg-12mnd                 15600000091561000002156200000115630000010000000015640000020
+09500000149Terhandstelling GDV (bv. medicijnrol) 1 week                terhandstelling-GDV-1wk       15600000101561000002156200000115630000010000000015640000020
+09500000150Terhandstelling GDV (bv. medicijnrol) 2 weken               terhandstelling-GDV-2wkn      15600000111561000002156200000115630000010000000015640000020
+09500000151Terhandstelling GDV (bv. medicijnrol) 3 weken               terhandstelling-GDV-3wkn      15600000121561000002156200000115630000010000000015640000020
+09500000152Terhandstelling GDV (bv. medicijnrol) 4 weken               terhandstelling-GDV-4wkn      15600000131561000002156200000115630000010000000015640000020
+09500000153Startuitgifte GDV (bv. medicijnrol) 1 week                  startuitgifte-GDV-1wk         15600000101561000005156200000115630000010000000015640000020
+09500000154Startuitgifte GDV (bv. medicijnrol) 2 weken                 startuitgifte-GDV-2wkn        15600000111561000005156200000115630000010000000015640000020
+09500000155Startuitgifte GDV (bv. medicijnrol) 3 weken                 startuitgifte-GDV-3wkn        15600000121561000005156200000115630000010000000015640000020
+09500000156Startuitgifte GDV (bv. medicijnrol) 4 weken                 startuitgifte-GDV-4wkn        15600000131561000005156200000115630000010000000015640000020
+

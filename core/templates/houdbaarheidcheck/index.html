@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Houdbaarheid check{% endblock %}
+{% block header_title %}Houdbaarheid check{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/houdbaarheidcheck/houdbaarheidcheck.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card card-inner">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/houdbaarheid.svg' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Houdbaarheid Check</h2>
+        <p>Zoek op RVG nummer en toon de houdbaarheidtekst op het etiket en de naam van het geneesmiddel.</p>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'openbare_tiles' %}" class="btn">Terug naar Openbare Apo</a>
+      </div>
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+      <form method="get" class="hc-form" autocomplete="off">
+        <div class="hc-row">
+          <div class="hc-field">
+            <label class="section-label">{{ form.rvg.label }}</label>
+            {{ form.rvg }}
+            <p class="form-help-text">
+              <em>Een nul voor het RVG nummer maakt niet uit (bijv. 014314 werkt ook).</em>
+            </p>
+          </div>
+
+          <div class="hc-actions">
+            <button type="submit" class="btn btn-save">Zoeken</button>
+          </div>
+        </div>
+      </form>
+
+      {% if searched %}
+      <div class="hc-results">
+        <div class="hc-meta">
+          <div><strong>RVG:</strong> {{ rvg_norm|default:"-" }}</div>
+        </div>
+
+        {% if namen %}
+        <div class="hc-block">
+          <h3 class="hc-h3">Naam:</h3>
+          <ul class="hc-list">
+            {% for n in namen %}
+              <li><strong>{{ n }}</strong></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="hc-block">
+          <h3 class="hc-h3">Houdbaarheidtekst(en) op etiket:</h3>
+          {% if teksten %}
+            <ol class="hc-olist">
+              {% for t in teksten %}
+                <li>{{ t }}</li>
+              {% endfor %}
+            </ol>
+          {% else %}
+            <p class="hc-muted">(Geen teksten gevonden)</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/houdbaarheidcheck/houdbaarheidcheck.js' %}" defer></script>
+{% endblock %}

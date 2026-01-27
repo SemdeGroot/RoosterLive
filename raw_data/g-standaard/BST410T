@@ -1,0 +1,908 @@
+0410010000001-       -                                                                     -                                            10307310427310000001061120030000000000000000000000000000
+0410010000002AANLMBS9Medicatiebewakingssignaal                                             Medicatiebewakingssignaal                    10307310427310000002051120032701200900000000000000000000
+0410010000003AANLPAT9Patient of vertegenwoordiger namens patient                           Patient/vertegenwoordiger                    10307310427310000003051120030106200500000000000000000000
+0410010000004AANLAPO9Apotheek                                                              Apotheek                                     10307310427310000004191120030106200500000000000000000000
+0410010000005AANLART9Arts/zorgverlener                                                     Arts/zorgverlener                            10307310427310000005191120030106200500000000000000000000
+0410010000446ALMFB9  MFB                                                                   MFB                                          10307310427300000000060420180000000006042018000000000000
+0410011000001-       -                                                                     -                                            10307310427311000001061120030000000000000000000000000000
+0410011000011ALOVERI9Overig                                                                Overig                                       10307310427311000011051120030106200500000000000000000000
+0410011000012ALINTER9Interactie                                                            Interactie                                   10307310427311000012191120030106200500000000000000000000
+0410011000013ALCONTR9Contra-indicatie                                                      Contra-indicatie                             10307310427311000013191120030906200500000000000000000000
+0410011000014ALDOSER9Dosering                                                              Dosering                                     10307310427311000014191120030106200500000000000000000000
+0410011000015ALDUBMD9Dubbelmedicatie                                                       Dubbelmedicatie                              10307310427311000015191120030106200500000000000000000000
+0410011000016ALAFWDG9Afwijkend gebruik                                                     Afwijkend gebruik                            10307310427311000016191120030507200700000000000000000000
+0410011000017ALOVERG9Overgebruik/overconsumptie (=DM1)                                     Overgebruik/overconsumptie (=DM1)            10307310427311000017191120032601200900000000000000000000
+0410011000018ALONDER9Ondergebruik/onderconsumptie                                          Ondergebruik/onderconsumptie                 10307310427311000018191120030106200500000000000000000000
+0410011000019ALMEDAN9Medicatieanalyse                                                      Medicatieanalyse                             10307310427311000019191120030106200500000000000000000000
+0410011000020ALMEAIS9Melding uit AIS                                                       Melding uit AIS                              10307310427311000020191120030106200500000000000000000000
+0410011000021ALPRO4A9Project 4                                                             Project 4                                    10307310427311000021191120032609201100000000000000000000
+0410011000023ALRCONV9Onvolledig/onduidelijk/onjuist recept                                 Onvolledig/onduidelijk/onjuist recept        10307310427311000023191120032410200600000000000000000000
+0410011000024ALZKHVB9Ontslag uit ziekenhuis                                                Ontslag ziekenhuis                           10307310427311000024191120030709201000000000000000000000
+0410011000025ALVRAAG9Vraag/probleem/melding                                                Vraag/probleem/melding                       10307310427311000025191120031601200700000000000000000000
+0410011000026ALKLACH9Klacht over geneesmiddel/product                                      Klacht over gnm/product                      10307310427311000026191120032308201100000000000000000000
+0410011000027ALEERUI9Eerste uitgifte                                                       Eerste uitgifte                              10307310427311000027041220030106200500000000000000000000
+0410011000028ALTWUIT9Tweede uitgifte                                                       Tweede uitgifte                              10307310427311000028041220030106200500000000000000000000
+0410011000029ALVERVU9Vervolguitgifte                                                       Vervolguitgifte                              10307310427311000029041220030106200500000000000000000000
+0410011000030ALPRO2A9Project 2                                                             Project 2                                    10307310427311000030040220042609201100000000000000000000
+0410011000031ALPR03A9Project 3                                                             Project 3                                    10307310427311000031040220042609201100000000000000000000
+0410011000032ALPRO5A9Project 5                                                             Project 5                                    10307310427311000032290920042609201100000000000000000000
+0410011000033ALPRO1A9Project 1                                                             Project 1                                    10307310427311000033071220042609201100000000000000000000
+0410011000034ALPSEDM9Pseudodubbelmedicatie                                                 Pseudodubbelmedicatie                        10307310427311000034280120050106200500000000000000000000
+0410011000035ALAFGZB9Afgeleid ziektebeeld                                                  Afgeleid ziektebeeld                         10307310427311000035280120050106200500000000000000000000
+0410011000037ALALINT9Allergie/intolerantie                                                 Allergie/intolerantie                        10307310427311000037110720052809200500000000000000000000
+0410011000038ALDM1OG9Dubbelmedicatie 1: overgebruik                                        DM 1: overgebruik                            10307310427311000038280920052601200900000000000000000000
+0410011000039ALDM2GE9Dubbelmedicatie 2: zelfde generieke product/substitutie               DM 2: zelfde generieke product               10307310427311000039280920052410200600000000000000000000
+0410011000040ALDM3EX9Dubbelmedicatie 3: zelfde generieke produkt,andere extra kenmerken    DM 3: extra kenmerken                        10307310427311000040280920052809200500000000000000000000
+0410011000041ALDM4FV9Dubbelmedicatie 4: zelfde wrkzme stof,sterkte,toedweg,andere farm vormDM 4: farmaceutische vorm                    10307310427311000041280920052809200500000000000000000000
+0410011000042ALDM5ST9Dubbelmedicatie 5: zelfde wrkzme stof,toedweg,andere sterkte          DM 5: sterkte                                10307310427311000042280920052809200500000000000000000000
+0410011000043ALDM6CO9Dubbelmedicatie 6: zelfde wrkzme stof,toedweg, maar in combinatieprep DM 6: combinatiepreparaat                    10307310427311000043280920052809200500000000000000000000
+0410011000044ALDM7TW9Dubbelmedicatie 7: zelfde wrkzme bestanddeel, verschillende toedweg   DM 7: toedieningsweg                         10307310427311000044280920052809200500000000000000000000
+0410011000045ALDM8PN9Dubbelmedicatie 8: vrsch wrkzme stoffen,gelijkgerichte wrking,niet ratDM 8: pseudo, niet rationeel                 10307310427311000045280920052809200500000000000000000000
+0410011000046ALDM9PG9Dubbelmedicatie 9: vrsch wrkzme stoffen,gelijkgerichte wrking,gebruikeDM 9: pseudo, gebruikelijk                   10307310427311000046280920052809200500000000000000000000
+0410011000047ALGNOPG9Geneesmiddel niet opgehaald                                           Geneesmiddel niet opgehaald                  10307310427311000047280920050106200500000000000000000000
+0410011000048ALAFWPR9Afwijkend product                                                     Afwijkend product                            10307310427311000048010520062410200600000000000000000000
+0410011000054ALDRPAN9Project DRP Afwijking normdosering                                    Project DRP Afwijking normdosering           10307310427300000000220520062205200600000000000000000000
+0410011000055ALDRPAS9Project DRP Afwijking standaard                                       Project DRP Afwijking standaard              10307310427300000000220520062205200600000000000000000000
+0410011000056ALDRPBW9Project DRP Bijwerking                                                Project DRP Bijwerking                       10307310427300000000220520062205200600000000000000000000
+0410011000057ALDRPDM9Project DRP Dubbelmedicatie                                           Project DRP Dubbelmedicatie                  10307310427300000000220520062205200600000000000000000000
+0410011000058ALDRPGG9Project DRP Gebruiksongemak                                           Project DRP Gebruiksongemak                  10307310427300000000220520062410200600000000000000000000
+0410011000059ALDRPGI9Project DRP Geen indicatie (meer)                                     Project DRP Geen indicatie (meer)            10307310427300000000220520062205200600000000000000000000
+0410011000060ALDRPGO9Project DRP Geneesmiddel ontbreekt                                    Project DRP Geneesmiddel ontbreekt           10307310427300000000220520062205200600000000000000000000
+0410011000061ALDRPIN9Project DRP Interactie                                                Project DRP Interactie                       10307310427300000000220520062205200600000000000000000000
+0410011000062ALDRPOL9Project DRP Off label gebruik                                         Project DRP Off label gebruik                10307310427300000000220520062205200600000000000000000000
+0410011000063ALDRPOB9Project DRP Onderbehandeling                                          Project DRP Onderbehandeling                 10307310427300000000220520062205200600000000000000000000
+0410011000064ALDRPOG9Project DRP Ondergebruik                                              Project DRP Ondergebruik                     10307310427300000000220520062205200600000000000000000000
+0410011000065ALDRPOV9Project DRP Overgebruik                                               Project DRP Overgebruik                      10307310427300000000220520062205200600000000000000000000
+0410011000066ALDRPPD9Project DRP Pseudodubbelmedicatie                                     Project DRP Pseudodubbelmedicatie            10307310427300000000220520062205200600000000000000000000
+0410011000067ALDRPRC9Project DRP Relatieve contra-indicatie                                Project DRP Relatieve contra-indicatie       10307310427300000000220520062205200600000000000000000000
+0410011000068ALDRPTT9Project DRP Therapieontrouw                                           Project DRP Therapieontrouw                  10307310427300000000220520062410200600000000000000000000
+0410011000069ALCOBEBRContact nav bezorgbrief                                               Contact nav bezorgbrief                      10307310427300000000160820070106200500000000000000000000
+0410011000070ALSPGNM9Specialistisch geneesmiddel                                           Specialistisch geneesmiddel                  10307310427300000000290520080106200500000000000000000000
+0410011000071ALBERGR9Bereiding niet-gestandaardiseerd, bereiden uit grondstoffen           Bereiding niet-gest.uit grondstoffen         10307310427300000000290520080106200500000000000000000000
+0410011000072ALBEHPR9Bereiding niet-gestandaardiseerd, aanpassen van handelspreparaat      Bereiding niet-gest.uit handelspreparaat     10307310427300000000290520080106200500000000000000000000
+0410011000073ALONDNO9Onderdosering-onder het norm minimum                                  Onderdosering-onder het norm minimum         10307310427300000000131120080000000000000000000000000000
+0410011000074ALONDAB9Onderdosering-onder het absolute minimum                              Onderdosering-onder het absolute minimum     10307310427300000000131120080000000000000000000000000000
+0410011000075ALOVDNO9Overdosering-boven het norm maximum                                   Overdosering-boven het norm maximum          10307310427300000000131120080000000000000000000000000000
+0410011000076ALOVDAB9Overdosering-boven het absolute maximum                               Overdosering-boven het absolute maximum      10307310427300000000131120080000000000000000000000000000
+0410011000077ALOVDRA9Overdosering risicostof-boven het absolute maximum                    Overdosering risicostof-boven abs maximum    10307310427300000000081220080000000000000000000000000000
+0410011000078ALOVDRN9Overdosering risicostof-boven het norm maximum                        Overdosering risicostof-boven norm maximum   10307310427300000000081220080000000000000000000000000000
+0410011000079ALGESLA9Geslacht is onbekend of niet toegestaan                               Geslacht is onbekend of niet toegestaan      10307310427300000000081220080812200800000000000000000000
+0410011000080ALDOFRE9Geen doseringsgegevens voor deze frequentie en/of tijdseenheid        Geen dos.gegevens voor deze freq/tijdseenheid10307310427300000000081220080106200500000000000000000000
+0410011000081ALAFWDS9Geen doseringscontrole vanwege afwijkende doseereenheid               Afwijkende doseereenheid                     10307310427300000000081220080507200700000000000000000000
+0410011000082ALGEWON9Geen doseringscontrole wegens onbekend of verouderd gewicht           Onbekend actueel gewicht                     10307310427300000000081220080000000000000000000000000000
+0410011000083ALLICHO9Geen doseringscontrole wegens onbekend of verouderd lichaamsoppervlak Onbekend actueel lichaamsoppervlak           10307310427300000000081220080000000000000000000000000000
+0410011000084ALGEBDO9Geen doseringscontrole wegens ontbrekende geboortedatum               Ontbrekende geboortedatum                    10307310427300000000081220082410200600000000000000000000
+0410011000085ALDOLFT9Geen doseringsgegevens voor deze leeftijd                             Geen dos.gegevens voor deze leeftijd         10307310427300000000081220080106200500000000000000000000
+0410011000086ALDOGEW9Geen doseringsgegevens voor dit gewicht                               Geen dos.gegevens voor dit gewicht           10307310427300000000081220080106200500000000000000000000
+0410011000087ALDOLIO9Geen doseringsgegevens voor dit lichaamsoppervlak                     Geen dos.gegevens voor dit lichaamsoppervlak 10307310427300000000081220080106200500000000000000000000
+0410011000088ALDOGGO9Geen doseringscontrole wegens ontbrekende doseergegevens              Ontbrekende doseergegevens                   10307310427300000000081220082410200600000000000000000000
+0410011000089ALVARFR9Variabele frequentie                                                  Variabele frequentie                         10307310427300000000081220080106200500000000000000000000
+0410011000090ALDENEK9Denekamp gebruikt, controleer handmatig                               Denekamp gebruikt, controleer handmatig      10307310427300000000081220080106200500000000000000000000
+0410011000091ALINDDO9Er zijn indicaties met lagere doseergrenzen                           Indicaties met lagere doseergrenzen          10307310427300000000081220080106200500000000000000000000
+0410011000092ALEXTFR9Doseringscontrole op basis van extrapolatie van frequentie            Controle door extrapolatie frequentie        10307310427300000000090120090906200500000000000000000000
+0410011000093ALLIMBK9BK:Lareb Intensive Monitoring                                         BK:LIM                                       10307310427300000000200120092701201000000000000000000000
+0410011000094ALEU3SM9Semi-eerste uitgifte 3                                                Semi-EU 3                                    10307310427300000000260120090106200500000000000000000000
+0410011000095ALEU4SM9Semi-eerste uitgifte 4                                                Semi-EU 4                                    10307310427300000000260120090106200500000000000000000000
+0410011000096ALEU5SM9Semi-eerste uitgifte 5                                                Semi-EU 5                                    10307310427300000000260120090106200500000000000000000000
+0410011000097ALEU6SM9Semi-eerste uitgifte 6                                                Semi-EU 6                                    10307310427300000000260120090106200500000000000000000000
+0410011000098ALEU7SM9Semi-eerste uitgifte 7                                                Semi-EU 7                                    10307310427300000000260120090106200500000000000000000000
+0410011000099ALC3DME9Combinatie DM/semi-EU 3                                               Combinatie DM/semi-EU 3                      10307310427300000000050320090503200900000000000000000000
+0410011000100ALC4DME9Combinatie DM/semi-EU 4                                               Combinatie DM/semi-EU 4                      10307310427300000000050320090503200900000000000000000000
+0410011000101ALC5DME9Combinatie DM/semi-EU 5                                               Combinatie DM/semi-EU 5                      10307310427300000000050320090503200900000000000000000000
+0410011000102ALC6DME9Combinatie DM/semi-EU 6                                               Combinatie DM/semi-EU 6                      10307310427300000000050320090503200900000000000000000000
+0410011000103ALC7DME9Combinatie DM/semi-EU 7                                               Combinatie DM/semi-EU 7                      10307310427300000000050320090503200900000000000000000000
+0410011000104ALTOXMT9BK:Let op toxiciteit methotrexaat:extra contr                         BK:Let op toxiciteit methotrexaat:extra contr10307310427300000000290620093108201000000000000000000000
+0410011000105ALVERKA9Verkeersdeelname cat 1                                                Verkeersdeelname cat 1                       10307310427300000000100820090106200500000000000000000000
+0410011000106ALVERKB9Verkeersdeelname cat 2                                                Verkeersdeelname cat 2                       10307310427300000000100820090106200500000000000000000000
+0410011000107ALVERKC9Verkeersdeelname cat 3                                                Verkeersdeelname cat 3                       10307310427300000000100820090106200500000000000000000000
+0410011000108ALDGBRO9BK:Doorgeleverde bereiding:ratio onvoldoende onderbouwd               BK:Doorgelev bereiding:ratio onvold onderbwd 10307310427300000000270120100212201000000000000000000000
+0410011000109ALDGBRN9BK:Doorgeleverde bereiding ratio niet beoordeeld                      BK:Doorgelev bereiding: ratio niet beoordeeld10307310427300000000270120102701201000000000000000000000
+0410011000110ALLAOPG9BK:Laxantia bij opioidgebruik                                         BK:Laxantia bij opioidgebruik                10307310427300000000280120102701201000000000000000000000
+0410011000111ALANTNI9BK:Antithromboticumgebruik bij nitraten                               BK:Antithromboticumgebruik bij nitraten      10307310427300000000010220102701201000000000000000000000
+0410011000112ALANMI9 BK:Antimycotica bij inhalatiecorticosteroiden                         BK:Antimycotica bij inhalatiecorticosteroiden10307310427300000000110220102701201000000000000000000000
+0410011000113ALMANSA9BK:Maagprotectie bij NSAID-gebruik                                    BK:Maagprotectie bij NSAID-gebruik           10307310427300000000110220102701201000000000000000000000
+0410011000114ALONCO9 BK:Let op dos en mog stopperiode oncolyticum                          BK:Let op dos en mog stopperiode oncolyticum 10307310427300000000110220102701201000000000000000000000
+0410011000115ALGRAPM9BK:Bij dit gnm grapefruitsapfolder meegeven                           BK:Bij dit gnm grapefruitsapfolder meegeven  10307310427300000000180220102701201000000000000000000000
+0410011000116ALKEDPR9Ketenzorg diabetes: preventie                                         Ketenzorg diabetes: preventie                10307310427300000000240620102406201000000000000000000000
+0410011000117ALKEDVR9Ketenzorg diabetes: vroegsignalering test                             Ketenzorg diabetes: vroegsignalering test    10307310427300000000240620102406201000000000000000000000
+0410011000118ALKEDTT9Ketenzorg diabetes: therapietrouw                                     Ketenzorg diabetes: therapietrouw            10307310427300000000240620102406201000000000000000000000
+0410011000119ALKEDBW9Ketenzorg diabetes: bijwerkingen                                      Ketenzorg diabetes: bijwerkingen             10307310427300000000240620102406201000000000000000000000
+0410011000120ALKEDBM9Ketenzorg diabetes: beheer medicatiedossier                           Ketenzorg diabetes: beheer medicatiedossier  10307310427300000000240620102406201000000000000000000000
+0410011000121ALKEDPE9Ketenzorg diabetes: periodieke evaluatie                              Ketenzorg diabetes: periodieke evaluatie     10307310427300000000240620102406201000000000000000000000
+0410011000122ALKEDBE9Ketenzorg diabetes: begeleiding                                       Ketenzorg diabetes: begeleiding              10307310427300000000240620102406201000000000000000000000
+0410011000123ALKEDVO9Ketenzorg diabetes: voorlichting                                      Ketenzorg diabetes: voorlichting             10307310427300000000240620102406201000000000000000000000
+0410011000124ALKEDVT9Ketenzorg diabetes: VTGM                                              Ketenzorg diabetes: VTGM                     10307310427300000000280620102406201000000000000000000000
+0410011000125ALKEDHT9Ketenzorg diabetes: hulp-/testmateriaal                               Ketenzorg diabetes: hulp-/testmateriaal      10307310427300000000280620102406201000000000000000000000
+0410011000126ALKEDOV9Ketenzorg diabetes: doorverwijzing                                    Ketenzorg diabetes: doorverwijzing           10307310427300000000070720102406201000000000000000000000
+0410011000127ALKEDBA9Ketenzorg diabetes: administratie                                     Ketenzorg diabetes: administratie            10307310427300000000120720102406201000000000000000000000
+0410011000128ALKEDBC9Ketenzorg diabetes: gebruik cholest.verlager                          Ketenzorg diabetes: gebruik cholest.verlager 10307310427300000000210720102107201000000000000000000000
+0410011000129ALKEAVA9Ketenzorg astma/COPD: administratie                                   Ketenzorg astma/COPD: administratie          10307310427300000000210720102107201000000000000000000000
+0410011000130ALKECVA9Ketenzorg CVRM: administratie                                         Ketenzorg CVRM: administratie                10307310427300000000210720102107201000000000000000000000
+0410011000131ALKEABE9Ketenzorg astma/COPD: begeleiding                                     Ketenzorg astma/COPD: begeleiding            10307310427300000000210720102406201000000000000000000000
+0410011000132ALKECBE9Ketenzorg CVRM: begeleiding                                           Ketenzorg CVRM: begeleiding                  10307310427300000000210720102406201000000000000000000000
+0410011000133ALKEABM9Ketenzorg astma/COPD: beheer medicatiedossier                         Ketenzorg astma/COPD: beheer medicatiedossier10307310427300000000210720102406201000000000000000000000
+0410011000134ALKECBM9Ketenzorg CVRM: beheer medicatiedossier                               Ketenzorg CVRM: beheer medicatiedossier      10307310427300000000210720102406201000000000000000000000
+0410011000135ALKEABW9Ketenzorg astma/COPD: bijwerkingen                                    Ketenzorg astma/COPD: bijwerkingen           10307310427300000000210720102406201000000000000000000000
+0410011000136ALKECBW9Ketenzorg CVRM: bijwerkingen                                          Ketenzorg CVRM: bijwerkingen                 10307310427300000000210720102406201000000000000000000000
+0410011000137ALKEAOV9Ketenzorg astma/COPD: doorverwijzing                                  Ketenzorg astma/COPD: doorverwijzing         10307310427300000000210720102406201000000000000000000000
+0410011000138ALKECOV9Ketenzorg CVRM: doorverwijzing                                        Ketenzorg CVRM: doorverwijzing               10307310427300000000210720102406201000000000000000000000
+0410011000139ALKEAHT9Ketenzorg astma/COPD: hulp-/testmateriaal                             Ketenzorg astma/COPD: hulp-/testmateriaal    10307310427300000000210720102406201000000000000000000000
+0410011000140ALKECHT9Ketenzorg CVRM: hulp-/testmateriaal                                   Ketenzorg CVRM: hulp-/testmateriaal          10307310427300000000210720102406201000000000000000000000
+0410011000141ALKEAPE9Ketenzorg astma/COPD: periodieke evaluatie                            Ketenzorg astma/COPD: periodieke evaluatie   10307310427300000000210720102406201000000000000000000000
+0410011000142ALKECPE9Ketenzorg CVRM: periodieke evaluatie                                  Ketenzorg CVRM: periodieke evaluatie         10307310427300000000210720102406201000000000000000000000
+0410011000143ALKEAPR9Ketenzorg astma/COPD: preventie                                       Ketenzorg astma/COPD: preventie              10307310427300000000210720102406201000000000000000000000
+0410011000144ALKECPR9Ketenzorg CVRM: preventie                                             Ketenzorg CVRM: preventie                    10307310427300000000210720102406201000000000000000000000
+0410011000145ALKEATT9Ketenzorg astma/COPD: therapietrouw                                   Ketenzorg astma/COPD: therapietrouw          10307310427300000000210720102406201000000000000000000000
+0410011000146ALKECTT9Ketenzorg CVRM: therapietrouw                                         Ketenzorg CVRM: therapietrouw                10307310427300000000210720102406201000000000000000000000
+0410011000147ALKEAVO9Ketenzorg astma/COPD: voorlichting                                    Ketenzorg astma/COPD: voorlichting           10307310427300000000210720102406201000000000000000000000
+0410011000148ALKECVO9Ketenzorg CVRM: voorlichting                                          Ketenzorg CVRM: voorlichting                 10307310427300000000210720102406201000000000000000000000
+0410011000149ALKECVR9Ketenzorg CVRM: vroegsignalering test                                 Ketenzorg CVRM: vroegsignalering test        10307310427300000000230720102406201000000000000000000000
+0410011000150ALZWPRE9BK:Let op zwangerschapspreventieprogramma                             BK:Let op zwangerschapspreventieprogramma    10307310427300000000310820102701201000000000000000000000
+0410011000151ALPATON9Onbekende patient                                                     Onbekende patient                            10307310427300000000070920100000000000000000000000000000
+0410011000152ALMEDOV9Medicatieoverzicht                                                    Medicatieoverzicht                           10307310427300000000070920100106200500000000000000000000
+0410011000154ALOPNZK9Opname in ziekenhuis                                                  Opname ziekenhuis                            10307310427300000000070920100709201000000000000000000000
+0410011000155ALSPEGN9BK:Specialistisch geneesmiddel                                        BK:Specialistisch geneesmiddel               10307310427300000000160920102701201000000000000000000000
+0410011000156ALHULPT9Hulpmiddelen/testmaterialen                                           Hulpmiddelen/testmaterialen                  10307310427300000000081120102406201000000000000000000000
+0410011000157ALINHIN9BK:Inhalatie instructie                                               BK:Inhalatie instructie                      10307310427300000000200120111204201100000000000000000000
+0410011000158ALVEMNI9Verminderde nierfunctie                                               Verminderde nierfunctie                      10307310427300000000210220110106200500000000000000000000
+0410011000159ALKEAVT9Ketenzorg astma/COPD: vroegsignalering test                           Ketenzorg astma/COPD: vroegsignalering test  10307310427300000000200620112406201000000000000000000000
+0410011000160ALVAAND9Vraag mbt aandoening                                                  Vraag mbt aandoening                         10307310427300000000230820111601200700000000000000000000
+0410011000161ALVBEGE9Vraag mbt begeleiding                                                 Vraag mbt begeleiding                        10307310427300000000230820111601200700000000000000000000
+0410011000162ALVMEDG9Vraag mbt (beheer) medicatiegegevens                                  Vraag mbt (beheer) medicatiegegevens         10307310427300000000230820111601200700000000000000000000
+0410011000163ALVRGNM9Vraag mbt geneesmiddel                                                Vraag mbt geneesmiddel                       10307310427300000000230820111601200700000000000000000000
+0410011000164ALVRMHM9Vraag mbt materialen/hulpmiddelen                                     Vraag mbt materialen/hulpmiddelen            10307310427300000000230820110509201100000000000000000000
+0410011000165ALACREC9Actie naar aanleiding van aflevering/recept                           Actie nav aflevering/recept                  10307310427300000000060920110000000000000000000000000000
+0410011000166ALBEGEL9Begeleiding                                                           Begeleiding                                  10307310427300000000060920110000000000000000000000000000
+0410011000167ALBHMGG9(Beheer) medicatiegegevens                                            (Beheer) medicatiegegevens                   10307310427300000000060920110000000000000000000000000000
+0410011000168ALGNMOM9Geneesmiddel op maat                                                  Gnm op maat                                  10307310427300000000220920110310201100000000000000000000
+0410011000169ALKWSCH9BK:Let op kwaliteitseisen IGZ schildklierpoeder                       BK:Let op kwaliteitseisen IGZ schildkl.poeder10307310427300000000151120112701201000000000000000000000
+0410011000170ALDORVV9Geen doseringsgegevens voor de reden van voorschrijven                Geen dos.gegevens voor de reden van voorschr.10307310427300000000081120120106200500000000000000000000
+0410011000171ALGNRVV9Reden van voorschrijven ontbreekt                                     Reden van voorschrijven ontbreekt            10307310427300000000291120120106200500000000000000000000
+0410011000172ALUWRVV9BK:Uitwisselen reden van voorschrijven noodzakelijk                   BK:Uitwisselen reden van voorschrijven nodig 10307310427300000000291120122701201000000000000000000000
+0410011000173ALMFBLA9MFB:Laxantia bij opioidgebruik                                        MFB:Laxantia bij opioidgebruik               10307310427300000000120220132701201000000000000000000000
+0410011000174ALMFBNF9MFB:Nierfunctie                                                       MFB:Nierfunctie                              10307310427300000000120220132701201000000000000000000000
+0410011000175ALCITRU9BK:Pas op met citrusvruchten:geef folder mee                          BK:Pas op met citrusvruchten:geef folder mee 10307310427300000000071120132701201000000000000000000000
+0410011000176ALINNBE9BK:Interacties nog niet beoordeeld                                    BK:Interacties nog niet beoordeeld           10307310427300000000280520141204201100000000000000000000
+0410011000177ALCINBE9BK:Contra-indicaties nog niet beoordeeld                              BK:Contra-indicaties nog niet beoordeeld     10307310427300000000100720141204201100000000000000000000
+0410011000178ALNFNBE9Nog niet beoordeeld op nierfunctie                                    Nog niet beoordeeld op nierfunctie           10307310427300000000150720142701201000000000000000000000
+0410011000179ALMFBMN9MFB:Maagbescherming bij NSAID-gebruik                                 MFB:Maagbescherming bij NSAID-gebruik        10307310427300000000070820142701201000000000000000000000
+0410011000180ALMFBTN9MFB:Trombocytenaggregatieremmers bij nitraatgebruik                   MFB:Trombocytenaggr.remmers bij nitraatgebr. 10307310427300000000070820142701201000000000000000000000
+0410011000181ALMFBOP9MFB:Osteoporoseprofylaxe                                              MFB:Osteoporoseprofylaxe                     10307310427300000000110820142701201000000000000000000000
+0410011000182ALMFBFM9MFB:Foliumzuur bij methotrexaatgebruik                                MFB:Foliumzuur bij methotrexaatgebruik       10307310427300000000110820142701201000000000000000000000
+0410011000183ALMFBAI9MFB:Antimycotica bij inhalatiecorticosteroiden                        MFB:Antimycotica bij ICS                     10307310427300000000110820142701201000000000000000000000
+0410011000435ALMFBAH9MFB:Antilipaemicum bij hart- en vaatziekten                           MFB:Antilipaemicum bij hart- en vaatziekten  10307310427300000000201120150000000000000000000000000000
+0410011000436ALMFBAD9MFB:Antilipaemicum bij diabetes mellitus                              MFB:Antilipaemicum bij diabetes mellitus     10307310427300000000271120150000000000000000000000000000
+0410011000437ALMFBAS9MFB:Antitrombotische salicylaten - dosering                           MFB:Antitrombotische salicylaten - dosering  10307310427300000000081220150000000000000000000000000000
+0410011000438ALMFBMD9MFB:Metformine bij diabetes mellitus type 2                           MFB:Metformine bij diabetes mellitus type 2  10307310427300000000081220150000000000000000000000000000
+0410011000439ALMFBGG9MFB:Glibenclamide of glimepiride bij diabetes mellitus type 2         MFB:Glibenclamide of glimepiride bij DM2     10307310427300000000081220150000000000000000000000000000
+0410011000440VERVALLEVervallen                                                             Vervallen                                    10307310427300000000081220150000000008122015000000000000
+0410011000441ALMFBCP9MFB:combinaties met P2Y12-remmer                                      MFB:combinaties met P2Y12-remmer             10307310427300000000081220150000000000000000000000000000
+0410011000442ALMFBLACMFB: Leeftijd als contra-indicatie'                                   Leeftijd als contra-indicatie                10307310427300000000040820170000000000000000000000000000
+0410011000447ALMFB9  MFB                                                                   MFB                                          10307310427300000000060420180000000000000000000000000000
+0410020000001-       -                                                                     -                                            10307310427320000001061120030000000000000000000000000000
+0410020000002ANNIETI9Niet ingegrepen                                                       Niet ingegrepen                              10307310427320000002051120031509200800000000000000000000
+0410020000003ANINGRI9Ingegrepen                                                            Ingegrepen                                   10307310427320000003051120031509200800000000000000000000
+0410021000001-       -                                                                     -                                            10307310427321000001061120030000000000000000000000000000
+0410021000002ANAMDST9Ander middel is reeds gestopt                                         Ander middel is reeds gestopt                10307310427321000002051120030106200500000000000000000000
+0410021000003ANVSTOE9Bij deze voorschrijver toegestaan                                     Bij deze voorschrijver toegestaan            10307310427321000003051120030106200500000000000000000000
+0410021000005ANGKORT9Gebruik <2 weken                                                      Gebruik <2 weken                             10307310427321000005051120032210200800000000000000000000
+0410021000006ANSIONT9Signaal onterecht                                                     Signaal onterecht                            10307310427321000006051120030912200800000000000000000000
+0410021000007ANAKHIS9Akkoord historie                                                      Akkoord historie                             10307310427321000007051120031105200600000000000000000000
+0410021000009ANGNNRE9Bij dit geneesmiddel/deze geneesmiddelgroep niet relevant             Bij dit gnm/deze gnmgroep niet relevant      10307310427321000009051120030106200500000000000000000000
+0410021000010ANCINAC9Contra-indicatie/intol/allergie/indicatie niet actueel/niet bekend    CI/intol/all/indic niet actueel/niet bekend  10307310427321000010051120032708201000000000000000000000
+0410021000011ANGOMHO9Gebruik gewijzigd, omhoog gegaan                                      Gebruik gewijzigd, omhoog gegaan             10307310427321000011061120030106200500000000000000000000
+0410021000012ANGOMLA9Gebruik gewijzigd, omlaag gegaan                                      Gebruik gewijzigd, omlaag gegaan             10307310427321000012061120030106200500000000000000000000
+0410021000013ANDSAHO9Dosering samen te hoog                                                Dosering samen te hoog                       10307310427321000013061120030106200500000000000000000000
+0410021000015ANGBGEW9Gebruik intussen gewijzigd                                            Gebruik intussen gewijzigd                   10307310427321000015061120030106200500000000000000000000
+0410021000017ANGNPRO9Geen probleem gesignaleerd                                            Geen probleem gesignaleerd                   10307310427321000017061120030106200500000000000000000000
+0410021000020ANVAKAN9Vakantie                                                              Vakantie                                     10307310427321000020061120030106200500000000000000000000
+0410021000021ANDOAKK9Dosering na (handmatige) controle akkoord                             Dosering na (handmatige) controle akkoord    10307310427321000021061120032205200600000000000000000000
+0410021000022ANDOHOO9Dosering na (handmatige) controle te hoog                             Dosering na (handmatige) controle te hoog    10307310427321000022061120032205200600000000000000000000
+0410021000023ANDOLAA9Dosering na (handmatige) controle te laag                             Dosering na (handmatige) controle te laag    10307310427321000023061120032205200600000000000000000000
+0410021000027ANOVERI9Overig                                                                Overig                                       10307310427321000027061120030106200500000000000000000000
+0410021000032ANPGEIN9Patient is (door andere zorgverl)geinformeerd                         Pat is (door andere zorgverl)geinformeerd    10307310427321000032061120030509201100000000000000000000
+0410021000033ANPNGEI9Patient is niet(door andere zorgverl)geinform                         Pat is niet(door andere zorgverl)geinform    10307310427321000033061120030509201100000000000000000000
+0410021000038ANSITER9Signaal terecht                                                       Signaal terecht                              10307310427321000038061120030106200500000000000000000000
+0410021000041ANTWGAF9Twee geneesmiddelen afwisselend                                       Twee geneesmiddelen afwisselend              10307310427321000041061120031501200900000000000000000000
+0410021000043ANVERVS9Verschillende voorschrijvers                                          Verschillende voorschrijvers                 10307310427321000043061120030106200500000000000000000000
+0410021000045ANVOLGA9Volgorde start geneesmiddel akkoord                                   Volgorde start geneesmiddel akkoord          10307310427321000045061120030106200500000000000000000000
+0410021000046ANVOLNA9Volgorde start geneesmiddel niet akkoord                              Volgorde start geneesmiddel niet akkoord     10307310427321000046061120030106200500000000000000000000
+0410021000047ANVERGV9Vergissing bij voorschrijven                                          Vergissing bij voorschrijven                 10307310427321000047061120030106200500000000000000000000
+0410021000048ANSUBST9Vorige keer ander generiek/parallel/specialite afgeleverd             Vorige keer ander gen/par/spec afgeleverd    10307310427321000048061120030106200500000000000000000000
+0410021000049ANANSTE9Vorige keer andere sterkte afgeleverd                                 Vorige keer andere sterkte afgeleverd        10307310427321000049061120030106200500000000000000000000
+0410021000050ANELDVS9Vorige keer elders verstrekt                                          Vorige keer elders verstrekt                 10307310427321000050061120030106200500000000000000000000
+0410021000055ANZELVS9Zelfde voorschrijver                                                  Zelfde voorschrijver                         10307310427321000055061120030106200500000000000000000000
+0410021000056ANDSAAK9Dosering samen akkoord                                                Dosering samen akkoord                       10307310427321000056191120030106200500000000000000000000
+0410021000057ANFTAIS9Gegevens AIS onjuist (VV!!)                                           Gegevens AIS onjuist (VV!!)                  10307310427300000000201120032410200600000000000000000000
+0410021000058ANINFOR9Aanvullende informatie over recept noodzakelijk                       Aanvullende informatie over recept nodig     10307310427321000058201120030106200500000000000000000000
+0410021000060ANPINBE9Patient wenst informatie/begeleiding                                  Pat wenst info/begeleiding                   10307310427321000060201120032609201100000000000000000000
+0410021000061ANARINF9Arts cq andere zorgverlener behoeft informatie                        Arts cq andere zorgverlener behoeft info     10307310427321000061201120033001200700000000000000000000
+0410021000062ANAROVE9Arts cq andere zorgverlener behoeft overleg                           Arts cq andere zorgverlener behoeft overleg  10307310427321000062201120033001200700000000000000000000
+0410021000063ANMEDAN9Medicatieanalyse                                                      Medicatieanalyse                             10307310427321000063201120030106200500000000000000000000
+0410021000064ANPRNOP9Probleem niet op te lossen door de apotheek                           Probleem niet op te lossen door de apotheek  10307310427321000064201120030106200500000000000000000000
+0410021000065ANTHTBE9Therapietrouw bespreken met patient gewenst                           Therapietrouw bespreken met patient gewenst  10307310427321000065201120030106200500000000000000000000
+0410021000066ANHULPM9Hulp/testmateriaal                                                    Hulp/testmateriaal                           10307310427321000066201120030106200500000000000000000000
+0410021000067ANMETIN9Meting                                                                Meting                                       10307310427321000067201120030106200500000000000000000000
+0410021000068ANALGAD9Algemeen advies                                                       Algemeen advies                              10307310427321000068201120030106200500000000000000000000
+0410021000069ANGEBRU9Gebruik geneesmiddel                                                  Gebruik geneesmiddel                         10307310427321000069201120030106200500000000000000000000
+0410021000070ANKEUSG9Keuze geneesmiddel                                                    Keuze geneesmiddel                           10307310427321000070201120030106200500000000000000000000
+0410021000071ANTOEDI9Toedienen geneesmiddel                                                Toedienen geneesmiddel                       10307310427321000071201120031105200600000000000000000000
+0410021000072ANVERPA9Verpakking                                                            Verpakking                                   10307310427321000072201120030106200500000000000000000000
+0410021000076ANKLGNM9Klacht geneesmiddel/product terecht                                   Klacht gnm/product terecht                   10307310427321000076201120032308201100000000000000000000
+0410021000079ANZDONM9Zorgdocument op naam                                                  Zorgdocument op naam                         10307310427321000079201120030106200500000000000000000000
+0410021000080ANGDOSD9Patient behoeft aflevering geneesmiddel in doseerdoos                 Pat behoeft aflevering gnm in doseerdoos     10307310427321000080241120030509201100000000000000000000
+0410021000081ANKLPOR9Patient behoeft aflevering geneesmiddel in kleine porties             Pat behoeft afl. gnm in kleine porties       10307310427321000081241120030509201100000000000000000000
+0410021000082ANADVBW9Patient behoeft advies over bijwerking                                Pat behoeft advies over bijwerking           10307310427321000082241120030509201100000000000000000000
+0410021000085ANCIACT9Contra-indicatie/intolerantie/allergie/indicatie actueel              Contra-ind/intol/all/indic actueel           10307310427321000085160220040106200500000000000000000000
+0410021000086ANRELCI9Relatieve contraindicatie                                             Relatieve contraindicatie                    10307310427300000000160220040301200800000000000000000000
+0410021000087ANBIJWE9Bijwerking                                                            Bijwerking                                   10307310427321000087160220040301200800000000000000000000
+0410021000088ANINTER9Interactie                                                            Interactie                                   10307310427300000000160220040301200800000000000000000000
+0410021000089ANPSDBM9Pseudodubbelmedicatie                                                 Pseudodubbelmedicatie                        10307310427300000000160220040301200800000000000000000000
+0410021000090ANTHETR9Therapieontrouw                                                       Therapieontrouw                              10307310427300000000160220040301200800000000000000000000
+0410021000091ANGBGEM9Gebruiksongemak                                                       Gebruiksongemak                              10307310427300000000160220040301200800000000000000000000
+0410021000092ANAFWND9Afwijking normdosering                                                Afwijking normdosering                       10307310427300000000160220040301200800000000000000000000
+0410021000093ANONDBH9Onderbehandeling                                                      Onderbehandeling                             10307310427300000000160220040301200800000000000000000000
+0410021000094ANOFFLA9Off-label gebruik                                                     Off-label gebruik                            10307310427300000000160220040301200800000000000000000000
+0410021000095ANAFWST9Afwijking standaard                                                   Afwijking standaard                          10307310427300000000160220040301200800000000000000000000
+0410021000096ANOVGEB9Overgebruik                                                           Overgebruik                                  10307310427300000000160220040301200800000000000000000000
+0410021000097ANONGEB9Ondergebruik                                                          Ondergebruik                                 10307310427300000000160220040301200800000000000000000000
+0410021000098ANONTSL9Informatie over ontslagmedicatie gewenst                              Informatie over ontslagmedicatie gewenst     10307310427321000098250320042406201000000000000000000000
+0410021000099ANMTNOD9Op basis van meetgegevens                                             Op basis van meetgegevens                    10307310427321000099250320041608200600000000000000000000
+0410021000100ANGMONT9Geneesmiddel ontbreekt                                                Geneesmiddel ontbreekt                       10307310427300000000250320040301200800000000000000000000
+0410021000101ANDUBBM9Dubbelmedicatie                                                       Dubbelmedicatie                              10307310427321000101250320040301200800000000000000000000
+0410021000103ANCOMPL9Wisselwerking mogelijk                                                Wisselwerking mogelijk                       10307310427321000103290920042709201100000000000000000000
+0410021000104ANRIAFW9Risicofactor(en) afwezig                                              Risicofactor(en) afwezig                     10307310427321000104290920043001200700000000000000000000
+0410021000105ANRISAW9Risicofactor(en) aanwezig                                             Risicofactor(en) aanwezig                    10307310427321000105290920043001200700000000000000000000
+0410021000110ANANTDV9Vorige keer andere toedieningsvorm afgeleverd                         Vorige keer andere toedieningsvorm afgeleverd10307310427321000110081220040106200500000000000000000000
+0410021000111ANAKPAT9Akkoord na informatie van patient                                     Akkoord na informatie van patient            10307310427321000111110220051105200600000000000000000000
+0410021000112ANAKART9Akkoord na overleg met voorschrijver                                  Akkoord na overleg met voorschrijver         10307310427321000112110220050301200800000000000000000000
+0410021000114ANVRAKK9Navraag bij patient: reden voorraad akkoord                           Navraag bij patient: reden voorraad akkoord  10307310427321000114110220051507201400000000000000000000
+0410021000115ANVONAK9Navraag bij patient: reden voorraad niet akkoord                      Navraag patient: reden voorraad niet akkoord 10307310427321000115110220051507201400000000000000000000
+0410021000116ANONHDO9Onderhoudsdosering                                                    Onderhoudsdosering                           10307310427321000116110220050106200500000000000000000000
+0410021000117ANPPERC9Patient wordt (periodiek) gecontroleerd                               Pat wordt (periodiek) gecontroleerd          10307310427321000117110220050509201100000000000000000000
+0410021000118ANPNPEC9Patient wordt niet (periodiek) gecontroleerd                          Pat wordt niet (periodiek) gecontroleerd     10307310427321000118110220050509201100000000000000000000
+0410021000120ANGLANG9Gebruik >2 weken                                                      Gebruik >2 weken                             10307310427321000120230220052210200800000000000000000000
+0410021000122ANGEUTU9Geen eerste uitgifte, maar tweede uitgifte                            Geen EU, maar TU                             10307310427321000122240220050106200500000000000000000000
+0410021000123ANGEUVU9Geen eerste uitgifte, maar vervolguitgifte                            Geen EU, maar VU                             10307310427321000123240220050106200500000000000000000000
+0410021000125ANGTUVU9Geen tweede uitgifte, maar vervolguitgifte                            Geen TU, maar VU                             10307310427321000125240220050106200500000000000000000000
+0410021000127ANSIOND9Signaal is onderdrukt                                                 Signaal is onderdrukt                        10307310427321000127250420050106200500000000000000000000
+0410021000128ANVERGA9Vergissing bij aanschrijven                                           Vergissing bij aanschrijven                  10307310427321000128090620050106200500000000000000000000
+0410021000129ANPRMED9Probleem in medicatie geconstateerd                                   Probleem in medicatie geconstateerd          10307310427321000129090620050106200500000000000000000000
+0410021000131ANPTTOE9Bij deze patient akkoord                                              Bij deze patient akkoord                     10307310427321000131241020050000000000000000000000000000
+0410021000132ANDOIND9Dosering bij (afwijkende) indicatie akkoord                           Dosering bij (afwijkende) indicatie akkoord  10307310427321000132231120050205201100000000000000000000
+0410021000133ANGNIND9Geen indicatie (meer)                                                 Geen indicatie (meer)                        10307310427321000133231120050301200800000000000000000000
+0410021000134ANSUBTO9Substitutie toegestaan                                                Substitutie toegestaan                       10307310427321000134010520060805200600000000000000000000
+0410021000135ANSUBNT9Substitutie niet toegestaan                                           Substitutie niet toegestaan                  10307310427321000135010520060805200600000000000000000000
+0410021000136ANPTGNN9Patient heeft geneesmiddel (nog) niet nodig                           Pat heeft geneesmiddel (nog) niet nodig      10307310427321000136010520060509201100000000000000000000
+0410021000137ANINDAK9Bij deze indicatie akkoord/niet nodig                                 Bij deze indicatie akkoord/niet nodig        10307310427321000137220520061507201400000000000000000000
+0410021000138ANINMAM9I.m.m. (in manu medici)                                               I.m.m.                                       10307310427321000138300120072701200900000000000000000000
+0410021000139ANMGBAN9Maagbescherming is aanwezig                                           Maagbescherming is aanwezig                  10307310427321000139300120071311200800000000000000000000
+0410021000140ANMGBAF9Maagbescherming is afwezig                                            Maagbescherming is afwezig                   10307310427321000140300120071311200800000000000000000000
+0410021000141ANRETIF9Retourinfo van arts cq andere zorgverlener                            Retourinfo van arts cq andere zorgverlener   10307310427321000141300120070106200500000000000000000000
+0410021000142ANUIVPL9Verschillende toepassingen                                            Verschillende toepassingen                   10307310427321000142060420070507200700000000000000000000
+0410021000143ANSGNLE9Sterkte niet leverbaar                                                Sterkte niet leverbaar                       10307310427300000000060420070000000000000000000000000000
+0410021000144ANAKINV9Akkoord na informatie van voorschrijver                               Akkoord na informatie van voorschrijver      10307310427321000144240520071105200600000000000000000000
+0410021000145ANSITEB9Signaal terecht,geneesmiddel wordt bezorgd                            Signaal terecht,geneesmiddel wordt bezorgd   10307310427300000000160820073008200700000000000000000000
+0410021000146ANCOBEB9Contact naar aanleiding van bezorgbrief                               Contact nav bezorgbrief                      10307310427300000000160820070609201100000000000000000000
+0410021000147ANPANIB9Patient is niet bereikbaar                                            Pat is niet bereikbaar                       10307310427300000000160820070509201100000000000000000000
+0410021000148ANPGNIN9Patient wenst geen info/begeleiding/ondersteuning                     Pat wenst geen info/begeleiding/onderst      10307310427300000000160820070509201100000000000000000000
+0410021000149ANBIJZT9Bijzondere toepassing, combinatie in dit geval rationeel              Bijzondere toepassing, combi hier rationeel  10307310427321000149300820070506200800000000000000000000
+0410021000150ANTOEDI9Informatie over toediening nodig                                      Info over toediening nodig                   10307310427300000000030120080106200500000000000000000000
+0410021000151ANINTAK9Intake                                                                Intake                                       10307310427300000000030120080301200800000000000000000000
+0410021000153ANPICOM9Patient is ingesteld op combinatie                                    Pat is ingesteld op combinatie               10307310427300000000030120080509201100000000000000000000
+0410021000154ANOUDNW9Oude geneesmiddel gestopt,nieuwe gnm gestart                          Oude geneesmiddel gestopt,nieuwe gnm gestart 10307310427300000000260220080506200800000000000000000000
+0410021000155ANOUTST9Oude therapie is tijdelijk gestopt                                    Oude therapie is tijdelijk gestopt           10307310427300000000050620081311200800000000000000000000
+0410021000156ANSAMBE9Samenstelling en bereidingsvoorschrift ontbreken                      Samenstelling en bereidingsvoorschr ontbreken10307310427300000000050620080106200500000000000000000000
+0410021000157ANFTSNA9Farmacotherapie en/of samenstelling niet akkoord                      Farmacotherapie en/of samenst niet akkoord   10307310427300000000050620080506200800000000000000000000
+0410021000158ANAFBDO9Afbouwdosering                                                        Afbouwdosering                               10307310427300000000131120080301200800000000000000000000
+0410021000159ANMEDNZ9Medische noodzaak                                                     Medische noodzaak                            10307310427300000000130120092701200900000000000000000000
+0410021000160ANOUDHM9Oude hulpmiddel is nog in gebruik                                     Oude hulpmiddel is nog in gebruik            10307310427300000000130120092701200900000000000000000000
+0410021000162ANTWGNS9Twee geneesmiddelen samen                                             Twee geneesmiddelen samen                    10307310427300000000130120092701200900000000000000000000
+0410021000163ANSGNIN9Ander signaal leidt tot ingrijpen                                     Ander signaal leidt tot ingrijpen            10307310427300000000130120092701200900000000000000000000
+0410021000164ANPDLIM9Patient wenst deelname LIM                                            Pat wenst deelname LIM                       10307310427300000000200120090509201100000000000000000000
+0410021000165ANGDLIM9Patient wenst geen deelname LIM                                       Pat wenst geen deelname LIM                  10307310427300000000200120090509201100000000000000000000
+0410021000166ANSYNCH9Synchronisatie                                                        Synchronisatie                               10307310427300000000260120090805200600000000000000000000
+0410021000167ANOPBDS9Opbouwdosering                                                        Opbouwdosering                               10307310427300000000160220092304200900000000000000000000
+0410021000168ANAKAPO9Akkoord na overleg met apotheker                                      Akkoord na overleg met apotheker             10307310427300000000090320090301200800000000000000000000
+0410021000169ANINNAK9Bij deze indicatie nodig/niet akkoord                                 Bij deze indicatie nodig/niet akkoord        10307310427300000000300620091507201400000000000000000000
+0410021000170ANINGCO9Incidenteel gebruik                                                   Incidenteel gebruik                          10307310427300000000290920091311200800000000000000000000
+0410021000171ANCHGCO9Dagelijks gebruik                                                     Dagelijks gebruik                            10307310427300000000290920091211200900000000000000000000
+0410021000172ANDOIHG9Dosering is hoog                                                      Dosering is hoog                             10307310427300000000271120090106200500000000000000000000
+0410021000173ANDOILG9Dosering is laag                                                      Dosering is laag                             10307310427300000000271120090106200500000000000000000000
+0410021000174ANPTTOE9Bij deze patient niet akkoord                                         Bij deze patient niet akkoord                10307310427300000000270120100000000000000000000000000000
+0410021000175ANLAXAA9Laxans is aanwezig                                                    Laxans is aanwezig                           10307310427300000000280120100106200500000000000000000000
+0410021000176ANMGBON9Maagbescherming is onvoldoende                                        Maagbescherming is onvoldoende               10307310427300000000110220101311200800000000000000000000
+0410021000177ANGEWCO9Alleen codering is gewijzigd                                          Alleen codering is gewijzigd                 10307310427300000000120520102307201000000000000000000000
+0410021000178ANLAXNN9Laxans blijkt niet nodig                                              Laxans blijkt niet nodig                     10307310427300000000120520100106200500000000000000000000
+0410021000179ANSINIR9Signaal niet relevant                                                 Signaal niet relevant                        10307310427300000000120520100106200500000000000000000000
+0410021000180ANPREFB9Preferentiebeleid                                                     Preferentiebeleid                            10307310427300000000120520100106200500000000000000000000
+0410021000181ANNIELE9Ander geneesmiddel niet leverbaar                                     Ander geneesmiddel niet leverbaar            10307310427300000000120520100106200500000000000000000000
+0410021000182ANGNILE9Geneesmiddel niet leverbaar                                           Geneesmiddel niet leverbaar                  10307310427300000000170620100301200800000000000000000000
+0410021000183ANWEVOO9Patient wenst voorlichting                                            Pat wenst voorlichting                       10307310427300000000240620100509201100000000000000000000
+0410021000184ANWGSTR9Patient wenst geen voorlichting stoppen met roken                     Pat wenst geen voorlicht stoppen met roken   10307310427300000000240620100509201100000000000000000000
+0410021000185ANWGGZG9Patient wenst geen voorlicht gezond gewicht                           Pat wenst geen voorlicht gezond gewicht      10307310427300000000240620100509201100000000000000000000
+0410021000186ANWEDRT9Patient wenst diabetes risicotest                                     Pat wenst diabetes risicotest                10307310427300000000240620100509201100000000000000000000
+0410021000187ANWGDRT9Patient wenst geen diabetes risicotest                                Pat wenst geen diabetes risicotest           10307310427300000000240620100509201100000000000000000000
+0410021000188ANWGBSM9Patient wenst geen bloedsuiker meting                                 Pat wenst geen bloedsuiker meting            10307310427300000000240620100509201100000000000000000000
+0410021000189ANWEBSM9Patient wenst bloedsuiker meting                                      Pat wenst bloedsuiker meting                 10307310427300000000240620100509201100000000000000000000
+0410021000190ANWGBMM9Patient wenst geen BMI meting                                         Pat wenst geen BMI meting                    10307310427300000000240620100509201100000000000000000000
+0410021000191ANWGCHM9Patient wenst geen cholesterol meting                                 Pat wenst geen cholesterol meting            10307310427300000000240620100509201100000000000000000000
+0410021000192ANWECHM9Patient wenst cholesterol meting                                      Pat wenst cholesterol meting                 10307310427300000000240620100509201100000000000000000000
+0410021000193ANWEBMM9Patient wenst BMI meting                                              Pat wenst BMI meting                         10307310427300000000240620100509201100000000000000000000
+0410021000194ANWEBDM9Patient wenst bloeddruk meting                                        Pat wenst bloeddruk meting                   10307310427300000000240620100509201100000000000000000000
+0410021000195ANWGBDM9Patient wenst geen bloeddruk meting                                   Pat wenst geen bloeddruk meting              10307310427300000000240620100509201100000000000000000000
+0410021000196ANINOOP9Informatie ontvangen/opgevraagd                                       Informatie ontvangen/opgevraagd              10307310427300000000240620100106200500000000000000000000
+0410021000197ANTHEAK9Therapietrouw akkoord                                                 Therapietrouw akkoord                        10307310427300000000240620100301200800000000000000000000
+0410021000198ANMDTOR9Meer dan twee orale middelen                                          Meer dan twee orale middelen                 10307310427300000000240620100301200800000000000000000000
+0410021000199ANNMDTO9Niet meer dan twee orale middelen                                     Niet meer dan twee orale middelen            10307310427300000000240620100301200800000000000000000000
+0410021000200ANCONJU9Combinatie is niet juist                                              Combinatie is niet juist                     10307310427300000000240620101107200500000000000000000000
+0410021000201ANCOMJU9Combinatie is juist                                                   Combinatie is juist                          10307310427300000000240620101107200500000000000000000000
+0410021000202ANWEGIN9Patient wenst geen intake                                             Pat wenst geen intake                        10307310427300000000240620100509201100000000000000000000
+0410021000204ANWGINS9Patient wenst geen (herhaal)instructie                                Pat wenst geen (herhaal)instructie           10307310427300000000240620100509201100000000000000000000
+0410021000206ANWGDIP9Patient wenst geen diabetespas/medicatieoverz                         Pat wenst geen diabetespas/medicatieoverz    10307310427300000000240620100509201100000000000000000000
+0410021000208ANVERIG9Verouderd middel in gebruik                                           Verouderd middel in gebruik                  10307310427300000000280620100106200500000000000000000000
+0410021000209ANGEVEM9Geen verouderd middel in gebruik                                      Geen verouderd middel in gebruik             10307310427300000000280620100106200500000000000000000000
+0410021000210ANGEMGM9Geen minder geschikt middel in gebruik                                Geen minder geschikt middel in gebruik       10307310427300000000280620100106200500000000000000000000
+0410021000211ANMIGEM9Minder geschikt middel in gebruik                                     Minder geschikt middel in gebruik            10307310427300000000280620100106200500000000000000000000
+0410021000212ANGWEDN9Gebruik weekdoseersysteem niet juist                                  Gebruik weekdoseersysteem niet juist         10307310427300000000280620101207201000000000000000000000
+0410021000213ANGWEDJ9Gebruik weekdoseersysteem juist                                       Gebruik weekdoseersysteem juist              10307310427300000000280620101207201000000000000000000000
+0410021000214ANWGOPM9Patient wenst geneesmiddel (op maat), incl bereiding en VTGM          Pat wenst gnm(op maat) incl bereiding en VTGM10307310427300000000280620102308201100000000000000000000
+0410021000215ANPWMBO9Patient wenst medicatiebeoordeling                                    Pat wenst medicatiebeoordeling               10307310427300000000280620102411201100000000000000000000
+0410021000216ANPWGJM9Patient wenst geen jaarlijkse med.analyse                             Pat wenst geen jaarlijkse med.analyse        10307310427300000000280620100509201100000000000000000000
+0410021000217ANWMEGO9Patient wenst medicijngesprek na ontslag zh                           Pat wenst medicijngesprek na ontslag zh      10307310427300000000280620100509201100000000000000000000
+0410021000218ANWGMGO9Patient wenst geen medicatiegesprek na ziekenhuisverblijf             Pat wenst geen med.gesprek na zkh-verblijf   10307310427300000000280620100509201100000000000000000000
+0410021000219ANPWHUI9Patient wenst huisbezoek                                              Pat wenst huisbezoek                         10307310427300000000280620100509201100000000000000000000
+0410021000220ANPWGHU9Patient wenst geen huisbezoek                                         Pat wenst geen huisbezoek                    10307310427300000000280620100509201100000000000000000000
+0410021000221ANPADRA9Patient wenst advies ivm ramadan                                      Pat wenst advies ivm ramadan                 10307310427300000000280620100509201100000000000000000000
+0410021000222ANPGINR9Patient wenst geen info ivm ramadan                                   Pat wenst geen info ivm ramadan              10307310427300000000280620100509201100000000000000000000
+0410021000223ANWMEOZ9Patient wenst medicijngesprek bij opname zh                           Pat wenst medicijngesprek bij opname zh      10307310427300000000280620100509201100000000000000000000
+0410021000224ANWGMOZ9Patient wenst geen medicatiegesprek voor ziekenhuiopname              Pat wenst geen med.gesprek voor zkh-opname   10307310427300000000280620100509201100000000000000000000
+0410021000225ANACINB9Actuele informatie beschikbaar                                        Actuele informatie beschikbaar               10307310427300000000280620100106200500000000000000000000
+0410021000226ANPBIBO9Patient behoeft info/begeleiding                                      Pat behoeft info/begeleiding                 10307310427300000000070720102609201100000000000000000000
+0410021000227ANBVOOR9Patient behoeft voorlichting                                          Pat behoeft voorlichting                     10307310427300000000070720100509201100000000000000000000
+0410021000228ANWGVIN9Patient wenst geen voorlicht influenzavacc                            Pat wenst geen voorlicht influenzavacc       10307310427300000000070720100509201100000000000000000000
+0410021000229ANBEDRT9Patient behoeft diabetes risicotest                                   Pat behoeft diabetes risicotest              10307310427300000000070720100509201100000000000000000000
+0410021000230ANBEBSM9Patient behoeft bloedsuiker meting                                    Pat behoeft bloedsuiker meting               10307310427300000000070720100509201100000000000000000000
+0410021000231ANBEBMM9Patient behoeft BMI meting                                            Pat behoeft BMI meting                       10307310427300000000070720100509201100000000000000000000
+0410021000232ANBGCHM9Patient behoeft cholesterol meting                                    Pat behoeft cholesterol meting               10307310427300000000070720100509201100000000000000000000
+0410021000233ANBEBDM9Patient behoeft bloeddruk meting                                      Pat behoeft bloeddruk meting                 10307310427300000000070720100509201100000000000000000000
+0410021000234ANBEGOM9Pat behoeft gnm(op maat) incl bereiding en VTGM                       Pat behoeft gnm(op maat) incl bereiding, VTGM10307310427300000000070720101110201100000000000000000000
+0410021000235ANBJMEA9Patient behoeft jaarlijkse medicatieanalyse                           Pat behoeft jaarlijkse medicatieanalyse      10307310427300000000070720100509201100000000000000000000
+0410021000236ANBMGNO9Patient behoeft medicatiegesprek na zieknhuisverblijf                 Pat behoeft medicatiegesprek na zkh-verblijf 10307310427300000000070720100509201100000000000000000000
+0410021000237ANPBMOZ9Patient behoeft medicatieoverzicht voor ziekenhuisopname              Pat behoeft med.overzicht voor zkh-opname    10307310427300000000070720100609201100000000000000000000
+0410021000238ANBEHUB9Patient behoeft huisbezoek                                            Pat behoeft huisbezoek                       10307310427300000000070720100509201100000000000000000000
+0410021000239ANPBIRA9Patient behoeft info ivm ramadan                                      Pat behoeft info ivm ramadan                 10307310427300000000070720100509201100000000000000000000
+0410021000240ANBHSME9Betreft herhaling seizoensgebonden medicatie                          Betreft herhaling seizoensgebonden medicatie 10307310427300000000120720100000000000000000000000000000
+0410021000241ANWGVOO9Patient wenst geen voorlichting                                       Pat wenst geen voorlichting                  10307310427300000000120720100509201100000000000000000000
+0410021000242ANGTHNK9Gebruik test-/hulpmiddelen niet akkoord                               Gebruik test-/hulpmiddelen niet akkoord      10307310427300000000210720101207201000000000000000000000
+0410021000243ANGTHAK9Gebruik test-/hulpmiddelen akkoord                                    Gebruik test-/hulpmiddelen akkoord           10307310427300000000210720101207201000000000000000000000
+0410021000245ANWGSAV9Patient wenst geen voorl saneren bij allergie                         Pat wenst geen voorl saneren bij allergie    10307310427300000000210720100509201100000000000000000000
+0410021000246ANOVBEM9Overgebruik beta-2-mimetica                                           Overgebruik beta-2-mimetica                  10307310427300000000210720100301200800000000000000000000
+0410021000247ANGVBEM9Geen overgebruik beta-2-mimetica                                      Geen overgebruik beta-2-mimetica             10307310427300000000210720100301200800000000000000000000
+0410021000248ANMIGHM9Minder geschikt hulpmiddel in gebruik                                 Minder geschikt hulpmiddel in gebruik        10307310427300000000210720100106200500000000000000000000
+0410021000249ANGMGHM9Geen minder geschikt hulpmiddel in gebruik                            Geen minder geschikt hulpmiddel in gebruik   10307310427300000000210720100106200500000000000000000000
+0410021000250ANPWGMO9Patient wenst geen medicatieoverzicht                                 Pat wenst geen medicatieoverzicht            10307310427300000000210720100509201100000000000000000000
+0410021000251ANMDDBV9Meer dan drie bloeddrukverlagende middelen                            Meer dan drie bloeddrukverlagende middelen   10307310427300000000210720100301200800000000000000000000
+0410021000252ANNMDDB9Niet meer dan 3 bloeddrukverlagende middelen                          Niet meer dan 3 bloeddrukverlagende middelen 10307310427300000000210720100301200800000000000000000000
+0410021000253ANPINTA9Patient wenst intake                                                  Pat wenst intake                             10307310427300000000070920100509201100000000000000000000
+0410021000254ANWEZDN9Patient wenst zorgdocument op naam                                    Pat wenst zorgdocument op naam               10307310427300000000070920100509201100000000000000000000
+0410021000255ANPBINT9Patient behoeft intake                                                Pat behoeft intake                           10307310427300000000070920100509201100000000000000000000
+0410021000256ANPBZON9Patient behoeft zorgdocument op naam                                  Pat behoeft zorgdocument op naam             10307310427300000000070920100509201100000000000000000000
+0410021000257ANPBMGS9Patient behoeft medicatiegesprek                                      Pat behoeft medicatiegesprek                 10307310427300000000070920100509201100000000000000000000
+0410021000258ANNWINB9Nieuwe informatie nodig/beschikbaar (lab, CI)                         Nieuwe info nodig/beschikbaar (lab, CI)      10307310427300000000070920102510201100000000000000000000
+0410021000259ANZBZDN9Zorgverlener behoeft zorgdocument op naam                             Zorgverlener behoeft zorgdocument op naam    10307310427300000000070920100106200500000000000000000000
+0410021000260ANPWGMG9Patient wenst geen medicatiegesprek                                   Pat wenst geen medicatiegesprek              10307310427300000000090920100509201100000000000000000000
+0410021000261ANPWMOZ9Patient wenst medicatieoverzicht voor zkh-opname                      Pat wenst med.overzicht voor zkh-opname      10307310427300000000090920100609201100000000000000000000
+0410021000262ANPWGOD9Patient wenst geen overdracht                                         Pat wenst geen overdracht                    10307310427300000000090920100509201100000000000000000000
+0410021000263ANPWMGS9Patient wenst medicatiegesprek                                        Pat wenst medicatiegesprek                   10307310427300000000090920100509201100000000000000000000
+0410021000264ANCREON9Creatinineklaring onvoldoende                                         Creatinineklaring onvoldoende                10307310427300000000251020102708201000000000000000000000
+0410021000265ANAKKNE9Akkoord na overleg met nefroloog                                      Akkoord na overleg met nefroloog             10307310427300000000251020100301200800000000000000000000
+0410021000266ANINSTR9Patient wenst instructie                                              Pat wenst instructie                         10307310427300000000081120100509201100000000000000000000
+0410021000267ANCOGEW9Controle gewenst                                                      Controle gewenst                             10307310427300000000200120111107200500000000000000000000
+0410021000268ANEGEIO9Eerder geen instructie ontvangen                                      Eerder geen instructie ontvangen             10307310427300000000200120111107200500000000000000000000
+0410021000269ANINUNN9Instructie bij deze uitgifte niet nodig                               Instructie bij deze uitgifte niet nodig      10307310427300000000200120111107200500000000000000000000
+0410021000270ANPGCIN9Patient wenst geen controle inhalatietechniek                         Pat wenst geen controle inhalatietechniek    10307310427300000000200120110509201100000000000000000000
+0410021000271ANPGEIN9Patient wenst geen instructie                                         Pat wenst geen instructie                    10307310427300000000200120110509201100000000000000000000
+0410021000272ANCREVO9Creatinineklaring voldoende                                           Creatinineklaring voldoende                  10307310427300000000210220112708201000000000000000000000
+0410021000273ANAKSPE9Akkoord na overleg met specialist                                     Akkoord na overleg met specialist            10307310427300000000210220110301200800000000000000000000
+0410021000274ANPZINS9Patient is (door andere zorgverl)geinstrueerd                         Pat is (door andere zorgverl)geinstrueerd    10307310427300000000120420110509201100000000000000000000
+0410021000275ANINSTG9Instructie gewenst                                                    Instructie gewenst                           10307310427300000000120420111107200500000000000000000000
+0410021000276ANBCORT9Patient behoeft COPD-risicotest                                       Pat behoeft COPD-risicotest                  10307310427300000000200620110509201100000000000000000000
+0410021000277ANWGCRT9Patient wenst geen COPD-risicotest                                    Pat wenst geen COPD-risicotest               10307310427300000000200620110509201100000000000000000000
+0410021000278ANWCORT9Patient wenst COPD-risicotest                                         Pat wenst COPD-risicotest                    10307310427300000000200620110509201100000000000000000000
+0410021000279ANKRTDG9Kortdurend gebruik                                                    Kortdurend gebruik                           10307310427300000000070720110106200500000000000000000000
+0410021000280ANPAAND9Patient wenst informatie aandoening/ziektebeeld                       Pat wenst info aandoening/ziektebeeld        10307310427300000000230820110509201100000000000000000000
+0410021000281ANPADZM9Patient wenst advies zelfmanagement                                   Pat wenst advies zelfmanagement              10307310427300000000230820110509201100000000000000000000
+0410021000282ANPADZZ9Patient wenst advies zelfzorg                                         Pat wenst advies zelfzorg                    10307310427300000000230820110509201100000000000000000000
+0410021000283ANPWMET9Patient wenst meting/meetwaarde/test                                  Pat wenst meting/meetwaarde/test             10307310427300000000230820110509201100000000000000000000
+0410021000284ANPWCON9Patient wenst consult                                                 Pat wenst consult                            10307310427300000000230820110509201100000000000000000000
+0410021000285ANPONGG9Patient wenst ondersteuning geneesmiddelgebruik                       Pat wenst ondersteuning gnm-gebruik          10307310427300000000230820110509201100000000000000000000
+0410021000286ANPWRAD9Patient wenst reisadvies                                              Pat wenst reisadvies                         10307310427300000000230820110509201100000000000000000000
+0410021000287ANPWSYN9Patient wenst synchronisatie                                          Pat wenst synchronisatie                     10307310427300000000230820110509201100000000000000000000
+0410021000288ANPMEDO9Patient wenst medicatieoverzicht                                      Pat wenst medicatieoverzicht                 10307310427300000000230820110509201100000000000000000000
+0410021000289ANPMGZK9Patient wenst medicatiegesprek na ziekenhuisverblijf                  Pat wenst med.gesprek na zkh-verblijf        10307310427300000000230820110509201100000000000000000000
+0410021000290ANPBIJW9Patient wenst informatie bijwerking                                   Pat wenst info bijwerking                    10307310427300000000230820110509201100000000000000000000
+0410021000291ANPGEBR9Patient wenst informatie gebruik                                      Pat wenst info gebruik                       10307310427300000000230820110509201100000000000000000000
+0410021000292ANPKGNM9Patient wenst informatie (keuze) geneesmiddel                         Pat wenst info (keuze) gnm                   10307310427300000000230820110509201100000000000000000000
+0410021000293ANPTOED9Patient wenst informatie toedienen geneesmiddel                       Pat wenst info toedienen gnm                 10307310427300000000230820110509201100000000000000000000
+0410021000294ANPVERP9Patient wenst hulp ivm verpakking                                     Pat wenst hulp ivm verpakking                10307310427300000000230820110509201100000000000000000000
+0410021000295ANGNOPG9Geneesmiddel niet opgehaald                                           Gnm niet opgehaald                           10307310427300000000060920110000000000000000000000000000
+0410021000296ANONVRE9Onvolledig/onduidelijk/onjuist recept                                 Onvolledig/onduidelijk/onjuist recept        10307310427300000000060920110000000000000000000000000000
+0410021000297ANPBRAM9Patient behoeft advies in verband met Ramadan                         Pat behoeft advies ivm Ramadan               10307310427300000000060920110609201100000000000000000000
+0410021000298ANPBMET9Patient behoeft meting/meetwaarde/test                                Pat behoeft meting/meetwaarde/test           10307310427300000000060920110000000000000000000000000000
+0410021000299ANPBCON9Patient behoeft consult                                               Pat behoeft consult                          10307310427300000000060920110000000000000000000000000000
+0410021000300ANPBMBO9Patient behoeft medicatiebeoordeling                                  Pat behoeft medicatiebeoordeling             10307310427300000000060920112411201100000000000000000000
+0410021000301ANPBOGG9Patient behoeft ondersteuning geneesmiddelgebruik                     Pat behoeft ondersteuning gnm-gebruik        10307310427300000000060920111405201200000000000000000000
+0410021000302ANPBRAD9Patient behoeft reisadvies                                            Pat behoeft reisadvies                       10307310427300000000060920110000000000000000000000000000
+0410021000303ANPBSYN9Patient behoeft synchronisatie                                        Pat behoeft synchronisatie                   10307310427300000000060920110000000000000000000000000000
+0410021000304ANNGSGR9Niet-gestandaardiseerd uit grondstoffen                               Niet-gestandaardiseerd uit grondstoffen      10307310427300000000220920110000000000000000000000000000
+0410021000305ANNGSHP9Niet-gestandaardiseerd uit handelspreparaat                           Niet-gestandaardiseerd uit handelspreparaat  10307310427300000000220920110000000000000000000000000000
+0410021000306ANPASSA9Passant                                                               Passant                                      10307310427300000000260920110000000000000000000000000000
+0410021000307ANZWINF9Zorgverlener wenst informatie/overleg                                 Zorgverlener wenst informatie/overleg        10307310427300000000111020110000000000000000000000000000
+0410021000308ANPBTOE9Patient behoeft info toedienen gnm                                    Pat behoeft info toedienen gnm               10307310427300000000111020111110201100000000000000000000
+0410021000309ANBINST9Patient behoeft instructie                                            Pat behoeft instructie                       10307310427300000000111020110000000000000000000000000000
+0410021000310ANPWBEZ9Patient wenst thuisbezorging                                          Pat wenst thuisbezorging                     10307310427300000000251020112510201100000000000000000000
+0410021000311ANRECAL9Waarschuwing of recall nodig                                          Waarschuwing of recall nodig                 10307310427300000000251020110000000000000000000000000000
+0410021000312ANPBBEZ9Pat behoeft thuisbezorging                                            Pat behoeft thuisbezorging                   10307310427300000000031120110000000000000000000000000000
+0410021000313ANBEUTH9Begeleiding euthanasie gewenst                                        Begeleiding euthanasie gewenst               10307310427300000000031120110000000000000000000000000000
+0410021000314ANGNMNN9Toevoeging gnm niet nodig                                             Toevoeging gnm niet nodig                    10307310427300000000241120111105200600000000000000000000
+0410021000315ANVSNOG9Aanpassingsvoorstel niet overgenomen door behandelaar of patient      Voorstel niet overgenomen behandelaar/pat    10307310427300000000281120110000000000000000000000000000
+0410021000316ANCIACT9CI/intol/all/indic actueel                                            CI/intol/all/indic actueel                   10307310427300000000281120110000000000000000000000000000
+0410021000317ANCINAC9Contra-indicatie actueel                                              CI actueel                                   10307310427300000000140520120106200500000000000000000000
+0410021000318ANCINNA9Contra-indicatie niet actueel/niet bekend                             CI niet actueel/niet bekend                  10307310427300000000140520122708201000000000000000000000
+0410021000319ANCRENB9Creatinineklaring onbekend/niet recent bepaald                        Creatinineklaring onbekend/niet recent bepld 10307310427300000000120220132708201000000000000000000000
+0410021000320ANMXBNO9Maximale blootstelling niet overschreden                              Maximale blootstelling overschreden          10307310427300000000040820170000000000000000000000000000
+0410021000321ANMXBWO9Maximale blootstelling overschreden                                   Maximale blootstelling niet overschreden     10307310427300000000040820170000000000000000000000000000
+0410030000002ACMBSAF9Medicatiebewakingssignaal afgehandeld                                 Medicatiebewakingssignaal afgehandeld        10307310427330000002051120030106200500000000000000000000
+0410030000003ACGEENA9Geen actie uitgevoerd                                                 Geen actie uitgevoerd                        10307310427330000003051120030106200500000000000000000000
+0410030000004ACINSTR9Instructie gegeven                                                    Instructie gegeven                           10307310427330000004051120030106200500000000000000000000
+0410030000007ACMETVE9Meting verricht                                                       Meting verricht                              10307310427330000007061120030106200500000000000000000000
+0410030000008ACOVSER9Overige zorg verstrekt                                                Overige zorg verstrekt                       10307310427330000008061120030909201000000000000000000000
+0410030000009ACOVZGV9Overlegd met andere zorgverlener                                      Overlegd met andere zorgverlener             10307310427330000009061120030909201000000000000000000000
+0410030000010ACPVERW9Patient verwezen                                                      Patient verwezen                             10307310427330000010061120030106200500000000000000000000
+0410030000011ACVRLGE9Voorlichting gegeven                                                  Voorlichting gegeven                         10307310427330000011061120030106200500000000000000000000
+0410030000012ACEUVOO9Eerste uitgifte voorlichting gegeven                                  Eerste uitgifte voorlichting gegeven         10307310427330000012191120030106200500000000000000000000
+0410030000013ACTUVOO9Tweede uitgifte voorlichting gegeven                                  Tweede uitgifte voorlichting gegeven         10307310427330000013191120030106200500000000000000000000
+0410030000014ACVUVOO9Vervolguitgifte voorlichting gegeven                                  Vervolguitgifte voorlichting gegeven         10307310427330000014191120030106200500000000000000000000
+0410030000015ACZRGDO9Zorgdocument op naam afgeleverd                                       Zorgdocument op naam afgeleverd              10307310427330000015191120030106200500000000000000000000
+0410030000016ACVRLNI9Voorlichting niet-individueel gegeven                                 Voorlichting niet-individueel gegeven        10307310427330000016191120030106200500000000000000000000
+0410030000017ACAVGVA9Aanvullende gegevens rond medicatie vastgelegd                        Aanvullende gegevens medicatie vastgelegd    10307310427330000017191120030106200500000000000000000000
+0410030000018ACPRVRB9Projectvoorbereidingen getroffen                                      Projectvoorbereidingen getroffen             10307310427330000018191120030106200500000000000000000000
+0410030000019-       -                                                                     -                                            10307310427330000019081220030000000000000000000000000000
+0410030000020ACPROSA9Projectactie uitgevoerd                                               Projectactie uitgevoerd                      10307310427330000020160220041107200500000000000000000000
+0410031000001-       -                                                                     -                                            10307310427331000001061120030000000000000000000000000000
+0410031000002AGSIGAF1Signaalafhandelingen                                                  Signaalafhandelingen                         10307310427331000002051120030106200500000000000000000000
+0410031000003AGOVLPA2Overlegpartijen                                                       Overlegpartijen                              10307310427331000003051120030106200500000000000000000000
+0410031000005AGINDIC3Indicatie                                                             Indicatie                                    10307310427331000005061120030106200500000000000000000000
+0410031000008AGINSTR2Instructie                                                            Instructie                                   10307310427331000008061120030106200500000000000000000000
+0410031000009AGMETIN2Meting                                                                Meting                                       10307310427331000009061120030106200500000000000000000000
+0410031000010AGSERVD2Zorgactiviteiten divers                                               Zorgactiviteiten divers                      10307310427331000010061120030909201000000000000000000000
+0410031000011AGVOORL1Voorlichting                                                          Voorlichting                                 10307310427331000011061120030106200500000000000000000000
+0410031000012AGVRLNI2Voorlichting niet-individueel                                         Voorlichting niet-individueel                10307310427331000012191120030106200500000000000000000000
+0410031000013AGAANVG2Vastleggen aanvullende gegevens rond medicatie                        Vastleggen gegevens                          10307310427331000013191120032811201100000000000000000000
+0410031000014AGZORGD2Zorgdocument op naam                                                  Zorgdocument op naam                         10307310427331000014191120030106200500000000000000000000
+0410031000015AGSPRKU2Spreekuur                                                             Spreekuur                                    10307310427331000015191120030106200500000000000000000000
+0410031000016AGINFMA2Informatiemateriaal gemaakt                                           Informatiemateriaal gemaakt                  10307310427331000016191120030106200500000000000000000000
+0410031000017AGPROJV2Projectvoorbereidingen                                                Projectvoorbereidingen                       10307310427331000017191120030106200500000000000000000000
+0410031000018AGEUVRL1Eerste uitgifte-voorlichting                                          EU-voorlichting                              10307310427331000018100320050106200500000000000000000000
+0410031000019AGTUVRL1Tweede uitgifte-voorlichting                                          TU-voorlichting                              10307310427331000019100320050106200500000000000000000000
+0410031000020AGVUVRL1Vervolguitgifte-voorlichting                                          VU-voorlichting                              10307310427331000020100320050106200500000000000000000000
+0410031000021AGVERWE2Verwijspartijen                                                       Verwijspartijen                              10307310427331000021100320050408200800000000000000000000
+0410032000001-       -                                                                     -                                            10307310427332000001061120030000000000000000000000000000
+0410032000002STRKWIJ9Sterkte gewijzigd                                                     Sterkte gewijzigd                            10307310427332000002051120030606200500000000000000000000
+0410032000003STRKLVS9Sterkte van laatst bekende voorschrift aangehouden                    Sterkte ltst bekende voorschrift aangehouden 10307310427332000003051120030606200500000000000000000000
+0410032000004DOSETMA9Dosis maximaal per etmaal aangegeven                                  Dosis maximaal per etmaal aangegeven         10307310427332000004051120030206200500000000000000000000
+0410032000005GBRADVS9Gebruiksadvies gegeven                                                Gebruiksadvies gegeven VV !!!                10307310427332000005051120032405200600000000000000000000
+0410032000006GNMNVSV9Geneesmiddel niet verstrekt en niet vervangen                         Geneesmiddel niet verstrekt en niet vervangen10307310427332000006051120030206200500000000000000000000
+0410032000008APOTHKR9Apotheker                                                             Apotheker                                    10307310427300000000061120030206200500000000000000000000
+0410032000009APOASSI9Apothekersassistent                                                   Apothekersassistent                          10307310427300000000061120030206200500000000000000000000
+0410032000010ASTCOPD9Astma/COPD                                                            Astma/COPD                                   10307310427300000000061120031404201100000000000000000000
+0410032000011GNMTOEV9Geneesmiddel toegevoegd                                               Geneesmiddel toegevoegd                      10307310427332000011111120030206200500000000000000000000
+0410032000012HUISART9Huisarts                                                              Huisarts                                     10307310427300000000121120030206200500000000000000000000
+0410032000013PATIENT9Patient zelf                                                          Patient zelf                                 10307310427300000000121120030206200500000000000000000000
+0410032000014SPECIAL9Specialist                                                            Specialist                                   10307310427300000000121120030606200500000000000000000000
+0410032000015VRSCHRV9Voorschrijver                                                         Voorschrijver                                10307310427300000000121120030606200500000000000000000000
+0410032000016THSZWVP9Thuiszorg/wijkverpleging                                              Thuiszorg/wijkverpleging                     10307310427300000000121120030307200800000000000000000000
+0410032000017DIPPERS9Dipper                                                                Dipper                                       10307310427300000000121120030206200500000000000000000000
+0410032000018DIABVPL9Diabetesverpleegkundige                                               Diabetesverpleegkundige                      10307310427300000000121120030206200500000000000000000000
+0410032000019ZKHSAPO9Ziekenhuisapotheker                                                   Ziekenhuisapotheker                          10307310427300000000121120030606200500000000000000000000
+0410032000020LONGVPK9Longverpleegkundige                                                   Longverpleegkundige                          10307310427300000000121120030206200500000000000000000000
+0410032000021DEPRESS9Depressie                                                             Depressie                                    10307310427300000000191120030206200500000000000000000000
+0410032000022DIABMEL9Diabetes mellitus                                                     Diabetes mellitus                            10307310427300000000191120030206200500000000000000000000
+0410032000023HOOFDPN9Hoofdpijn                                                             Hoofdpijn                                    10307310427300000000191120030206200500000000000000000000
+0410032000024HUIDAAN9Huidaandoeningen                                                      Huidaandoeningen                             10307310427300000000191120030206200500000000000000000000
+0410032000025HYPERTN9Hypertensie                                                           Hypertensie                                  10307310427300000000191120030206200500000000000000000000
+0410032000026INCONTI9Incontinentie                                                         Incontinentie                                10307310427300000000191120030206200500000000000000000000
+0410032000027JICHTAA9Jicht                                                                 Jicht                                        10307310427300000000191120030206200500000000000000000000
+0410032000028KANKERA9Kanker                                                                Kanker                                       10307310427300000000191120030206200500000000000000000000
+0410032000029MAAGKLA9Maagklachten                                                          Maagklachten                                 10307310427300000000191120030206200500000000000000000000
+0410032000030MULTSCL9Multiple sclerose                                                     Multiple sclerose                            10307310427300000000191120030206200500000000000000000000
+0410032000031OSTEOPO9Osteoporose                                                           Osteoporose                                  10307310427300000000191120030206200500000000000000000000
+0410032000032REIZIGZ9Reizigerszorg                                                         Reizigerszorg                                10307310427300000000191120030206200500000000000000000000
+0410032000033REUMAAA9Reuma                                                                 Reuma                                        10307310427300000000191120030606200500000000000000000000
+0410032000034SLAPELO9Slapeloosheid                                                         Slapeloosheid                                10307310427300000000191120030606200500000000000000000000
+0410032000035ZWANGLA9Zwangerschap/lactatie                                                 Zwangerschap/lactatie                        10307310427300000000191120030606200500000000000000000000
+0410032000036OVERIGE9Overig                                                                Overig                                       10307310427332000036191120030206200500000000000000000000
+0410032000037DIENSTR9Dienstrooster gemaakt                                                 Dienstrooster gemaakt                        10307310427300000000191120030206200500000000000000000000
+0410032000038NIEUWSB9Nieuwsbrief gemaakt                                                   Nieuwsbrief gemaakt                          10307310427300000000191120030206200500000000000000000000
+0410032000039PERSBER9Persbericht gemaakt                                                   Persbericht gemaakt                          10307310427300000000191120030206200500000000000000000000
+0410032000040VOORFOL9Voorlichtingsfolder gemaakt                                           Voorlichtingsfolder gemaakt                  10307310427300000000191120030606200500000000000000000000
+0410032000041WEBSITE9Website gemaakt/bewerkt                                               Website gemaakt/bewerkt                      10307310427300000000191120030606200500000000000000000000
+0410032000042OVSCMAG9Overig (schriftelijk) materiaal gemaakt                               Overig (schriftelijk) materiaal gemaakt      10307310427332000042191120030206200500000000000000000000
+0410032000043PERCOTH9Periodieke controle test-/hulpmiddel toegelicht                       Periodieke contr test-/hulpmiddel toegelicht 10307310427300000000191120032706201100000000000000000000
+0410032000044BLDDRME9Instructie bloeddrukmeter gegeven                                     Instructie bloeddrukmeter gegeven            10307310427300000000191120032006201100000000000000000000
+0410032000045BLDPRKA9Instructie bloedprikapparaat gegeven                                  Instructie bloedprikapparaat gegeven         10307310427300000000191120032306201100000000000000000000
+0410032000046BORSTPO9Instructie borstpomp gegeven                                          Instructie borstpomp gegeven                 10307310427300000000191120032306201100000000000000000000
+0410032000047DOSRDOO9Instructie weekdoseersysteem gegeven                                  Instructie weekdoseersysteem gegeven         10307310427300000000191120032706201100000000000000000000
+0410032000048GLUCMET9Instructie bloedsuikermeter gegeven                                   Instructie bloedsuikermeter gegeven          10307310427300000000191120032306201100000000000000000000
+0410032000049INCMATA9Instructie incontinentiemateriaal gegeven                             Instructie incontinentiemateriaal gegeven    10307310427300000000191120030906201100000000000000000000
+0410032000050INHINSG9Inhalatie-instructie gegeven                                          Inhalatie-instructie gegeven                 10307310427300000000191120031209201100000000000000000000
+0410032000051INHTCON9Inhalatietechniek gecontroleerd                                       Inhalatietechniek gecontroleerd              10307310427300000000191120031204201100000000000000000000
+0410032000052MEDPNIN9Instructie medicatiepen gegeven                                       Instructie medicatiepen gegeven              10307310427300000000191120032306201100000000000000000000
+0410032000053OOGDRTO9Instructie oogdruppeltoediening gegeven                               Instructie oogdruppeltoediening gegeven      10307310427300000000191120032306201100000000000000000000
+0410032000054OVULTES9Instructie ovulatietest gegeven                                       Instructie ovulatietest gegeven              10307310427300000000191120032706201100000000000000000000
+0410032000055VERBAAN9Instructie verband gegeven                                            Instructie verband gegeven                   10307310427300000000191120030906201100000000000000000000
+0410032000056VERPAKK9Instructie verpakking gegeven                                         Instructie verpakking gegeven                10307310427300000000191120032706201100000000000000000000
+0410032000057ZETPILT9Instructie zetpiltoediening gegeven                                   Instructie zetpiltoediening gegeven          10307310427300000000191120032706201100000000000000000000
+0410032000058ZWANGTE9Instructie zwangerschapstest gegeven                                  Instructie zwangerschapstest gegeven         10307310427300000000191120032706201100000000000000000000
+0410032000059BEENOMV9Beenomvang gemeten                                                    Beenomvang gemeten                           10307310427300000000191120032706201100000000000000000000
+0410032000060BLOEDDR9Bloeddruk gemeten                                                     Bloeddruk gemeten                            10307310427300000000191120032706201100000000000000000000
+0410032000061BLDGLUC9Bloedsuiker gemeten                                                   Bloedsuiker gemeten                          10307310427300000000191120032706201100000000000000000000
+0410032000062CHOLEST9Cholesterol gemeten                                                   Cholesterol gemeten                          10307310427300000000191120032706201100000000000000000000
+0410032000063HIVAIDS9HIV/AIDS                                                              HIV/AIDS                                     10307310427300000000191120030206200500000000000000000000
+0410032000064LICHGEW9Lichaamsgewicht gemeten                                               Lichaamsgewicht gemeten                      10307310427300000000191120032706201100000000000000000000
+0410032000065PIEKFLO9Piekflow gemeten                                                      Piekflow gemeten                             10307310427300000000191120032706201100000000000000000000
+0410032000066PTLABEI9Patient labelen voor project 1                                        Patient labelen voor project 1               10307310427300000000191120030206200500000000000000000000
+0410032000067PRAKTON9Praktijkonderzoek                                                     Praktijkonderzoek                            10307310427300000000191120030206200500000000000000000000
+0410032000068SEARCHG9Search geneesmiddelgebruik                                            Search geneesmiddelgebruik                   10307310427300000000191120030606200500000000000000000000
+0410032000070CONSLTB9Consultatiebureau                                                     Consultatiebureau                            10307310427300000000201120030206200500000000000000000000
+0410032000071DIETIST9Dietist                                                               Dietist                                      10307310427300000000201120030206200500000000000000000000
+0410032000072FTOGROE9FTO-groep                                                             FTO-groep                                    10307310427300000000201120030206200500000000000000000000
+0410032000073FYSIOTH9Fysiotherapeut                                                        Fysiotherapeut                               10307310427300000000201120030206200500000000000000000000
+0410032000074GEBREKL9Geboorteregelingskliniek                                              Geboorteregelingskliniek                     10307310427300000000201120030206200500000000000000000000
+0410032000075GGDTROP9GGD afd Tropische ziekten                                             GGD afd Tropische ziekten                    10307310427300000000201120030206200500000000000000000000
+0410032000076IEMNPAT9Iemand namens patient                                                 Iemand namens patient                        10307310427300000000201120030206200500000000000000000000
+0410032000077TRANSAS9Transmuraal assistent                                                 Transmuraal assistent                        10307310427300000000201120030606200500000000000000000000
+0410032000078TROMBDI9Trombosedienst                                                        Trombosedienst                               10307310427300000000201120030606200500000000000000000000
+0410032000079ZORGVRZ9Zorgverzekeraar                                                       Zorgverzekeraar                              10307310427300000000201120030606200500000000000000000000
+0410032000080AAREBAH9Bijwerking: aan LAREB gemeld                                          Bijwerking: aan LAREB gemeld                 10307310427332000080201120031402200700000000000000000000
+0410032000081CIINGBR9CI/intolerantie/allergie/indicatie ingebracht                         CI/intol/all/ind ingebracht                  10307310427332000081201120032811201100000000000000000000
+0410032000082GNMSTAI9Geneesmiddel gestopt in AIS                                           Geneesmiddel gestopt in AIS                  10307310427332000082201120030206200500000000000000000000
+0410032000083MEDVOAP9Medicatie opgevraagd bij vorige apotheek                              Medicatie opgevraagd bij vorige apotheek     10307310427332000083201120031107200500000000000000000000
+0410032000084MEINAIS9Medicatie verwerkt in AIS VV!!!!!!!                                   Medicatie verwerkt in AIS VV!!!!!!!          10307310427300000000201120032609200500000000000000000000
+0410032000085MDOVZAP9Medicatieoverzicht afgeleverd                                         Medicatieoverzicht afgeleverd                10307310427332000085201120030909201000000000000000000000
+0410032000086RECVOLL9Recept volledig gemaakt                                               Recept volledig gemaakt                      10307310427332000086201120030206200500000000000000000000
+0410032000087EINDDVE9Einddatum geneesmiddel veranderd                                      Einddatum geneesmiddel veranderd             10307310427332000087201120031107200500000000000000000000
+0410032000090AFLVPDG9Afleveren per dag                                                     Afleveren per dag                            10307310427332000090201120030206200500000000000000000000
+0410032000091AFLVPWK9Afleveren per week                                                    Afleveren per week                           10307310427332000091201120030206200500000000000000000000
+0410032000092AFLPTWK9Afleveren per 2 weken                                                 Afleveren per 2 weken                        10307310427332000092201120030206200500000000000000000000
+0410032000093AFLVPMN9Afleveren per maand                                                   Afleveren per maand                          10307310427332000093201120030206200500000000000000000000
+0410032000094AFLVODD9Afleveren om de dag                                                   Afleveren om de dag                          10307310427332000094201120030206200500000000000000000000
+0410032000095BEZORGN9Medicatie bezorgd                                                     Medicatie bezorgd                            10307310427332000095201120032510201100000000000000000000
+0410032000096CONDOLE9Condoleance                                                           Condoleance                                  10307310427332000096201120030206200500000000000000000000
+0410032000097DECLAFG9Declaratie afgehandeld                                                Declaratie afgehandeld                       10307310427332000097201120030206200500000000000000000000
+0410032000098DOSRDGV9Doseerdoos gevuld                                                     Doseerdoos gevuld                            10307310427332000098201120030206200500000000000000000000
+0410032000099GEBRTPK9Geboortepakket                                                        Geboortepakket                               10307310427332000099201120030206200500000000000000000000
+0410032000100HUISBZK9Huisbezoek                                                            Huisbezoek                                   10307310427332000100201120030206200500000000000000000000
+0410032000101KERSTAT9Kerstattentie                                                         Kerstattentie                                10307310427332000101201120030206200500000000000000000000
+0410032000102KLACHAF9Klacht afgehandeld                                                    Klacht afgehandeld                           10307310427332000102201120030206200500000000000000000000
+0410032000103MACHTAA9Machtiging aangevraagd                                                Machtiging aangevraagd                       10307310427332000103201120030206200500000000000000000000
+0410032000104NLDCONV9Naaldencontainer verstrekt                                            Naaldencontainer verstrekt                   10307310427332000104201120030206200500000000000000000000
+0410032000105NAVRONG9Navraag gedaan naar onbekend geneesmiddel                             Navraag naar onbekend geneesmiddel           10307310427332000105201120030206200500000000000000000000
+0410032000106OPNAMED9Opnamemedicatie verstrekt                                             Opnamemedicatie verstrekt                    10307310427300000000201120030206200500000000000000000000
+0410032000107RECEASP9Recept via ASP                                                        Recept via ASP                               10307310427332000107201120030206200500000000000000000000
+0410032000108RETRGNM9Retourgeneesmiddelen                                                  Retourgeneesmiddelen                         10307310427332000108201120030206200500000000000000000000
+0410032000109RETRECA9Retracing/recall uitgevoerd                                           Retracing/recall uitgevoerd                  10307310427332000109201120030606200500000000000000000000
+0410032000110TOLKTEL9Tolkentelefoon                                                        Tolkentelefoon                               10307310427300000000201120030606200500000000000000000000
+0410032000111VERHUUR9Verhuur/uitleen artikelen                                             Verhuur/uitleen artikelen                    10307310427332000111201120030606200500000000000000000000
+0410032000112WELKOMP9Welkomstpakket                                                        Welkomstpakket                               10307310427332000112201120030606200500000000000000000000
+0410032000113CIVERWD9CI/intolerantie/allergie/indicatie verwijderd/einddatum ingevoerd     CI/intol/all/ind verwijderd/einddatum ingev  10307310427332000113201120032811201100000000000000000000
+0410032000114GEWOPCO9Patient gewezen op (periodieke) controle                              Patient gewezen op (periodieke) controle     10307310427332000114201120030206200500000000000000000000
+0410032000115GEWMOBI9Pat gewezen op(vermijden)mogelijke bijwerking                         Pat gewezen op(vermijden)mogelijke bijwerking10307310427332000115201120030402201000000000000000000000
+0410032000116GNMVERV9Geneesmiddel vervangen                                                Geneesmiddel vervangen                       10307310427332000116201120030506200800000000000000000000
+0410032000117IAFLDAF9Interactiefolder afgeleverd                                           Interactiefolder afgeleverd                  10307310427332000117201120030206200500000000000000000000
+0410032000118MBSVHON9Medicatiebewakingssignaal vanaf heden onderdrukt                      MB-signaal vanaf heden onderdrukt            10307310427332000118201120030206200500000000000000000000
+0410032000119NAVOPNA9Navraag voorraad bij pat, reden niet VV!!!                            Navraag voorraad bij pat, reden niet VV!!!   10307310427332000119201120033101200700000000000000000000
+0410032000120ONGWAFG9Ongewijzigd afgeleverd                                                Ongewijzigd afgeleverd                       10307310427332000120201120030206200500000000000000000000
+0410032000121ONGWAFO9Ongewijzigd afgeleverd na overleg: VV!!!                              Ongewijzigd afgeleverd na overleg: VV!!!     10307310427300000000201120030206200500000000000000000000
+0410032000122ONGWAFC9Ongewijzigd afgeleverd na controle: VV!!!!                            Ongewijzigd afgeleverd na controle: VV!!!!   10307310427300000000201120030206200500000000000000000000
+0410032000123OUTHWYZ9Oude therapie wordt gewijzigd                                         Oude therapie wordt gewijzigd                10307310427332000123201120031311200800000000000000000000
+0410032000124OUTHTYS9Oude therapie wordt tijdelijk gestopt                                 Oude therapie wordt tijdelijk gestopt        10307310427332000124201120031311200800000000000000000000
+0410032000125OUDTHST9Oude therapie wordt gestopt                                           Oude therapie wordt gestopt                  10307310427332000125201120031311200800000000000000000000
+0410032000126PATTERU9Patient terugverwezen                                                 Patient terugverwezen                        10307310427332000126201120030206200500000000000000000000
+0410032000127PERSGEW9Recept op juiste persoon aangeschreven VV!!!!                         Recept op juiste persoon aangeschreven VV!!!!10307310427300000000201120033001200700000000000000000000
+0410032000128RETINFA9Retourinformatie naar arts/voorschrijver                              Retourinformatie naar arts/voorschrijver     10307310427332000128201120030206200500000000000000000000
+0410032000129STRTROM9Starten/wijzigen/stoppen geneesmiddel gemeld aan trombosedienst       Start/wijz/stop gnm gemeld aan trombosedienst10307310427332000129201120030606200500000000000000000000
+0410032000130STOPAFB9Stoppen/afbouwen/doseringwijzigen geneesmiddel besproken              Stoppen/afbouwen/doseringwijzig gnm besproken10307310427332000130201120030606200500000000000000000000
+0410032000131THERTBE9Therapietrouw besproken                                               Therapietrouw besproken                      10307310427332000131201120033001200700000000000000000000
+0410032000132TOEDWIJ9Toedieningsvorm gewijzigd                                             Toedieningsvorm gewijzigd                    10307310427332000132201120030606200500000000000000000000
+0410032000133SPRAPOT9Spreekuur apotheker                                                   Spreekuur apotheker                          10307310427300000000201120030606200500000000000000000000
+0410032000134SPRLONG9Spreekuur longverpleegkundige                                         Spreekuur longverpleegkundige                10307310427300000000201120030606200500000000000000000000
+0410032000135SPRDIAB9Spreekuur diabetesverpleegkundige                                     Spreekuur diabetesverpleegkundige            10307310427300000000201120030606200500000000000000000000
+0410032000136SPRDIET9Spreekuur dietist                                                     Spreekuur dietist                            10307310427300000000201120030606200500000000000000000000
+0410032000137SPRDIPP9Spreekuur dipper                                                      Spreekuur dipper                             10307310427300000000201120030606200500000000000000000000
+0410032000138SPROVER9Spreekuur overig                                                      Spreekuur overig                             10307310427300000000201120030606200500000000000000000000
+0410032000139VLINTPR2Volgens intern protocol                                               Volgens intern protocol                      10307310427332000139201120031607200900000000000000000000
+0410032000140VLGWIEU9Volgens WINAp protocol EU                                             Volgens WINAp protocol EU                    10307310427300000000201120030606200500000000000000000000
+0410032000141BIJWGNM4Bijwerking geneesmiddel toegelicht                                    Bijwerking geneesmiddel toegelicht           10307310427332000141201120031607200900000000000000000000
+0410032000142GEBRGNM5Gebruik geneesmiddel toegelicht                                       Gebruik geneesmiddel toegelicht              10307310427332000142201120031607200900000000000000000000
+0410032000143WERKGNM3Werking geneesmiddel toegelicht                                       Werking geneesmiddel toegelicht              10307310427332000143201120031607200900000000000000000000
+0410032000144IAWWTOE9Interactie (wisselwerking) gnm toegelicht                             Interactie (wisselwerking) gnm toegelicht    10307310427332000144201120030206200500000000000000000000
+0410032000145INCNTOE9Incontinentiemateriaal toegelicht                                     Incontinentiemateriaal toegelicht            10307310427332000145201120030206200500000000000000000000
+0410032000146INTAKEG9Intakegegevens verwerkt                                               Intakegegevens verwerkt                      10307310427332000146201120030301200800000000000000000000
+0410032000147LEEFVOE9Leefregels/voeding toegelicht                                         Leefregels/voeding toegelicht                10307310427332000147201120030206200500000000000000000000
+0410032000148MEDANBE9Medicatieanalyse besproken                                            Medicatieanalyse besproken                   10307310427332000148201120030206200500000000000000000000
+0410032000149ONTMDBE9Ontslagmedicatie besproken                                            Ontslagmedicatie besproken                   10307310427332000149201120030206200500000000000000000000
+0410032000151STOPROK9Stoppen met roken VV                                                  Stoppen met roken VV                         10307310427300000000201120032706201100000000000000000000
+0410032000152STREEFW9Streefwaarden besproken                                               Streefwaarden besproken                      10307310427332000152201120030606200500000000000000000000
+0410032000153TOEDIEN9Toedienen geneesmiddel toegelicht                                     Toedienen geneesmiddel toegelicht            10307310427332000153201120030506200900000000000000000000
+0410032000155ZELFZOR9Advies farmaceutische zelfzorg gegeven                                Advies farmaceutische zelfzorg gegeven       10307310427332000155201120032706201100000000000000000000
+0410032000156ZELFMAN9Zelfmanagement toegelicht                                             Zelfmanagement toegelicht                    10307310427332000156201120030606200500000000000000000000
+0410032000157ZKTBLDT9Ziektebeeld/indicatie toegelicht                                      Ziektebeeld/indicatie toegelicht             10307310427332000157201120030606200500000000000000000000
+0410032000158OVEMOVO9Overige mondelinge voorlichting                                       Overige mondelinge voorlichting              10307310427332000158201120030206200500000000000000000000
+0410032000159FOLDERM9Folder meegegeven                                                     Folder meegegeven                            10307310427332000159201120032908201100000000000000000000
+0410032000160VLGVIIN1Volgens VI-instructie                                                 Volgens VI-instructie                        10307310427332000160201120031607200900000000000000000000
+0410032000161PROEMON9Proefpakket/-monster meegegeven                                       Proefpakket/-monster meegegeven              10307310427332000161201120030206200500000000000000000000
+0410032000162INTERNE9Internetverwijzing gegeven                                            Internetverwijzing gegeven                   10307310427332000162201120030206200500000000000000000000
+0410032000163FLDKIND9Folder:KNMP indicatiefolder (rood) meegegeven                         Folder:KNMP ind.folder(rood) meegegeven VV!!!10307310427300000000201120032410200600000000000000000000
+0410032000164FLDKZFZ9Folder:KNMP zelfzorgfolder (blauw) meegegeven                         Folder:KNMP zelfzorgf(blauw) meegegeven VV!!!10307310427300000000201120032410200600000000000000000000
+0410032000165FLDKNMP9Folder KNMP meegegeven                                                Folder KNMP meegegeven                       10307310427332000165201120032410200600000000000000000000
+0410032000166VIDVDCD9Videoband,CDrom,DVD,zorgboek uitgeleend/verkocht                      Video,CDrom,DVD,zorgboek uitgeleend/verkocht 10307310427332000166201120030606200500000000000000000000
+0410032000167VLGZIIN9Volgens ZI-instructie                                                 Volgens ZI-instructie                        10307310427332000167201120030606200500000000000000000000
+0410032000168ZORGBAF9Zorgboek afgeleverd                                                   Zorgboek afgeleverd                          10307310427300000000201120030606200500000000000000000000
+0410032000169OVSCONM9Overig (schriftelijk) ondersteunend materiaal                         Overig (schriftelijk) ondersteunend materiaal10307310427332000169201120030206200500000000000000000000
+0410032000170GMINFOL9Meewerken aan geneesmiddelinfolijn                                    Meewerken aan geneesmiddelinfolijn           10307310427300000000201120030206200500000000000000000000
+0410032000171OPENDAG9Open dag apotheek georganiseerd                                       Open dag apotheek georganiseerd              10307310427300000000201120030206200500000000000000000000
+0410032000172PATCURS9Patientencursus georganiseerd                                         Patientencursus georganiseerd                10307310427300000000201120030206200500000000000000000000
+0410032000173PATLEZI9Patientenlezing georganiseerd                                         Patientenlezing georganiseerd                10307310427300000000201120030206200500000000000000000000
+0410032000174RADIOTV9Radio/TV                                                              Radio/TV                                     10307310427300000000201120030206200500000000000000000000
+0410032000175SCHOOLA9School                                                                School                                       10307310427300000000201120030606200500000000000000000000
+0410032000176THEMNSP9Thema, niet gespecificeerd                                            Thema, niet gespecificeerd                   10307310427300000000201120030606200500000000000000000000
+0410032000177DIABPAS9Diabetespas verstrekt                                                 Diabetespas verstrekt                        10307310427300000000201120030909201000000000000000000000
+0410032000178DOSSCHE9Doseerschema verstrekt                                                Doseerschema verstrekt                       10307310427300000000201120032508201100000000000000000000
+0410032000179GNMPASP9Geneesmiddelpaspoort verstrekt                                        Geneesmiddelpaspoort verstrekt               10307310427300000000201120030909201000000000000000000000
+0410032000180HFDPDAG9Hoofdpijndagboek verstrekt                                            Hoofdpijndagboek verstrekt                   10307310427300000000201120030909201000000000000000000000
+0410032000181MEDOVER9Medicatieoverzicht verstrekt                                          Medicatieoverzicht verstrekt                 10307310427300000000201120030909201000000000000000000000
+0410032000182REISDOC9Reisdocument verstrekt                                                Reisdocument verstrekt                       10307310427300000000201120030909201000000000000000000000
+0410032000183UITLPAT9Uitleg aan patient over/VVVVVVVV!!!!!                                 Uitleg aan patient over/VVVVVVVV!!!!!        10307310427300000000201120030301200800000000000000000000
+0410032000184CIFOLAF9Contra-indicatiefolder afgeleverd                                     Contra-indicatiefolder afgeleverd            10307310427332000184211120030206200500000000000000000000
+0410032000185HERHMED9Herhaalmedicatie: aanvraag via de apotheek                            Herhaalmedicatie: aanvraag via de apotheek   10307310427332000185011220030206200500000000000000000000
+0410032000186MEDANUI9Medicatieanalyse uitgevoerd                                           Medicatieanalyse uitgevoerd                  10307310427332000186011220030206200500000000000000000000
+0410032000187ZLFZMIN9Zelfzorgmedicatie ingebracht                                          Zelfzorgmedicatie ingebracht                 10307310427332000187011220030606200500000000000000000000
+0410032000188GBRDUUR9Gebruiksduur geneesmiddel toegelicht                                  Gebruiksduur geneesmiddel toegelicht         10307310427332000188081220030206200500000000000000000000
+0410032000189VLGWITU9Volgens WINAp protocol TU                                             Volgens WINAp protocol TU                    10307310427300000000081220030606200500000000000000000000
+0410032000190KINDERW9Kinderwens                                                            Kinderwens                                   10307310427300000000040220040206200500000000000000000000
+0410032000191MEDCONT9Medicatie(gebruik) gecontroleerd                                      Medicatie(gebruik) gecontroleerd             10307310427332000191040220042811201100000000000000000000
+0410032000192GNMOPMT9Geneesmiddel op maat                                                  Geneesmiddel op maat                         10307310427332000192110220040206200500000000000000000000
+0410032000193VERPWIJ9Verpakking patientvriendelijk aangepast                               Verpakking patientvriendelijk aangepast      10307310427332000193110220041107200500000000000000000000
+0410032000194ZKHSVBL9Ziekenhuisopname/-ontslag                                             Ziekenhuisopname/-ontslag                    10307310427332000194160220041107200500000000000000000000
+0410032000195GERUSTS9Geruststelling                                                        Geruststelling                               10307310427332000195160220040206200500000000000000000000
+0410032000196HIVTEST9Instructie HIV/AIDS-test gegeven                                      Instructie HIV/AIDS-test gegeven             10307310427300000000100320042306201100000000000000000000
+0410032000197ONTMDVE9Ontslagmedicatie verwerkt: VV!!!!                                     Ontslagmedicatie verwerkt: VV!!!!            10307310427300000000250320040206200500000000000000000000
+0410032000198SPEVERA9Specialite geleverd op verzoek arts                                   Specialite geleverd op verzoek arts          10307310427332000198250320040606200500000000000000000000
+0410032000199SPEVERP9Specialite geleverd op verzoek patient                                Specialite geleverd op verzoek patient       10307310427332000199250320040606200500000000000000000000
+0410032000200SPEVERV9Specialite vervangen                                                  Specialite vervangen                         10307310427332000200250320040606200500000000000000000000
+0410032000201GMVVSTE9Geneesmiddel vervangen ivm vergoeding                                 Geneesmiddel vervangen ivm vergoeding        10307310427332000201110520041107200500000000000000000000
+0410032000202BAXTERN9Baxteren                                                              Baxteren                                     10307310427332000202110520040206200500000000000000000000
+0410032000203PTLABII9Patient labelen voor project 2                                        Patient labelen voor project 2               10307310427300000000290920040206200500000000000000000000
+0410032000204PATLIII9Patient labelen voor project 3                                        Patient labelen voor project 3               10307310427300000000290920040206200500000000000000000000
+0410032000205PTLABIV9Patient labelen voor project 4                                        Patient labelen voor project 4               10307310427300000000290920040206200500000000000000000000
+0410032000206PATLABV9Patient labelen voor project 5                                        Patient labelen voor project 5               10307310427300000000290920040206200500000000000000000000
+0410032000207MACHTVE9Machtiging toegekend en verwerkt in AIS                               Machtiging toegekend en verwerkt in AIS      10307310427332000207290920041107200500000000000000000000
+0410032000208GBRLTVS9Gebruik van laatst bekende voorschrift aangehouden                    Gebruik ltst bekende voorschrift aangehouden 10307310427332000208290920040206200500000000000000000000
+0410032000209SUBSTOE9Substitutie toegelicht                                                Substitutie toegelicht                       10307310427332000209290920040606200500000000000000000000
+0410032000210GBRGWIJ9Gebruik gewijzigd                                                     Gebruik gewijzigd                            10307310427332000210251120040206200500000000000000000000
+0410032000212FLDAPNL9Folder Apotheek.nl meegegeven                                         Folder Apotheek.nl meegegeven                10307310427332000212140220052410200600000000000000000000
+0410032000213INJPNIN9Instructie injectiepen gegeven VV                                     Instructie injectiepen gegeven VV            10307310427300000000140220052306201100000000000000000000
+0410032000214NEUSSPR9Instructie neusspray gegeven                                          Instructie neusspray gegeven                 10307310427300000000140220052306201100000000000000000000
+0410032000215OORDRTO9Instructie oordruppeltoediening gegeven                               Instructie oordruppeltoediening gegeven      10307310427300000000140220052706201100000000000000000000
+0410032000216DOKTASS9Doktersassistente                                                     Doktersassistente                            10307310427300000000140220050206200500000000000000000000
+0410032000217GINKNMP9GI (Geneesmiddelinformatie KNMP)                                      GI (Geneesmiddelinformatie KNMP)             10307310427300000000140220050206200500000000000000000000
+0410032000218PRAKTVP9Praktijkondersteuner                                                  Praktijkondersteuner                         10307310427300000000140220052406201000000000000000000000
+0410032000219MIVRSCH9Middel op voorschot meegegeven                                        Middel op voorschot meegegeven               10307310427332000219140220050507200700000000000000000000
+0410032000220TOEDLVS9Toedieningsvorm van laatst bekende voorschrift aangehouden            Toedieningsvorm laatst bekende vs aangehouden10307310427332000220140220050606200500000000000000000000
+0410032000221MACHTWE9Machtiging afgewezen                                                  Machtiging afgewezen                         10307310427332000221140220051107200500000000000000000000
+0410032000222AFGZKTB9Afgeleid ziektebeeld vastgelegd                                       Afgeleid ziektebeeld vastgelegd              10307310427332000222110320051306200500000000000000000000
+0410032000223GNMOMGE9Geneesmiddel omgezet in verband met (gebruiks)gemak                   Geneesmiddel omgezet ivm (gebruiks)gemak     10307310427332000223250420050206200500000000000000000000
+0410032000224VUGPLAN9Vervolguitgifte gepland                                               VU gepland                                   10307310427300000000250420050606200500000000000000000000
+0410032000225VUPLAMN9Vervolguitgifte gepland na 1 maand                                    VU gepland na 1 maand                        10307310427300000000250420050606200500000000000000000000
+0410032000226VUPLAKW9Vervolguitgifte gepland na 3 maanden                                  VU gepland na 3 maanden                      10307310427300000000250420050606200500000000000000000000
+0410032000227VUPLAHJ9Vervolguitgifte gepland na 6 maanden                                  VU gepland na 6 maanden                      10307310427300000000250420050606200500000000000000000000
+0410032000228VUPLAJR9Vervolguitgifte gepland na 12 maanden                                 VU gepland na 12 maanden                     10307310427300000000250420050606200500000000000000000000
+0410032000229RECAFGB9Recept afgebroken                                                     Recept afgebroken                            10307310427332000229090620050206200500000000000000000000
+0410032000230TANDART9Tandarts                                                              Tandarts                                     10307310427300000000130620050606200500000000000000000000
+0410032000231VERLOSK9Verloskundige                                                         Verloskundige                                10307310427300000000130620050606200500000000000000000000
+0410032000232LAREBAH9Bijwerking: retourinformatie LAREB verwerkt                           Bijwerking: retourinfo LAREB verwerkt        10307310427332000232110720052609200500000000000000000000
+0410032000233AFLPVWK9Afleveren per 4 weken                                                 Afleveren per 4 weken                        10307310427332000233110720052410200600000000000000000000
+0410032000234DOSHMCO9Dosering handmatig gecontroleerd VV!!!!!                              Dosering handmatig gecontroleerd VV!!!!!     10307310427300000000280920052205200600000000000000000000
+0410032000236GENVERA9Generiek geleverd op verzoek arts                                     Generiek geleverd op verzoek arts            10307310427332000236131020050606200500000000000000000000
+0410032000237GENVERP9Generiek geleverd op verzoek patient                                  Generiek geleverd op verzoek patient         10307310427332000237131020050606200500000000000000000000
+0410032000238GENVERV9Generiek vervangen                                                    Generiek vervangen                           10307310427332000238131020050606200500000000000000000000
+0410032000239PIEKFME9Instructie piekflowmeter gegeven                                      Instructie piekflowmeter gegeven             10307310427300000000231120052706201100000000000000000000
+0410032000240DAGBOEK9Dagboek verstrekt                                                     Dagboek verstrekt                            10307310427300000000231120050909201000000000000000000000
+0410032000241HPRDLVS9Handelsproduct van laatst bekende voorschtrift aangehouden            Handelsproduct laatst bekende vs aangehouden 10307310427332000241010520062410200600000000000000000000
+0410032000242GNMUMBW9Geneesmiddel uit medicatiehistorie gehaald                            Geneesmiddel uit medicatiehistorie gehaald   10307310427332000242010520063001200700000000000000000000
+0410032000243GNMTEGO9Geneesmiddel op tegoed gezet VV!!!!                                   Geneesmiddel op tegoed gezet VV!!!!          10307310427300000000010520063001200700000000000000000000
+0410032000244GNMNTGP9Geneesmiddel nog niet geleverd op verzoek patient VV!!!!              Gnm nog niet geleverd op verz pat VV!!!!     10307310427300000000030520063001200700000000000000000000
+0410032000245INMEDP09Instructie medicatiepomp gegeven                                      Instructie medicatiepomp gegeven             10307310427300000000241020062908201100000000000000000000
+0410032000246AFLDNST9Aflevering in avond-, nacht- of weekenddienst                         Aflevering in dienst                         10307310427332000246241020062410200600000000000000000000
+0410032000247APBERRG9Apotheekbereiding, regulier                                           Apotheekbereiding, regulier                  10307310427332000247241020060206200500000000000000000000
+0410032000248APBERBZ9Apotheekbereiding, bijzonder                                          Apotheekbereiding, bijzonder                 10307310427332000248241020060206200500000000000000000000
+0410032000249GEBRINN5Gebruik geneesmiddel toegelicht: innametijdstip                       Gebruik gnm toegelicht: innametijdstip       10307310427332000249241020060812201000000000000000000000
+0410032000251AFGZKTV9Afgeleid ziektebeeld verwijderd                                       Afgeleid ziektebeeld verwijderd              10307310427300000000080320071306200500000000000000000000
+0410032000252GBRAANG9Gebruik aangepast VV                                                  Gebruik aangepast VV                         10307310427332000252060420072706201100000000000000000000
+0410032000253VERPLEE9Verpleegkundige                                                       Verpleegkundige                              10307310427300000000160820070301200800000000000000000000
+0410032000254PATVERE9Patientenvereniging                                                   Patientenvereniging                          10307310427300000000160820070301200800000000000000000000
+0410032000255BEZBREU9Bezorgbrief EU meegegeven                                             Bezorgbrief EU meegegeven                    10307310427300000000160820070301200800000000000000000000
+0410032000256BEZBRTU9Bezorgbrief TU meegegeven                                             Bezorgbrief TU meegegeven                    10307310427300000000160820070301200800000000000000000000
+0410032000257BEWRCON6Bewaarcondities toegelicht                                            Bewaarcondities toegelicht                   10307310427300000000030120081607200900000000000000000000
+0410032000258BEZBRIE9Bezorgbrief meegegeven                                                Bezorgbrief meegegeven                       10307310427300000000030120080301200800000000000000000000
+0410032000259VTGMTOE9Voor toediening gereed maken toegelicht                               Voor toediening gereed maken toegelicht      10307310427300000000050620080606200500000000000000000000
+0410032000260VRSONTW9Voorschrift ontworpen                                                 Voorschrift ontworpen                        10307310427300000000050620080606200500000000000000000000
+0410032000261VTDGGEM9Voor toediening gereed gemaakt                                        Voor toediening gereed gemaakt               10307310427300000000050620082601200900000000000000000000
+0410032000262BWRCCON9Bewaarcondities bij patient gecontroleerd                             Bewaarcondities bij patient gecontroleerd    10307310427300000000050620080206200500000000000000000000
+0410032000263THATOED9Toestemming gevr aan patient om huisarts te informeren over toedieningToest gevr aan pat om ha te inform toedienen 10307310427300000000050620081309201100000000000000000000
+0410032000264TRSPCON9Transportcondities toegelicht                                         Transportcondities toegelicht                10307310427300000000050620080606200500000000000000000000
+0410032000265VRPLGKZ9Verpleegkundige zorg geregeld voor patient                            Verpleegkundige zorg geregeld voor patient   10307310427300000000050620080606200500000000000000000000
+0410032000266VLKPSPG9Volgens KNMP-protocol specialistische geneesmiddelen                  Volgens KNMP-protocol specialistische gnm    10307310427300000000050620080606200500000000000000000000
+0410032000267VINPSPG9Volgens intern protocol specialistische geneesmiddelen                Volgens intern protocol specialistische gnm  10307310427300000000050620080606200500000000000000000000
+0410032000268TDPTCON9Toediening aan patient gecontroleerd                                  Toediening aan patient gecontroleerd         10307310427300000000050620080506200800000000000000000000
+0410032000269TDGEMEL9Toediening gemeld aan voorschrijver/huisarts/medisch specialist       Toediening gemeld aan vrschr/ha/medisch spec 10307310427300000000050620081105200600000000000000000000
+0410032000270OVAPOTH9Overlegd met apotheker                                                Overlegd met apotheker                       10307310427300000000030720080206200500000000000000000000
+0410032000271VWAPOTH9Verwezen naar apotheker                                               Verwezen naar apotheker                      10307310427300000000030720080206200500000000000000000000
+0410032000272OVAPASS9Overlegd met apothekersassistent                                      Overlegd met apothekersassistent             10307310427300000000030720080206200500000000000000000000
+0410032000273VWAPASS9Verwezen naar apothekersassistent                                     Verwezen naar apothekersassistent            10307310427300000000030720080206200500000000000000000000
+0410032000274OVCONSB9Overlegd met consultatiebureau                                        Overlegd met consultatiebureau               10307310427300000000030720080206200500000000000000000000
+0410032000275VWCONSB9Verwezen naar consultatiebureau                                       Verwezen naar consultatiebureau              10307310427300000000030720080206200500000000000000000000
+0410032000276OVDIABV9Overlegd met diabetesverpleegkundige                                  Overlegd met diabetesverpleegkundige         10307310427300000000030720080206200500000000000000000000
+0410032000277VWDIABV9Verwezen naar diabetesverpleegkundige                                 Verwezen naar diabetesverpleegkundige        10307310427300000000030720080206200500000000000000000000
+0410032000278OVDIETI9Overlegd met dietist                                                  Overlegd met dietist                         10307310427300000000030720080206200500000000000000000000
+0410032000279VWDIETI9Verwezen naar dietist                                                 Verwezen naar dietist                        10307310427300000000030720080206200500000000000000000000
+0410032000280OVDIPPE9Overlegd met dipper                                                   Overlegd met dipper                          10307310427300000000030720080206200500000000000000000000
+0410032000281VWDIPPE9Verwezen naar dipper                                                  Verwezen naar dipper                         10307310427300000000030720080206200500000000000000000000
+0410032000282OVDOKTA9Overlegd met doktersassistente                                        Overlegd met doktersassistente               10307310427300000000030720080206200500000000000000000000
+0410032000283VWDOKTA9Verwezen naar doktersassistente                                       Verwezen naar doktersassistente              10307310427300000000030720080206200500000000000000000000
+0410032000284OVFTOGR9Overlegd met FTO-groep                                                Overlegd met FTO-groep                       10307310427300000000030720080206200500000000000000000000
+0410032000285OVFYSIO9Overlegd met fysiotherapeut                                           Overlegd met fysiotherapeut                  10307310427300000000030720080206200500000000000000000000
+0410032000286VWFYSIO9Verwezen naar fysiotherapeut                                          Verwezen naar fysiotherapeut                 10307310427300000000030720080206200500000000000000000000
+0410032000287OVGBRKL9Overlegd met geboorteregelingskliniek                                 Overlegd met geboorteregelingskliniek        10307310427300000000030720080206200500000000000000000000
+0410032000288VWGBRKL9Verwezen naar geboorteregelingskliniek                                Verwezen naar geboorteregelingskliniek       10307310427300000000030720080206200500000000000000000000
+0410032000289OVGGDTR9Overlegd met GGD afd Tropische ziekten                                Overlegd met GGD afd Tropische ziekten       10307310427300000000030720080206200500000000000000000000
+0410032000290VWGGDTR9Verwezen naar GGD afd Tropische ziekten                               Verwezen naar GGD afd Tropische ziekten      10307310427300000000030720080206200500000000000000000000
+0410032000291OVGIKNM9Overlegd met GI (Geneesmiddelinformatie KNMP)                         Overlegd met GI (Geneesmiddelinformatie KNMP)10307310427300000000030720080206200500000000000000000000
+0410032000292OVHUISA9Overlegd met huisarts                                                 Overlegd met huisarts                        10307310427300000000030720080206200500000000000000000000
+0410032000293VWHUISA9Verwezen naar huisarts                                                Verwezen naar huisarts                       10307310427300000000030720080206200500000000000000000000
+0410032000294OVIEMPA9Overlegd met iemand namens patient                                    Overlegd met iemand namens patient           10307310427300000000030720080206200500000000000000000000
+0410032000295OVLONGV9Overlegd met longverpleegkundige                                      Overlegd met longverpleegkundige             10307310427300000000030720080206200500000000000000000000
+0410032000296VWLONGV9Verwezen naar longverpleegkundige                                     Verwezen naar longverpleegkundige            10307310427300000000030720080206200500000000000000000000
+0410032000297OVOVERI9Overlegd met overig                                                   Overlegd met overig                          10307310427300000000030720080206200500000000000000000000
+0410032000298VWOVERI9Verwezen naar overig                                                  Verwezen naar overig                         10307310427300000000030720080206200500000000000000000000
+0410032000299OVPATIE9Overlegd met patient zelf                                             Overlegd met patient zelf                    10307310427300000000030720080206200500000000000000000000
+0410032000300VWPTVER9Verwezen naar patientenvereniging                                     Verwezen naar patientenvereniging            10307310427300000000030720080301200800000000000000000000
+0410032000301OVPRKTV9Overlegd met praktijkondersteuner                                     Overlegd met praktijkondersteuner            10307310427300000000030720081207201000000000000000000000
+0410032000302VWPRKTV9Verwezen naar praktijkondersteuner                                    Verwezen naar praktijkondersteuner           10307310427300000000030720081207201000000000000000000000
+0410032000303OVSPECI9Overlegd met specialist                                               Overlegd met specialist                      10307310427300000000030720080606200500000000000000000000
+0410032000304VWSPECI9Verwezen naar specialist                                              Verwezen naar specialist                     10307310427300000000030720080606200500000000000000000000
+0410032000305OVTANDA9Overlegd met tandarts                                                 Overlegd met tandarts                        10307310427300000000030720080606200500000000000000000000
+0410032000306VWTANDA9Verwezen naar tandarts                                                Verwezen naar tandarts                       10307310427300000000030720080606200500000000000000000000
+0410032000307OVTHZWV9Overlegd met thuiszorg/wijkverpleging                                 Overlegd met thuiszorg/wijkverpleging        10307310427300000000030720080307200800000000000000000000
+0410032000308VWTHZWV9Verwezen naar thuiszorg/wijkverpleging                                Verwezen naar thuiszorg/wijkverpleging       10307310427300000000030720080307200800000000000000000000
+0410032000309OVTRSMA9Overlegd met transmuraal assistent                                    Overlegd met transmuraal assistent           10307310427300000000030720080606200500000000000000000000
+0410032000310OVTROMB9Overlegd met trombosedienst                                           Overlegd met trombosedienst                  10307310427300000000030720080606200500000000000000000000
+0410032000311VWTROMB9Verwezen naar trombosedienst                                          Verwezen naar trombosedienst                 10307310427300000000030720080606200500000000000000000000
+0410032000312OVVRLSK9Overlegd met verloskundige                                            Overlegd met verloskundige                   10307310427300000000030720080606200500000000000000000000
+0410032000313VWVRLSK9Verwezen naar verloskundige                                           Verwezen naar verloskundige                  10307310427300000000030720080606200500000000000000000000
+0410032000314OVVRPLK9Overlegd met verpleegkundige                                          Overlegd met verpleegkundige                 10307310427300000000030720080301200800000000000000000000
+0410032000315VWVRPLK9Verwezen naar verpleegkundige                                         Verwezen naar verpleegkundige                10307310427300000000030720080301200800000000000000000000
+0410032000316OVVRSCH9Overlegd met voorschrijver                                            Overlegd met voorschrijver                   10307310427300000000030720080606200500000000000000000000
+0410032000317VWVRSCH9Verwezen naar voorschrijver                                           Verwezen naar voorschrijver                  10307310427300000000030720080606200500000000000000000000
+0410032000318OVZKHAP9Overlegd met ziekenhuisapotheker                                      Overlegd met ziekenhuisapotheker             10307310427300000000030720080606200500000000000000000000
+0410032000319OVZRGVZ9Overlegd met zorgverzekeraar                                          Overlegd met zorgverzekeraar                 10307310427300000000030720080606200500000000000000000000
+0410032000320VWZRGVZ9Verwezen naar zorgverzekeraar                                         Verwezen naar zorgverzekeraar                10307310427300000000030720080606200500000000000000000000
+0410032000321ADVGEVS9Advies gegeven aan arts/voorschrijver                                 Advies gegeven aan arts/voorschrijver        10307310427300000000131120081311200800000000000000000000
+0410032000322INVLDIZ9Invloed dieet/zelfzorg toegelicht                                     Invloed dieet/zelfzorg toegelicht            10307310427300000000131120080000000000000000000000000000
+0410032000323VSPERCO9Voorschrijver gewezen op (periodieke)controle                         Voorschrijver gewezen op (periodieke)controle10307310427300000000141120080606200500000000000000000000
+0410032000324OUTHEAA9Oude therapie aangehouden                                             Oude therapie aangehouden                    10307310427300000000130120092701200900000000000000000000
+0410032000325LIMTOEG9LIM toegelicht                                                        LIM toegelicht                               10307310427300000000200120090206200500000000000000000000
+0410032000326LIMINFO9LIM-informatiefolder afgeleverd                                       LIM-informatiefolder afgeleverd              10307310427300000000200120090206200500000000000000000000
+0410032000327CITOEGE9Contra-indicatie toegelicht                                           Contra-indicatie toegelicht                  10307310427300000000270120092510201000000000000000000000
+0410032000328INVVERK9Invloed op verkeersdeelname toegelicht                                Invloed op verkeersdeelname toegelicht       10307310427300000000290620090000000000000000000000000000
+0410032000329RIAFHKL9Risico op afhankelijkheid (verslaving) toegelicht                     Risico op afhankelijkheid (verslaving) toegel10307310427300000000290620090606200500000000000000000000
+0410032000330GEWMOEV9Patient gewezen op evt. controle trombdienst                          Patient gewezen op evt. controle trombdienst 10307310427300000000100820090206200500000000000000000000
+0410032000331GEBGTOD5Gebruik geneesmiddel toegelicht:dosering                              Gebruik geneesmiddel toegelicht:dosering     10307310427300000000100820091008200900000000000000000000
+0410032000333GEBGTOS5Gebruik geneesmiddel toegelicht:stopperiode                           Gebruik geneesmiddel toegelicht:stopperiode  10307310427300000000100820091008200900000000000000000000
+0410032000336VERKDNO9Verkeersdeelname ontraden                                             Verkeersdeelname ontraden                    10307310427300000000100820091008200900000000000000000000
+0410032000337VERKDTI9Verkeersdeelname tijdelijk ontraden                                   Verkeersdeelname tijdelijk ontraden          10307310427300000000290920091008200900000000000000000000
+0410032000338RECBEOV9Receptbeoordeling vastgelegd                                          Receptbeoordeling vastgelegd                 10307310427300000000270120101306200500000000000000000000
+0410032000339GEBGTKU5Gebruik geneesmiddel toegelicht:kuurschema                            Gebruik geneesmiddel toegelicht:kuurschema   10307310427300000000110220101008200900000000000000000000
+0410032000340INFLVTO9Influenzavaccinatie toegelicht                                        Influenzavaccinatie toegelicht               10307310427300000000240620100206200500000000000000000000
+0410032000341STOPROT9Stoppen met roken toegelicht                                          Stoppen met roken toegelicht                 10307310427300000000240620100606200500000000000000000000
+0410032000342GEZGEWT9Gezond gewicht toegelicht                                             Gezond gewicht toegelicht                    10307310427300000000240620100206200500000000000000000000
+0410032000343DIABRIT9Instructie diabetesrisicotest gegeven                                 Instructie diabetesrisicotest gegeven        10307310427300000000240620102306201100000000000000000000
+0410032000344BMIOOO09Instructie BMI gegeven                                                Instructie BMI gegeven                       10307310427300000000240620102306201100000000000000000000
+0410032000345MEDOBIJ9Medicatieoverzicht bijgewerkt                                         Medicatieoverzicht bijgewerkt                10307310427300000000240620100909201000000000000000000000
+0410032000346INTGEGE9Intakegesprek gevoerd                                                 Intakegesprek gevoerd                        10307310427300000000240620100301200800000000000000000000
+0410032000347SYNCTOE9Synchronisatie toegelicht                                             Synchronisatie toegelicht                    10307310427300000000280620100606200500000000000000000000
+0410032000348WEEAFLT9Weekdoseersysteem toegelicht                                          Weekdoseersysteem toegelicht                 10307310427300000000280620101207201000000000000000000000
+0410032000349REIADVG9Reisadvies geneesmiddelgebruik gegeven                                Reisadvies gnm-gebruik gegeven               10307310427300000000280620102508201100000000000000000000
+0410032000350PATVERT9Patientenvereniging toegelicht                                        Patientenvereniging toegelicht               10307310427300000000280620100301200800000000000000000000
+0410032000351MECODAG9Metercontroledag georganiseerd                                        Metercontroledag georganiseerd               10307310427300000000280620102602200800000000000000000000
+0410032000352PODOTHE9Podotherapeut                                                         Podotherapeut                                10307310427300000000280620100206200500000000000000000000
+0410032000353OOGARTS9Oogarts                                                               Oogarts                                      10307310427300000000280620100206200500000000000000000000
+0410032000354BLSUIME9Bloedsuikermeter omgeruild                                            Bloedsuikermeter omgeruild                   10307310427300000000280620100206200500000000000000000000
+0410032000355NLDCONI9Naaldencontainer ingenomen                                            Naaldencontainer ingenomen                   10307310427300000000280620100206200500000000000000000000
+0410032000357DOSRSST9Weekdoseersysteem stopgezet                                           Weekdoseersysteem stopgezet                  10307310427300000000280620101207201000000000000000000000
+0410032000358OPNMEBE9Opnamemedicatie besproken                                             Opnamemedicatie besproken                    10307310427300000000070720100206200500000000000000000000
+0410032000359VWOOGAS9Verwezen naar oogarts                                                 Verwezen naar oogarts                        10307310427300000000120720100206200500000000000000000000
+0410032000360VWNAPOD9Verwezen naar podotherapeut                                           Verwezen naar podotherapeut                  10307310427300000000120720100206200500000000000000000000
+0410032000361ADADMOV9Administratie overig                                                  Administratie overig                         10307310427300000000120720101311200800000000000000000000
+0410032000362DOSRSSA9Weekdoseersysteem gestart                                             Weekdoseersysteem gestart                    10307310427300000000120720101207201000000000000000000000
+0410032000363MEDOVGA9Medicatieoverzicht geactualiseerd                                     Medicatieoverzicht geactualiseerd            10307310427300000000210720100206200500000000000000000000
+0410032000364SAALLTO9Saneren bij allergie toegelicht                                       Saneren bij allergie toegelicht              10307310427300000000210720100606200500000000000000000000
+0410032000365HULPGEW9Hulpmiddel gewijzigd/toegevoegd                                       Hulpmiddel gewijzigd/toegevoegd              10307310427300000000210720101011201100000000000000000000
+0410032000366VWLONGA9Verwezen naar longarts                                                Verwezen naar longarts                       10307310427300000000210720100206200500000000000000000000
+0410032000367INHALKO9Inhalatiekamer/inhalator omgeruild                                    Inhalatiekamer/inhalator omgeruild           10307310427300000000210720100206200500000000000000000000
+0410032000368BLDDRMO9Bloeddrukmeter omgeruild                                              Bloeddrukmeter omgeruild                     10307310427300000000210720100206200500000000000000000000
+0410032000369INSONGG9Instructie ongebruikt geneesmiddel gegeven                            Instructie ongebruikt geneesmiddel gegeven   10307310427300000000310820100301200800000000000000000000
+0410032000370VOVOAFL9Voldaan aan voorwaarden voor afleveren                                Voldaan aan voorwaarden voor afleveren       10307310427300000000310820100301200800000000000000000000
+0410032000371OVPOKLA9Overlegd met poliklinische apotheker                                  Overlegd met poliklinische apotheker         10307310427300000000090920100206200500000000000000000000
+0410032000372OVDOCUM9Overig document verstrekt                                             Overig document verstrekt                    10307310427300000000090920100206200500000000000000000000
+0410032000373MGESPRG9Medicatiegesprek gevoerd                                              Medicatiegesprek gevoerd                     10307310427300000000090920100206200500000000000000000000
+0410032000374MVERIOP9Medicatieverificatie bij zkh-opname uitgevoerd                        Medicatieverificatie bij zkhopname uitgevoerd10307310427300000000090920100909201000000000000000000000
+0410032000375MVERONT9Medicatieverificatie bij zkh-ontslag uitgevoerd                       Medicatieverificatie bij zkhontslag uitgev   10307310427300000000090920100909201000000000000000000000
+0410032000377OVLNEFR9Overlegd met nefroloog                                                Overlegd met nefroloog                       10307310427300000000251020100206200500000000000000000000
+0410032000378NAALDCO9Instructie naaldencontainer gegeven                                   Instructie naaldencontainer gegeven          10307310427300000000081120100906201100000000000000000000
+0410032000379STOMATO9Instructie stomamaterialen gegeven                                    Instructie stomamaterialen gegeven           10307310427300000000081120100906201100000000000000000000
+0410032000380ANGSTST9Angststoornis                                                         Angststoornis                                10307310427300000000081120100811201000000000000000000000
+0410032000381HARTVAA9Hart- en vaatziekten                                                  Hart- en vaatziekten                         10307310427300000000081120100811201000000000000000000000
+0410032000382DEMENTI9Dementie                                                              Dementie                                     10307310427300000000081120100206200500000000000000000000
+0410032000383EPILEPS9Epilepsie                                                             Epilepsie                                    10307310427300000000081120100206200500000000000000000000
+0410032000384GLAUCOO9Glaucoom                                                              Glaucoom                                     10307310427300000000081120100206200500000000000000000000
+0410032000385MIGRAIN9Migraine                                                              Migraine                                     10307310427300000000081120100206200500000000000000000000
+0410032000386PARKINS9Parkinson                                                             Parkinson                                    10307310427300000000081120100206200500000000000000000000
+0410032000387ADVIESP9Advies productkeuze                                                   Advies productkeuze                          10307310427300000000081120100206200500000000000000000000
+0410032000390BLSUIMC9Bloedsuikermeter gecontroleerd                                        Bloedsuikermeter gecontroleerd               10307310427300000000200120110206200500000000000000000000
+0410032000391GLUCMES9Bloedsuikermeter startpakket gegeven                                  Bloedsuikermeter startpakket gegeven         10307310427300000000200120110906201100000000000000000000
+0410032000392GEWINSF9Pat gewezen op instructiefilm                                         Pat gewezen op instructiefilm                10307310427300000000120420110402201000000000000000000000
+0410032000393COPDRIT9Instructie COPD-risicotest gegeven                                    Instructie COPD-risicotest gegeven           10307310427300000000230620112306201100000000000000000000
+0410032000394VERNEVE9Instructie vernevelaar gegeven                                        Instructie vernevelaar gegeven               10307310427300000000270620112706201100000000000000000000
+0410032000395BMIMETI9BMI gemeten                                                           BMI gemeten                                  10307310427300000000270620112706201100000000000000000000
+0410032000396COPDRME9COPD-risicotest uitgevoerd                                            COPD-risicotest uitgevoerd                   10307310427300000000270620112306201100000000000000000000
+0410032000397DIARIME9Diabetesrisicotest uitgevoerd                                         Diabetesrisicotest uitgevoerd                10307310427300000000270620112306201100000000000000000000
+0410032000398ZELFZNM9Advies zelfzorg niet-medicamenteus gegeven                            Advies zelfzorg niet-medicamenteus gegeven   10307310427300000000270620112706201100000000000000000000
+0410032000399UAGESPR9UA-gesprek gevoerd                                                    UA-gesprek gevoerd                           10307310427300000000270620110301200800000000000000000000
+0410032000400VERGIFT9Vergiftiging toegelicht                                               Vergiftiging toegelicht                      10307310427300000000270620110606200500000000000000000000
+0410032000401FTCONSU9Farmacotherapeutisch consult gegeven                                  Farmacotherapeutisch consult gegeven         10307310427300000000250820112410200600000000000000000000
+0410032000402VCONSMB9Vervolgconsult medicatiebeoordeling gegeven                           Vervolgconsult medicatiebeoordeling gegeven  10307310427300000000250820112410200600000000000000000000
+0410032000403CONSNFC9Apotheekconsult niet-farmacotherapeutisch gegeven                     Apotheekconsult niet-farmacoth gegeven       10307310427300000000250820112410200600000000000000000000
+0410032000404INTWKDS9Intakegesprek weekdoseersysteem gevoerd                               Intakegesprek weekdoseersysteem gevoerd      10307310427300000000250820110301200800000000000000000000
+0410032000405EVAWKDS9Evaluatiegesprek weekdoseersysteem gevoerd                            Evaluatiegesprek weekdoseersysteem gevoerd   10307310427300000000250820110301200800000000000000000000
+0410032000406REIPREV9Reisadvies preventie gegeven                                          Reisadvies preventie gegeven                 10307310427300000000250820112508201100000000000000000000
+0410032000407MEDISYN9Medicatie gesynchroniseerd                                            Medicatie gesynchroniseerd                   10307310427300000000250820110206200500000000000000000000
+0410032000408ACTUMOV9Actueel medicatieoverzicht verstrekt                                  Actueel medicatieoverzicht verstrekt         10307310427300000000250820110909201000000000000000000000
+0410032000409INGBONC9Instructie gebruik oncolytica gegeven                                 Instructie gebruik oncolytica gegeven        10307310427300000000290820112908201100000000000000000000
+0410032000410VTGMPAR9Voor toediening gereedgemaakt parenteralia                            Voor toediening gereedgemaakt parenteralia   10307310427300000000290820110000000000000000000000000000
+0410032000411INGBPAR9Instructie gebruik parenteralia gegeven                               Instructie gebruik parenteralia gegeven      10307310427300000000290820110000000000000000000000000000
+0410032000412WONDZOR9Instructie wondzorg gegeven                                           Instructie wondzorg gegeven                  10307310427300000000290820110000000000000000000000000000
+0410032000413CATHZOR9Instructie catheterzorg gegeven                                       Instructie catheterzorg gegeven              10307310427300000000290820110000000000000000000000000000
+0410032000414MEBEWDA9Medicatiebewaking deelaspect uitgevoerd                               Medicatiebewaking deelaspect uitgevoerd      10307310427300000000060920110000000000000000000000000000
+0410032000415DOSSBIJ9Dossier bijgewerkt                                                    Dossier bijgewerkt                           10307310427300000000060920110000000000000000000000000000
+0410032000416FTBHPOP9Farmacotherapeutisch behandelplan opgesteld                           Farmacoth behandelplan opgesteld             10307310427300000000120920112411201100000000000000000000
+0410032000417DOSPASS9Dossier passant opgezet                                               Dossier passant opgezet                      10307310427300000000260920110000000000000000000000000000
+0410032000418GEWALTE9Pat gewezen op alternatief                                            Pat gewezen op alternatief                   10307310427300000000270920110402201000000000000000000000
+0410032000419DLNINFO9Deelname informatiebijeenkomst                                        Deelname informatiebijeenkomst               10307310427300000000251020110000000000000000000000000000
+0410032000420OVPARAM9Overlegd met paramedicus                                              Overlegd met paramedicus                     10307310427300000000251020110000000000000000000000000000
+0410032000421VOORZTK9Instructie voorzetkamer gegeven                                       Instructie voorzetkamer gegeven              10307310427300000000251020110000000000000000000000000000
+0410032000422BGLHULP9Begeleiding gebruik hulpmiddel gegeven                                Begeleiding gebruik hulpmiddel gegeven       10307310427300000000251020110000000000000000000000000000
+0410032000423KLINBEP9Klinische bepaling aangevraagd                                        Klinische bepaling aangevraagd               10307310427300000000251020110000000000000000000000000000
+0410032000424CONTADM9Contact ivm administratie                                             Contact ivm administratie                    10307310427300000000251020110000000000000000000000000000
+0410032000425EUTHBEG9Euthanasie begeleid                                                   Euthanasie begeleid                          10307310427300000000031120110000000000000000000000000000
+0410032000426TVGNTND9Toevoeging geneesmiddel niet nodig                                    Toevoeging gnm niet nodig                    10307310427300000000101120111309201100000000000000000000
+0410032000427INFDOSS9Informatie in dossier opgenomen                                       Info in dossier opgenomen                    10307310427300000000151120110000000000000000000000000000
+0410032000428FTBPBES9Farmacotherapeutisch behandelplan besproken met patient               Farmacoth behandelplan besproken met pat     10307310427300000000241120112411201100000000000000000000
+0410032000429FTBPBAN9Farmacoth behandelplan door andere zorgverlener besproken met patient Farmacoth behandelpl door ander bespr met pat10307310427300000000241120112411201100000000000000000000
+0410032000430FANAMNE9Farmaceutische anamnese afgenomen                                     Farmaceutische anamnese afgenomen            10307310427300000000241120112411201100000000000000000000
+0410032000431GEWPREV9Patient gewezen op preventieve maatregelen                            Pat gewezen op preventieve maatregelen       10307310427300000000140520120402201000000000000000000000
+0410032000432ADVBOVD9Advies borstvoeding gegeven                                           Advies borstvoeding gegeven                  10307310427300000000120720122706201100000000000000000000
+0410032000433SIGNAFG9Signaal afgehandeld                                                   Signaal afgehandeld                          10307310427300000000280520140606200500000000000000000000
+

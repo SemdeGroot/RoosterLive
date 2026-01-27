@@ -1,0 +1,29 @@
+068900000000001121113120000Zoek in de actuele medicatie INCLUSIEF het triggerende middel van de patient    010300060100000000000
+068900000000002121112110000Zoek in de niet-actuele medicatie van de patient                                010300060100000000000
+068900000000003211221122112Zoek in de actuele niet-medicatie van de patient                                010300060100000000000
+068900000000004211221122112Zoek in de niet-actuele niet-medicatie van de patient                           010300060100000000000
+068900000000005121113120000Zoek in act. med.+ trigger naar kleinste verschil innametijd (2 versch.wrdlst)  010300060100000000000
+068900000000006211221122112Zoek in trigger naar verschil in dosering tov vorige uitgifte/voorschrift       010300060100000000000
+068900000000007211121110000Haal gegevens op mbt triggerende middel                                         010300060100000000000
+068900000000008211121110000Zoek in de patientgegevens                                                      010300060100000000000
+068900000000009121124072407Zoek in de niet-vaste patientkenmerken                                          010300060100000000000
+068900000000010121116070000Zoek naar een bepaalde diagnosecode bij de patient                              010300060100000000000
+068900000000011121112110000Zoek naar een bepaalde lab/meetwaarde bij de patient                            010300060100000000000
+068900000000012211221122112Bepaal de BMI-waarde                                                            010300060100000000000
+068900000000013121112110000Bepaal de waarde van de scoreteller binnen het protocol                         010300060100000000000
+068900000000014121112110000Bepaal of meegeleverde attr. momenteel  in het proces worden toegepast          010300060100000000000
+068900000000015211221122112Bepaal of type zorgverlener momenteel de gebruiker van de applicatie is         010300060100000000000
+068900000000016211221122112Bepaal het verschil tussen de laatste en voorlaatste meting                     010300060100000000000
+068900000000017130724072407Zoek naar vastgelegd ZRS-item bij de patient                                    010300060100000000000
+068900000000018211221122112Zoek naar reden van voorschrijven van de trigger                                010300060100000000000
+068900000000019211121110000Bepaal of in ELKE wdl (naast wdl met trigger) een middel uit act. medicatie zit 010300060100000000000
+068900000000020131213120000Zoek naar gegevens in ingegeven dosering bij het triggerende middel             010300060100000000000
+068900000000021131213120000Zoek naar gegevens in ingegeven dosering bij actuele medicatie INCLUSIEF trigger010300060100000000000
+068900000000022131213120000Zoek in gehele medicatie (trigger, actuele EN niet-actuele med.) van de patient 010300060100000000000
+068900000000023131213120000Zoek in actuele medicatie EXCLUSIEF het triggerende middel van de patient       010300060100000000000
+068900000000024140824072407Bepaal de gemiddelde dagdosis van voorschrift/verstrekking (terugkijkend)       010300060100000000000
+068900000000025211124072407Bepaal of parameter is bepaald na start gebruik trigger (SNK)                   010300060100000000000
+068900000000026160716070000Zoek naar een bepaalde CI-aard bij de patient                                   010300060100000000000
+068900000000027160716070000Zoek naar een bepaalde diagnosecode/CI-aard bij de patient                      010300060100000000000
+068900000000028211121110000Tel het AANTAL wdl met een middel in de actuele medicatie incl trigger          010300060100000000000
+

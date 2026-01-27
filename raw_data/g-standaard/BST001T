@@ -1,0 +1,991 @@
+00010BST000T             120******    Leeg veld                                         00000434  A000800      A2020040100000000
+00010BST000T             005BSTNUM    Bestand-nummer                                    00001163  N000400      A2020040100000000
+00010BST000T             050MDANM0    Aantal ongewijzigde records                       00003387  N000800      A2020040100000000
+00010BST000T             060MDANM1    Aantal vervallen records                          00003395  N000800      A2020040100000000
+00010BST000T             070MDANM2    Aantal gewijzigde records                         00003409  N000800      A2020040100000000
+00010BST000T             080MDANM3    Aantal nieuwe records                             00003417  N000800      A2020040100000000
+00010BST000T             090MDANTL    Totaal aantal records                             00003425  N000800      A2020040100000000
+00010BST000T             032MDBCOD    BestandsCode                                      00007358  N000800      A2020040100000000
+00010BST000T             020MDBST     Naam van het Bestand                              000034411OA002000      A2020040100000000
+00010BST000T             040MDDATI    Ingangsdatum                                      00003484  N000800      A2020040100000000
+00010BST000T             042MDDATU    Uitgavedatum                                      00003492  N000800      A2020040100000000
+00010BST000T             041MDDATW    Eindedatum uitlevering                            00003506  N000800      A2020040100000000
+00010BST000T             030MDOBST    Bestand-omschrijving                              00003530  A005000      A2020040100000000
+00010BST000T             035MDRECL    Recordlengte                                      00003557  N000400      A2020040100000000
+00010BST000T             045MDSTAT    Status (in voorbereiding, test, productie)        00003646  A000100      A2020040100000000
+00010BST000T             010MUTKOD    Mutatiecode                                       00004375  N000100      A2020040100000000
+00010BST001T             120******    Leeg veld                                         00000450  A000800      A2020040100000000
+00010BST001T             005BSTNUM    Bestand-nummer                                    00001198  N000400      A2020040100000000
+00010BST001T             020MDBST     Naam van het Bestand                              000034681OA002000      A2020040100000000
+00010BST001T             055MDRCOD    RubrieksCode                                      00007366  N000800      A2020040100000000
+00010BST001T             115MDRDAT    Datum gebruik                                     00020419  N000800JMD   A2020040100000000
+00010BST001T             090MDRDEC    Aantal decimalen                                  00003549  N000200      A2020040100000000
+00010BST001T             080MDRLEN    Lengte van de rubriek                             00003565  N000400      A2020040100000000
+00010BST001T             035MDRNAM    Naam van de rubriek                               000035732OA001000      A2020040100000000
+00010BST001T             050MDROMS    Omschrijving van de rubriek                       00003581  A005000      A2020040100000000
+00010BST001T             100MDROPM    Opmaak                                            00003603  A000600      A2020040100000000
+00010BST001T             060MDRSLE    Sleutelkode van de rubriek                        00003611  A000200      A2020040100000000
+00010BST001T             070MDRTYP    Type van de rubriek                               00003638  A000100      A2020040100000000
+00010BST001T             110MDRUSE    Gebruik van veld (A/U/V)                          00020400  A000100      A2020040100000000
+00010BST001T             030MDVNR     Volgnummer                                        00003662  N000300      A2020040100000000
+00010BST001T             010MUTKOD    Mutatiecode                                       00004391  N000100      A2020040100000000
+00010BST004T             890******    Leeg veld                                         00000477  A000500      A2020040100000000
+00010BST004T             011ATKODE    ZI-nummer                                         000010821ON000800(7+1) A2020040100000000
+00010BST004T             558ATNMNR    Artikelnaamnummer                                 00001112  N000700      A2020040100000000
+00010BST004T             005BSTNUM    Bestand-nummer                                    00001228  N000400      A2020040100000000
+00010BST004T             868EUNUM     Europees handelsvergunningnummer                  00001872  A002000      A2020040100000000
+00010BST004T             862GVSKOD    GVS cluster kode                                  00002526  A001100      A2020040100000000
+00010BST004T             863GVSVGL    GVS vergoedingslimiet                             00002534  N001205(7,5) A2020040100000000
+00010BST004T             135HPKODE    Handels Product Kenmerken (HPK) code              00002925  N000800(7+1) A2020040100000000
+00010BST004T             815INKKAN    Kode inkoopkanaal                                 00003379  N000100      A2020040100000000
+00010BST004T             750MNVDDD    Aantal DDD's per verpakking                       00004332  N001003(7,3) A2020040100000000
+00010BST004T             010MUTKOD    Mutatiecode                                       00004413  N000100      A2020040100000000
+00010BST004T             810PGBTWK    BTW-kode voor declaratie                          00005134  N000100      A2020040100000000
+00010BST004T             867PGIKPR    Inkoopprijs                                       00005142  N000802(6,2) A2020040100000000
+00010BST004T             830PGVKPE    Verkoopprijs exclusief BTW                        00005150  N001206(6,6) A2020040100000000
+00010BST004T             796PKKODE    Produktkoppel kode                                00005169  N000800      V2020090100000000
+00010BST004T             820REFKOD    Kode referentieprodukt per cluster                00005177  N000100      V2020090100000000
+00010BST004T             840REFPRS    Referentieprijs                                   00005185  N000802(6,2) V2020090100000000
+00010BST004T             875RVREGNR1  RVG/RVH nummer 1                                  00013773  N000600      A2020040100000000
+00010BST004T             880RVREGNR2  RVG/RVH nummer 2                                  00013803  A000200      A2020040100000000
+00010BST004T             885RVREGNR3  RVG/RVH nummer 3                                  00013811  N000600      A2020040100000000
+00010BST004T             715RVRVG1    RVG-nummer 1                                      00005193  N000500      V2020080100000000
+00010BST004T             720RVRVG2    RVG-nummer 2 (teken)                              00005207  A000100      V2020080100000000
+00010BST004T             725RVRVG3    RVG-nummer 3                                      00005215  N000500      V2020080100000000
+00010BST004T             630THDLOM    Deelverpakking omschrijving thes.nr               00005479  N000300      A2020040100000000
+00010BST004T             615THHFOM    Hoofdverpakking omschrijving thesnr               00005681  N000300      A2020040100000000
+00010BST004T             780THLND     Land van herkomst thesaurus nummer                00005878  N000300      A2020040100000000
+00010BST004T             835VEGPRS    Vergoedingsprijs                                  00006319  N000802(6,2) A2020040100000000
+00010BST004T             625VPDLAA    Aantal deelverpakkingen                           00006343  N000500      A2020040100000000
+00010BST004T             640VPDLHV    Hoeveelheid per deelverpakking                    00006386  N000802(6,2) A2020040100000000
+00010BST004T             635VPDLOM    Deelverpakking omschrijving kode                  00006408  N000300      A2020040100000000
+00010BST004T             755VPFBVN    Fabrikant artikelkodering                         00006459  A001200      A2020040100000000
+00010BST004T             610VPHFAA    Aantal hoofdverpakkingen                          00006467  N000500      A2020040100000000
+00010BST004T             620VPHFOM    Hoofdverpakking omschrijving kode                 00006483  N000300      A2020040100000000
+00010BST004T             580VPINHV    Inkoophoeveelheid                                 00006556  N000802(6,2) A2020040100000000
+00010BST004T             690VPKBWR    Kode vervaldatum                                  00006580  A000100      A2020040100000000
+00010BST004T             705VPKEAS    Kode EA-Systeem                                   00006599  A000100      V2020090100000000
+00010BST004T             680VPKKLK    Kode koelkast                                     00006602  A000100      A2020040100000000
+00010BST004T             685VPKKVP    Kode kliniekverpakking                            00006610  A000100      A2020040100000000
+00010BST004T             770VPKLEV    Leverancier kode                                  00006629  N000500      A2020040100000000
+00010BST004T             665VPKUNV    U/N kode                                          00006688  A000100      A2020040100000000
+00010BST004T             675VPKWGM    Kode wet op de geneesmiddelen                     00006696  A000100      A2020040100000000
+00010BST004T             870VPMAXP    Maximumprijs VWS                                  00013447  N001206(6,6) A2020040100000000
+00010BST004T             869VPPERC    Kortingspercentage                                00006718  N000806(2,6) V2020090100000000
+00010BST004T             805WTGKOD    WMG-code                                          00006769  N000100      A2020040100000000
+00010BST004T             785XALND     Land van herkomst kode                            00006777  N000300      A2020040100000000
+00010BST004T             855XNB4DD    Mutatie datum - Niet meer gevuld                  00006785  N000800(DMJ) V2020090100000000
+00010BST004T             860XNUIDD    Uitgavedatum                                      00006815  N000800(DMJ) A2020040100000000
+00010BST004T             848XPDODD    Datum intrekking handelsvergunning                00006831  N000800(DMJ) A2020040100000000
+00010BST004T             790XPIHDD    Datum invoer verpakking                           00006912  N000800(DMJ) A2020040100000000
+00010BST004T             847XPINDD    Datum schorsing handelsvergunning                 00006920  N000800(DMJ) A2020040100000000
+00010BST004T             670XPKUND    U/N datum                                         00006947  N000800(DMJ) A2020040100000000
+00010BST004T             795XPUHDD    Datum afvoer verpakking                           00006963  N000800(DMJ) V2020090100000000
+00010BST004T             765XVIMP     Importeur kode                                    00006998  N000500      V2020090100000000
+00010BST004T             735XVINSD    Datum verlening handelsvergunning                 00007005  N000800(DMJ) A2020040100000000
+00010BST004T             760XVREGH    Handelsvergunninghouder code                      00007013  N000500      A2020040100000000
+00010BST007T             210******    Leeg veld                                         00020095  A003000      A2020040100000000
+00010BST007T             010BSTNUM    Bestand-nummer                                    00019852  N000400      A2020040100000000
+00010BST007T             030GLN       Global Location Number                            000198951ON001300      A2020040100000000
+00010BST007T             040GTIN      Global Trade Item Number                          000199092ON001400      A2020040100000000
+00010BST007T             130LVAANTAL  Aantal van het verpakt item                       00020001  N000600      A2020040100000000
+00010BST007T             120LVBEVAT   GTIN van het verpakt item                         000199923ON001400      A2020040100000000
+00010BST007T             170LVBREEDTE Breedte van verpakking                            00020052  N000802(6,2) A2020040100000000
+00010BST007T             180LVBREH    Thesaurusitem van eenheid breedte van verpakking  00020060  N000600      A2020040100000000
+00010BST007T             190LVDIEPTE  Diepte van verpakking                             00020079  N000802(6,2) A2020040100000000
+00010BST007T             200LVDIEPTEH Thesaurusitem van eenheid diepte van verpakking   00020087  N000600      A2020040100000000
+00010BST007T             110LVEIND    Einddatum beschikbaarheid verpakking              00019984  N000800      A2020040100000000
+00010BST007T             160LVHOOGEH  Thesaurusitem van eenheid hoogte van verpakking   00020044  N000600      A2020040100000000
+00010BST007T             150LVHOOGTE  Hoogte van verpakking                             00020036  N000802(6,2) A2020040100000000
+00010BST007T             080LVNAAM    Naam op verpakking                                00019941  A014000      A2020040100000000
+00010BST007T             090LVONSK    Onderscheidend kenmerk                            00019968  A005000      A2020040100000000
+00010BST007T             070LVSOORT   Thesaurusitem van soorten verpakkingen            00019933  N000600      A2020040100000000
+00010BST007T             100LVSTART   Startdatum beschikbaarheid verpakking             00019976  N000800      A2020040100000000
+00010BST007T             020MUTKOD    Mutatiecode                                       00019860  N000100      A2020040100000000
+00010BST007T             140THAFM     Thesaurus met items van eenheden                  00020028  N000400      A2020040100000000
+00010BST007T             060THSOORT   Thesaurus van soorten verpakkingen                00019925  N000400      A2020040100000000
+00010BST007T             050ZINR      Z-Index nummer                                    00019917  N000800(7+1) A2020040100000000
+00010BST014T             120******    Leeg veld                                         00020389  A001500      A2020040100000000
+00010BST014T             010BSTNUM    Bestand-nummer                                    00020257  N000400      A2020040100000000
+00010BST014T             090HPRZV     RZV-voorwaarden Bijlage 2                         00020354  N000600      A2020040100000000
+00010BST014T             070HPRZVH    Hulpmiddelen zorg                                 00020338  N000600      A2020040100000000
+00010BST014T             050HPRZVV    RZV-verstrekking                                  00020303  N000600      A2020040100000000
+00010BST014T             020MUTKOD    Mutatiecode                                       00020265  N000100      A2020040100000000
+00010BST014T             080THRZV     RZV Thesaurus 120                                 00020346  N000400      A2020040100000000
+00010BST014T             060THRZVH    Thesaurus RZV hulpmiddelen (1530)                 00020311  N000400      A2020040100000000
+00010BST014T             040THRZVV    Thesaurus RZV verstrekking (1510)                 00020281  N000400      A2020040100000000
+00010BST014T             100TXMOD     Tekstmodule                                       00020362  N000300      A2020040100000000
+00010BST014T             110TXSRT     Tekst verwijzing                                  00020370  N000300      A2020040100000000
+00010BST014T             030ZINR      Z-Index nummer                                    000202731ON000800(7+1) A2020040100000000
+00010BST020T             080******    Leeg veld                                         00000507  A002500      A2020040100000000
+00010BST020T             010BSTNUM    Bestand-nummer                                    00001252  N000400      A2020040100000000
+00010BST020T             020MUTKOD    Mutatiecode                                       00004456  N000100      A2020040100000000
+00010BST020T             050NMETIK    Etiketnaam                                        00004936  A002700      A2020040100000000
+00010BST020T             040NMMEMO    Memokode                                          00004944  A000600      A2020040100000000
+00010BST020T             070NMNAAM    Naam volledig                                     00004952  A005000      A2020040100000000
+00010BST020T             060NMNM40    Korte handelsnaam                                 00004960  A004000      A2020040100000000
+00010BST020T             030NMNR      Naamnummer                                        000049791ON000700      A2020040100000000
+00010BST031T             999******    Leeg veld                                         00012874  A003200      A2020040100000000
+00010BST031T             010BSTNUM    Bestand-nummer                                    00011975  N000400      A2020040100000000
+00010BST031T             050FSNAAM    Firmastamnaam                                     00012009  A005000      U2020040100000000
+00010BST031T             160GRP001    FTK 1                                             00012211  N000400      U2021040100000000
+00010BST031T             170GRP002    FTK 2                                             00012238  N000400      U2021040100000000
+00010BST031T             180GRP003    FTK 3                                             00012246  N000400      U2021040100000000
+00010BST031T             190GRP004    FTK 4                                             00012254  N000400      U2021040100000000
+00010BST031T             200GRP005    FTK 5                                             00012262  N000400      U2021040100000000
+00010BST031T             550HPBIOG    Bioequivalente groep                              00012750  N000300      V2021080100000000
+00010BST031T             090HPDDD     Aantal DDD's per basiseenh. produkt               00012084  N001003(7,3) A2020040100000000
+00010BST031T             360HPDEEL    Deelbaarheid aantal                               00012475  N000100      A2020040100000000
+00010BST031T             100HPDRML    Aantal druppels per ML                            00012092  N000502(3,2) A2020040100000000
+00010BST031T             330HPFKWA    Farmaceutische kwaliteit                          00012491  A000100      A2020040100000000
+00010BST031T             620HPHLP     Hulpmiddel volgens AWBZ                           00012882  A000100      V2011010100000000
+00010BST031T             430HPHULP    Hulpstoffen identificerend                        00012653  A000100      A2020040100000000
+00010BST031T             130HPKATN    Fabrikant produktkodering                         00012130  A001200      V2020040100000000
+00010BST031T             250HPKBRG    Kode brandgevaarlijk                              00012351  A000100      A2020040100000000
+00010BST031T             220HPKCPR    Kode combinatiepreparaat                          00012270  N000100      A2020040100000000
+00010BST031T             230HPKGIF    Kode vergift                                      00012289  A000100      V2021080100000000
+00010BST031T             020HPKODE    Handels Product Kenmerken (HPK) code              000119831ON000800(7+1) A2020040100000000
+00010BST031T             560HPKRAC    Kode radio-actieve stof                           00012793  A000100      V2020040100000000
+00010BST031T             240HPKRYV    Kode rijvaardigheid                               00012297  A000100      A2020040100000000
+00010BST031T             570HPKSHM    Soort hulpmiddel                                  00012807  N000600      V2020080100000000
+00010BST031T             540HPLOS     Los verkrijgbaar                                  00012815  A000100      A2020040100000000
+00010BST031T             030HPNAMN    Handelsproduktnaamnummer                          00012025  N000700      A2020040100000000
+00010BST031T             210HPOKNR    Informatoriumproductcode (IPK)                    00012300  N000600      U2021040100000000
+00010BST031T             300HPOMA1    Oplosmiddel aantal 1                              00012386  N000200      A2020040100000000
+00010BST031T             320HPOMA2    Oplosmiddel aantal 2                              00012394  N000200      A2020040100000000
+00010BST031T             290HPOMH1    Oplosmiddel hoeveelheid 1                         00012408  N000401(3,1) A2020040100000000
+00010BST031T             310HPOMH2    Oplosmiddel hoeveelheid 2                         00012416  N000401(3,1) A2020040100000000
+00010BST031T             590HPRZV     RZV-voorwaarden Bijlage 2                         00013056  N000600      V2021040100000000
+00010BST031T             740HPRZVB    Achtergrond rationaliteit                         00013129  N000600      V2021040100000000
+00010BST031T             760HPRZVH    Hulpmiddelen zorg                                 00013145  N000600      V2021040100000000
+00010BST031T             720HPRZVR    Beoordeling rationaliteit                         00013110  N000600      V2021040100000000
+00010BST031T             700HPRZVV    RZV-verstrekking                                  00013099  N000600      V2021040100000000
+00010BST031T             080HPSGEW    Soortelijk gewicht                                00012173  N000705(2,5) A2020040100000000
+00010BST031T             260HPSTGN    Gesteriliseerd voor geneesmiddelen                00012424  A000100      A2020040100000000
+00010BST031T             680HRBOVG    Richtlijn gebruik bovengrens                      00012920  N000704(3,4) V2020040100000000
+00010BST031T             670HRONDG    Richtlijn gebruik ondergrens                      00012939  N000704(3,4) V2020040100000000
+00010BST031T             027MHKODE    Medisch HulpmiddelKode (MHK)                      00012033  N000800(7+1) V2020040100000000
+00010BST031T             040MSNAAM    Merkstamnaam                                      00012041  A005000      A2020040100000000
+00010BST031T             015MUTKOD    Mutatiecode                                       00011991  N000100      A2020040100000000
+00010BST031T             025PRKODE    PRK-code                                          00013013  N000800(7+1) A2020040100000000
+00010BST031T             580THRZV     RZV Thesaurus 120                                 00013048  N000400      V2021040100000000
+00010BST031T             730THRZVB    Thesaurus RZV beoordeling (1525)                  00013137  N000400      V2021040100000000
+00010BST031T             750THRZVH    Thesaurus RZV hulpmiddelen (1530)                 00013153  N000400      V2021040100000000
+00010BST031T             710THRZVR    Thesaurus RZV rationaliteit (1520)                00013102  N000400      V2021040100000000
+00010BST031T             690THRZVV    Thesaurus RZV verstrekking (1510)                 00013080  N000400      V2021040100000000
+00010BST031T             480TSBERV    Bereidingsvoorschr. thesaurusnummer               00013331  N000400      A2020040100000000
+00010BST031T             650TSDLEH    Basiseenheid verpakking thes.nr                   00013420  N000400      A2020040100000000
+00010BST031T             270TSEENH    HPK-eenheid thesaurusnummer                       00012432  N000400      A2020040100000000
+00010BST031T             410TSEMBD    Emballage-doseerinr. thesaurusnr                  00013277  N000400      U2020040100000000
+00010BST031T             370TSEMBM    Emballagemateriaal thesaurusnummer                00013234  N000400      U2020040100000000
+00010BST031T             390TSEMBS    Emballagesluiting thesaurusnummer                 00013250  N000400      U2020040100000000
+00010BST031T             500TSFYSG    Fysische eigenschap thesaurusnummer               00013366  N000400      A2020040100000000
+00010BST031T             520TSGSTV    Grondstofvorm thesaurusnummer                     00013382  N000400      A2020040100000000
+00010BST031T             340TSHFAB    Halffabrikaat thesaurusnummer                     00013218  N000400      A2020040100000000
+00010BST031T             630TSINEH    Eenheid inkoophoeveelheid thes.nr                 00013404  N000400      A2020040100000000
+00010BST031T             440TSKLEU    Kleur thesaurusnummer                             00013293  N000400      A2020040100000000
+00010BST031T             110TSKPIF    PIF-nummer thesaurusnummer                        00012181  N000400      A2020040100000000
+00010BST031T             060TSPRGR    Produktgroep thesaurusnummer                      00013161  N000400      A2020040100000000
+00010BST031T             140TSRNCL    Reden niet clusteren thesaurusnr                  00012335  N000400      A2020040100000000
+00010BST031T             460TSSMAA    Smaak thesaurusnummer                             00013315  N000400      A2020040100000000
+00010BST031T             600TXMOD     Tekstmodule                                       00013064  N000300      A2020040100000000
+00010BST031T             610TXSRT     Tekst verwijzing                                  00013072  N000300      A2020040100000000
+00010BST031T             490XSBERV    Bereidingsvoorschrift kode                        00013358  N000600      A2020040100000000
+00010BST031T             660XSDLEH    Basiseenheid verpakking                           00013439  N000600      A2020040100000000
+00010BST031T             280XSEENH    HPK-eenheid kode                                  00013196  N000600      A2020040100000000
+00010BST031T             420XSEMBD    Emballage-doseerinrichting kode                   00013285  N000600      U2020040100000000
+00010BST031T             380XSEMBM    Emballagemateriaal kode                           00013242  N000600      U2020040100000000
+00010BST031T             400XSEMBS    Emballagesluiting kode                            00013269  N000600      U2020040100000000
+00010BST031T             510XSFYSG    Fysische eigenschap kode                          00013374  N000600      A2020040100000000
+00010BST031T             530XSGSTV    Grondstofvorm kode                                00013390  N000600      A2020040100000000
+00010BST031T             350XSHFAB    Halffabrikaat code                                00013226  N000600      A2020040100000000
+00010BST031T             640XSINEH    Eenheid inkoophoeveelheid                         00013412  N000600      A2020040100000000
+00010BST031T             450XSKLEU    Kleur kode                                        00013307  N000600      V2020040100000000
+00010BST031T             120XSKPIF    PIF-nummer                                        00013188  N000600      A2020040100000000
+00010BST031T             070XSPRGR    Produktgroep kode                                 00012076  N000600      A2020040100000000
+00010BST031T             150XSRNCL    Reden niet clusteren kode                         00012319  N000600      V2020040100000000
+00010BST031T             470XSSMAA    Smaak kode                                        00013323  N000600      A2020040100000000
+00010BST052T             210******    Leeg veld                                         00020648  A002800      A0000000000000000
+00010BST052T             010BSTNUM    Bestand-nummer                                    00020427  N000400      A0000000000000000
+00010BST052T             050GPKODE    Generiekeproductcode (GPK)                        00020478  N000800(7+1) A0000000000000000
+00010BST052T             020MUTKOD    Mutatiecode                                       00020435  N000100      A0000000000000000
+00010BST052T             110PREENH    Basiseenheid product                              00020532  N000600      A0000000000000000
+00010BST052T             090PREMBT    Emballagetype                                     00020516  N000600      A0000000000000000
+00010BST052T             200PREXKM    Extra kenmerk                                     00020621  N000600      A0000000000000000
+00010BST052T             120PRGALG    Productgrootte algemeen                           00020540  N000902(7,2) A0000000000000000
+00010BST052T             140PRHMA     Hulpmiddel aard                                   00020567  N000600      A0000000000000000
+00010BST052T             150PRHMAH    Hulpmiddel aard hoeveelheid                       00020575  N000200      A0000000000000000
+00010BST052T             180PRHULI    Reden hulpstof identificerend                     00020605  N000600(6,0) A0000000000000000
+00010BST052T             030PRKODE    PRK-code                                          000204431ON000800(7+1) A0000000000000000
+00010BST052T             160PRMPJN    Meervoudig product J/N                            00020583  A000100      A0000000000000000
+00010BST052T             040PRNMNR    Naamnummer prescriptie product                    00020451  N000700(7,0) A0000000000000000
+00010BST052T             070PRRVHS    Aanvullende informatie voorschrijven PRK          00020494  N000600      A0000000000000000
+00010BST052T             080THEMBT    Thesaurusverwijzing emballagetype                 00020508  N000400      A0000000000000000
+00010BST052T             190THEXKM    Thesaurusverwijzing extra kenmerk                 00020613  N000400      A0000000000000000
+00010BST052T             130THHMA     Thesaurusverwijzing hulpmiddel aard               00020559  N000400      A0000000000000000
+00010BST052T             170THHULI    Thesaurusverwijzing reden hulpstof identificerend 00020591  N000400      A0000000000000000
+00010BST052T             100THPREH    Thesaurusverwijzing basiseenheid product          00020524  N000400      A0000000000000000
+00010BST052T             060THRVHS    Thesaurusverwijzing Aanvullende informatie voorsc 00020486  N000400      A0000000000000000
+00010BST060T             060******    Leeg veld                                         00000531  A000900      A2020040100000000
+00010BST060T             010BSTNUM    Bestand-nummer                                    00001287  N000400      A2020040100000000
+00010BST060T             030HPKODE    Handels Product Kenmerken (HPK) code              000029411ON000800(7+1) A2020040100000000
+00010BST060T             050MPAANT    Component HPK aantal                              00004340  N000200      A2020040100000000
+00010BST060T             040MPCHPK    Component HPK nummer                              000043592ON000800(7+1) A2020040100000000
+00010BST060T             020MUTKOD    Mutatiecode                                       00004480  N000100      A2020040100000000
+00010BST070T             090******    Leeg veld                                         00018279  A001100      A2020040100000000
+00010BST070T             010BSTNUM    Bestand-nummer                                    00018171  N000400      A2020040100000000
+00010BST070T             060GPKODE    Generiekeproductcode (GPK)                        00018244  N000800(7+1) A2020040100000000
+00010BST070T             080HPANGP    Aantal eenheden GPK in HPK                        00018260  N000802(6,2) A2020040100000000
+00010BST070T             050HPANPR    Aantal eenheden PRK in HPK                        00018236  N000802(6,2) A2020040100000000
+00010BST070T             030HPKODE    Handels Product Kenmerken (HPK) code              000182011ON000800(7+1) A2020040100000000
+00010BST070T             020MUTKOD    Mutatiecode                                       00018198  N000100      A2020040100000000
+00010BST070T             070PRANGP    Aantal eenheden GPK in PRK                        00018252  N000802(6,2) A2020040100000000
+00010BST070T             040PRKODE    PRK-code                                          00018228  N000800(7+1) A2020040100000000
+00010BST131T             070******    Leeg veld                                         00019542  A002700      A2020040100000000
+00010BST131T             010BSTNUM    Bestand-nummer                                    00019461  N000400      A2020040100000000
+00010BST131T             020MUTKOD    Mutatiecode                                       00019488  N000100      A2020040100000000
+00010BST131T             040NZATARIEF NZa maximum tarief (incl. BTW-laag)               00019518  N001406(8,6) A2020040100000000
+00010BST131T             060SUPSRT    Soort supplementair product                       00019534  N000600      A2020040100000000
+00010BST131T             050THSUPSRT  Thes.nr. Soort supplementair product (1900)       00019526  N000400      A2020040100000000
+00010BST131T             030ZINR      Z-Index nummer                                    000194961ON000800(7+1) A2020040100000000
+00010BST132T             110******    Leeg veld                                         00019666  A001000      A2020040100000000
+00010BST132T             100AAAAZN    Aanspraak op geneesmiddel bij indicatie volgens ZN00019658  A000100      A2020040100000000
+00010BST132T             010BSTNUM    Bestand-nummer                                    00019550  N000400      A2020040100000000
+00010BST132T             080DUIDID    Duiding ID                                        00019623  N000900      V2020040100000000
+00010BST132T             040INID      Indicatie ID                                      000195852ON000900      A2020040100000000
+00010BST132T             070INSRT     Soort indicatie                                   00019615  N000600      A2020040100000000
+00010BST132T             020MUTKOD    Mutatiecode                                       00019569  N000100      A2020040100000000
+00010BST132T             060THINSRT   Thes.nr. soort indicatie (1901)                   00019607  N000400      A2020040100000000
+00010BST132T             090TXMODD    Tekstmodule duiding                               00019631  N000600      V2020040100000000
+00010BST132T             050TXMODI    Tekstmodule indicatie                             00019593  N000600      A2020040100000000
+00010BST132T             030ZINR      Z-Index nummer                                    000195771ON000800(7+1) A2020040100000000
+00010BST133T             060******    Leeg veld                                         00020249  A002000      A2020040100000000
+00010BST133T             010BSTNUM    Bestand-nummer                                    00020192  N000400      A2020040100000000
+00010BST133T             030INID      Indicatie ID                                      000202141ON000900      A2020040100000000
+00010BST133T             040INKORT    Verkorte indicatie                                00020222  A012000      A2020040100000000
+00010BST133T             020MUTKOD    Mutatiecode                                       00020206  N000100      A2020040100000000
+00010BST133T             050TXMODI    Tekstmodule indicatie                             00020230  N000600      A2020040100000000
+00010BST161T             100******    Leeg veld                                         00019380  A001300      A2020040100000000
+00010BST161T             010BSTNUM    Bestand-nummer                                    00019283  N000400      A2020040100000000
+00010BST161T             090HPKODE    Handels Product Kenmerken (HPK) code              00019372  N000800(7+1) A2020040100000000
+00010BST161T             020MUTKOD    Mutatiecode                                       00019291  N000100      A2020040100000000
+00010BST161T             070PRFCLUS   Preferentie cluster code                          00019356  N000800(7+1) A2020040100000000
+00010BST161T             080PRKODE    PRK-code                                          00019364  N000800(7+1) A2020040100000000
+00010BST161T             050THPRFSTS  Thesaurusverwijzing Preferentie status (1570)     00019313  N000400      A2020040100000000
+00010BST161T             030ZINR      Z-Index nummer                                    000193051ON000800(7+1) A2020040100000000
+00010BST161T             060ZRPRFSTS  Preferentie status                                00019321  N000600      A2020040100000000
+00010BST161T             040ZRUZOVI   UZOVI code Zorgverzekeraar                        000193482ON000400      A2020040100000000
+00010BST180T             150******    Leeg veld                                         00018716  A002900      A2020040100000000
+00010BST180T             110AANINF    Aanvullende contract informatie                   000186516OA001000      A2020040100000000
+00010BST180T             010BSTNUM    Bestand-nummer                                    00018554  N000400      A2020040100000000
+00010BST180T             140ENDDAT    Einddatum (jjjjmmdd) van tarief/prijs/bedrag      00018708  N000800      A2020040100000000
+00010BST180T             100IDBRON    Unieke ID van bron                                000186435OA000700      A2020040100000000
+00010BST180T             050IDCODE    Unieke ID van codering (bijv. ZI nummer)          000185972OA001500      A2020040100000000
+00010BST180T             040IDSRT     Soort codering                                    000185891ON000600      A2020040100000000
+00010BST180T             020MUTKOD    Mutatiecode                                       00018562  N000100      A2020040100000000
+00010BST180T             090SRTBRN    Soort bron                                        000186354ON000600      A2020040100000000
+00010BST180T             070SRTTPB    Soort tarief/prijs/bedrag                         000186193ON000600      A2020040100000000
+00010BST180T             130STRDAT    Startdatum (jjjjmmdd) van tarief/prijs/bedrag     00018694  N000800      A2020040100000000
+00010BST180T             030THIDSRT   Thesaurusverwijzing soort codering (3001)         00018570  N000400      A2020040100000000
+00010BST180T             080THSBRN    Thesaurusverwijzing soort bron (3003)             00018627  N000400      A2020040100000000
+00010BST180T             060THSTPB    Thesaurusverwijzing srt tarief/prijs/bedrag (3002)00018600  N000400      A2020040100000000
+00010BST180T             120TRPRBD    Tarief / Prijs / Bedrag                           00018678  N001606(10,6)A2020040100000000
+00010BST200T             070******    Leeg veld                                         00000558  A002800      A2020040100000000
+00010BST200T             030ATKODE    ZI-nummer                                         000011041ON000800(7+1) A2020040100000000
+00010BST200T             040BARCOD    HIBC-barcode                                      000011552OA001600      A2020040100000000
+00010BST200T             010BSTNUM    Bestand-nummer                                    00001295  N000400      A2020040100000000
+00010BST200T             050HPKODA    Handelsproduktkode (36-tallig)                    00002917  A000400      A2020040100000000
+00010BST200T             020MUTKOD    Mutatiecode                                       00004499  N000100      A2020040100000000
+00010BST200T             060VPKODA    Identificatie nummer (36-tallig)                  00006645  A000300      A2020040100000000
+00010BST210T             110******    Leeg veld                                         00000566  A002600      A2020040100000000
+00010BST210T             010BSTNUM    Bestand-nummer                                    00001309  N000400      A2020040100000000
+00010BST210T             020MUTKOD    Mutatiecode                                       00004502  N000100      A2020040100000000
+00010BST210T             070VPDLAA    Aantal deelverpakkingen                           00006351  N000500      A2020040100000000
+00010BST210T             100VPDLEH    Basiseenheid verpakking                           00006378  A000200      A2020040100000000
+00010BST210T             090VPDLHV    Hoeveelheid per deelverpakking                    00006394  N000802(6,2) A2020040100000000
+00010BST210T             080VPDLOM    Deelverpakking omschrijving kode                  00006416  N000300      A2020040100000000
+00010BST210T             050VPHFAA    Aantal hoofdverpakkingen                          00006475  N000500      A2020040100000000
+00010BST210T             060VPHFOM    Hoofdverpakking omschrijving kode                 00006491  N000300      A2020040100000000
+00010BST210T             030VPIDNR    Identificatie nummer (10-tallig)                  000065481ON000400      A2020040100000000
+00010BST210T             040VPKODA    Identificatie nummer (36-tallig)                  00006653  A000300      A2020040100000000
+00010BST301T             250******    Leeg veld                                         00016357  A001300      A2020040100000000
+00010BST301T             010BSTNUM    Bestand-nummer                                    00016071  N000400      A2020040100000000
+00010BST301T             020MUTKOD    Mutatiecode                                       00016098  N000100      A2020040100000000
+00010BST301T             090NAADR     Adres                                             00016179  A003000      A2020040100000000
+00010BST301T             170NAAFK     Zoeknaam                                          00016268  A001500      A2020040100000000
+00010BST301T             220NAAGB     AGB code                                          00016314  N000800      A2020040100000000
+00010BST301T             160NAFAX     Faxnummer                                         00016241  A001500      A2020040100000000
+00010BST301T             200NAGLN     GLN code                                          00016292  N001300(13,0)A2020040100000000
+00010BST301T             120NALAND    Land                                              00016209  A003000      A2020040100000000
+00010BST301T             190NALICN    LIC nummer                                        00016284  A000400      A2020040100000000
+00010BST301T             180NALNDM    Land memocode                                     00016276  A000200      A2020040100000000
+00010BST301T             070NAMEMO2   Memocode onderneming 2 posities numeriek          00016152  N000200      A2020040100000000
+00010BST301T             060NAMEMO3   Memocode onderneming 3 posities alfanumeriek      00016144  A000300      A2020040100000000
+00010BST301T             080NANAAM    Naam                                              00016160  A005000      A2020040100000000
+00010BST301T             130NAPB      Postbusnummer                                     00016217  A001000      A2020040100000000
+00010BST301T             100NAPC      Postcode                                          00016187  A001000      A2020040100000000
+00010BST301T             140NAPCPB    Postcode postbus                                  00016225  A001000      A2020040100000000
+00010BST301T             230NARES1    Reservenummer 1                                   00016322  N001500      A2020040100000000
+00010BST301T             240NARES2    Reservenummer 2                                   00016330  N001500      A2020040100000000
+00010BST301T             040NASRT     NAW soort                                         000161281ON000600      A2020040100000000
+00010BST301T             150NATEL     Telefoonnummer ondernemer                         00016233  A001500      A2020040100000000
+00010BST301T             210NAUZOVI   UZOVI code                                        00016306  N000800      A2020040100000000
+00010BST301T             050NAWNR     NAW nummer                                        000161362ON000700(6+1) A2020040100000000
+00010BST301T             110NAWPL     Woonplaats                                        00016195  A003000      A2020040100000000
+00010BST301T             030TSNASRT   Thesaurusnummer soort NAW                         00016101  N000400      A2020040100000000
+00010BST351T             060******    Leeg veld                                         00009725  A000700      A2020040100000000
+00010BST351T             050BBETNR    Uniek nummer aanvullende tekst                    000097763ON000400      A2020040100000000
+00010BST351T             010BSTNUM    Bestand-nummer                                    00009733  N000400      A2020040100000000
+00010BST351T             030HPKODE    Handels Product Kenmerken (HPK) code              000097411ON000800(7+1) A2020040100000000
+00010BST351T             020MUTKOD    Mutatiecode                                       00009768  N000100      A2020040100000000
+00010BST351T             040PRKODE    PRK-code                                          000097842ON000800(7+1) A2020040100000000
+00010BST360T             110******    Leeg veld                                         00007676  A002300      A2020040100000000
+00010BST360T             010BSTNUM    Bestand-nummer                                    00007560  N000400      A2020040100000000
+00010BST360T             020MUTKOD    Mutatiecode                                       00007579  N000100      A2020040100000000
+00010BST360T             060TTDATE    Registratiedatum G-Standaard                      00007617  A000800      A2020040100000000
+00010BST360T             100TTEHAD    Omrekeningsfactor naar aantal dagen               00007668  N001206 (6,6)A2020040100000000
+00010BST360T             040TTEHMK    Memocode tijdseenheid                             00007595  A000200      A2020040100000000
+00010BST360T             030TTEHNR    Uniek nummer per tijdseenheid                     000075871ON000400      A2020040100000000
+00010BST360T             050TTEHOM    Omschrijving tijdseenheid                         00007609  A003000      A2020040100000000
+00010BST360T             070VNOPN     Versienummer WCIA tabellen eerste opname          00007625  N000400      A2020040100000000
+00010BST360T             090VNVERV    Versienummer WCIA tabellen vervallen              00007641  N000400      A2020040100000000
+00010BST360T             080VNWYZ     Versienummer WCIA tabellen laatste wijziging      00007633  N000400      A2020040100000000
+00010BST361T             140******    Leeg veld                                         00007919  A001900      A2020040100000000
+00010BST361T             040AAEHMK    Memocode eenheid gebruiksadvies                   00007803  A000200      A2020040100000000
+00010BST361T             030AAEHNR    Unieknummer per eenheid gebruiksadvies            000077811ON000400      A2020040100000000
+00010BST361T             050AAEHOE    Omschrijving eenheid gebruiksadvies enkelvoud     00007811  A003000      A2020040100000000
+00010BST361T             060AAEHOM    Omschrijving eenheid gebruiksadvies meervoud      00007838  A003000      A2020040100000000
+00010BST361T             120AAHOEV    Hoeveelheid overeenkomstige eenheid               00007897  N001206 (6,6)A2020040100000000
+00010BST361T             010BSTNUM    Bestand-nummer                                    00007684  N000400      A2020040100000000
+00010BST361T             020MUTKOD    Mutatiecode                                       00007692  N000100      A2020040100000000
+00010BST361T             110THEHHV    Basiseenheid product thesaurusnr                  00007889  N000300      A2020040100000000
+00010BST361T             070TTDATE    Registratiedatum G-Standaard                      00007846  A000800      A2020040100000000
+00010BST361T             080VNOPN     Versienummer WCIA tabellen eerste opname          00007854  N000400      A2020040100000000
+00010BST361T             100VNVERV    Versienummer WCIA tabellen vervallen              00007870  N000400      A2020040100000000
+00010BST361T             090VNWYZ     Versienummer WCIA tabellen laatste wijziging      00007862  N000400      A2020040100000000
+00010BST361T             130XPEHHV    Basiseenheid product kode                         00007900  N000300      A2020040100000000
+00010BST362T             150******    Leeg veld                                         00008087  A000400      A2020040100000000
+00010BST362T             140BBDBER    Omrekenfactor theoretische duur                   00008079  N000100      A2020040100000000
+00010BST362T             040BBETMK    Memocode aanvullende tekst                        00007935  A000500      A2020040100000000
+00010BST362T             030BBETNR    Uniek nummer aanvullende tekst                    000079271ON000400      A2020040100000000
+00010BST362T             050BBETOM    Omschrijving aanvullende tekst                    00007943  A004100      A2020040100000000
+00010BST362T             110BBHFDO    Hoogste frequentie dosering                       00008028  N001206 (6,6)A2020040100000000
+00010BST362T             130BBHKDO    Hoogste keerdosering                              00008060  N001206 (6,6)A2020040100000000
+00010BST362T             100BBLFDO    Laagste frequentie dosering                       00008001  N001206 (6,6)A2020040100000000
+00010BST362T             120BBLKDO    Laagste keerdosering                              00008044  N001206 (6,6)A2020040100000000
+00010BST362T             010BSTNUM    Bestand-nummer                                    00007706  N000400      A2020040100000000
+00010BST362T             020MUTKOD    Mutatiecode                                       00007714  N000100      A2020040100000000
+00010BST362T             060TTDATE    Registratiedatum G-Standaard                      00007951  A000800      A2020040100000000
+00010BST362T             070VNOPN     Versienummer WCIA tabellen eerste opname          00007978  N000400      A2020040100000000
+00010BST362T             090VNVERV    Versienummer WCIA tabellen vervallen              00007994  N000400      A2020040100000000
+00010BST362T             080VNWYZ     Versienummer WCIA tabellen laatste wijziging      00007986  N000400      A2020040100000000
+00010BST370T             100******    Leeg veld                                         00008176  A000300      A2020040100000000
+00010BST370T             040BBTCMK    Memocode tekstcategorie                           00008109  A000200      V2021080100000000
+00010BST370T             030BBTCNR    Uniek nummer per tekstcategorie                   000080951ON000400      A2020040100000000
+00010BST370T             050BBTCOM    Omschrijving tekstcategorie                       00008117  A003000      A2020040100000000
+00010BST370T             010BSTNUM    Bestand-nummer                                    00007722  N000400      A2020040100000000
+00010BST370T             020MUTKOD    Mutatiecode                                       00007730  N000100      A2020040100000000
+00010BST370T             060TTDATE    Registratiedatum G-Standaard                      00008125  A000800      A2020040100000000
+00010BST370T             070VNOPN     Versienummer WCIA tabellen eerste opname          00008133  N000400      A2020040100000000
+00010BST370T             090VNVERV    Versienummer WCIA tabellen vervallen              00008168  N000400      A2020040100000000
+00010BST370T             080VNWYZ     Versienummer WCIA tabellen laatste wijziging      00008141  N000400      A2020040100000000
+00010BST371T             050******    Leeg veld                                         00008273  A001900      A2020040100000000
+00010BST371T             040BBETNR    Uniek nummer aanvullende tekst                    000082142ON000400      A2020040100000000
+00010BST371T             030BBTCNR    Uniek nummer per tekstcategorie                   000082061ON000400      A2020040100000000
+00010BST371T             010BSTNUM    Bestand-nummer                                    00007749  N000400      A2020040100000000
+00010BST371T             020MUTKOD    Mutatiecode                                       00007757  N000100      A2020040100000000
+00010BST372T             060******    Leeg veld                                         00008265  A003100      A2020040100000000
+00010BST372T             010BSTNUM    Bestand-nummer                                    00007765  N000400      A2020040100000000
+00010BST372T             020MUTKOD    Mutatiecode                                       00007773  N000100      A2020040100000000
+00010BST372T             040VNDATE    Datum officiele uitgifte (ddmmjjjj)               00008230  N000800      A2020040100000000
+00010BST372T             050VNOMS     Omschrijving versienummer                         00008249  A008000      A2020040100000000
+00010BST372T             030VNVERS    Versienummer van de WCIA tabellen                 000082221ON000400      A2020040100000000
+00010BST380T             060******    Leeg veld                                         00009059  A001500      A2020040100000000
+00010BST380T             010BSTNUM    Bestand-nummer                                    00009008  N000400      A2020040100000000
+00010BST380T             040ICPC1     ICPC-code                                         00009032  A000800      A2020040100000000
+00010BST380T             030ICPCNR1   ICPC1-nummer                                      000090241ON000800      A2020040100000000
+00010BST380T             050ICPCTXT   ICPC-omschrijvingen                               00009040  A006000      A2020040100000000
+00010BST380T             020MUTKOD    Mutatiecode                                       00009016  N000100      A2020040100000000
+00010BST401T             070******    Leeg veld                                         00013625  A000100      A2020040100000000
+00010BST401T             010BSTNUM    Bestand-nummer                                    00013633  N000400      A2020040100000000
+00010BST401T             060BYZKEN    Bijzondere Kenmerk                                000136763ON000600      A2020040100000000
+00010BST401T             040HPKODE    Handels Product Kenmerken (HPK) code              000136412ON000800(7+1) A2020040100000000
+00010BST401T             020MUTKOD    Mutatiecode                                       00013668  N000100      A2020040100000000
+00010BST401T             030PRKODE    PRK-code                                          000136841ON000800(7+1) A2020040100000000
+00010BST401T             050THBYZK    Thes.nr. Bijzondere Kenmerken                     00013692  N000400      A2020040100000000
+00010BST410T             180******    Leeg veld                                         00011266  A000200      A2020040100000000
+00010BST410T             030AAACOD    Soort code                                        000110961ON000200(2,0) A2020040100000000
+00010BST410T             010BSTNUM    Bestand-nummer                                    00011053  N000400      A2020040100000000
+00010BST410T             020MUTKOD    Mutatiecode                                       00011061  N000100      A2020040100000000
+00010BST410T             080THMOD     Tekstmodule-thesaurus 103                         00011150  N000300      A2020040100000000
+00010BST410T             100THSRTT    Tekstsoort-thesaurus 104                          00011177  N000300      A2020040100000000
+00010BST410T             170THVINR    Thesaurus itemnummer (BST902T)                    00011258  N000600      V2021080100000000
+00010BST410T             160THVNR     Thesaurusnummer (BST902T)                         00011231  N000400      V2021080100000000
+00010BST410T             120TXKODE    Tekst nivo kode                                   00011193  N000800      A2020040100000000
+00010BST410T             090TXMOD     Tekstmodule                                       00011169  N000300      A2020040100000000
+00010BST410T             110TXSRTT    Tekstsoort                                        00011185  N000300      A2020040100000000
+00010BST410T             140ZRDATM    Datum van laatste mutatie                         00011215  N000800(DMJ) A2020040100000000
+00010BST410T             130ZRDATO    Datum van 1e opname                               00011207  N000800(DMJ) A2020040100000000
+00010BST410T             150ZRDATV    Datum van inactief maken                          00011223  N000800(DMJ) A2020040100000000
+00010BST410T             050ZRMEMO    Memocode bij ZR nummer uniek per AAACOD           00011126  A000800      A2020040100000000
+00010BST410T             040ZRNR      Zorg Registratie nummer                           000111182ON000600(6,0) A2020040100000000
+00010BST410T             070ZROMSE    Omschrijving ZRNR in 45 posities voor op etiket   00011142  A004500      A2020040100000000
+00010BST410T             060ZROMSS    Omschrijving ZRNR in 70 posities voor keuzemenu's 00011134  A007000      A2020040100000000
+00010BST411T             090******    Leeg veld                                         00011355  A002700      A2020040100000000
+00010BST411T             050AAA       Soort code (10, 20 of 30)                         000113123ON000200(2,0) A2020040100000000
+00010BST411T             010BSTNUM    Bestand-nummer                                    00011274  N000400      A2020040100000000
+00010BST411T             040EXTCOD    Externe code van het type EXTTYP                  000113042OA001000      A2020040100000000
+00010BST411T             030EXTTYP    Type externe ZRS code                             000112901ON000200      A2020040100000000
+00010BST411T             020MUTKOD    Mutatiecode                                       00011282  N000100      A2020040100000000
+00010BST411T             080ZRNR32    Zorg Registratie Nummer van de Actieregel         000113476ON000600(6,0) A2020040100000000
+00010BST411T             060ZRNRA     Zorg Registratie binnen AAA                       000113204ON000600(6,0) A2020040100000000
+00010BST411T             070ZRNRS     Zorg Registratie binnen AAA+1                     000113395ON000600(6,0) A2020040100000000
+00010BST413T             170******    Leeg veld                                         00011541  A002700      A2020040100000000
+00010BST413T             010BSTNUM    Bestand-nummer                                    00011363  N000400      A2020040100000000
+00010BST413T             020MUTKOD    Mutatiecode                                       00011371  N000100      A2020040100000000
+00010BST413T             100THMOD     Tekstmodule-thesaurus 103                         00011479  N000300      A2020040100000000
+00010BST413T             120THSRTT    Tekstsoort-thesaurus 104                          00011495  N000300      A2020040100000000
+00010BST413T             140TXKODE    Tekst nivo kode                                   00011517  N000800      A2020040100000000
+00010BST413T             110TXMOD     Tekstmodule                                       00011487  N000300      A2020040100000000
+00010BST413T             130TXSRTT    Tekstsoort                                        00011509  N000300      A2020040100000000
+00010BST413T             150ZRFAV1    Opnemen als favoriet na Aanleiding en Analyse     00011525  A000100(J/N) A2020040100000000
+00010BST413T             160ZRFAV2    Opn. als favoriet na Aanleiding, Analyse en Actie 00011533  A000100(J/N) A2020040100000000
+00010BST413T             080ZRNR10    Zorg Registratie Nummer van de Aanleiding         000114524ON000600(6,0) A2020040100000000
+00010BST413T             090ZRNR11    Zorg Registratie Nummer van de Sub-Aanleiding     000114605ON000600(6,0) A2020040100000000
+00010BST413T             060ZRNR20    Zorg Registratie Nummer van de Analyse            000114366ON000600(6,0) A2020040100000000
+00010BST413T             070ZRNR21    Zorg Registratie Nummer van de Sub-Analyse        000114447ON000600(6,0) A2020040100000000
+00010BST413T             030ZRNR30    Zorg Registratie Nummer van de Actie              000113981ON000600(6,0) A2020040100000000
+00010BST413T             040ZRNR31    Zorg Registratie Nummer van de Actiegroep         000114012ON000600(6,0) A2020040100000000
+00010BST413T             050ZRNR32    Zorg Registratie Nummer van de Actieregel         000114283ON000600(6,0) A2020040100000000
+00010BST415T             170******    Leeg veld                                         00014575  A000800      A2020040100000000
+00010BST415T             010BSTNUM    Bestand-nummer                                    00014419  N000400      A2020040100000000
+00010BST415T             020MUTKOD    Mutatiecode                                       00014427  N000100      A2020040100000000
+00010BST415T             030THMODU    Thesaurus verwijzing tekstmodule (=103)           00014400  N000400      A2020040100000000
+00010BST415T             050THTSRT    Thesaurus verwijzing tekstsoort (=104)            00014443  N000400      A2020040100000000
+00010BST415T             080TXBLNR    Tekstbloknummer                                   000144864ON000800      A2020040100000000
+00010BST415T             070TXKODE    Tekst nivo kode                                   000144783ON000800      A2020040100000000
+00010BST415T             040TXMODU    Tekstmodule                                       000144351ON000600      A2020040100000000
+00010BST415T             060TXTSRT    Tekstsoort                                        000144512ON000600      A2020040100000000
+00010BST415T             160VLGNR     Volgnummer                                        000145675ON000500      A2020040100000000
+00010BST415T             090ZRA10     Aanleiding (A10 uit ZRS)                          00014494  N000600(6,0) A2020040100000000
+00010BST415T             100ZRA11     Subaanleiding (A11 uit ZRS)                       00014508  N000600(6,0) A2020040100000000
+00010BST415T             110ZRA20     Analyse (A20 uit ZRS)                             00014516  N000600(6,0) A2020040100000000
+00010BST415T             120ZRA21     Subanalyse (A21 uit ZRS)                          00014524  N000600(6,0) A2020040100000000
+00010BST415T             130ZRA30     Actie (A30 uit ZRS)                               00014532  N000600(6,0) A2020040100000000
+00010BST415T             140ZRA31     Actiegroep (A31 uit ZRS)                          00014540  N000600(6,0) A2020040100000000
+00010BST415T             150ZRA32     Actieregel (A32 uit ZRS)                          00014559  N000600(6,0) A2020040100000000
+00010BST431T             140******    Leeg veld                                         00021121  A002500      A0000000000000000
+00010BST431T             010BSTNUM    Bestand-nummer                                    00020990  N000400      A0000000000000000
+00010BST431T             080MPCDSYS   Itemnummer codesysteem                            000210674ON000600      A0000000000000000
+00010BST431T             090MPCODE    Code uit codesysteem                              000210755OA002400      A0000000000000000
+00010BST431T             100MPNIV     Niveau                                            00021083  N000100      A0000000000000000
+00010BST431T             120MPNMO     Originele omschrijving code                       00021105  A016000      A0000000000000000
+00010BST431T             130MPOMSP    Omschrijving code voor de praktijk                00021113  A016000      A0000000000000000
+00010BST431T             060MPSRTGEG  Itemnummer Medicatieproces soort gegeven          000210403ON000600      A0000000000000000
+00010BST431T             110MPTYPE    Type                                              00021091  A000100      A0000000000000000
+00010BST431T             030MPVERSIE  Medicatieproces Versie                            000210241OA001000      A0000000000000000
+00010BST431T             040MPVNR     Medicatieproces Versienummer                      000210162OA001000      A0000000000000000
+00010BST431T             020MUTKOD    Mutatiecode                                       00021008  N000100      A0000000000000000
+00010BST431T             070THCDSYS   Thesaurusnummer codesysteem                       00021059  N000400      A0000000000000000
+00010BST431T             050THSRTGEG  Thesaurusnummer Medicatieproces soort gegeven     00021032  N000400      A0000000000000000
+00010BST581T             009******    Leeg veld                                         00020982  A002600      A0000000000000000
+00010BST581T             001BSTNUM    Bestand-nummer                                    00020893  N000400      A0000000000000000
+00010BST581T             004MFBPNR    Protocolnummer                                    000209231ON001000      A0000000000000000
+00010BST581T             005MFBPNRV   Releasenummer protocol                            000209312ON000600      A0000000000000000
+00010BST581T             006MFBPROC   Protocol uitvoeren na receptverwerking (J/N)      00020958  A000100      A0000000000000000
+00010BST581T             008MFBPRR    Itemnummer procesreden                            000209743ON000600      A0000000000000000
+00010BST581T             003MFBWNR    Waardelijst nummer                                000209154ON000600      A0000000000000000
+00010BST581T             002MUTKOD    Mutatiecode                                       00020907  N000100      A0000000000000000
+00010BST581T             007THMFBR    Thesaurusnummer procesreden                       00020966  N000400      A0000000000000000
+00010BST601T             160******    Leeg veld                                         00015016  A001800      A2020040100000000
+00010BST601T             010BSTNUM    Bestand-nummer                                    00014850  N000400      A2020040100000000
+00010BST601T             040CISRT     Bewakingssoort                                    000148851ON000600      A2020040100000000
+00010BST601T             050MBCODE    Medicatiebewaking identificerende code            000149312ON000800      A2020040100000000
+00010BST601T             120MBVRW     Medicatiebewaking aanvullende voorwaarde          000149746ON000600      A2020040100000000
+00010BST601T             130MBWRD1    Codering waarde 1 - alfanumeriek                  000149827OA000100      A2020040100000000
+00010BST601T             140MBWRD2    Codering waarde 2 - numeriek                      000149908ON000800      A2020040100000000
+00010BST601T             150MBWRD3    Codering waarde 3 - numeriek                      00015008  N000800      A2020040100000000
+00010BST601T             020MUTKOD    Mutatiecode                                       00014869  N000100      A2020040100000000
+00010BST601T             030THCTST    Thes.nr. Bewakingssoort (=1015)                   00014877  N000400      A2020040100000000
+00010BST601T             060THMODU    Thesaurus verwijzing tekstmodule (=103)           00014893  N000400      A2020040100000000
+00010BST601T             080THTSRT    Thesaurus verwijzing tekstsoort (=104)            00014915  N000400      A2020040100000000
+00010BST601T             110TSVRW     Thesaurusverwijzing aanvullende voorwaarde (1701) 00014966  N000400      A2020040100000000
+00010BST601T             100TXBLNR    Tekstbloknummer                                   000149585ON000800      A2020040100000000
+00010BST601T             070TXMODU    Tekstmodule                                       000149073ON000600      A2020040100000000
+00010BST601T             090TXTSRT    Tekstsoort                                        000149234ON000600      A2020040100000000
+00010BST632T             070******    Leeg veld                                         00013706  A000100      A2020040100000000
+00010BST632T             010BSTNUM    Bestand-nummer                                    00013714  N000400      A2020040100000000
+00010BST632T             040HPKODE    Handels Product Kenmerken (HPK) code              000137222ON000800(7+1) A2020040100000000
+00010BST632T             020MUTKOD    Mutatiecode                                       00013730  N000100      A2020040100000000
+00010BST632T             060NROGRP    Nummer van Ongewenste Groep                       000137493ON000600      A2020040100000000
+00010BST632T             030PRKODE    PRK-code                                          000137571ON000800(7+1) A2020040100000000
+00010BST632T             050THOGRP    Thes.nr. Ongewenste Groepen                       00013765  N000400      A2020040100000000
+00010BST640T             100******    Leeg veld                                         00008397  A003200      A2020040100000000
+00010BST640T             010BSTNUM    Bestand-nummer                                    00008281  N000400      A2020040100000000
+00010BST640T             070GPDGST    Toegestaan voor geslacht                          00008346  N000600      A2020040100000000
+00010BST640T             060GPDGTH    Thesaurus geslachtscodering (1001)                00008354  N000400      A2020040100000000
+00010BST640T             050GPDMLV    Min leeftijd in maanden voor verstrekking         00008338  N000400      V2021080100000000
+00010BST640T             040GPDWIN    Vrijgave door het WINap (J/N)                     00008303  A000100      A2020040100000000
+00010BST640T             080GPKDOS    Percentage kinderdosering                         00008370  N000300      V2021080100000000
+00010BST640T             030GPKODE    Generiekeproductcode (GPK)                        000083111ON000800(7+1) A2020040100000000
+00010BST640T             090GPRISC    Kode hoog risico overdosering                     00008389  A000100      A2020040100000000
+00010BST640T             020MUTKOD    Mutatiecode                                       00008362  N000100      A2020040100000000
+00010BST641T             090******    Leeg veld                                         00008494  A001500      A2020040100000000
+00010BST641T             010BSTNUM    Bestand-nummer                                    00008400  N000400      A2020040100000000
+00010BST641T             080GPDBAS    Dosis-basisnummer                                 00008486  N001000      A2020040100000000
+00010BST641T             070GPDCOD    Soort-doseringscode                               000084784ON000600      A2020040100000000
+00010BST641T             060GPDCTH    Thesaurus soort-doseringscode (1004)              00008451  N000400      A2020040100000000
+00010BST641T             030GPKODE    Generiekeproductcode (GPK)                        000084271ON000800(7+1) A2020040100000000
+00010BST641T             050HPKODE    Handels Product Kenmerken (HPK) code              000084353ON000800(7+1) A2020040100000000
+00010BST641T             020MUTKOD    Mutatiecode                                       00008419  N000100      A2020040100000000
+00010BST641T             040PRKODE    PRK-code                                          000084432ON000800(7+1) A2020040100000000
+00010BST642T             150******    Leeg veld                                         00008656  A001800      A2020040100000000
+00010BST642T             010BSTNUM    Bestand-nummer                                    00008508  N000400      A2020040100000000
+00010BST642T             030GPDBAS    Dosis-basisnummer                                 000085241ON001000      A2020040100000000
+00010BST642T             140GPDCAT    Dosis-categorienummer                             00008648  N001000      A2020040100000000
+00010BST642T             040GPDID1    Identificerend volgnummer                         000085322ON000300      A2020040100000000
+00010BST642T             060GPDZCO    Zorggroep-codering                                00008559  N000600      A2020040100000000
+00010BST642T             050GPDZTH    Thesaurus Zorggroep-codering (BST902T; 1002)      00008540  N000400      A2020040100000000
+00010BST642T             120GPKTTH    Thesaurus afwijkende toedieningsweg (7)           00008613  N000300      A2020040100000000
+00010BST642T             130GPKTWG    Toedieningsweg code                               00008621  N000300      A2020040100000000
+00010BST642T             110ICDNR10   ICD10-nummer                                      00008605  N000800      A2020040100000000
+00010BST642T             070ICPCNR1   ICPC1-nummer                                      00008567  N000800      A2020040100000000
+00010BST642T             100ICPCNR2   ICPC2-nummer                                      00008591  N000800      A2020040100000000
+00010BST642T             080ICPCTH    Thesaurus Verbijzondering (BST902T; 1000)         00008575  N000400      A2020040100000000
+00010BST642T             090ICPCTO    Verbijzondering                                   00008583  N000600      A2020040100000000
+00010BST642T             020MUTKOD    Mutatiecode                                       00008516  N000100      A2020040100000000
+00010BST643T             150******    Leeg veld                                         00008826  A001600      A2020040100000000
+00010BST643T             010BSTNUM    Bestand-nummer                                    00008664  N000400      A2020040100000000
+00010BST643T             030GPDCAT    Dosis-categorienummer                             000086801ON001000      A2020040100000000
+00010BST643T             130GPDDEN    Basisset voor Denekamp berekening (J/N)           00008796  A000100      V2021080100000000
+00010BST643T             140GPDDNR    Dosisnummer                                       00008818  N001000      A2020040100000000
+00010BST643T             110GPDFAA    Frequentie  aantal                                00008761  N000402 (2,2)A2020040100000000
+00010BST643T             120GPDFEE    Frequentie  tijdseenheid                          00008788  N000400      A2020040100000000
+00010BST643T             040GPDID2    Identificerend recordnummer                       000086992ON001000      A2020040100000000
+00010BST643T             070GPDKGM    Gewicht in KG vanaf                               00008729  N000603 (3,3)A2020040100000000
+00010BST643T             080GPDKGX    Gewicht in KG tot                                 00008737  N000603 (3,3)A2020040100000000
+00010BST643T             050GPDLFM    Leeftijd in maanden vanaf                         00009067  N000602 (4,2)A2020040100000000
+00010BST643T             060GPDLFX    Leeftijd in maanden tot                           00008710  N000602 (4,2)A2020040100000000
+00010BST643T             090GPDM2M    Lichaamsoppervlakte in M2 vanaf                   00008745  N000603 (3,3)A2020040100000000
+00010BST643T             100GPDM2X    Lichaamsoppervlakte in M2 tot                     00008753  N000603 (3,3)A2020040100000000
+00010BST643T             020MUTKOD    Mutatiecode                                       00008672  N000100      A2020040100000000
+00010BST649T             160******    Leeg veld                                         00019844  A001300      A2020040100000000
+00010BST649T             010BSTNUM    Bestand-nummer                                    00019674  N000400      A2020040100000000
+00010BST649T             070GPABSMAX  Absoluut maximum                                  00019739  N001103 (8,3)A2020040100000000
+00010BST649T             110GPABSMAXK Absoluut maximum per KG                           00019771  N001103 (8,3)A2020040100000000
+00010BST649T             150GPABSMAXM Absoluut maximum per M2                           00019836  N001103 (8,3)A2020040100000000
+00010BST649T             060GPABSMIN  Absoluut minimum                                  00019720  N001103 (8,3)A2020040100000000
+00010BST649T             100GPABSMINK Absoluut minimum per KG                           00019763  N001103 (8,3)A2020040100000000
+00010BST649T             140GPABSMINM Absoluut minimum per M2                           00019828  N001103 (8,3)A2020040100000000
+00010BST649T             030GPDDNR    Dosisnummer                                       000197041ON001000      A2020040100000000
+00010BST649T             050GPNRMMAX  Norm maximum                                      00019712  N001103 (8,3)A2020040100000000
+00010BST649T             090GPNRMMAXK Norm maximum per KG                               00019755  N001103 (8,3)A2020040100000000
+00010BST649T             130GPNRMMAXM Norm maximum per M2                               00019801  N001103 (8,3)A2020040100000000
+00010BST649T             040GPNRMMIN  Norm minimum                                      00019690  N001103 (8,3)A2020040100000000
+00010BST649T             080GPNRMMINK Norm minimum per KG                               00019747  N001103 (8,3)A2020040100000000
+00010BST649T             120GPNRMMINM Norm minimum per M2                               00019798  N001103 (8,3)A2020040100000000
+00010BST649T             020MUTKOD    Mutatiecode                                       00019682  N000100      A2020040100000000
+00010BST658T             130******    Leeg veld                                         00013943  A000300      A2020040100000000
+00010BST658T             030ATCBEG    ATC-Code                                          000138541OA000800      A2020040100000000
+00010BST658T             010BSTNUM    Bestand-nummer                                    00013838  N000400      A2020040100000000
+00010BST658T             070HHAFLD    Hardheid afleiding                                00014001  N000600      A2020040100000000
+00010BST658T             050INAARD    Indicatie aard (thes 40)                          000139862ON000600      A2020040100000000
+00010BST658T             020MUTKOD    Mutatiecode                                       00013846  N000100      A2020040100000000
+00010BST658T             040TSAARD    Thesaurusverwijzing Indicatie (=40)               00013978  N000400      A2020040100000000
+00010BST658T             060TSHAAF    Thesaurusverwijzing Hardheid afleiding (1300)     00013994  N000400      A2020040100000000
+00010BST658T             080TSMODU    Thesaurusverwijzing Tekstmodule (103)             00014028  N000400      A2020040100000000
+00010BST658T             100TSSRTT    Thesaurusverwijzing Tekstsoort (104)              00014044  N000400      A2020040100000000
+00010BST658T             120TXKODE    Tekst nivo kode                                   00014060  N000800      A2020040100000000
+00010BST658T             090TXMODU    Tekstmodule                                       00014036  N000600      A2020040100000000
+00010BST658T             110TXSRTTE   Tekstsoort                                        00014052  N000600      A2020040100000000
+00010BST671T             060******    Leeg veld                                         00011614  A000300      A2020040100000000
+00010BST671T             010BSTNUM    Bestand-nummer                                    00011568  N000400      A2020040100000000
+00010BST671T             050DMCODE    Dubbelmedicatiecode                               00011606  N000800(7+1) A2020040100000000
+00010BST671T             030DMPRKA    PRK kode dubbelmedicatie A                        000115841ON000800(7+1) A2020040100000000
+00010BST671T             040DMPRKB    PRK kode dubbelmedicatie B                        000115922ON000800(7+1) A2020040100000000
+00010BST671T             020MUTKOD    Mutatiecode                                       00011576  N000100      A2020040100000000
+00010BST672T             070******    Leeg veld                                         00011681  A000500      A2020040100000000
+00010BST672T             010BSTNUM    Bestand-nummer                                    00011622  N000400      A2020040100000000
+00010BST672T             030DMCODE    Dubbelmedicatiecode                               000116491ON000800(7+1) A2020040100000000
+00010BST672T             020MUTKOD    Mutatiecode                                       00011630  N000100      A2020040100000000
+00010BST672T             060TXKODE    Tekst nivo kode                                   000116732ON000800      A2020040100000000
+00010BST672T             040TXMOD     Tekstmodule                                       00011657  N000300      A2020040100000000
+00010BST672T             050TXSRTT    Tekstsoort                                        000116653ON000300      A2020040100000000
+00010BST682T             070******    Leeg veld                                         00017124  A003100      A2020040100000000
+00010BST682T             010BSTNUM    Bestand-nummer                                    00016594  N000400      A2020040100000000
+00010BST682T             050CISRT     Bewakingssoort                                    000171082ON000600      A2020040100000000
+00010BST682T             060MBCODE    Medicatiebewaking identificerende code            000171163ON000800      A2020040100000000
+00010BST682T             030MFBPNR    Protocolnummer                                    000170861ON001000      A2020040100000000
+00010BST682T             020MUTKOD    Mutatiecode                                       00016764  N000100      A2020040100000000
+00010BST682T             040THCTST    Thes.nr. Bewakingssoort (=1015)                   00017094  N000400      A2020040100000000
+00010BST684T             080******    Leeg veld                                         00019194  A001800      A2020040100000000
+00010BST684T             010BSTNUM    Bestand-nummer                                    00019119  N000400      A2020040100000000
+00010BST684T             030MFBAANST  Aansturing van soort                              000191351ON000100      A2020040100000000
+00010BST684T             070MFBAEXID  Externe codering                                  000191864OA002000      A2020040100000000
+00010BST684T             060MFBEXSRT  Itemnummer externe codering soort                 000191783ON000600      A2020040100000000
+00010BST684T             040MFBNR     Parameter/Attribuut/Protocolnummer                000191432ON001000      A2020040100000000
+00010BST684T             020MUTKOD    Mutatiecode                                       00019127  N000100      A2020040100000000
+00010BST684T             050THMFBEX   Thes.nr. Externe code type (=2011)                00019151  N000400      A2020040100000000
+00010BST685T             130******    Leeg veld                                         00017329  A002900      A2020040100000000
+00010BST685T             010BSTNUM    Bestand-nummer                                    00016608  N000400      A2020040100000000
+00010BST685T             030MFBPANR   Parameternummer                                   000172131ON001000      A2020040100000000
+00010BST685T             070MFBPAOMS  Parameter omschrijving                            00017264  A008000      A2020040100000000
+00010BST685T             080MFBPAVT   Vervaltermijn lab-/meetwaarden in dagen           00017272  N000400      A2020040100000000
+00010BST685T             100MFBPITNR  Itemnummer in thesaurus                           00017299  N000600      A2020040100000000
+00010BST685T             040MFBVNOPN  Versienummer 1e opname                            00017221  N000400      A2020040100000000
+00010BST685T             060MFBVNVV   Versienummer vervallen                            00017256  N000400      A2020040100000000
+00010BST685T             050MFBVNWYZ  Versienummer laatste wijziging                    00017248  N000400      A2020040100000000
+00010BST685T             020MUTKOD    Mutatiecode                                       00016772  N000100      A2020040100000000
+00010BST685T             090THMFBP    Thesaurus nummer                                  00017280  N000400      A2020040100000000
+00010BST685T             110THMODU    Thesaurus verwijzing tekstmodule (=103)           00017302  N000400      A2020040100000000
+00010BST685T             120TXMODU    Tekstmodule                                       00017310  N000600      A2020040100000000
+00010BST686T             130******    Leeg veld                                         00017450  A003100      A2020040100000000
+00010BST686T             010BSTNUM    Bestand-nummer                                    00016616  N000400      A2020040100000000
+00010BST686T             030MFBATNR   Attribuutnummer                                   000173371ON001000      A2020040100000000
+00010BST686T             080MFBATOMS  Attribuut omschrijving                            00017396  A008000      A2020040100000000
+00010BST686T             040MFBATTYP  Attribuuttype (1=getal, 2=boolean)                00017345  N000200      A2020040100000000
+00010BST686T             100MFBPITNR  Itemnummer in thesaurus                           00017426  N000600      A2020040100000000
+00010BST686T             050MFBVNOPN  Versienummer 1e opname                            00017353  N000400      A2020040100000000
+00010BST686T             070MFBVNVV   Versienummer vervallen                            00017388  N000400      A2020040100000000
+00010BST686T             060MFBVNWYZ  Versienummer laatste wijziging                    00017361  N000400      A2020040100000000
+00010BST686T             020MUTKOD    Mutatiecode                                       00016780  N000100      A2020040100000000
+00010BST686T             090THMFBP    Thesaurus nummer                                  00017418  N000400      A2020040100000000
+00010BST686T             110THMODU    Thesaurus verwijzing tekstmodule (=103)           00017434  N000400      A2020040100000000
+00010BST686T             120TXMODU    Tekstmodule                                       00017442  N000600      A2020040100000000
+00010BST689T             100******    Leeg veld                                         00017205  A001100      A2020040100000000
+00010BST689T             010BSTNUM    Bestand-nummer                                    00016640  N000400      A2020040100000000
+00010BST689T             030MFBFUNNR  Functienummer                                     000171321ON001000      A2020040100000000
+00010BST689T             070MFBFUOMS  Functie omschrijving                              00017175  A008000      A2020040100000000
+00010BST689T             040MFBVNOPN  Versienummer 1e opname                            00017140  N000400      A2020040100000000
+00010BST689T             060MFBVNVV   Versienummer vervallen                            00017167  N000400      A2020040100000000
+00010BST689T             050MFBVNWYZ  Versienummer laatste wijziging                    00017159  N000400      A2020040100000000
+00010BST689T             020MUTKOD    Mutatiecode                                       00016810  N000100      A2020040100000000
+00010BST689T             080THMODU    Thesaurus verwijzing tekstmodule (=103)           00017183  N000400      A2020040100000000
+00010BST689T             090TXMODU    Tekstmodule                                       00017191  N000600      A2020040100000000
+00010BST690T             150******    Leeg veld                                         00017655  A000800      A2020040100000000
+00010BST690T             060*DUMMY    Veld heeft geen betekenis (meer)                  00017558  A000400      V2021080100000000
+00010BST690T             010BSTNUM    Bestand-nummer                                    00016659  N000400      A2020040100000000
+00010BST690T             100MFBBRON   Itemnummer bron                                   00017604  N000600      A2020040100000000
+00010BST690T             120MFBKNR    Knooppuntnummer                                   00017620  N001000      A2020040100000000
+00010BST690T             050MFBPDVV   Datum vervallen (DDMMJJJJ)                        00017531  N000800      A2020040100000000
+00010BST690T             030MFBPNR    Protocolnummer                                    000175151ON001000      A2020040100000000
+00010BST690T             040MFBPNRV   Releasenummer protocol                            000175232ON000600      A2020040100000000
+00010BST690T             070MFBPOMS   Protocol omschrijving                             00017574  A008000      A2020040100000000
+00010BST690T             080MFBPWIN   Bevat bouwstenen in fase test                     00017582  A000100      A2020040100000000
+00010BST690T             110MFBPWIND  Datum vrijgave (DDMMJJJJ)                         00017612  N000800      A2020040100000000
+00010BST690T             020MUTKOD    Mutatiecode                                       00016829  N000100      A2020040100000000
+00010BST690T             090THMFBB    Thesaurus nummer bronvermelding                   00017590  N000400      A2020040100000000
+00010BST690T             130THMODU    Thesaurus verwijzing tekstmodule (=103)           00017639  N000400      A2020040100000000
+00010BST690T             140TXMODU    Tekstmodule                                       00017647  N000600      A2020040100000000
+00010BST691T             110******    Leeg veld                                         00017752  A001500      A2020040100000000
+00010BST691T             010BSTNUM    Bestand-nummer                                    00016667  N000400      A2020040100000000
+00010BST691T             050MFBKNR    Knooppuntnummer                                   000176983ON001000      A2020040100000000
+00010BST691T             070MFBPJA    Antwoord ja actienummer                           00017728  N001000      A2020040100000000
+00010BST691T             060MFBPJK    Antwoord ja vervolg knooppuntnummer               00017701  N001000      A2020040100000000
+00010BST691T             090MFBPNA    Antwoord nee actienummer                          00017744  N001000      A2020040100000000
+00010BST691T             080MFBPNK    Antwoord nee vervolg knooppuntnummer              00017736  N001000      A2020040100000000
+00010BST691T             030MFBPNR    Protocolnummer                                    000176631ON001000      A2020040100000000
+00010BST691T             040MFBPNRV   Releasenummer protocol                            000176712ON000600      A2020040100000000
+00010BST691T             100MFBVNR    Vraagnummer                                       00019259  N001000      A2020040100000000
+00010BST691T             020MUTKOD    Mutatiecode                                       00016837  N000100      A2020040100000000
+00010BST692T             130******    Leeg veld                                         00017876  A001900      A2020040100000000
+00010BST692T             010BSTNUM    Bestand-nummer                                    00016675  N000400      A2020040100000000
+00010BST692T             060MFBFUNNR  Functienummer                                     00017795  N001000      A2020040100000000
+00010BST692T             050MFBFUWO   Protocol attribuut ophalen                        00017787  N000400      A2020040100000000
+00010BST692T             030MFBVNR    Vraagnummer                                       000177601ON001000      A2020040100000000
+00010BST692T             040MFBVOMS   Vraag omschrijving                                00017779  A008000      A2020040100000000
+00010BST692T             110MFBVOPER  Operator                                          00017841  A000200      A2020040100000000
+00010BST692T             070MFBVSTJ   Scoreteller bij ja-antwoord                       00017809  N001000      A2020040100000000
+00010BST692T             080MFBVSTJT  Verklarende tekst bij ja-antwoord                 00017817  A008000      A2020040100000000
+00010BST692T             090MFBVSTN   Scoreteller bij nee-antwoord                      00017825  N001000      A2020040100000000
+00010BST692T             100MFBVSTNT  Verklarende tekst bij nee-antwoord                00017833  A008000      A2020040100000000
+00010BST692T             120MFBVW     Waarde                                            00017868  N001002(8,2) A2020040100000000
+00010BST692T             020MUTKOD    Mutatiecode                                       00016845  N000100      A2020040100000000
+00010BST693T             090******    Leeg veld                                         00018163  A002100      A2020040100000000
+00010BST693T             010BSTNUM    Bestand-nummer                                    00016683  N000400      A2020040100000000
+00010BST693T             050MFBAJN    Actie ja/nee                                      00018120  A000100      A2020040100000000
+00010BST693T             030MFBANR    Actienummer                                       000181041ON001000      A2020040100000000
+00010BST693T             040MFBAOMS   Actie omschrijving                                00018112  A008000      A2020040100000000
+00010BST693T             060MFBMON    Patient blijven monitoren ja/nee                  00018139  A000100      A2020040100000000
+00010BST693T             020MUTKOD    Mutatiecode                                       00016853  N000100      A2020040100000000
+00010BST693T             070THMODU    Thesaurus verwijzing tekstmodule (=103)           00018147  N000400      A2020040100000000
+00010BST693T             080TXMODU    Tekstmodule                                       00018155  N000600      A2020040100000000
+00010BST694T             060******    Leeg veld                                         00018090  A000600      A2020040100000000
+00010BST694T             010BSTNUM    Bestand-nummer                                    00016691  N000400      A2020040100000000
+00010BST694T             050MFBAANST  Aansturing van soort                              000192323ON000100      A2020040100000000
+00010BST694T             030MFBANR    Actienummer                                       000180741ON001000      A2020040100000000
+00010BST694T             040MFBNR     Parameter/Attribuut/Protocolnummer                000180822ON001000      A2020040100000000
+00010BST694T             020MUTKOD    Mutatiecode                                       00016861  N000100      A2020040100000000
+00010BST695T             070******    Leeg veld                                         00017922  A002500      A2020040100000000
+00010BST695T             010BSTNUM    Bestand-nummer                                    00016705  N000400      A2020040100000000
+00010BST695T             040MFBFUNNR  Functienummer                                     000178922ON001000      A2020040100000000
+00010BST695T             050MFBFUNS1  Volgnummer                                        000179063ON000400      A2020040100000000
+00010BST695T             060MFBPANR   Parameternummer                                   00017914  N001000      A2020040100000000
+00010BST695T             030MFBVNR    Vraagnummer                                       000178841ON001000      A2020040100000000
+00010BST695T             020MUTKOD    Mutatiecode                                       00016888  N000100      A2020040100000000
+00010BST696T             080******    Leeg veld                                         00017981  A002700      A2020040100000000
+00010BST696T             010BSTNUM    Bestand-nummer                                    00016713  N000400      A2020040100000000
+00010BST696T             040MFBFUNNR  Functienummer                                     000179492ON001000      A2020040100000000
+00010BST696T             050MFBFUNS2  Volgnummer                                        000179573ON000400      A2020040100000000
+00010BST696T             030MFBVNR    Vraagnummer                                       000179301ON001000      A2020040100000000
+00010BST696T             070MFBVOPEW  Operator waardelijst                              00017973  A000200      A2020040100000000
+00010BST696T             060MFBWNR    Waardelijst nummer                                00017965  N000600      A2020040100000000
+00010BST696T             020MUTKOD    Mutatiecode                                       00016896  N000100      A2020040100000000
+00010BST697T             080******    Leeg veld                                         00018066  A002100      A2020040100000000
+00010BST697T             010BSTNUM    Bestand-nummer                                    00016721  N000400      A2020040100000000
+00010BST697T             060MFBATNR   Attribuutnummer                                   00018031  N001000      A2020040100000000
+00010BST697T             040MFBFUNNR  Functienummer                                     000180152ON001000      A2020040100000000
+00010BST697T             050MFBFUNS3  Volgnummer                                        000180233ON000400      A2020040100000000
+00010BST697T             070MFBFUWT   Protocol attribuut toekennen                      00018058  N000400      A2020040100000000
+00010BST697T             030MFBVNR    Vraagnummer                                       000180071ON001000      A2020040100000000
+00010BST697T             020MUTKOD    Mutatiecode                                       00016918  N000100      A2020040100000000
+00010BST698T             070******    Leeg veld                                         00019453  A003300      A2020040100000000
+00010BST698T             010BSTNUM    Bestand-nummer                                    00019399  N000400      A2020040100000000
+00010BST698T             060MFBLBLNR  Itemnummer Label                                  000194453ON000600      A2020040100000000
+00010BST698T             030MFBPNR    Protocolnummer                                    000194101ON001000      A2020040100000000
+00010BST698T             040MFBPNRV   Releasenummer protocol                            000194292ON000600      A2020040100000000
+00010BST698T             050MFBTHLBL  Thesaurus verwijzing Label (=2005)                00019437  N000400      A2020040100000000
+00010BST698T             020MUTKOD    Mutatiecode                                       00019402  N000100      A2020040100000000
+00010BST699T             080******    Leeg veld                                         00020184  A001700      A2020040100000000
+00010BST699T             010BSTNUM    Bestand-nummer                                    00020109  N000400      A2020040100000000
+00010BST699T             070CODENV    Code van specifiek niveau                         000201683OA001000      A2020040100000000
+00010BST699T             030MFBWNR    Waardelijst nummer                                000201251ON000600      A2020040100000000
+00010BST699T             040MFBWOMS   Waardelijst omschrijving                          00020133  A008000      A2020040100000000
+00010BST699T             020MUTKOD    Mutatiecode                                       00020117  N000100      A2020040100000000
+00010BST699T             060SRTCODE   Soort code (item uit thesaurus 1750)              000201762ON000600(6,0) A2020040100000000
+00010BST699T             050THSRTCDE  Thesaurus verwijzing soort code                   00020141  N000400(4,0) A2020040100000000
+00010BST701T             013******    Leeg veld                                         00000701  A001200      A2020040100000000
+00010BST701T             001BSTNUM    Bestand-nummer                                    00001430  N000400      A2020040100000000
+00010BST701T             006GNGNK     GeneriekeNaamKode (GNK)                           00001929  N000600(5+1) A2020040100000000
+00010BST701T             007GNMINH    Hoeveelheid werkzame stof                         00001953  N001203(9,3) A2020040100000000
+00010BST701T             005GNMWHS    Aanduiding werkzaam/hulpstof (W/H)                00002011  A000100      A2020040100000000
+00010BST701T             010GNSTAM    Stamnaamcode (SNK)                                00002089  N000600(5+1) A2020040100000000
+00010BST701T             004GNVOLG    Volgnummer                                        000021782ON000200(2,0) A2020040100000000
+00010BST701T             003HPKODE    Handels Product Kenmerken (HPK) code              000030181ON000800(7+1) A2020040100000000
+00010BST701T             002MUTKOD    Mutatiecode                                       00004642  N000100      A2020040100000000
+00010BST701T             012SSKTWG    Stamtoedieningsweg code                           00005274  N000300      A2020040100000000
+00010BST701T             008THMINE    Eenh. hvh werkz.stof - thesaurus 2                00005924  N000300      A2020040100000000
+00010BST701T             011THSTWG    Stamtoedieningsweg - thesaurus 58                 00006173  N000300      A2020040100000000
+00010BST701T             009XNMINE    Eenh.hoeveelheid werkzame stof kode               00006793  N000300      A2020040100000000
+00010BST705T             060******    Leeg veld                                         00000728  A000800      A2020040100000000
+00010BST705T             005BSTNUM    Bestand-nummer                                    00001449  N000400      A2020040100000000
+00010BST705T             030HPKODE    Handels Product Kenmerken (HPK) code              000030261ON000800(7+1) A2020040100000000
+00010BST705T             020MUTKOD    Mutatiecode                                       00004650  N000100      A2020040100000000
+00010BST705T             040NIVSRL    Nivo aanduiding                                   000049012ON000300      A2020040100000000
+00010BST705T             050NIVUIT    Nivo kode                                         000049283ON000800(7+1) A2020040100000000
+00010BST711T             240******    Leeg veld                                         00009466  A002800      A2020040100000000
+00010BST711T             210ATCODE    ATC-code                                          00009474  A000800      A2020040100000000
+00010BST711T             010BSTNUM    Bestand-nummer                                    00009482  N000400      A2020040100000000
+00010BST711T             140GPADVP    Aantal dagen voorschrijfperiode                   00009490  N000300      A2020040100000000
+00010BST711T             110GPINST    Ingegeven sterkte stofnamen                       00009504  A002500      A2020040100000000
+00010BST711T             170GPKHVS    Aanvullende informatie voorschrijven PRK          00009717  N000600(6,0) V2020040100000000
+00010BST711T             030GPKODE    Generiekeproductcode (GPK)                        000095121ON000800(7+1) A2020040100000000
+00010BST711T             060GPKTVR    Farmaceutische vorm code                          00009520  N000300      A2020040100000000
+00010BST711T             080GPKTWG    Toedieningsweg code                               00009539  N000300      A2020040100000000
+00010BST711T             120GPMLCI    Min. leeftijd als contra-indicatie                00009547  N000300      A2020040100000000
+00010BST711T             130GPMLCT    Min.leeftijd als CI tekstnummer                   00009555  N000800      A2020040100000000
+00010BST711T             090GPNMNR    Naamnummer volledige GPK-naam                     00009563  N000700      A2020040100000000
+00010BST711T             100GPSTNR    Naamnummer GPK-stofnaam                           00009571  N000700      A2020040100000000
+00010BST711T             150GPTCVP    Tekst-code voorschrijfperiode                     00009598  N000800      A2020040100000000
+00010BST711T             040GSKODE    GSK-code                                          00009601  N000800(7+1) A2020040100000000
+00010BST711T             020MUTKOD    Mutatiecode                                       00009628  N000100      A2020040100000000
+00010BST711T             180SPKODE    SuperProduktKode (SPK)                            00009636  N000800(7+1) A2020040100000000
+00010BST711T             200SSKTWG    Stamtoedieningsweg code                           00009644  N000300      A2020040100000000
+00010BST711T             220THEHHV    Basiseenheid product thesaurusnr                  00009652  N000300      A2020040100000000
+00010BST711T             160THKHVS    Tnnr. Aanvullende informatie voorschrijven PRK    00009709  N000400(4,0) A2020040100000000
+00010BST711T             050THKTVR    Farmaceutische vorm thesaurusnummer               00009660  N000300      A2020040100000000
+00010BST711T             070THKTWG    Toedieningsweg thesaurusnummer                    00009679  N000300      A2020040100000000
+00010BST711T             190THSTWG    Stamtoedieningsweg - thesaurus 58                 00009687  N000300      A2020040100000000
+00010BST711T             230XPEHHV    Basiseenheid product kode                         00009695  N000300      A2020040100000000
+00010BST713T             110******    Leeg veld                                         00015423  A000100      A2020040100000000
+00010BST713T             010BSTNUM    Bestand-nummer                                    00015318  N000400      A2020040100000000
+00010BST713T             060GPDATW    Datum wijziging/opsplitsing op ddmmjjjj           000153774ON000800      A2020040100000000
+00010BST713T             090GPKNEW    Generiekeproductcode nieuw                        00015407  N000800(7+1) A2020040100000000
+00010BST713T             030GPKODE    Generiekeproductcode (GPK)                        000153341ON000800(7+1) A2020040100000000
+00010BST713T             080GPRWYZ    Reden van wijziging itemnummer                    00015393  N000600(6,0) A2020040100000000
+00010BST713T             050HPKODE    Handels Product Kenmerken (HPK) code              000153693ON000800(7+1) A2020040100000000
+00010BST713T             020MUTKOD    Mutatiecode                                       00015326  N000100      A2020040100000000
+00010BST713T             100PRKNEW    Prescriptiecode nieuw                             00015415  N000800(7+1) A2020040100000000
+00010BST713T             040PRKODE    PRK-code                                          000153422ON000800(7+1) A2020040100000000
+00010BST713T             070THRWYZ    Thesaurus Reden wijziging (1070)                  00015385  N000400      A2020040100000000
+00010BST715T             090******    Leeg veld                                         00000744  A002600      A2020040100000000
+00010BST715T             010BSTNUM    Bestand-nummer                                    00001465  N000400      A2020040100000000
+00010BST715T             060GNMOMH    Omgerekende hoeveelheid                           00002003  N001203(9,3) A2020040100000000
+00010BST715T             030GNMWHS    Aanduiding werkzaam/hulpstof (W/H)                000020381OA000100      A2020040100000000
+00010BST715T             050GNNKPK    Volledige generieke naam kode                     000020463ON000600(5+1) A2020040100000000
+00010BST715T             040GSKODE    GSK-code                                          000025182ON000800(7+1) A2020040100000000
+00010BST715T             020MUTKOD    Mutatiecode                                       00004677  N000100      A2020040100000000
+00010BST715T             070XNMOME    Eenh omgerekende hoeveelheid kode                 00006807  N000300      A2020040100000000
+00010BST715T             080XPEHHV    Basiseenheid product kode                         00006874  N000300      A2020040100000000
+00010BST720T             050******    Leeg veld                                         00000752  A001100      A2020040100000000
+00010BST720T             010BSTNUM    Bestand-nummer                                    00001473  N000400      A2020040100000000
+00010BST720T             020MUTKOD    Mutatiecode                                       00004685  N000100      A2020040100000000
+00010BST720T             030SPKODE    SuperProduktKode (SPK)                            000052311ON000800(7+1) A2020040100000000
+00010BST720T             040SSKODE    SSK-kode                                          000052582ON000800(7+1) A2020040100000000
+00010BST725T             060******    Leeg veld                                         00000760  A001000      A2020040100000000
+00010BST725T             010BSTNUM    Bestand-nummer                                    00001481  N000400      A2020040100000000
+00010BST725T             040GNSTAM    Stamnaamcode (SNK)                                00002097  N000600(5+1) A2020040100000000
+00010BST725T             020MUTKOD    Mutatiecode                                       00004693  N000100      A2020040100000000
+00010BST725T             030SSKODE    SSK-kode                                          000052661ON000800(7+1) A2020040100000000
+00010BST725T             050SSKTWG    Stamtoedieningsweg code                           00005290  N000300      A2020040100000000
+00010BST730T             090******    Leeg veld                                         00018546  A001900      A2020040100000000
+00010BST730T             010BSTNUM    Bestand-nummer                                    00018449  N000400      A2020040100000000
+00010BST730T             080CDEENH    Eenheid                                           000185384ON000600      A2020040100000000
+00010BST730T             060CDHOEV    Hoeveelheid                                       000185033ON001203(9,3) A2020040100000000
+00010BST730T             050CODE      Code                                              000184812ON000800      A2020040100000000
+00010BST730T             020MUTKOD    Mutatiecode                                       00018457  N000100      A2020040100000000
+00010BST730T             040SRTCDE    Soort code                                        000184731ON000600      A2020040100000000
+00010BST730T             030THSRTC    Thesaurus verwijzing soort code                   00018465  N000400      A2020040100000000
+00010BST730T             070TSEENH    HPK-eenheid thesaurusnummer                       00018511  N000400      A2020040100000000
+00010BST731T             150******    Leeg veld                                         00018430  A001600      A2020040100000000
+00010BST731T             010BSTNUM    Bestand-nummer                                    00018287  N000400      A2020040100000000
+00010BST731T             050CODE      Code                                              000183252ON000800      A2020040100000000
+00010BST731T             090GNEENH    Eenheid hoeveelheid generieke naam                000183765ON000600      A2020040100000000
+00010BST731T             060GNGNK     GeneriekeNaamKode (GNK)                           000183333ON000600(5+1) A2020040100000000
+00010BST731T             070GNHOEV    Hoeveelheid generiek naam                         000183414ON001203(9,3) A2020040100000000
+00010BST731T             100GNSTAM    Stamnaamcode (SNK)                                00018384  N000600(5+1) A2020040100000000
+00010BST731T             020MUTKOD    Mutatiecode                                       00018295  N000100      A2020040100000000
+00010BST731T             040SRTCDE    Soort code                                        000183171ON000600      A2020040100000000
+00010BST731T             140STADD     Sterktes mogen worden opgeteld J/N                00018422  A000100      A2020040100000000
+00010BST731T             130STEENH    Eenheid hoeveelheid stamnaam                      00018414  N000600      A2020040100000000
+00010BST731T             110STHOEV    Hoeveelheid stamnaam                              00018392  N001203(9,3) A2020040100000000
+00010BST731T             030THSRTC    Thesaurus verwijzing soort code                   00018309  N000400      A2020040100000000
+00010BST731T             080TSGNEH    Thesaurusverwijzig eenh. hoeveelh. generiek naam  00018368  N000400      A2020040100000000
+00010BST731T             120TSSTEH    Thesaurusverwijzig eenh. hoeveelh. stamnaam       00018406  N000400      A2020040100000000
+00010BST732T             120******    Leeg veld                                         00021288  A002100      A0000000000000000
+00010BST732T             010BSTNUM    Bestand-nummer                                    00021148  N000400      A0000000000000000
+00010BST732T             050CODENV    Code van specifiek niveau                         000211802OA001000      A0000000000000000
+00010BST732T             070EHHOEV    Hoeveelheid                                       00021261  N001603(13,3)A0000000000000000
+00010BST732T             110GNGNK     GeneriekeNaamKode (GNK)                           000212455ON000600(5+1) A0000000000000000
+00010BST732T             100GNVOLG    Volgnummer                                        000212374ON000200(2,0) A0000000000000000
+00010BST732T             020MUTKOD    Mutatiecode                                       00021156  N000100      A0000000000000000
+00010BST732T             040SRTCODE   Soort code (item uit thesaurus 1750)              000211721ON000600(6,0) A0000000000000000
+00010BST732T             060SRTGEG    Soort gegeven                                     000211993OA008000      A0000000000000000
+00010BST732T             090SRTGEGEH  Eenheid bij soort gegeven                         00021229  N000600(6,0) A0000000000000000
+00010BST732T             080THSGEH    Thesaurusnummer Eenheid bij soort gegeven         00021210  N000400(4,0) A0000000000000000
+00010BST732T             030THSRTCDE  Thesaurus verwijzing soort code                   00021164  N000400(4,0) A0000000000000000
+00010BST750T             210******    Leeg veld                                         00000779  A002000      A2020040100000000
+00010BST750T             010BSTNUM    Bestand-nummer                                    00001503  N000400      A2020040100000000
+00010BST750T             100GNCAS     CAS nummer                                        00001899  N000900(8+1) A2020040100000000
+00010BST750T             200GNCAST    CAS nummer lengte 10                              00019267  N001000      A2020040100000000
+00010BST750T             110GNFORM    Bruto formule                                     00001902  A003500      A2020040100000000
+00010BST750T             040GNGNAM    Generieke naam                                    00001910  A005000      A2020040100000000
+00010BST750T             030GNGNK     GeneriekeNaamKode (GNK)                           000019371ON000600(5+1) A2020040100000000
+00010BST750T             190GNKOPW    Kode opiumwet                                     00001945  A000100      V2021080100000000
+00010BST750T             120GNMOLE    Molekuulgewicht (echt)                            00001961  N001204(8,4) A2020040100000000
+00010BST750T             130GNMOLI    Molekuulgewicht indicator                         00001988  A000100      U2021080100000000
+00010BST750T             140GNMOLS    Molekuulgewicht voor samenstelling                00001996  N001204(8,4) A2020040100000000
+00010BST750T             060GNNKPK    Volledige generieke naam kode                     00002054  N000600(5+1) A2020040100000000
+00010BST750T             170GNRIJV    Kode rijvaardigheid                               00002062  A000100      U2021080100000000
+00010BST750T             150GNSGEW    Soortelijk gewicht                                00002070  N000705(2,5) A2020040100000000
+00010BST750T             050GNSTAM    Stamnaamcode (SNK)                                00002100  N000600(5+1) A2020040100000000
+00010BST750T             090GNSTKD    Informatorium stof kode                           00002135  N000600      U2021040100000000
+00010BST750T             070GNSTNT    Kode stamnaam toegestaan                          00002143  A000100      A2020040100000000
+00010BST750T             180GNVERG    Kode vergift                                      00002151  A000100      V2021080100000000
+00010BST750T             160GNVOOR    Voorkeurseenheid                                  00002186  A000200      A2020040100000000
+00010BST750T             080GNWZHS    Kode werkzaam bestanddeel/hulpstof                00002194  A000100      A2020040100000000
+00010BST750T             020MUTKOD    Mutatiecode                                       00004707  N000100      A2020040100000000
+00010BST760T             120******    Leeg veld                                         00015296  A001200      A2020040100000000
+00010BST760T             110BRONTDW   Bron toedieningsweg itemnummer                    00015288  N000600      A2020040100000000
+00010BST760T             010BSTNUM    Bestand-nummer                                    00015172  N000400      A2020040100000000
+00010BST760T             060ENKTDW    Enkelvoudige toedieningsweg itemnr                000152292ON000600      A2020040100000000
+00010BST760T             030HPKODE    Handels Product Kenmerken (HPK) code              000151991ON000800(7+1) A2020040100000000
+00010BST760T             090ITVKTDW   Voorkeurstoedieningsweg indicatie itemnummer      00015253  N000600      A2020040100000000
+00010BST760T             020MUTKOD    Mutatiecode                                       00015180  N000100      A2020040100000000
+00010BST760T             040PRKODE    PRK-code                                          00015202  N000800(7+1) A2020040100000000
+00010BST760T             070RGTDWJN   Toedieningsweg geregistreerd (J/N)                00015237  A000100      A2020040100000000
+00010BST760T             100THBRON    Bron toedieningsweg thesaurusnummer               00015261  N000400      A2020040100000000
+00010BST760T             050THETDW    Toedieningswegen thesaurusnummer                  00015210  N000400      A2020040100000000
+00010BST760T             080TSVKTDW   Voorkeurstoedieningsweg indicatie thesaurusnummer 00015245  N000400      A2020040100000000
+00010BST780T             050******    Leeg veld                                         00015822  A001300      A2020040100000000
+00010BST780T             010BSTNUM    Bestand-nummer                                    00015784  N000400      A2020040100000000
+00010BST780T             040GPCLUS    Clusternummer Niet Eerste Uitgifte                00015814  N000600      A2020040100000000
+00010BST780T             030GPKODE    Generiekeproductcode (GPK)                        000158061ON000800(7+1) A2020040100000000
+00010BST780T             020MUTKOD    Mutatiecode                                       00015792  N000100      A2020040100000000
+00010BST801T             070******    Leeg veld                                         00019011  A001800      A2020040100000000
+00010BST801T             030ATCODE    ATC-code                                          000189611OA000800      A2020040100000000
+00010BST801T             060ATKIND    ATC-indicator                                     00019003  A000100      A2020040100000000
+00010BST801T             040ATOMS     ATC-Nederlandse omschrijving                      00018988  A008000      A2020040100000000
+00010BST801T             050ATOMSE    ATC-Engelse omschrijving                          00018996  A008000      A2020040100000000
+00010BST801T             010BSTNUM    Bestand-nummer                                    00018937  N000400      A2020040100000000
+00010BST801T             020MUTKOD    Mutatiecode                                       00018945  N000100      A2020040100000000
+00010BST802T             100******    Leeg veld                                         00019100  A002000      A2020040100000000
+00010BST802T             030ATCODE    ATC-code                                          000190381OA000800      A2020040100000000
+00010BST802T             010BSTNUM    Bestand-nummer                                    00018910  N000400      A2020040100000000
+00010BST802T             040DDDANT    DDD-aantal                                        000190462ON001003(7,3) A2020040100000000
+00010BST802T             060DDDEENH   DDD-eenheid                                       000190623ON000600      A2020040100000000
+00010BST802T             090DDDSTS    DDD statusaanduiding (0=definitief, 1=voorlopig)  00019097  N000100      V2021080100000000
+00010BST802T             080DDDTDW    DDD-toedieningsweg                                000190894ON000600      A2020040100000000
+00010BST802T             020MUTKOD    Mutatiecode                                       00018929  N000100      A2020040100000000
+00010BST802T             070THDTDW    DDD toedieningsweg thesaurusnummer (22)           00019070  N000400      A2020040100000000
+00010BST802T             050TSDEENH   DDD-eenheid thesaurusnummer (29)                  00019054  N000400      A2020040100000000
+00010BST902T             160******    Leeg veld                                         00010456  A001100      A2020040100000000
+00010BST902T             010BSTNUM    Bestand-nummer                                    00010464  N000400      A2020040100000000
+00010BST902T             020MUTKOD    Mutatiecode                                       00010472  N000100      A2020040100000000
+00010BST902T             100THAKD1    Aanvullende kode 1                                00010480  A000100      A2020040100000000
+00010BST902T             110THAKD2    Aanvullende kode 2                                00010499  A000100      A2020040100000000
+00010BST902T             120THAKD3    Aanvullende kode 3                                00010502  A000100      A2020040100000000
+00010BST902T             130THAKD4    Aanvullende kode 4                                00010510  A000100      A2020040100000000
+00010BST902T             140THAKD5    Aanvullende kode 5                                00010529  A000100      A2020040100000000
+00010BST902T             150THAKD6    Aanvullende kode 6                                00010537  A000100      A2020040100000000
+00010BST902T             050THITMK    Memokode item                                     00010545  A000200      A2020040100000000
+00010BST902T             070THNM15    Naam item 15 posities                             00010561  A001500      A2020040100000000
+00010BST902T             080THNM25    Naam item 25 posities                             00010588  A002500      A2020040100000000
+00010BST902T             060THNM4     Naam item  4 posities                             00010596  A000400      A2020040100000000
+00010BST902T             090THNM50    Naam item 50 posities                             00010618  A005000      A2020040100000000
+00010BST902T             040TSITNR    Thesaurus itemnummer (in nieuwe thesauri)         000105532ON000600      A2020040100000000
+00010BST902T             030TSNR      Thesaurusnummer (in nieuwe thesauri)              000106261ON000400      A2020040100000000
+00010BST911T             110******    Leeg veld                                         00016004  A002700      A2020040100000000
+00010BST911T             010BSTNUM    Bestand-nummer                                    00015865  N000400      A2020040100000000
+00010BST911T             020MUTKOD    Mutatiecode                                       00015881  N000100      A2020040100000000
+00010BST911T             050RLBST1    Verwijzing relatie bestand 1                      00015946  A002000      A2020040100000000
+00010BST911T             080RLBST2    Verwijzing relatie bestand 2                      00015954  A002000      A2020040100000000
+00010BST911T             070RLID1     Verwijzing Identificierende rubriek 1             00015970  A001000      A2020040100000000
+00010BST911T             100RLID2     Verwijzing Identificierende rubriek 2             00015997  A001000      A2020040100000000
+00010BST911T             040RLOMS     Relatieomschrijving                               00015938  A005000      A2020040100000000
+00010BST911T             030RLSRT     Relatie soort nummer                              000159111ON000600      A2020040100000000
+00010BST911T             060RLTHE1    Verwijzing relatie thesauri 1                     00015962  N000600      A2020040100000000
+00010BST911T             090RLTHE2    Verwijzing relatie thesauri 2                     00015989  N000600      A2020040100000000
+00010BST912T             080******    Leeg veld                                         00016063  A002900      A2020040100000000
+00010BST912T             010BSTNUM    Bestand-nummer                                    00015873  N000400      A2020040100000000
+00010BST912T             020MUTKOD    Mutatiecode                                       00015903  N000100      A2020040100000000
+00010BST912T             050RLCDE1    Verwijzing Identificatie 1 alfanumeriek           000160393OA002000      A2020040100000000
+00010BST912T             070RLCDE2    Verwijzing Identificatie 2 alfanumeriek           000160555OA002000      A2020040100000000
+00010BST912T             040RLNR1     Verwijzing Identificatie 1 numeriek               000160202ON000800      A2020040100000000
+00010BST912T             060RLNR2     Verwijzing Identificatie 2 numeriek               000160474ON000800      A2020040100000000
+00010BST912T             030RLSRT     Relatie soort nummer                              000160121ON000600      A2020040100000000
+00010BST922T             110******    Leeg veld                                         00014826  A001300      A2020040100000000
+00010BST922T             010BSTNUM    Bestand-nummer                                    00014710  N000400      A2020040100000000
+00010BST922T             020MUTKOD    Mutatiecode                                       00014729  N000100      A2020040100000000
+00010BST922T             030THMODU    Thesaurus verwijzing tekstmodule (=103)           00014702  N000400      A2020040100000000
+00010BST922T             050THTSRT    Thesaurus verwijzing tekstsoort (=104)            00014745  N000400      A2020040100000000
+00010BST922T             080TXBLNR    Tekstbloknummer                                   000147884ON000800      A2020040100000000
+00010BST922T             070TXKODE    Tekst nivo kode                                   000147613ON000800      A2020040100000000
+00010BST922T             040TXMODU    Tekstmodule                                       000147371ON000600      A2020040100000000
+00010BST922T             090TXRGLN    Tekstregelnummer                                  000151485ON000600      A2020040100000000
+00010BST922T             100TXTEXT    Tekst                                             00014818  A013200      A2020040100000000
+00010BST922T             060TXTSRT    Tekstsoort                                        000147532ON000600      A2020040100000000
+00010BST936T             006******    Leeg veld                                         00000930  A001500      A2020040100000000
+00010BST936T             001BSTNUM    Bestand-nummer                                    00001589  N000400      A2020040100000000
+00010BST936T             003GNSTAM    Stamnaamcode (SNK)                                000021271ON000600(5+1) A2020040100000000
+00010BST936T             002MUTKOD    Mutatiecode                                       00004782  N000100      A2020040100000000
+00010BST936T             005OGGRP     Ongewenste groepsnummer                           000050372ON000300      A2020040100000000
+00010BST936T             004THGRP     Ongewenste groepen - thesaurus 122                00005657  N000300      A2020040100000000
+00010BST950T             160******    Leeg veld                                         00013609  A000100      A2020040100000000
+00010BST950T             010BSTNUM    Bestand-nummer                                    00013463  N000400      A2020040100000000
+00010BST950T             020MUTKOD    Mutatiecode                                       00013471  N000100      A2020040100000000
+00010BST950T             110THAANB    Thes.nr. Aanbiedingsmoment                        00013544  N000400      A2020040100000000
+00010BST950T             090THSBRD    Thes.nr. Soort bereiding                          00013536  N000400      A2020040100000000
+00010BST950T             050THSLEV    Thes.nr. Soort levering                           00013501  N000400      A2020040100000000
+00010BST950T             140THTHUIS   Thes.nr. Toeslag thuis                            00018740  N000400      A2020040100000000
+00010BST950T             070THUITG    Thes.nr. Uitgifte soort                           00013528  N000400      A2020040100000000
+00010BST950T             120VSAANB    Aanbiedingsmoment                                 00013587  N000600      A2020040100000000
+00010BST950T             030VSCODE    Codering                                          000134551ON000600      A2020040100000000
+00010BST950T             045VSOMSK    Verkorte omschrijving                             00013617  A003000      A2020040100000000
+00010BST950T             040VSOMSL    Volledige omschrijving                            00013498  A006000      A2020040100000000
+00010BST950T             100VSSBRD    Soort bereiding                                   00013579  N000600      A2020040100000000
+00010BST950T             060VSSLEV    Soort levering                                    00013552  N000600      A2020040100000000
+00010BST950T             150VSTHUIS   Toeslag thuis                                     00018759  N000600      A2020040100000000
+00010BST950T             080VSUITG    Soort uitgifte                                    00013560  N000600      A2020040100000000
+00010BST950T             130VSWTG     WMG tarief                                        00013595  N000802(6,2) A2020040100000000
+

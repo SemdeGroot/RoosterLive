@@ -152,6 +152,8 @@ class Roster(models.Model):
             # Portavita Check
             ("can_view_portavita", "Mag Portavita Check bekijken"),
             ("can_edit_portavita", "Mag Portavita Check bewerken"),
+            # Houdbaarheid check
+            ("can_edit_houdbaarheidcheck", "Mag Houdbaarheid Check uitvoeren"),
             # Bezorgers
             ("can_view_bezorgers",    "Mag Bezorgers openen"),
             ("can_view_bakkenbezorgen",    "Mag bakken bezorgen"),

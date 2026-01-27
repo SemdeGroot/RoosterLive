@@ -1,0 +1,53 @@
+.hc-form {
+  margin-top: 10px;
+}
+
+.hc-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.hc-field {
+  min-width: 260px;
+  flex: 1;
+}
+
+.hc-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.hc-results {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.hc-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.hc-block {
+  margin-top: 12px;
+}
+
+.hc-h3 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+}
+
+.hc-list, .hc-olist {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.hc-muted {
+  color: var(--muted);
+  margin: 0;
+}

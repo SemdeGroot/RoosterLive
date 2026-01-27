@@ -109,11 +109,11 @@ def laatstepotten(request):
                     item_naam = new_item.voorraad_item.naam
 
                     send_laatste_pot_push_task.delay(item_naam)
-                    send_laatste_pot_email_task.delay(item_naam)
+                    #send_laatste_pot_email_task.delay(item_naam) Voor nu er uit gecomment ivm spam
 
                     messages.success(
                         request,
-                        "Melding opgeslagen. Bestellers zijn per push melding en e-mail geïnformeerd.",
+                        "Melding opgeslagen. Bestellers zijn per push melding geïnformeerd.",
                     )
                     return redirect("laatstepotten")
             else:

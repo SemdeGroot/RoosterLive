@@ -45,9 +45,11 @@ TILE_GROUPS = {
         # Deze verwijst naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review Planner", "img": "reviewplanner.svg",
+        {"name": "Review planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
+        {"name": "Houdbaarheid check", "img": "houdbaarheid.svg",
+         "url_name": "houdbaarheidcheck", "perm": "can_edit_houdbaarheidcheck"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],
 
@@ -55,10 +57,10 @@ TILE_GROUPS = {
         # Deze verwijst ook naar de dashboard view
         {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
          "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review Planner", "img": "reviewplanner.svg",
+        {"name": "Review planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
-        {"name": "Portavita Check", "img": "portavita.svg",
+        {"name": "Portavita check", "img": "portavita.svg",
          "url_name": "portavita-check", "perm": "can_view_portavita"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],

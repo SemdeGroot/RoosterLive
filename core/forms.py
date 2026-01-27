@@ -1388,3 +1388,22 @@ class Hours1DecimalField(forms.Form):
 
     def clean_hours(self):
         return _clean_1_decimal_decimal(self.cleaned_data.get("hours"), "Gewerkte uren")
+
+class HoudbaarheidCheckForm(forms.Form):
+    rvg = forms.CharField(
+        label="RVG nummer",
+        required=True,
+        widget=forms.TextInput(attrs={
+            "class": "admin-input",
+            "placeholder": "Bijv. 14314",
+            "inputmode": "numeric",   # mobiele numpad
+            "pattern": r"[0-9]*",     # hint voor numeric-only
+            "autocomplete": "off",
+        })
+    )
+
+    def clean_rvg(self):
+        v = (self.cleaned_data.get("rvg") or "").strip()
+        if not v:
+            raise forms.ValidationError("RVG nummer is verplicht.")
+        return v

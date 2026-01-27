@@ -1,0 +1,1328 @@
+0380000000019A99     Andere gegeneraliseerde/niet gespecificeerde ziekte(n)      000000000000000
+0380000000027L88     Reumatoide artritis/verwante aandoening(en)                 000000000000000
+0380000000035L88.01  Reumatoide artritis                                         000000000000000
+0380000000043L88.02  Morbus Bechterew (spondylitis ankylopoetica)                000000000000000
+0380000000051B73     Leukemie                                                    000000000000000
+0380000000078S91     Psoriasis                                                   000000000000000
+0380000000094S12     Beet/steek insekt                                           000000000000000
+0380000000108D86     Ander ulcus pepticum                                        000000000000000
+0380000000116N71     Meningitis/encephalitis                                     000000000000000
+0380000000124N71.01  Bacteriele meningitis                                       000000000000000
+0380000000132N71.02  Virale meningitis                                           000000000000000
+0380000000140N71.03  Encephalitis                                                000000000000000
+0380000000159N71.04  Myelitis                                                    000000000000000
+0380000000167L70     Infectieziekte bewegingsapparaat                            000000000000000
+0380000000175L70.01  Osteomyelitis                                               000000000000000
+0380000000183L70.02  Septische arthritis                                         000000000000000
+0380000000191R74     Acute infectie bovenste luchtwegen                          000000000000000
+0380000000205R74.01  Gewone verkoudheid                                          000000000000000
+0380000000213R74.02  Acute pharyngitis                                           000000000000000
+0380000000248R75     Acute/chronische rinosinusitis                              000000000000000
+0380000000256R75.01  Acute rinosinusitis                                         000000000000000
+0380000000264R75.02  Chronische rinosinusitis                                    000000000000000
+0380000000272R76     Acute tonsillitis/peritonsillair abces                      000000000000000
+0380000000280R76.01  Acute tonsillitis                                           000000000000000
+0380000000299R76.02  Peritonsillair abces                                        000000000000000
+0380000000302R77     Acute laryngitis/tracheitis                                 000000000000000
+0380000000310R77.01  Laryngitis subglottica/pseudocroup                          000000000000000
+0380000000329R77.02  Acute epiglottitis                                          000000000000000
+0380000000345R78     Acute bronchitis/bronchiolitis                              000000000000000
+0380000000353R81     Pneumonie                                                   000000000000000
+0380000000361R81.01  Legionella pneumonie                                        000000000000000
+0380000000442R83     Andere infectie(s) luchtwegen                               000000000000000
+0380000000450R83.01  Difterie                                                    000000000000000
+0380000000515K70     Infectieziekte hartvaatstelsel                              000000000000000
+0380000000566N89     Migraine                                                    000000000000000
+0380000000612D09     Misselijkheid                                               000000000000000
+0380000000620D10     Braken                                                      000000000000000
+0380000000647K86     Essentiele hypertensie zonder orgaanbeschadiging            000000000000000
+0380000000655K74     Angina pectoris                                             000000000000000
+0380000000663K84     Andere hartziekte(n)                                        000000000000000
+0380000000671K75     Acuut myocardinfarct                                        000000000000000
+0380000000701K77     Decompensatio cordis                                        000000000000000
+0380000000728T85     Hyperthyreoidie/thyreotoxicose                              000000000000000
+0380000001058A12.01  Anafylactische shock                                        000000000000000
+0380000001066A12.02  Angioneurotisch/Quinckes oedeem                             000000000000000
+0380000001317A70     Gegeneraliseerde tuberculose [ex. R70]                      000000000000000
+0380000001368A71     Mazelen                                                     000000000000000
+0380000001376A72     Waterpokken                                                 000000000000000
+0380000001384A73     Malaria                                                     000000000000000
+0380000001392A74     Rode hond                                                   000000000000000
+0380000001406A75     Mononucleosis infectiosa                                    000000000000000
+0380000001414A76     Andere virusziekte met exantheem                            000000000000000
+0380000001422A76.01  Exanthema subitum/zesde ziekte                              000000000000000
+0380000001430A76.02  Erythema infectiosum/vijfde ziekte                          000000000000000
+0380000001449A76.03  Hand-voet-mondziekte                                        000000000000000
+0380000001457A77     Andere virusziekte(n)                                       000000000000000
+0380000001465A78     Andere infectieziekte(n)                                    000000000000000
+0380000001538A79     Maligniteit met onbekende primaire lokalisatie              000000000000000
+0380000001546A80     Trauma/letsel                                               000000000000000
+0380000001589A81     Multiple traumata/inwendig letsels                          000000000000000
+0380000001597A82     Laat gevolg van letsel                                      000000000000000
+0380000001635A84     Geneesmiddelintoxicatie                                     000000000000000
+0380000001643A85     Geneesmiddelbijwerking                                      000000000000000
+0380000001651A85.01  Allergie voor geneesmiddel                                  000000000000000
+0380000001678A85.02  Spotting bij gebruik hormonale anticonceptie                000000000000000
+0380000001686A86     Intoxicatie andere chemische stof                           000000000000000
+0380000001694A87     Complicatie(s) medische behandeling                         000000000000000
+0380000001708A87.01  Leven met stoma                                             000000000000000
+0380000001716A87.02  Status na transplantatie                                    000000000000000
+0380000001740A88     Schadelijk gevolg fysische factor [ex. H85]                 000000000000000
+0380000001759A88.01  Perniones                                                   000000000000000
+0380000001767A88.02  Zonnesteek                                                  000000000000000
+0380000001775A88.03  Reisziekte                                                  000000000000000
+0380000001783A89     Aanwezigheid/gevolg prothese                                000000000000000
+0380000001791A89.01  Aanwezigheid pacemaker/interne defibrillator                000000000000000
+0380000001813A90     Multiple aangeboren afwijkingen                             000000000000000
+0380000001821A90.01  Syndroom van Down                                           000000000000000
+0380000001864A91     Afwijkende uitslag(en) onderzoek                            000000000000000
+0380000001910A92     Toxoplasmose                                                000000000000000
+0380000001929A93     Dysmatuur/prematuur/immatuur levendgeborene                 000000000000000
+0380000001937A94     Perinatale morbiditeit                                      000000000000000
+0380000002003A95     Perinatale mortaliteit                                      000000000000000
+0380000002011A95.01  Doodgeboorte                                                000000000000000
+0380000002038A95.02  Overlijden pasgeborene                                      000000000000000
+0380000002046A96     Dood/overlijden [ex. A95]                                   000000000000000
+0380000002054A97     Geen ziekte                                                 000000000000000
+0380000002208B70     Acute lymphadenitis                                         000000000000000
+0380000002216B71     Chronische/niet-gespecificeerde lymphadenitis               000000000000000
+0380000002224B72     Ziekte van Hodgkin                                          000000000000000
+0380000002232B72.01  Ziekte van Hodgkin                                          000000000000000
+0380000002240B72.02  Non-Hodgkin lymfoom                                         000000000000000
+0380000002305B74     Andere maligniteit bloed/lymfestelsel                       000000000000000
+0380000002313B74.01  Multipel myeloom                                            000000000000000
+0380000002356B75     Benigne/niet-gespecificeerd neoplasma bloed/lymfestelsel    000000000000000
+0380000002364B76     Miltruptuur                                                 000000000000000
+0380000002372B77     Ander letsel bloed/lymfestelsel                             000000000000000
+0380000002380B78     Erfelijke hemolytische anemie                               000000000000000
+0380000002399B78.01  Thalassemie                                                 000000000000000
+0380000002402B78.02  Sikkelcelanemie                                             000000000000000
+0380000002410B78.03  Anemie door G6PD-deficientie                                000000000000000
+0380000002437B79     Andere aangeboren afwijking bloed/lymfestel                 000000000000000
+0380000002445B80     Ijzergebrekanemie                                           000000000000000
+0380000002453B81     Pernicieuze/foliumzuurdeficientie-anemie                    000000000000000
+0380000002461B81.01  Foliumzuurdeficientie-anemie                                000000000000000
+0380000002488B81.02  Vitamine B12-deficientie-anemie                             000000000000000
+0380000002518B82     Andere/niet-gespecificeerde anemie                          000000000000000
+0380000002585B83     Purpura/stollingsstoornis/afwijkende trombocyten            000000000000000
+0380000002593B83.01  Hemofilie A/B                                               000000000000000
+0380000002607B83.02  Idiopathische trombocytopenische purpura (ITP)              000000000000000
+0380000002658B84     Afwijking leukocyten                                        000000000000000
+0380000002666B85     Onverklaarde afwijking bloedonderzoek                       000000000000000
+0380000002712B86     Andere hematologische afwijking(en)                         000000000000000
+0380000002720B86.01  Verhoogde BSE                                               000000000000000
+0380000002755B87     Splenomegalie                                               000000000000000
+0380000002763B90     HIV-infectie (AIDS/ARC)                                     000000000000000
+0380000002771B90.01  Seropositief zonder symptomen                               000000000000000
+0380000002798B90.02  AIDS/ARC                                                    000000000000000
+0380000002801B99     Andere ziekte(n) bloed/lymfe/milt                           000000000000000
+0380000002828B99.01  Lymfoedeem                                                  000000000000000
+0380000002879D01     Gegeneraliseerde buikpijn/buikkrampen                       000000000000000
+0380000002887D02     Maagpijn                                                    000000000000000
+0380000002895D04     Pijn anus/rectum                                            000000000000000
+0380000002925D05     Perianale jeuk                                              000000000000000
+0380000002933D06     Andere gelokaliseerde buikpijn                              000000000000000
+0380000002984D08     Flatulentie/meteorisme/boeren                               000000000000000
+0380000003034D11     Diarree                                                     000000000000000
+0380000003042D12     Obstipatie                                                  000000000000000
+0380000003050D13     Geelzucht                                                   000000000000000
+0380000003069D14     Haematemesis                                                000000000000000
+0380000003077D15     Melaena                                                     000000000000000
+0380000003085D16     Rectaal bloedverlies                                        000000000000000
+0380000003093D17     Incontinentie voor ontlasting                               000000000000000
+0380000003107D18     Verandering ontlasting/defecatiepatroon                     000000000000000
+0380000003131D19     Symptomen/klachten tanden/tandvlees                         000000000000000
+0380000003158D20     Symptomen/klachten mond/tong/lippen/speekselklieren         000000000000000
+0380000003204D21     Slikproblemen                                               000000000000000
+0380000003212D22     Wormen/andere parasieten                                    000000000000000
+0380000003220D22.01  Enterobiasis                                                000000000000000
+0380000003239D22.02  Ascariasis                                                  000000000000000
+0380000003247D22.03  Taeniasis                                                   000000000000000
+0380000003271D24     Zwelling in de buik                                         000000000000000
+0380000003298D25     Verandering omvang/uitzetting buik                          000000000000000
+0380000003301D26     Angst voor kanker spijsverteringsorganen                    000000000000000
+0380000003328D27     Angst voor andere ziekte spijsverteringsorganen             000000000000000
+0380000003336D28     Functiebeperking/handicap spijsverteringsorganen            000000000000000
+0380000003344D29     Andere symptomen/klachten spijsverteringsorganen            000000000000000
+0380000003352D70     Infectieuze diarree, dysenterie                             000000000000000
+0380000003360D70.01  Salmonella-darminfectie                                     000000000000000
+0380000003379D70.02  Shigella-/Yersinia-/Campylobacter-darminfectie              000000000000000
+0380000003387D70.03  Giardiasis                                                  000000000000000
+0380000003395D70.04  Amoebiasis                                                  000000000000000
+0380000003425D71     Bof                                                         000000000000000
+0380000003433D72     Virus hepatitis                                             000000000000000
+0380000003441D72.01  Acute hepatitis A                                           000000000000000
+0380000003468D72.02  Acute hepatitis B                                           000000000000000
+0380000003476D72.03  Acute hepatitis C                                           000000000000000
+0380000003484D73     Veronderstelde gastro-intestinale infectie                  000000000000000
+0380000003514D74     Maligniteit maag                                            000000000000000
+0380000003522D75     Maligniteit colon/rectum                                    000000000000000
+0380000003565D76     Maligniteit pancreas                                        000000000000000
+0380000003573D77     Andere/niet-gespecif.maligniteit spijsverteringsorganen     000000000000000
+0380000003581D77.01  Maligniteit oesofagus                                       000000000000000
+0380000003603D77.02  Maligniteit speekselklieren                                 000000000000000
+0380000003611D77.03  Maligniteit lip/mond/tong                                   000000000000000
+0380000003638D77.04  Maligniteit lever/galblaas/galwegen                         000000000000000
+0380000003654D78     Benigne neoplasma spijsverteringsorganen                    000000000000000
+0380000003662D78.01  Familiaire polyposis coli                                   000000000000000
+0380000003697D79     Corpus alienum via mond/anus                                000000000000000
+0380000003727D80     Ander letsel spijsverteringsorganen                         000000000000000
+0380000003735D81     Aangeboren afwijking(en) spijsverteringsorganen             000000000000000
+0380000003743D81.01  Sluitingsdefect lip/kaak/verhemelte                         000000000000000
+0380000003751D81.02  Te kort tongriempje                                         000000000000000
+0380000003778D81.03  Pylorusstenose                                              000000000000000
+0380000003786D81.04  Meckel's divertikel                                         000000000000000
+0380000003794D82     Ziekte tanden/tandvlees                                     000000000000000
+0380000003808D82.01  Gingivitis                                                  000000000000000
+0380000003816D82.02  Temporomandibulair gewrichtsprobleem                        000000000000000
+0380000003840D83     Ziekte mond/tong/lippen/speekselklieren                     000000000000000
+0380000003859D83.01  Sialoadenitis/sialolithiasis                                000000000000000
+0380000003867D83.02  Aften                                                       000000000000000
+0380000003875D83.03  Perleche/cheilitis angularis                                000000000000000
+0380000003891D84     Ziekte oesofagus                                            000000000000000
+0380000003905D84.01  Divertikel oesofagus                                        000000000000000
+0380000003913D84.02  Oesofagale reflux zonder oesofagitis                        000000000000000
+0380000003921D84.03  Oesofagale reflux met oesofagitis                           000000000000000
+0380000003956D85     Ulcus duodeni                                               000000000000000
+0380000003964D86.01  Ulcus ventriculi                                            000000000000000
+0380000003980D87     Stoornis maagfunctie                                        000000000000000
+0380000003999D87.01  Gastritis/duodenitis                                        000000000000000
+0380000004006D87.02  Dyspepsie/indigestie                                        000000000000000
+0380000004022D88     Appendicitis                                                000000000000000
+0380000004057D89     Hernia inguinalis                                           000000000000000
+0380000004103D90     Hernia diafragmatica/hiatus                                 000000000000000
+0380000004111D91     Andere hernia abdominalis                                   000000000000000
+0380000004138D91.01  Hernia femoralis                                            000000000000000
+0380000004146D91.02  Hernia umbilicalis                                          000000000000000
+0380000004154D91.03  Hernia cicatricalis                                         000000000000000
+0380000004170D92     Diverticulose/diverticulitis                                000000000000000
+0380000004189D93     Prikkelbare darm syndroom                                   000000000000000
+0380000004197D94     Colitis ulcerosa/chronische enteritis (regionalis)          000000000000000
+0380000004200D94.01  Colitis ulcerosa                                            000000000000000
+0380000004219D94.02  Ziekte van Crohn                                            000000000000000
+0380000004227D95     Fissura ani/perianaal abces                                 000000000000000
+0380000004235D95.01  Fissura ani                                                 000000000000000
+0380000004243D95.02  Fistula ani                                                 000000000000000
+0380000004251D96     Hepatomegalie                                               000000000000000
+0380000004278D97     Cirrose/andere leverziekte                                  000000000000000
+0380000004316D98     Cholecystitis/cholelithiasis                                000000000000000
+0380000004324D98.01  Cholecystitis                                               000000000000000
+0380000004332D98.02  Cholangitis                                                 000000000000000
+0380000004340D98.03  Cholelithiasis zonder -itis                                 000000000000000
+0380000004367D99     Andere ziekte(n) spijsverteringsorganen                     000000000000000
+0380000004375D99.01  Niet-gespecificeerde ileus                                  000000000000000
+0380000004383D99.02  Invaginatie                                                 000000000000000
+0380000004391D99.03  Peritonitis                                                 000000000000000
+0380000004405D99.04  Pancreatitis                                                000000000000000
+0380000004413D99.05  Darmadhesies                                                000000000000000
+0380000004421D99.06  Coeliakie                                                   000000000000000
+0380000004448F01     Pijn oog                                                    000000000000000
+0380000004456F02     Rood oog                                                    000000000000000
+0380000004464F03     Afscheiding uit oog                                         000000000000000
+0380000004472F03.01  Tranende ogen                                               000000000000000
+0380000004502F04     Mouches volantes/flitsen/flikkeringen                       000000000000000
+0380000004537F05     Andere visussymptomen/-klachten [ex. F94]                   000000000000000
+0380000004596F13     Afwijkend gevoel aan oog                                    000000000000000
+0380000004618F14     Afwijkende oogbewegingen                                    000000000000000
+0380000004642F15     Afwijkend aspect oog                                        000000000000000
+0380000004685F16     Symptomen/klachten oogleden                                 000000000000000
+0380000004758F17     Symptomen/klachten van bril                                 000000000000000
+0380000004782F70     Infectieuze conjunctivitis                                  000000000000000
+0380000004790F70.01  Bacteriele conjunctivitis                                   000000000000000
+0380000004804A12     Allergie/allergische reactie                                000000000000000
+0380000004812F70.02  Virale conjunctivitis                                       000000000000000
+0380000004839F71     Allergische/niet-gespecificeerde conjunctivitis             000000000000000
+0380000004847F71.01  Allergische conjunctivitis                                  000000000000000
+0380000004863F72     Blepharitis/hordeolum/chalazion                             000000000000000
+0380000004871F72.01  Blepharitis                                                 000000000000000
+0380000004898F72.02  Hordeolum                                                   000000000000000
+0380000004901F73     Andere infectie/ontsteking oog/adnexen [ex. F85,F86]        000000000000000
+0380000004928F73.01  Dacryocystitis                                              000000000000000
+0380000004936F73.02  Keratitis (incl herpes zonder ulcus)                        000000000000000
+0380000004944F73.03  Iridocyclitis                                               000000000000000
+0380000004979F74     Neoplasma oog/adnexen                                       000000000000000
+0380000004987F74.01  Maligniteit oog/adnexen                                     000000000000000
+0380000004995F74.02  Benigne neoplasma oog/adnexen                               000000000000000
+0380000005010F75     Kneuzing/bloeding oog/adnexen                               000000000000000
+0380000005029F76     Corpus alienum oog                                          000000000000000
+0380000005037F79     Ander letsel oog/adnexen                                    000000000000000
+0380000005045F80     Stenose traankanaal zuigeling                               000000000000000
+0380000005053F81     Andere aangeboren afwijking(en) oog/adnexen                 000000000000000
+0380000005061F82     Netvliesloslating                                           000000000000000
+0380000005088F83     Retinopathie                                                000000000000000
+0380000005096F84     Maculadegeneratie                                           000000000000000
+0380000005118F85     Ulcus corneae                                               000000000000000
+0380000005126F85.01  Keratitis dendritica                                        000000000000000
+0380000005142F86     Trachoom                                                    000000000000000
+0380000005150F91     Refractie afwijking(en)                                     000000000000000
+0380000005169F91.01  Presbyopie                                                  000000000000000
+0380000005177F91.02  Hypermetropie                                               000000000000000
+0380000005185F91.03  Myopie                                                      000000000000000
+0380000005193F91.04  Astigmatisme                                                000000000000000
+0380000005207F92     Cataract/staar                                              000000000000000
+0380000005215F92.01  Seniel cataract                                             000000000000000
+0380000005231F93     Glaucoom/verhoogde oogdruk                                  000000000000000
+0380000005258F93.01  Verhoogde oogdruk zonder (bekend) glaucoom                  000000000000000
+0380000005266F93.02  Primair gesloten kamerhoek glaucoom/acuut glaucoom          000000000000000
+0380000005274F93.03  Primair open kamerhoek glaucoom/glaucoma simplex            000000000000000
+0380000005282F94     Blindheid (elke graad/vorm)                                 000000000000000
+0380000005290F95     Strabismus/scheelzien                                       000000000000000
+0380000005320F99     Andere ziekte(n) oog/adnexen                                000000000000000
+0380000005339F99.01  Xanthelasma(ta) palpebrae                                   000000000000000
+0380000005347F99.02  Blepharochalasis                                            000000000000000
+0380000005355F99.03  Entropion/ectropion                                         000000000000000
+0380000005363F99.04  Pterygium                                                   000000000000000
+0380000005371F99.05  Scleritis/episcleritis                                      000000000000000
+0380000005398F99.06  Insufficiente traanfilm                                     000000000000000
+0380000005444H70     Otitis externa                                              000000000000000
+0380000005452H71     Otitis media acuta/myringitis                               000000000000000
+0380000005487H72     Otitis media met effusie                                    000000000000000
+0380000005495H73     Tubair catarre/tubastenose                                  000000000000000
+0380000005509H74     Chronische otitis media/andere infectie oor                 000000000000000
+0380000005517H74.01  Chronische otitis media                                     000000000000000
+0380000005525H74.02  Mastoiditis                                                 000000000000000
+0380000005533H74.03  Cholesteatoom                                               000000000000000
+0380000005568H75     Neoplasma oor                                               000000000000000
+0380000005576H75.01  Maligniteit oor                                             000000000000000
+0380000005584H75.02  Benigne neoplasma oor                                       000000000000000
+0380000005606H76     Corpus alienum in oor                                       000000000000000
+0380000005614H77     Perforatie trommelvlies [ex. H71]                           000000000000000
+0380000005622H78     Oppervlakkig letsel oor                                     000000000000000
+0380000005630H79     Ander letsel oor                                            000000000000000
+0380000005649H80     Aangeboren afwijking(en) oor                                000000000000000
+0380000005681H81     Overmatig cerumen                                           000000000000000
+0380000005703H82     Vertigosyndroom/labyrinthitis [ex. N17]                     000000000000000
+0380000005711H82.01  Ziekte/syndroom van Meniere                                 000000000000000
+0380000005738H82.02  Labyrinthitis/vestibulitis                                  000000000000000
+0380000005746H82.03  Benigne paroxysmale positie duizeligheid                    000000000000000
+0380000005754H83     Otosclerose                                                 000000000000000
+0380000005762H84     Presbyacusis                                                000000000000000
+0380000005770H85     Akoestisch letsel/lawaaidoofheid                            000000000000000
+0380000005800H99     Andere ziekte(n) oor                                        000000000000000
+0380000005886K71.01  Acuut reuma zonder hartziekte                               000000000000000
+0380000005894K71.02  Acuut reuma met hartziekte                                  000000000000000
+0380000005908K71     Acuut reuma/reumatische hartziekte                          000000000000000
+0380000005932K72     Neoplasma hartvaatstelsel                                   000000000000000
+0380000005940K73     Aangeboren afwijking(en) hartvaatstelsel                    000000000000000
+0380000005959K73.01  Atriumseptumdefect (ASD)                                    000000000000000
+0380000005967K73.02  Ventrikelseptumdefect (VSD)                                 000000000000000
+0380000006009K76     Andere/chronische ischemische hartziekte                    000000000000000
+0380000006017K78     Boezemfibrilleren/-fladderen                                000000000000000
+0380000006025K79     Paroxysmale tachycardie                                     000000000000000
+0380000006033K79.01  Supraventriculaire tachycardie                              000000000000000
+0380000006041K79.02  Ventriculaire tachycardie                                   000000000000000
+0380000006076K80     Ectopische slagen/extrasystolen                             000000000000000
+0380000006084K80.01  Supraventriculaire extrasystolen                            000000000000000
+0380000006092K80.02  Ventriculaire extrasystolen                                 000000000000000
+0380000006106K80.03  Sick sinus syndroom                                         000000000000000
+0380000006114K81     Hartgeruis                                                  000000000000000
+0380000006149K82     Cor pulmonale                                               000000000000000
+0380000006157K83     Niet-reumatische klepaandoening                             000000000000000
+0380000006165K83.01  Aortastenose                                                000000000000000
+0380000006173K83.02  Mitralisinsufficientie                                      000000000000000
+0380000006203K84.01  WPW-syndroom                                                000000000000000
+0380000006211K84.02  Atrioventriculair blok                                      000000000000000
+0380000006238K84.03  Cardiomyopathie                                             000000000000000
+0380000006289K85     Verhoogde bloeddruk [ex. K86,K87]                           000000000000000
+0380000006297K87     Hypertensie met orgaanbeschadiging/secundaire hypertensie   000000000000000
+0380000006343K88     Orthostatische hypotensie                                   000000000000000
+0380000006386K89     Passagere cerebrale ischemie/TIA                            000000000000000
+0380000006416K90     Cerebrovasculair accident (CVA)                             000000000000000
+0380000006424K90.01  Subarachnoidale bloeding                                    000000000000000
+0380000006432K90.02  Intracerebrale bloeding                                     000000000000000
+0380000006440K90.03  Cerebraal infarct                                           000000000000000
+0380000006459K92     Andere ziekte(n) perifere arterien                          000000000000000
+0380000006467K92.01  Claudicatio intermittens                                    000000000000000
+0380000006475K92.02  Syndroom van Raynaud                                        000000000000000
+0380000006483K92.03  Ziekte van Buerger                                          000000000000000
+0380000006513K93     Longembolie/longinfarct                                     000000000000000
+0380000006521K94     Thrombophlebitis/flebotrombose                              000000000000000
+0380000006548K94.01  Diepe veneuze trombose benen                                000000000000000
+0380000006556K94.02  Oppervlakkige thrombophlebitis                              000000000000000
+0380000006572K95     Varices benen [ex. S97]                                     000000000000000
+0380000006580K96     Hemorroiden                                                 000000000000000
+0380000006599K99     Andere ziekte(n) hartvaatstelsel                            000000000000000
+0380000006602K99.02  Slokdarmvarices                                             000000000000000
+0380000006610K99.03  Varicocele                                                  000000000000000
+0380000006629K99.04  Chronisch veneuze insufficientie                            000000000000000
+0380000006637K99.05  Arteriitis temporalis met/zonder polymyalgia rheumatica     000000000000000
+0380000006645K99.06  Perifere diabetische angiopathie                            000000000000000
+0380000006696L71     Neoplasma bewegingsapparaat                                 000000000000000
+0380000006718L71.01  Maligniteit bewegingsapparaat                               000000000000000
+0380000006726L71.02  Benigne neoplasma bewegingsapparaat                         000000000000000
+0380000006785L91     Andere artrose/verwante aandoening(en)                      000000000000000
+0380000006815L93     Epicondylitis lateralis                                     000000000000000
+0380000006823L95     Osteoporose                                                 000000000000000
+0380000006831L99     Andere ziekte(n) bewegingsapparaat                          000000000000000
+0380000006858L99.01  Bursitis [ex. L92]                                          000000000000000
+0380000006866L99.02  Tendovaginitis/tendinitis                                   000000000000000
+0380000006874L99.03  Contractuur van Dupuytren                                   000000000000000
+0380000006882L99.04  Trigger finger                                              000000000000000
+0380000006890L99.05  Epicondylitis medialis                                      000000000000000
+0380000006904L99.06  Syndroom van Tietze                                         000000000000000
+0380000006920L99.07  Retropatellaire chondropathie /patellofemoraal syndroom     000000000000000
+0380000006939L99.08  Hielspoor/fasciitis plantaris                               000000000000000
+0380000006947L99.09  Hyperlaxiteit                                               000000000000000
+0380000006955N01     Hoofdpijn [ex. N02,N89,R09]                                 000000000000000
+0380000006963N02     Spanningshoofdpijn                                          000000000000000
+0380000006971N03     Aangezichtspijn                                             000000000000000
+0380000006998N04     Restless legs                                               000000000000000
+0380000007005N05     Tintelen vingers/voeten/tenen                               000000000000000
+0380000007013N06     Andere sensibiliteitstoornis/onwillekeurige bewegingen      000000000000000
+0380000007021N06.01  Onwillekeurige bewegingen                                   000000000000000
+0380000007056N07     Convulsies/stuipen (inclusief koorts-)                      000000000000000
+0380000007064N07.01  Koortsstuipen                                               000000000000000
+0380000007080N17     Vertigo/duizeligheid [ex. H82]                              000000000000000
+0380000007129N70     Poliomyelitis/andere enterovirus infectie                   000000000000000
+0380000007137N70.01  Poliomyelitis acuta                                         000000000000000
+0380000007145N70.02  Slow-virus infectie zenuwstelsel                            000000000000000
+0380000007161N72     Tetanus                                                     000000000000000
+0380000007188N73     Andere infectieziekte(n) zenuwstelsel                       000000000000000
+0380000007196N86     Multiple sclerose                                           000000000000000
+0380000007218N87     Parkinsonisme, ziekte van Parkinson                         000000000000000
+0380000007226N87.01  Ziekte van Parkinson                                        000000000000000
+0380000007242N88     Epilepsie (alle vormen)                                     000000000000000
+0380000007293N90     Cluster headache                                            000000000000000
+0380000007307N91     Facialis parese/Bell's palsy                                000000000000000
+0380000007315N92     Trigeminus neuralgie                                        000000000000000
+0380000007323N93     Carpale tunnelsyndroom                                      000000000000000
+0380000007331N94     Andere perifere neuritis/neuropathie                        000000000000000
+0380000007358N94.01  Syndroom van Guillain-Barre                                 000000000000000
+0380000007366N94.02  Diabetische neuropathie                                     000000000000000
+0380000007374N94.03  Thoracic outlet syndroom                                    000000000000000
+0380000007382N99     Andere ziekte(n) zenuwstelsel                               000000000000000
+0380000007390N99.01  ALS                                                         000000000000000
+0380000007404N99.02  Myasthenia gravis                                           000000000000000
+0380000007412N99.03  Spierziekte                                                 000000000000000
+0380000007447P06     Slapeloosheid/andere slaapstoornis                          000000000000000
+0380000007455P07     Libido verlies/vermindering                                 000000000000000
+0380000007463P08     Seksuele bevrediging verlies/vermindering                   000000000000000
+0380000007471P08.01  Erectiele disfunctie                                        000000000000000
+0380000007498P08.02  Vaginisme                                                   000000000000000
+0380000007501P08.03  Ejaculatio praecox                                          000000000000000
+0380000007536P15     Chronisch alcoholmisbruik                                   000000000000000
+0380000007544P15.01  Alcoholafhankelijkheid                                      000000000000000
+0380000007552P15.02  Delirium tremens                                            000000000000000
+0380000007560P15.03  Syndroom van Wernicke-Korsakoff                             000000000000000
+0380000007587P16     Acuut alcohol misbruik/intoxicatie                          000000000000000
+0380000007595P19     Drugsmisbruik                                               000000000000000
+0380000007609P19.01  Misbruik/verslaving soft drugs                              000000000000000
+0380000007617P19.02  Misbruik/verslaving hard drugs                              000000000000000
+0380000007625P21     Aandachtsdeficientie-/hyperactiviteitsstoornis              000000000000000
+0380000007633P70     Dementie                                                    000000000000000
+0380000007641P70.01  Ziekte van Alzheimer                                        000000000000000
+0380000007668P70.02  Vasculaire dementie                                         000000000000000
+0380000007692P72     Schizofrenie                                                000000000000000
+0380000007757P73     Affectieve psychose                                         000000000000000
+0380000007803P76     Depressie                                                   000000000000000
+0380000007811P76.01  Post-partum depressie                                       000000000000000
+0380000007846P79     Andere neurose                                              000000000000000
+0380000007854P79.01  Fobie                                                       000000000000000
+0380000007862P79.02  Dwangneurose                                                000000000000000
+0380000007889P99     Andere psychische stoornissen                               000000000000000
+0380000007927R06     Epistaxis/neusbloeding                                      000000000000000
+0380000007935R05     Hoesten                                                     000000000000000
+0380000007943R04     Andere problemen ademhaling                                 000000000000000
+0380000007951R04.01  Snurken                                                     000000000000000
+0380000007994R07     Niezen/neusverstopping/loopneus                             000000000000000
+0380000008001R09     Symptomen/klachten sinussen (inclusief pijn)                000000000000000
+0380000008028R21     Symptomen/klachten keel                                     000000000000000
+0380000008036R21.01  Keelpijn                                                    000000000000000
+0380000008052R23     Symptomen/klachten stem                                     000000000000000
+0380000008095R29     Andere symptomen/klachten luchtwegen                        000000000000000
+0380000008109R29.01  Hikken                                                      000000000000000
+0380000008125R70     Tuberculose luchtwegen [ex. A70]                            000000000000000
+0380000008133R71     Kinkhoest                                                   000000000000000
+0380000008141R72     Streptokokken-angina/roodvonk                               000000000000000
+0380000008168R73     Furunkel/abces neus                                         000000000000000
+0380000008176R80     Influenza [ex. R81]                                         000000000000000
+0380000008184R82     Pleuritis alle vormen [ex. R70]                             000000000000000
+0380000008192R84     Maligniteit bronchus/long                                   000000000000000
+0380000008206R91     Chronische bronchitis/bronchiectasieen                      000000000000000
+0380000008214R91.01  Chronische bronchitis                                       000000000000000
+0380000008222R91.02  Bronchiectasieen                                            000000000000000
+0380000008230R95     Emfyseem/COPD                                               000000000000000
+0380000008265R96     Astma                                                       000000000000000
+0380000008281R96.02  Allergisch astma                                            000000000000000
+0380000008354R97     Hooikoorts/allergische rinitis                              000000000000000
+0380000008362R98     Hyperventilatie                                             000000000000000
+0380000008370R99     Andere ziekte(n) luchtwegen                                 000000000000000
+0380000008389R99.01  Neusseptumdeviatie                                          000000000000000
+0380000008397R99.02  Neuspoliep                                                  000000000000000
+0380000008400R99.03  Stembandpoliep/stembandknobbeltjes [ex. R86]                000000000000000
+0380000008419R99.04  Pneumothorax                                                000000000000000
+0380000008427R99.05  Aspiratiepneumonie                                          000000000000000
+0380000008435R99.06  Pneumoconiose                                               000000000000000
+0380000008451S01     Pijn/gevoeligheid huid                                      000000000000000
+0380000008478S02     Pruritus/jeuk [ex. D05,X16]                                 000000000000000
+0380000008486S03     Wratten                                                     000000000000000
+0380000008494S06     Lokale roodheid/erytheem huid                               000000000000000
+0380000008508S10     Furunkel/karbunkel/cellulitis lokaal                        000000000000000
+0380000008516S10.01  Furunkel/karbunkel                                          000000000000000
+0380000008524S10.02  Furunculose                                                 000000000000000
+0380000008532S11     Andere lokale infectie(s) huid/subcutis                     000000000000000
+0380000008540S11.01  Folliculitis                                                000000000000000
+0380000008567S13     Beet mens/dier                                              000000000000000
+0380000008605S14     Brandwond/verbranding huid (elke graad)                     000000000000000
+0380000008613S17     Schaafwond/schram/blaar                                     000000000000000
+0380000008656S20     Likdoorn(s)/eeltknobbel(s)                                  000000000000000
+0380000008664S21     Andere symptomen/klachten aspect huid                       000000000000000
+0380000008672S21.01  Droge huid/schilferen                                       000000000000000
+0380000008680S21.02  Lichenificatie/induratie                                    000000000000000
+0380000008702S23     Haaruitval/alopecia                                         000000000000000
+0380000008710S23.01  Alopecia areata                                             000000000000000
+0380000008729S23.02  Alopecia androgenetica                                      000000000000000
+0380000008753S24     Andere symptomen/klachten haar                              000000000000000
+0380000008761S24.01  Hirsutisme                                                  000000000000000
+0380000008788S24.02  Verandering haarkleur                                       000000000000000
+0380000008826S70     Herpes zoster                                               000000000000000
+0380000008834S70.01  Herpes zoster                                               000000000000000
+0380000008842S70.02  Post-herpetische neuralgie                                  000000000000000
+0380000008850S71     Herpes simplex [ex. F85,X90,Y72]                            000000000000000
+0380000008869S71.01  Herpes labialis                                             000000000000000
+0380000008885S72     Scabies/andere aandoening door mijten                       000000000000000
+0380000008893S72.01  Scabies                                                     000000000000000
+0380000008915S73     Pediculosis/andere huidinfestatie                           000000000000000
+0380000008923S73.01  Pediculosis capitis                                         000000000000000
+0380000008931S73.02  Pediculosis pubis                                           000000000000000
+0380000008974S74     Dermatomycose(n)                                            000000000000000
+0380000008982S74.01  Tinea pedis                                                 000000000000000
+0380000008990S74.02  Onychomycose                                                000000000000000
+0380000009008S74.03  Pityriasis versicolor                                       000000000000000
+0380000009024S75     Moniliasis/candidiasis [ex. X72,Y75]                        000000000000000
+0380000009032S75.01  Candidiasis mond/spruw                                      000000000000000
+0380000009040S75.02  Candidiasis nagels/nagelriemen                              000000000000000
+0380000009059S75.03  Intertrigo/luiercandidiasis                                 000000000000000
+0380000009075S76     Andere infectie huid/subcutis                               000000000000000
+0380000009083S76.01  Erysipelas                                                  000000000000000
+0380000009091S76.02  Erythrasma                                                  000000000000000
+0380000009105S84     Impetigo/impetiginisatie                                    000000000000000
+0380000009113S86     Seborroisch eczeem/roos                                     000000000000000
+0380000009121S86.01  Hoofdroos                                                   000000000000000
+0380000009148S86.02  Berg                                                        000000000000000
+0380000009156S87     Constitutioneel eczeem                                      000000000000000
+0380000009164S88     Contact eczeem/ander eczeem                                 000000000000000
+0380000009172S88.01  Contacteczeem                                               000000000000000
+0380000009180S88.02  Dyshidrotisch eczeem                                        000000000000000
+0380000009199S88.03  Dermatitis bij lokale toediening geneesmiddel               000000000000000
+0380000009202S88.04  Zonneallergie/fotodermatose                                 000000000000000
+0380000009210S89     Luiereczeem                                                 000000000000000
+0380000009229S90     Pityriasis rosea                                            000000000000000
+0380000009237S92     Ziekte(n) zweetklieren                                      000000000000000
+0380000009245S92.01  Anhidrosis/dyshidrosis                                      000000000000000
+0380000009253S92.02  Hidradenitis                                                000000000000000
+0380000009288S95     Mollusca contagiosa                                         000000000000000
+0380000009296S96     Acne                                                        000000000000000
+0380000009318S96.01  Acne vulgaris                                               000000000000000
+0380000009326S96.02  Acne conglobata                                             000000000000000
+0380000009334S97     Ulcus cruris/decubitus/chronisch ulcus                      000000000000000
+0380000009369S99     Andere ziekte(n) huid/subcutis                              000000000000000
+0380000009377S99.01  Granuloma pyogenicum/teleangiectaticum                      000000000000000
+0380000009385S99.02  Verruca seborroica                                          000000000000000
+0380000009393S99.03  Rosacea                                                     000000000000000
+0380000009407S99.04  Vitiligo                                                    000000000000000
+0380000009415S99.05  Discoide lupus erythematodes                                000000000000000
+0380000009423S99.06  Lichen planus                                               000000000000000
+0380000009431S99.07  Striae                                                      000000000000000
+0380000009458S99.08  Erythema nodosum                                            000000000000000
+0380000009466S99.09  Keloid                                                      000000000000000
+0380000009474T06.02  Boulimie                                                    000000000000000
+0380000009482T82     Obesitas                                                    000000000000000
+0380000009490T83     Overgewicht                                                 000000000000000
+0380000009539T86     Hypothyreoidie/myxoedeem                                    000000000000000
+0380000009563T87     Hypoglykemie                                                000000000000000
+0380000009601T90     Diabetes mellitus                                           000000000000000
+0380000009628T90.01  Diabetes mellitus type 1                                    000000000000000
+0380000009636T90.02  Diabetes mellitus type 2                                    000000000000000
+0380000009652T91     Vitamine-/voedingsdeficientie(s)                            000000000000000
+0380000009687T92     Jicht                                                       000000000000000
+0380000009695T93     Vetstofwisselingsstoornis(sen)                              000000000000000
+0380000009709T93.01  Hypercholesterolemie                                        000000000000000
+0380000009717T93.02  Hypertriglyceridemie                                        000000000000000
+0380000009725T99     Andere ziekte(n) endocriene klieren/metabolisme/voeding     000000000000000
+0380000009733T99.01  Immuundeficientie                                           000000000000000
+0380000009741T99.02  Thyreoiditis                                                000000000000000
+0380000009768T99.03  Lactose-intolerantie                                        000000000000000
+0380000009776T99.04  Hyperhomocysteinemie                                        000000000000000
+0380000009784T99.05  Pubertas praecox                                            000000000000000
+0380000009792T99.06  Polycysteus ovariumsyndroom                                 000000000000000
+0380000009806T99.07  Premature menopauze                                         000000000000000
+0380000009814T99.08  Syndroom van Cushing                                        000000000000000
+0380000009830U04     Urine-incontinentie [ex. P12]                               000000000000000
+0380000009849U05     Ander mictieprobleem                                        000000000000000
+0380000009857U05.01  Oligurie/anurie                                             000000000000000
+0380000009865U05.02  Urineretentie                                               000000000000000
+0380000009881U14     Symptomen/klachten nieren                                   000000000000000
+0380000009903U14.01  Nierkoliek                                                  000000000000000
+0380000009938U70     Acute pyelonephritis/pyelitis                               000000000000000
+0380000009946U71     Cystitis/urineweginfectie                                   000000000000000
+0380000009954U71.01  Cystitis                                                    000000000000000
+0380000009962U71.02  Urineweginfectie neg [ex. venerisch]                        000000000000000
+0380000009970U72     Niet specifieke urethritis [ex. X99,Y99]                    000000000000000
+0380000009989U75     Maligniteit nier                                            000000000000000
+0380000009997U76     Maligniteit blaas                                           000000000000000
+0380000010006U77     Andere maligniteit urinewegen                               000000000000000
+0380000010014U78     Benigne neoplasma urinewegen                                000000000000000
+0380000010022U78.01  Poliep blaas                                                000000000000000
+0380000010049U79     Niet-gespecificeerd neoplasma urinewegen                    000000000000000
+0380000010057U99     Andere ziekte(n) urinewegen                                 000000000000000
+0380000010065U99.01  Nierfunctiestoornis/nierinsufficientie                      000000000000000
+0380000010073U99.02  Schrompelnier/nierhypoplasie eci                            000000000000000
+0380000010081U99.03  Obstructieve en reflux-uropathie/hydronefrose               000000000000000
+0380000010103U99.04  Urethrastrictuur                                            000000000000000
+0380000010154W10     Morning after pil/postcoitale anticonceptie                 000000000000000
+0380000010162W10.01  Morning after pil                                           000000000000000
+0380000010170W10.02  Morning after spiraal                                       000000000000000
+0380000010189W11     Anticonceptie: orale anticonceptie                          000000000000000
+0380000010197W12     Anticonceptie: IUD                                          000000000000000
+0380000010200W14     Andere anticonceptie vrouw                                  000000000000000
+0380000010243W70     Puerperale infectie/sepsis                                  000000000000000
+0380000010251W70.01  Endometritis puerperalis                                    000000000000000
+0380000010278W70.02  Geinfecteerde perineumwond                                  000000000000000
+0380000010294W71     Andere infectie(s) zwangerschap/kraambed [ex. W70]          000000000000000
+0380000010308W81     Toxicose/(pre-)eclampsie                                    000000000000000
+0380000010316W81.01  Pre-existente hypertensie in zwangerschap                   000000000000000
+0380000010324W81.02  Toxicose/preeclampsie                                       000000000000000
+0380000010332W81.03  HELLP-syndroom                                              000000000000000
+0380000010359W82     Spontane abortus                                            000000000000000
+0380000010383W83     Abortus provocatus                                          000000000000000
+0380000010391W84     Zwangerschap met verhoogd risico                            000000000000000
+0380000010405W84.01  Urogenitale infectie in zwangerschap                        000000000000000
+0380000010413W84.02  Zwangerschapsdiabetes                                       000000000000000
+0380000010421W94     Mastitis puerperalis                                        000000000000000
+0380000010448W95     Andere aandoening borsten kraambed                          000000000000000
+0380000010456W95.01  Lactatiestoornissen                                         000000000000000
+0380000010464W95.02  Tepelkloven                                                 000000000000000
+0380000010480W99     And. ziekte(n) ivm zwangersch./beval./kraamb./anticonceptie 000000000000000
+0380000010499W99.01  Valse weeen                                                 000000000000000
+0380000010502W99.02  Serotinitas                                                 000000000000000
+0380000010510W99.03  Trombose kraambed                                           000000000000000
+0380000010529W99.04  Hemorroiden kraambed                                        000000000000000
+0380000010553X02     Pijnlijke menstruatie                                       000000000000000
+0380000010561X05     Amenorroe/hypomenorroe/oligomenorroe                        000000000000000
+0380000010588X06     Menorragie                                                  000000000000000
+0380000010596X07     Onregelmatige/frequente menstruatie                         000000000000000
+0380000010618X07.01  Polymenorroe                                                000000000000000
+0380000010626X07.02  Onregelmatige menstruatie                                   000000000000000
+0380000010634X09     Premenstruele symptomen/klachten                            000000000000000
+0380000010642X10     Uitstel van de menstruatie                                  000000000000000
+0380000010650X11     Climacteriele symptomen/klachten                            000000000000000
+0380000010669X11.01  Opvliegingen                                                000000000000000
+0380000010677X11.02  Atrofische vaginitis                                        000000000000000
+0380000010693X12     Postmenopauzaal bloedverlies                                000000000000000
+0380000010707X14     Vaginale afscheiding [ex. X08]                              000000000000000
+0380000010715X08     Intermenstrueel bloedverlies                                000000000000000
+0380000010723X08.01  Ovulatiebloeding                                            000000000000000
+0380000010758X16     Symptomen/klachten vulva                                    000000000000000
+0380000010782X20     Symptomen/klachten tepel vrouw                              000000000000000
+0380000010790X20.01  Tepeluitvloed                                               000000000000000
+0380000010820X21     Andere symptomen/klachten borsten vrouw                     000000000000000
+0380000010863X70     Lues vrouw [ex. A90]                                        000000000000000
+0380000010901X71     Gonorroe vrouw                                              000000000000000
+0380000010928X72     Candidiasis urogenitale vrouw                               000000000000000
+0380000010936X73     Trichomonas urogenitale vrouw                               000000000000000
+0380000010944X74     Ontsteking kleine bekken/PID                                000000000000000
+0380000010952X74.01  PID door Chlamydia                                          000000000000000
+0380000011002X75     Maligniteit cervix uteri                                    000000000000000
+0380000011037X76     Maligniteit borst vrouw                                     000000000000000
+0380000011045X76.01  Adenocarcinoom mamma vrouw                                  000000000000000
+0380000011088X77     Andere maligniteit geslachtsorganen vrouw                   000000000000000
+0380000011096X77.01  Endometriumcarcinoom                                        000000000000000
+0380000011118X77.02  Maligniteit ovarium                                         000000000000000
+0380000011134X78     Benigne neoplasma uterus/cervix uteri                       000000000000000
+0380000011142X78.01  Myoma uteri                                                 000000000000000
+0380000011169X79     Benigne neoplasma borsten vrouw [ex. X88]                   000000000000000
+0380000011177X84     Vaginitis/vulvitis nao                                      000000000000000
+0380000011185X89     Premenstrueel spanningssyndroom                             000000000000000
+0380000011193X90     Herpes genitalis vrouw                                      000000000000000
+0380000011207X91     Condylomata acuminata vrouw                                 000000000000000
+0380000011215X99     Andere ziekte(n) geslachtsorganen/borsten vrouw             000000000000000
+0380000011223X99.01  Bartholinitis                                               000000000000000
+0380000011231X99.02  Endometriose                                                000000000000000
+0380000011258X99.03  Ovariumcyste                                                000000000000000
+0380000011266X99.04  Mastitis [ex. W94]                                          000000000000000
+0380000011274X99.05  Habituele abortus                                           000000000000000
+0380000011282X99.06  Lymphogranuloma venereum                                    000000000000000
+0380000011339Y06     Symptomen/klachten prostaat                                 000000000000000
+0380000011347Y07     Symptomen/klachten potentie [ex. P07,P08]                   000000000000000
+0380000011355Y08     Ander seksueel probleem man [ex. P07,P08]                   000000000000000
+0380000011398Y10     Sub-/infertiliteit man                                      000000000000000
+0380000011401Y70     Lues man [ex. A90]                                          000000000000000
+0380000011444Y71     Gonorroe man                                                000000000000000
+0380000011452Y72     Herpes genitalis man                                        000000000000000
+0380000011460Y73     Prostatitis/vesiculitis seminalis                           000000000000000
+0380000011487Y75     Balanitis                                                   000000000000000
+0380000011495Y75.01  Candida balanitis                                           000000000000000
+0380000011517Y76     Condylomata acuminata man                                   000000000000000
+0380000011525Y77     Maligniteit prostaat                                        000000000000000
+0380000011533Y78     Andere maligniteit geslachtsorganen/borsten man             000000000000000
+0380000011541Y78.01  Maligniteit penis                                           000000000000000
+0380000011568Y78.02  Maligniteit testis                                          000000000000000
+0380000011576Y78.03  Maligniteit borst                                           000000000000000
+0380000011584Y79     Benigne neoplasma geslachtsorganen/borsten man              000000000000000
+0380000011592Y85     Benigne prostaathypertrofie                                 000000000000000
+0380000011606Y99     Andere ziekte(n) geslachtsorganen/borsten man               000000000000000
+0380000011614Y99.01  Torsio testis                                               000000000000000
+0380000011622Y99.02  Spermatokele                                                000000000000000
+0380000011630Y99.03  Chlamydia-infectie man                                      000000000000000
+0380000011738A01     Gegeneraliseerde pijn                                       000000000000000
+0380000011746A02     Koude rillingen                                             000000000000000
+0380000011754A03     Koorts                                                      000000000000000
+0380000011762A04     Moeheid/zwakte                                              000000000000000
+0380000011770A04.01  Chronisch vermoeidheidssyndroom                             000000000000000
+0380000011789A05     Algehele achteruitgang                                      000000000000000
+0380000011797A06     Flauwvallen/syncope                                         000000000000000
+0380000011800A07     Coma                                                        000000000000000
+0380000011819A08     Zwelling [ex. K07]                                          000000000000000
+0380000011827A09     Transpiratieproblemen                                       000000000000000
+0380000011835A09.01  Nachtzweten                                                 000000000000000
+0380000011843A09.02  Gelokaliseerd overmatig zweten                              000000000000000
+0380000011851A10     Bloeding                                                    000000000000000
+0380000011878A13     Bezorgdheid over (bij)werking geneesmiddel                  000000000000000
+0380000011886A14     Koliek bij zuigeling                                        000000000000000
+0380000011894A15     Overmatig huilende zuigeling                                000000000000000
+0380000011908A16     Prikkelbare/drukke zuigeling                                000000000000000
+0380000011916A17     Algemene symptomen/klachten zuigeling                       000000000000000
+0380000011924A20     Gesprek levenseinde/behandelwensen                          000000000000000
+0380000011932A26     Angst voor kanker                                           000000000000000
+0380000011940A27     Angst voor andere ziekte                                    000000000000000
+0380000011959A28     Functiebeperking/handicap                                   000000000000000
+0380000011967A29     Andere algemene symptomen/klachten                          000000000000000
+0380000011975A29.01  Hart- en vaatziekten in familie-anamnese                    000000000000000
+0380000011983A29.02  Mammacarcinoom in familie-anamnese                          000000000000000
+0380000011991A29.03  Ovariumcarcinoom in familie-anamnese                        000000000000000
+0380000012009A29.04  Coloncarcinoom in familie-anamnese                          000000000000000
+0380000012017A29.05  Diabetes in familie-anamnese                                000000000000000
+0380000012025A29.06  Hypercholesterolemie in familie-anamnese                    000000000000000
+0380000012033A96.01  Natuurlijke dood                                            000000000000000
+0380000012041A96.02  Onnatuurlijke dood                                          000000000000000
+0380000012068B02     Vergrote lymfeklier(en)                                     000000000000000
+0380000012076B03     Andere symptomen/klachten lymfeklieren                      000000000000000
+0380000012084B04     Symptomen/klachten bloed/bloedvormende organen              000000000000000
+0380000012092B25     Angst voor AIDS                                             000000000000000
+0380000012106B26     Angst voor kanker bloed/lymfestelsel                        000000000000000
+0380000012114B27     Angst voor andere ziekte bloed/lymfestelsel                 000000000000000
+0380000012122B28     Functiebeperking/handicap bloed/lymfestelsel                000000000000000
+0380000012130B29     Andere symptomen/klachten bloed/lymfestelsel                000000000000000
+0380000012149D03     Zuurbranden                                                 000000000000000
+0380000012157D29.01  Ascites                                                     000000000000000
+0380000012165D72.04  Drager hepatitis B/chronische hepatitis B                   000000000000000
+0380000012211D95.03  Perianaal abces                                             000000000000000
+0380000012238D99.07  Koemelkallergie                                             000000000000000
+0380000012246F18     Symptomen/klachten van contactlens                          000000000000000
+0380000012254F27     Angst voor ziekte oog                                       000000000000000
+0380000012262F28     Functiebeperking/handicap oog/adnexen                       000000000000000
+0380000012270F29     Andere symptomen/klachten oog/adnexen                       000000000000000
+0380000012289F72.03  Chalazion                                                   000000000000000
+0380000012297F75.01  Subconjunctivale bloeding                                   000000000000000
+0380000012300F75.02  Blauw oog                                                   000000000000000
+0380000012319F79.01  Lasogen/sneeuwblindheid                                     000000000000000
+0380000012327F79.02  Cornea-erosie                                               000000000000000
+0380000012335F83.01  Diabetische retinopathie                                    000000000000000
+0380000012343F83.02  Hypertensieve retinopathie                                  000000000000000
+0380000012351F93.04  Secundair glaucoom                                          000000000000000
+0380000012378H01     Oorpijn                                                     000000000000000
+0380000012386H02     Gehoorklachten [ex. H84,H85,H86]                            000000000000000
+0380000012394H03     Oorsuizen/tinnitus                                          000000000000000
+0380000012408H04     Afscheiding uit oor                                         000000000000000
+0380000012416H05     Bloed in/uit oor                                            000000000000000
+0380000012424H13     Verstopt gevoel oor                                         000000000000000
+0380000012432H15     Ontevreden/bezorgd over aspect oor                          000000000000000
+0380000012440H15.01  Flapoor/afstaand oor                                        000000000000000
+0380000012459H27     Angst voor ziekte oor                                       000000000000000
+0380000012467H28     Functiebeperking/handicap oor                               000000000000000
+0380000012475H29     Andere symptomen/klachten oor                               000000000000000
+0380000012483H86     Doofheid/slechthorendheid                                   000000000000000
+0380000012491K01     Pijn toegeschreven aan hart                                 000000000000000
+0380000012505K02     Druk/beklemming toegeschreven aan hart [ex. R02]            000000000000000
+0380000012513K03     Andere pijn toegeschreven aan hartvaatstelsel               000000000000000
+0380000012521K04     Hartkloppingen/bewust van hartslag                          000000000000000
+0380000012548K05     Andere afwijkende/onregelmatige hartslag                    000000000000000
+0380000012556K06     Opgezette aderen                                            000000000000000
+0380000012564K07     Gezwollen enkels/enkeloedeem                                000000000000000
+0380000012572K24     Angst voor hartaanval                                       000000000000000
+0380000012580K25     Angst voor hoge bloeddruk                                   000000000000000
+0380000012599K27     Angst voor andere ziekte hartvaatstelsel                    000000000000000
+0380000012602K28     Functiebeperking/handicap hartvaatstelsel                   000000000000000
+0380000012610K29     Andere symptomen/klachten hartvaatstelsel                   000000000000000
+0380000012629K29.01  Cyanose                                                     000000000000000
+0380000012637K29.02  Koude extremiteiten/acra                                    000000000000000
+0380000012645K72.01  Maligniteit hartvaatstelsel                                 000000000000000
+0380000012653K72.02  Benigne neoplasma hartvaatstelsel                           000000000000000
+0380000012661K74.01  Instabiele angina pectoris                                  000000000000000
+0380000012688K74.02  Stabiele angina pectoris                                    000000000000000
+0380000012696K76.01  Coronairsclerose                                            000000000000000
+0380000012718K76.02  Vroeger myocardinfarct (> 4 wkn geleden)                    000000000000000
+0380000012726K77.01  Acute decompensatio cordis/astma cardiale                   000000000000000
+0380000012742K91     Atherosclerose [ex. K76,K90]                                000000000000000
+0380000012750L01     Nek symptomen/klachten [ex. N01]                            000000000000000
+0380000012769L02     Rug symptomen/klachten                                      000000000000000
+0380000012777L03     Lage-rugpijn zonder uitstraling [ex. L86]                   000000000000000
+0380000012785L04     Borstkas symptomen/klachten                                 000000000000000
+0380000012793L05     Flank symptomen/klachten                                    000000000000000
+0380000012807L06     Oksel symptomen/klachten                                    000000000000000
+0380000012815L07     Kaak(gewricht) symptomen/klachten                           000000000000000
+0380000012823L08     Schouder symptomen/klachten                                 000000000000000
+0380000012831L09     Arm symptomen/klachten                                      000000000000000
+0380000012858L10     Elleboog symptomen/klachten                                 000000000000000
+0380000012866L11     Pols symptomen/klachten                                     000000000000000
+0380000012874L12     Hand/vinger symptomen/klachten                              000000000000000
+0380000012882L13     Heup symptomen/klachten                                     000000000000000
+0380000012890L14     Been/dijbeen symptomen/klachten                             000000000000000
+0380000012904L15     Knie symptomen/klachten                                     000000000000000
+0380000012912L16     Enkel symptomen/klachten                                    000000000000000
+0380000012920L17     Voet/teen symptomen/klachten                                000000000000000
+0380000012939L17.01  Metatarsalgie                                               000000000000000
+0380000012947L18     Spierpijn                                                   000000000000000
+0380000012955L18.01  Fibromyalgie                                                000000000000000
+0380000012963L19     Symptomen meerdere/niet-gespecificeerde spieren             000000000000000
+0380000012971L20     Symptomen meerdere/niet-gespecificeerde gewrichten          000000000000000
+0380000012998L26     Angst voor kanker bewegingsapparaat                         000000000000000
+0380000013005L27     Angst voor andere ziekte bewegingsapparaat                  000000000000000
+0380000013013L28     Functiebeperking/handicap bewegingsapparaat                 000000000000000
+0380000013021L29     Andere/meerdere symptomen/klachten bewegingsapparaat        000000000000000
+0380000013048L72     Fractuur radius/ulna                                        000000000000000
+0380000013056L73     Fractuur tibia/fibula                                       000000000000000
+0380000013064L74     Fractuur hand/voet                                          000000000000000
+0380000013072L74.01  Fractuur ossa phalanges hand                                000000000000000
+0380000013080L74.02  Fractuur ossa phalanges voet                                000000000000000
+0380000013099L75     Fractuur femur                                              000000000000000
+0380000013102L75.01  Fractuur collum femoris                                     000000000000000
+0380000013110L76     Andere fractuur                                             000000000000000
+0380000013129L76.01  Fractuur schedel                                            000000000000000
+0380000013137L76.02  Fractuur neus                                               000000000000000
+0380000013145L76.03  Fractuur clavicula                                          000000000000000
+0380000013153L76.04  Fractuur humerus                                            000000000000000
+0380000013161L76.05  Fractuur rib                                                000000000000000
+0380000013188L76.06  Fractuur wervelkolom                                        000000000000000
+0380000013196L76.07  Fractuur bekken                                             000000000000000
+0380000013218L76.08  Fractuur patella                                            000000000000000
+0380000013226L77     Verstuiking/distorsie enkel                                 000000000000000
+0380000013234L78     Verstuiking/distorsie knie                                  000000000000000
+0380000013242L79     Andere verstuiking/distorsie                                000000000000000
+0380000013250L79.01  Whiplashtrauma cervicale wervelkolom                        000000000000000
+0380000013269L80     Luxatie/subluxatie                                          000000000000000
+0380000013277L80.01  (Sub)luxatie schouder                                       000000000000000
+0380000013285L80.02  (Sub)luxatie kaakgewricht                                   000000000000000
+0380000013293L80.03  (Sub)luxatie vinger                                         000000000000000
+0380000013307L80.04  (Sub)luxatie acromio-claviculair gewricht                   000000000000000
+0380000013315L80.05  (Sub)luxatie radiuskop/zondagsarmpje                        000000000000000
+0380000013323L81     Ander letsel bewegingsapparaat                              000000000000000
+0380000013331L81.01  Coup de fouet/zweepslag                                     000000000000000
+0380000013358L81.02  Ribcontusie                                                 000000000000000
+0380000013366L82     Aangeboren afwijking(en) bewegingsapparaat                  000000000000000
+0380000013374L82.01  Aangeboren heupluxatie/heupdysplasie                        000000000000000
+0380000013382L82.02  Spina bifida occulta                                        000000000000000
+0380000013390L82.03  Halsrib                                                     000000000000000
+0380000013404L82.04  Klompvoet                                                   000000000000000
+0380000013412L83     Syndroom cervicale wervelkolom                              000000000000000
+0380000013420L83.01  Hernia cervicalis                                           000000000000000
+0380000013439L84     Artrose/spondylose wervelkolom                              000000000000000
+0380000013447L84.01  Artrose/spondylose                                          000000000000000
+0380000013455L84.02  Spondylolyse/-listhesis                                     000000000000000
+0380000013463L85     Verworven afwijking(en) wervelkolom                         000000000000000
+0380000013471L85.01  Scoliose                                                    000000000000000
+0380000013498L86     Lage-rugpijn met uitstraling                                000000000000000
+0380000013501L86.01  HNP (thoracaal/lumbaal)                                     000000000000000
+0380000013528L87     Ganglion gewricht/pees                                      000000000000000
+0380000013536L89     Coxartrose                                                  000000000000000
+0380000013544L90     Gonartrose                                                  000000000000000
+0380000013552L92     Schoudersyndroom/PHS                                        000000000000000
+0380000013560L94     Osgood-Schlatter/andere osteochondropathie                  000000000000000
+0380000013579L94.01  Osteochondritis dissecans                                   000000000000000
+0380000013587L94.02  Ziekte van Osgood-Schlatter                                 000000000000000
+0380000013595L94.03  Epifysiolyse femurkop                                       000000000000000
+0380000013609L94.04  Ziekte van Legg-Calve-Perthes                               000000000000000
+0380000013617L95.01  Osteopenie                                                  000000000000000
+0380000013625L95.02  Osteoporose                                                 000000000000000
+0380000013633L96     Acuut letsel meniscus/kniebanden                            000000000000000
+0380000013641L96.01  Meniscusscheur (lat./med.)                                  000000000000000
+0380000013668L96.02  Letsel lig. cruciata (anterior/posterior)                   000000000000000
+0380000013676L96.03  Letsel collaterale kniebanden                               000000000000000
+0380000013684L96.04  Gecombineerd letsel menisci/lig.cruciata/collaterale/kapsel 000000000000000
+0380000013692L97     Chronisch inwendig trauma knie                              000000000000000
+0380000013706L97.01  Oud meniscusletsel                                          000000000000000
+0380000013714L97.02  Niet-traumatische meniscusafwijking                         000000000000000
+0380000013722L97.03  Instabiele knie                                             000000000000000
+0380000013730L97.04  Corpus liberum knie                                         000000000000000
+0380000013749L98     Verworven afwijking(en) extremiteiten                       000000000000000
+0380000013757L98.01  Mallet-vinger                                               000000000000000
+0380000013765L98.02  Pes planus                                                  000000000000000
+0380000013773L98.03  Hallux valgus                                               000000000000000
+0380000013781L98.04  Hamerteen                                                   000000000000000
+0380000013803L98.05  Beenlengteverschil                                          000000000000000
+0380000013811L99.10  Corpus liberum gewricht [ex. L97]                           000000000000000
+0380000013838L99.11  Pseudartrose                                                000000000000000
+0380000013846N16     Andere afwijking(en) reuk/smaak                             000000000000000
+0380000013854N17.01  Draaiduizeligheid                                           000000000000000
+0380000013862N17.02  Licht in het hoofd                                          000000000000000
+0380000013870N18     Verlamming/krachtverlies [ex. A04]                          000000000000000
+0380000013889N19     Spraak-/fonatiestoornis                                     000000000000000
+0380000013897N26     Angst voor kanker zenuwstelsel                              000000000000000
+0380000013900N27     Angst voor andere ziekte zenuwstelsel                       000000000000000
+0380000013919N28     Functiebeperking/handicap zenuwstelsel                      000000000000000
+0380000013927N29     Andere symptomen/klachten zenuwstelsel                      000000000000000
+0380000013943N74     Maligniteit zenuwstelsel                                    000000000000000
+0380000013951N75     Benigne neoplasma zenuwstelsel                              000000000000000
+0380000013978N76     Niet-gespecificeerd neoplasma zenuwstelsel                  000000000000000
+0380000013986N79     Hersenschudding/hoofdtrauma                                 000000000000000
+0380000013994N80     Ander letsel hoofd [ex. L76]                                000000000000000
+0380000014001N80.01  Posttraumatisch epiduraal hematoom                          000000000000000
+0380000014028N80.02  Posttraumatisch subduraal hematoom                          000000000000000
+0380000014036N80.03  Posttraumatisch intracerebraal hematoom                     000000000000000
+0380000014044N80.04  Contusio cerebri                                            000000000000000
+0380000014052N81     Ander letsel zenuwstelsel                                   000000000000000
+0380000014060N85     Aangeboren afwijking(en) zenuwstelsel                       000000000000000
+0380000014079N85.01  Spina bifida                                                000000000000000
+0380000014087N85.02  Hydrocephalus                                               000000000000000
+0380000014095N94.04  Meralgia paresthetica                                       000000000000000
+0380000014109N94.05  Peroneusparalyse                                            000000000000000
+0380000014117N94.06  Metatarsalgie van Morton                                    000000000000000
+0380000014125N94.07  Fantoompijn                                                 000000000000000
+0380000014133P01     Angstig/nerveus/gespannen gevoel                            000000000000000
+0380000014141P02     Crisis/voorbijgaande stressreactie                          000000000000000
+0380000014168P02.01  Post-traumatische stressstoornis                            000000000000000
+0380000014176P03     Down/depressief gevoel                                      000000000000000
+0380000014184P04     Prikkelbaar/boos gevoel/gedrag                              000000000000000
+0380000014192P05     Zich oud voelen/gedragen                                    000000000000000
+0380000014206P06.01  Slaapapnoesyndroom                                          000000000000000
+0380000014222P09     Bezorgdheid over seksuele voorkeur                          000000000000000
+0380000014230P10     Stamelen/stotteren/tics                                     000000000000000
+0380000014249P10.01  Stamelen/stotteren                                          000000000000000
+0380000014257P10.02  Tics/stereotypie                                            000000000000000
+0380000014265P11     Eetprobleem(en) bij kind                                    000000000000000
+0380000014273P12     Enuresis [ex. U04]                                          000000000000000
+0380000014281P13     Encopresis                                                  000000000000000
+0380000014303P17     Nicotineafhankelijkheid                                     000000000000000
+0380000014311P18     Geneesmiddelmisbruik                                        000000000000000
+0380000014338P20     Geheugen-/concentratie-/orientatiestoornissen               000000000000000
+0380000014346P22     Andere zorgen gedrag kind                                   000000000000000
+0380000014354P23     Andere zorgen gedrag adolescent                             000000000000000
+0380000014362P24     Specifiek leerprobleem                                      000000000000000
+0380000014370P24.01  Dyslexie                                                    000000000000000
+0380000014389P24.02  Specifieke taal-/spraakontwikkelingsstoornis                000000000000000
+0380000014397P24.03  Motorische ontwikkelingsstoornis                            000000000000000
+0380000014400P25     Levensfaseprobleem volwassene                               000000000000000
+0380000014419P27     Angst voor psychische ziekte                                000000000000000
+0380000014427P28     Functiebeperking/handicap psychische ziekte                 000000000000000
+0380000014435P29     Andere psychische symptomen/klachten                        000000000000000
+0380000014443P71     Andere organische psychose(n)                               000000000000000
+0380000014451P74     Angststoornis/angsttoestand                                 000000000000000
+0380000014478P75     Somatisatiestoornis                                         000000000000000
+0380000014486P77     Suicidepoging                                               000000000000000
+0380000014494P77.01  Suicidepoging                                               000000000000000
+0380000014508P77.02  Suicide                                                     000000000000000
+0380000014516P78     Overspanning                                                000000000000000
+0380000014524P80     Persoonlijkheids-/karakterstoornis                          000000000000000
+0380000014532P80.01  Borderline persoonlijkheidsstoornis                         000000000000000
+0380000014540P80.02  Gokverslaving                                               000000000000000
+0380000014559P85     Mentale retardatie/intellectuele achterstand                000000000000000
+0380000014567P98     Andere/niet gespecificeerde psychose(n)                     000000000000000
+0380000014575R01     Pijn toegeschreven aan luchtwegen [ex. R09]                 000000000000000
+0380000014583R02     Dyspnoe/benauwdheid toegeschreven aan luchtwegen [ex. K02]  000000000000000
+0380000014591R03     Piepende ademhaling                                         000000000000000
+0380000014605R08     Andere symptomen/klachten neus                              000000000000000
+0380000014613R22     Symptomen/klachten tonsillen                                000000000000000
+0380000014621R24     Haemoptoe                                                   000000000000000
+0380000014648R25     Abnormaal sputum/slijm                                      000000000000000
+0380000014656R26     Angst voor kanker luchtwegen                                000000000000000
+0380000014664R27     Angst voor andere ziekte luchtwegen                         000000000000000
+0380000014672R28     Functiebeperking/handicap luchtwegen                        000000000000000
+0380000014680R72.01  Streptokokken-angina                                        000000000000000
+0380000014699R72.02  Roodvonk                                                    000000000000000
+0380000014702R85     Andere maligniteit luchtwegen                               000000000000000
+0380000014710R86     Benigne neoplasma luchtwegen                                000000000000000
+0380000014729R87     Corpus alienum neus/larynx/bronchien                        000000000000000
+0380000014737R88     Ander letsel luchtwegen                                     000000000000000
+0380000014745R89     Aangeboren afwijking(en) luchtwegen                         000000000000000
+0380000014753R90     Hypertrofie/chronische infectie tonsillen/adenoid           000000000000000
+0380000014761R93     Pleuravocht                                                 000000000000000
+0380000014788S04     Lokale zwelling/papel/knobbel huid/subcutis                 000000000000000
+0380000014796S05     Multiple zwellingen/papels/knobbels huid/subcutis           000000000000000
+0380000014818S07     Gegeneraliseerde roodheid/erytheem huid                     000000000000000
+0380000014826S08     Andere verandering(en) in kleur huid                        000000000000000
+0380000014834S09     Lokale infectie vinger/teen/paronychia                      000000000000000
+0380000014842S09.01  Paronychia                                                  000000000000000
+0380000014850S09.02  Panaritium                                                  000000000000000
+0380000014869S10.03  Cellulitis [ex. S09]                                        000000000000000
+0380000014877S15     Corpus alienum huid/subcutis                                000000000000000
+0380000014885S16     Buil/kneuzing/contusie intacte huid                         000000000000000
+0380000014893S16.01  Subunguaal hematoom                                         000000000000000
+0380000014907S18     Scheurwond/snijwond                                         000000000000000
+0380000014915S19     Ander letsel van de huid/subcutis                           000000000000000
+0380000014923S19.01  Nagelluxatie                                                000000000000000
+0380000014931S22     Symptomen/klachten nagels                                   000000000000000
+0380000014958S26     Angst voor kanker huid/subcutis                             000000000000000
+0380000014966S27     Angst voor andere ziekte huid/subcutis                      000000000000000
+0380000014974S28     Functiebeperking/handicap huid/subcutis                     000000000000000
+0380000014982S29     Andere symptomen/klachten huid/subcutis                     000000000000000
+0380000014990S77     Maligniteit huid/subcutis                                   000000000000000
+0380000015008S77.01  Basaalcelcarcinoom                                          000000000000000
+0380000015016S77.02  Spinocellulair/plaveiselcelcarcinoom                        000000000000000
+0380000015024S77.03  Maligne melanoom                                            000000000000000
+0380000015032S77.04  Kaposi-sarcoom                                              000000000000000
+0380000015040S78     Lipoom                                                      000000000000000
+0380000015059S79     Ander benigne neoplasma huid/subcutis                       000000000000000
+0380000015067S79.01  Dermatofibroom                                              000000000000000
+0380000015075S80     Ander/niet-gespecificeerd neoplasma huid/subcutis           000000000000000
+0380000015083S80.01  Dysplastische naevus                                        000000000000000
+0380000015091S81     Hemangioom/lymfangioom                                      000000000000000
+0380000015105S82     Naevus/moedervlek                                           000000000000000
+0380000015113S83     Andere aangeboren afwijking(en) huid/subcutis               000000000000000
+0380000015121S83.01  Naevus flammeus                                             000000000000000
+0380000015148S83.02  Aardbeinaevus                                               000000000000000
+0380000015156S85     Pilonidaal cyste/fistel                                     000000000000000
+0380000015164S93     Atheroomcyste/epitheelcyste                                 000000000000000
+0380000015172S93.01  Atheroomcyste                                               000000000000000
+0380000015180S93.02  Epitheelcyste                                               000000000000000
+0380000015199S94     Unguis incarnatus/andere nagelaandoening                    000000000000000
+0380000015202S94.01  Unguis incarnatus                                           000000000000000
+0380000015210S94.02  Onychogryposis                                              000000000000000
+0380000015229S98     Urticaria                                                   000000000000000
+0380000015245T01     Overmatige dorst                                            000000000000000
+0380000015253T02     Overmatige eetlust                                          000000000000000
+0380000015261T03     Verminderde eetlust                                         000000000000000
+0380000015288T04     Voedingsprobleem zuigeling/kind [ex. P11]                   000000000000000
+0380000015296T05     Voedingsprobleem volwassene [ex. T06]                       000000000000000
+0380000015318T07     Gewichtstoename                                             000000000000000
+0380000015326T08     Gewichtsverlies                                             000000000000000
+0380000015334T10     Achterblijven verwachte fysiologische ontwikkeling          000000000000000
+0380000015342T11     Dehydratie                                                  000000000000000
+0380000015350T15     Knobbel/zwelling schildklier                                000000000000000
+0380000015369T26     Angst voor kanker endocriene klieren                        000000000000000
+0380000015377T27     Angst andere ziekte endocriene klieren/metabolisme/voeding  000000000000000
+0380000015385T28     Funct.beperking/handicap endocr. klieren/metabolisme/voeding000000000000000
+0380000015393T29     And. sympt./klacht. endocr. klieren/metabolisme/voeding     000000000000000
+0380000015407T70     Infectie endocriene klier(en)                               000000000000000
+0380000015415T71     Maligniteit schildklier                                     000000000000000
+0380000015423T72     Benigne neoplasma schildklier                               000000000000000
+0380000015431T73     Ander/niet-gespecificeerd neoplasma endocriene klieren      000000000000000
+0380000015458T78     Persisterende ductus thyreoglossus/cyste                    000000000000000
+0380000015466T80     Andere aangeboren afwijking endocriene klieren/metabolisme  000000000000000
+0380000015474T81     Struma/noduli [ex. T85,T86]                                 000000000000000
+0380000015482T88     Renale glucosurie                                           000000000000000
+0380000015490T93.03  Gemengde hyperlipidemie                                     000000000000000
+0380000015504T99.10  Cystic fibrosis                                             000000000000000
+0380000015512U01     Pijnlijke mictie                                            000000000000000
+0380000015520U02     Frequente mictie/aandrang                                   000000000000000
+0380000015539U04.01  Stress-incontinentie                                        000000000000000
+0380000015547U04.02  Urge-incontinentie                                          000000000000000
+0380000015555U04.03  Gemengde incontinentie                                      000000000000000
+0380000015563U06     Hematurie                                                   000000000000000
+0380000015571U07     Andere symptomen/klachten urine                             000000000000000
+0380000015598U13     Andere symptomen/klachten blaas                             000000000000000
+0380000015601U26     Angst voor kanker urinewegen                                000000000000000
+0380000015628U27     Angst voor andere ziekte urinewegen                         000000000000000
+0380000015636U28     Functiebeperking/handicap urinewegen                        000000000000000
+0380000015644U29     Andere symptomen/klachten urinewegen                        000000000000000
+0380000015652U80     Letsel urinewegen                                           000000000000000
+0380000015660U80.01  Subcapsulair nierhematoom/niercontusie                      000000000000000
+0380000015679U80.02  Corpus alienum urinewegen                                   000000000000000
+0380000015687U85     Aangeboren afwijking(en) urinewegen                         000000000000000
+0380000015695U85.01  Polycystische nieren                                        000000000000000
+0380000015709U88     Glomerulonephritis/nefrose                                  000000000000000
+0380000015717U90     Orthostatische proteinurie                                  000000000000000
+0380000015725U95     Urolithiasis (alle vormen/lokalisaties)                     000000000000000
+0380000015733U98     Afwijkende uitslag urine-onderzoek                          000000000000000
+0380000015768U98.02  Glucosurie                                                  000000000000000
+0380000015776W01     Vraag bestaan zwangerschap [ex. W02]                        000000000000000
+0380000015784W02     Angst zwanger te zijn                                       000000000000000
+0380000015792W03     Bloedverlies tijdens zwangerschap                           000000000000000
+0380000015806W03.01  Bloedverlies eerste trimester                               000000000000000
+0380000015814W03.02  Bloedverlies tweede/derde trimester                         000000000000000
+0380000015822W05     Misselijkheid/braken in zwangerschap                        000000000000000
+0380000015830W05.01  Hyperemesis gravidarum                                      000000000000000
+0380000015849W13     Sterilisatie vrouw                                          000000000000000
+0380000015857W15     Sub-/infertiliteit vrouw                                    000000000000000
+0380000015865W17     Hevig bloedverlies post-partum                              000000000000000
+0380000015873W18     Andere klachten post-partum/kraambed                        000000000000000
+0380000015881W18.01  Riekende/overvloedige lochia                                000000000000000
+0380000015903W20     Andere symptomen/klachten borsten zwangerschap/kraambed     000000000000000
+0380000015911W27     Angst voor complicaties zwangerschap/bevalling              000000000000000
+0380000015938W28     Functiebeperking/handicap ten gevolge van zwangerschap      000000000000000
+0380000015946W28.01  Bekkeninstabiliteit                                         000000000000000
+0380000015954W29     And. sympt./klacht. zwangersch./beval./kraamb./anticonceptie000000000000000
+0380000015962W29.01  Minder leven voelen                                         000000000000000
+0380000015970W29.02  Bezorgd/ontevreden over uiterlijk tijdens zwangerschap      000000000000000
+0380000015989W72     Maligniteit in verband met zwangerschap                     000000000000000
+0380000015997W73     Benigne neoplasma in verband met zwangerschap               000000000000000
+0380000016004W75     Zwangerschap complicerende letsels                          000000000000000
+0380000016012W76     Zwangerschap complicerende aangeboren afwijking moeder      000000000000000
+0380000016020W77     Zwangerschap complicerende niet-obstetrische factor         000000000000000
+0380000016039W77.01  Varices in zwangerschap                                     000000000000000
+0380000016047W77.02  Hemorroiden in zwangerschap                                 000000000000000
+0380000016055W77.03  Diep veneuze trombose in zwangerschap                       000000000000000
+0380000016063W78     Zwangerschap: bevestigd                                     000000000000000
+0380000016071W79     Ongewenste zwangerschap: bevestigd                          000000000000000
+0380000016098W80     Ectopische zwangerschap                                     000000000000000
+0380000016101W84.03  Preexistente diabetes in zwangerschap                       000000000000000
+0380000016128W84.04  Groeivertraging/afwijkende groei foetus                     000000000000000
+0380000016136W84.05  Disproportie                                                000000000000000
+0380000016144W84.06  Cervixinsufficientie                                        000000000000000
+0380000016152W84.07  Liggingsafwijking foetus                                    000000000000000
+0380000016160W84.08  Bloedgroep-/rhesusantagonisme                               000000000000000
+0380000016179W90     Normale bevalling levendgeborene                            000000000000000
+0380000016187W91     Normale bevalling doodgeborene                              000000000000000
+0380000016195W92     Gecompliceerde bevalling levendgeborene                     000000000000000
+0380000016209W92.01  Sectio caesarea                                             000000000000000
+0380000016217W92.02  Vacuumextractie                                             000000000000000
+0380000016225W92.03  Forcipale extractie                                         000000000000000
+0380000016233W93     Gecompliceerde bevalling doodgeborene                       000000000000000
+0380000016241W96     Andere complicatie(s) kraambed                              000000000000000
+0380000016268W96.01  Vertraagde involutie uterus                                 000000000000000
+0380000016276W96.02  Dehiscentie episiotomie/obstetrische wond                   000000000000000
+0380000016284X01     Pijn geslachtsorganen vrouw                                 000000000000000
+0380000016292X03     Intermenstruele pijn                                        000000000000000
+0380000016306X04     Pijnlijke coitus vrouw                                      000000000000000
+0380000016314X13     Bloedverlies na coitus                                      000000000000000
+0380000016322X15     Andere symptomen/klachten vagina                            000000000000000
+0380000016330X17     Symptomen/klachten kleine bekken                            000000000000000
+0380000016349X18     Pijn in de borsten vrouw                                    000000000000000
+0380000016357X19     Knobbel/zwelling borst(en) vrouw                            000000000000000
+0380000016365X23     Angst voor geslachtsziekte vrouw                            000000000000000
+0380000016373X24     Angst voor seksueel disfunctioneren vrouw                   000000000000000
+0380000016381X25     Angst voor kanker geslachtsorganen vrouw                    000000000000000
+0380000016403X26     Angst voor borstkanker vrouw                                000000000000000
+0380000016411X27     Angst voor andere ziekte geslachtsorganen/borsten vrouw     000000000000000
+0380000016438X28     Functiebeperking/handicap geslachtsorganen vrouw            000000000000000
+0380000016446X29     Andere symptomen/klachten geslachtsorganen vrouw            000000000000000
+0380000016454X29.01  Ontevreden/bezorgd over uiterlijk borsten                   000000000000000
+0380000016462X80     Ander benigne neoplasma geslachtsorganen vrouw              000000000000000
+0380000016470X81     Ander/niet-gespecificeerd neoplasma geslachtsorganen vrouw  000000000000000
+0380000016489X82     Letsel geslachtsorganen vrouw                               000000000000000
+0380000016497X82.01  Corpus alienum geslachtsorganen vrouw                       000000000000000
+0380000016500X83     Aangeboren afwijking(en) geslachtsorganen vrouw             000000000000000
+0380000016519X83.01  Hymen imperforata                                           000000000000000
+0380000016527X84.01  Vaginitis door Chlamydia                                    000000000000000
+0380000016535X84.02  Bacteriele vaginose                                         000000000000000
+0380000016543X85     Cervicitis/andere ziekte cervix                             000000000000000
+0380000016551X85.01  Cervicitis door Chlamydia                                   000000000000000
+0380000016578X85.02  Cervixerosie/ectopie                                        000000000000000
+0380000016586X85.03  Cervixpoliep                                                000000000000000
+0380000016594X86     Afwijkende cervixuitstrijk                                  000000000000000
+0380000016608X87     Prolaps vagina/uterus                                       000000000000000
+0380000016616X87.01  Cystokele/rectokele                                         000000000000000
+0380000016624X87.02  Uterovaginale prolaps                                       000000000000000
+0380000016632X88     Fibroadenoom/polycystische afwijking borsten                000000000000000
+0380000016640Y01     Pijn in penis                                               000000000000000
+0380000016659Y02     Pijn testis/scrotum                                         000000000000000
+0380000016667Y03     Afscheiding penis/urethra                                   000000000000000
+0380000016675Y04     Andere symptomen/klachten penis                             000000000000000
+0380000016683Y05     Symptomen/klachten scrotum/testis                           000000000000000
+0380000016691Y05.01  Zwelling testis                                             000000000000000
+0380000016705Y13     Sterilisatie man                                            000000000000000
+0380000016713Y14     Andere anticonceptie man                                    000000000000000
+0380000016721Y14.01  Condoom                                                     000000000000000
+0380000016748Y16     Symptomen/klachten borsten man                              000000000000000
+0380000016756Y24     Angst voor seksueel disfunctioneren man                     000000000000000
+0380000016764Y25     Angst voor geslachtsziekte man                              000000000000000
+0380000016772Y26     Angst voor kanker geslachtsorganen man                      000000000000000
+0380000016780Y27     Angst andere ziekte geslachtsorganen/borsten man            000000000000000
+0380000016799Y28     Functiebeperking/handicap geslachtsorganen man              000000000000000
+0380000016802Y29     Andere symptomen/klachten geslachtsorganen man              000000000000000
+0380000016810Y29.01  Gynaecomastie                                               000000000000000
+0380000016829Y74     Orchitis/epididymitis                                       000000000000000
+0380000016837Y74.01  Orchitis                                                    000000000000000
+0380000016845Y74.02  Epididymitis                                                000000000000000
+0380000016853Y80     Letsel geslachtsorganen man                                 000000000000000
+0380000016861Y80.01  Corpus alienum geslachtsorganen man                         000000000000000
+0380000016888Y81     Phimosis/slurf-preputium                                    000000000000000
+0380000016896Y82     Hypospadie                                                  000000000000000
+0380000016918Y83     Cryptorchisme/niet ingedaalde testis                        000000000000000
+0380000016926Y84     Andere aangeboren afwijking(en) geslachtsorganen/borsten man000000000000000
+0380000016934Y84.01  Retractiele testis                                          000000000000000
+0380000016942Y86     Hydrokele                                                   000000000000000
+0380000016969Z01     Armoede/financieel probleem                                 000000000000000
+0380000016977Z02     Probleem met voedsel/water                                  000000000000000
+0380000016985Z03     Probleem huisvesting/buurt                                  000000000000000
+0380000016993Z03.01  Inadequate behuizing                                        000000000000000
+0380000017000Z03.02  Dakloos                                                     000000000000000
+0380000017019Z03.03  Burenruzie/lawaaioverlast                                   000000000000000
+0380000017027Z04     Probleem met sociale/culturele achtergrond                  000000000000000
+0380000017035Z04.01  Discriminatie ras/religie/sekse                             000000000000000
+0380000017043Z04.02  Probleem door illegaal verblijf                             000000000000000
+0380000017051Z04.03  Eenzaamheid                                                 000000000000000
+0380000017078Z04.04  Probleem met pensionering                                   000000000000000
+0380000017086Z04.05  Empty nest syndrome                                         000000000000000
+0380000017094Z05     Probleem met werksituatie                                   000000000000000
+0380000017108Z05.01  Dreigend ontslag                                            000000000000000
+0380000017116Z05.02  Arbeidsconflict/probleem met collega's                      000000000000000
+0380000017124Z05.03  Hoge werkdruk                                               000000000000000
+0380000017132Z05.04  Blootstelling aan lawaai op werk                            000000000000000
+0380000017140Z05.05  Blootstelling aan toxische stoffen op werk                  000000000000000
+0380000017159Z06     Probleem met werkloosheid                                   000000000000000
+0380000017167Z07     Probleem met opleiding                                      000000000000000
+0380000017175Z07.01  Analfabetisme                                               000000000000000
+0380000017183Z07.02  Achterblijven/blijven zitten op school                      000000000000000
+0380000017191Z07.03  Gezakt voor examen                                          000000000000000
+0380000017205Z08     Probleem met sociale verzekering/welzijnszorg               000000000000000
+0380000017213Z08.01  Probleem met ziektewet/WAO                                  000000000000000
+0380000017221Z08.02  Probleem met bijstand                                       000000000000000
+0380000017248Z09     Probleem met justitie/politie                               000000000000000
+0380000017256Z09.01  Gevangenschap/gevangenisstraf                               000000000000000
+0380000017264Z09.02  Probleem met voogdijschap/alimentatie                       000000000000000
+0380000017272Z10     Probleem toegankelijkheid/beschikbaarheid gezondheidszorg   000000000000000
+0380000017280Z10.01  Wachten op behandeling                                      000000000000000
+0380000017299Z10.02  Wachten op plaats verzorgings-/verpleeghuis                 000000000000000
+0380000017302Z11     Probleem met ziek zijn                                      000000000000000
+0380000017310Z12     Relatieprobleem met partner                                 000000000000000
+0380000017329Z12.01  Scheiding van partner                                       000000000000000
+0380000017337Z12.02  Mishandeling/seksueel misbruik door partner                 000000000000000
+0380000017345Z13     Probleem met gedrag van partner                             000000000000000
+0380000017353Z13.01  Probleem met verslaving van partner                         000000000000000
+0380000017361Z13.02  Probleem met agressie van partner                           000000000000000
+0380000017388Z13.03  Probleem met ontrouw van partner                            000000000000000
+0380000017396Z14     Probleem met ziekte van partner                             000000000000000
+0380000017418Z15     Verlies/overlijden van partner                              000000000000000
+0380000017426Z16     Relatieprobleem met kind                                    000000000000000
+0380000017434Z16.01  Mishandeling/seksueel misbruik van kind                     000000000000000
+0380000017442Z16.02  Verwaarlozing van kind                                      000000000000000
+0380000017450Z16.03  Opvoeding van kind buiten gezinsverband                     000000000000000
+0380000017469Z18     Probleem met ziekte van kind                                000000000000000
+0380000017477Z19     Verlies/overlijden van kind                                 000000000000000
+0380000017485Z20     Relatieprobleem met ouders/familie                          000000000000000
+0380000017493Z21     Probleem met gedrag van ouders/familie                      000000000000000
+0380000017507Z21.01  Probleem met verslaving van ouders/familie                  000000000000000
+0380000017515Z22     Probleem met ziekte van ouders/familie                      000000000000000
+0380000017523Z23     Verlies/overlijden van ouders/familie                       000000000000000
+0380000017531Z24     Relatieprobleem met vrienden                                000000000000000
+0380000017558Z25     Probleem ten gevolge van geweld                             000000000000000
+0380000017566Z25.01  Probleem ten gevolge van aanranding/verkrachting            000000000000000
+0380000017574Z27     Angst een sociaal probleem te hebben                        000000000000000
+0380000017582Z28     Sociale functiebeperking/handicap                           000000000000000
+0380000017590Z29     Ander sociaal probleem                                      000000000000000
+0380000017604Z29.01  Burn-out                                                    000000000000000
+0380000017612Z29.02  Gebrek aan vrije tijd/ontspanning                           000000000000000
+0380000017620Z29.03  Afhankelijkheid van anderen                                 000000000000000
+0380000017639K99.01  Aneurysma aorta                                             000000000000000
+0380000017647T06     Anorexia nervosa/boulimie                                   000000000000000
+0380000017655T06.01  Anorexia nervosa                                            000000000000000
+0380000017663S97.01  Ulcus cruris                                                000000000000000
+0380000017671S97.02  Decubitus                                                   000000000000000
+0380000017701T91.01  Vitaminedeficientie                                         000000000000000
+0380000017728X05.01  Amenorroe                                                   000000000000000
+0380000017736X05.02  Hypomenorroe/oligomenorroe                                  000000000000000
+0380000017752Q       Algemeen                                                    000000000000000
+0380000017760-30     Lichamelijk onderzoek volledig                              000000000000000
+0380000017779-31     Lichamelijk onderzoek gericht                               000000000000000
+0380000017787-32     Gevoeligheidstest                                           000000000000000
+0380000017795-33     Microbiologisch/immunologisch onderzoek                     000000000000000
+0380000017809-34     Bloedonderzoek                                              000000000000000
+0380000017817-35     Urineonderzoek                                              000000000000000
+0380000017825-36     Faecesonderzoek                                             000000000000000
+0380000017833-37     Histologie/exfoliatieve cytologie                           000000000000000
+0380000017841-38     Ander laboratoriumonderzoek                                 000000000000000
+0380000017868-39     Functieonderzoek                                            000000000000000
+0380000017876-40     Endoscopie                                                  000000000000000
+0380000017884-41     Rontgen-/beeldvormend onderzoek                             000000000000000
+0380000017892-42     Elektrische afleidingen                                     000000000000000
+0380000017906-43     Ander diagnostisch onderzoek                                000000000000000
+0380000017914-44     Immunisatie/preventieve medicatie                           000000000000000
+0380000017922-45     Advies/observatie/voorlichting/dieet                        000000000000000
+0380000017930-46     Overleg binnen eerste lijn                                  000000000000000
+0380000017949-47     Overleg met specialist                                      000000000000000
+0380000017957-48     vervallen                                                   000000000000000
+0380000017965-49     Andere preventieve verrichting                              000000000000000
+0380000017973-50     Medicatie/recept/injectie                                   000000000000000
+0380000017981-51     Incisie/drain/aspiratie [ex. catheterisatie -53]            000000000000000
+0380000018007-52     Excisie/biopsie/debridement/cauterisatie                    000000000000000
+0380000018015-53     Instrumentatie/catheterisatie/intubatie/dilatatie           000000000000000
+0380000018023-54     Hechting/gipsspalk/prothese                                 000000000000000
+0380000018031-55     Lokale injectie/infiltratie                                 000000000000000
+0380000018058-56     Verband/compressie/tamponade                                000000000000000
+0380000018066-57     Revalidatie                                                 000000000000000
+0380000018074-58     Therapeutisch gesprek/counselen                             000000000000000
+0380000018082-59     Andere therapeutische verrichting                           000000000000000
+0380000018090-60     Uitslag onderzoek/verrichting                               000000000000000
+0380000018104-61     Uitslag/verslag andere hulpverlener                         000000000000000
+0380000018112-62     Administratieve verrichting                                 000000000000000
+0380000018120-63     Vervolgcontact niet gespecificeerd                          000000000000000
+0380000018139-64     Episode op initiatief huisarts                              000000000000000
+0380000018147-65     Episode op initiatief derde                                 000000000000000
+0380000018155-66     Verwijzing eerstelijnshulpverlener [ex. arts]               000000000000000
+0380000018163-67     Verwijzing specialist/ziekenhuis                            000000000000000
+0380000018171-68     Andere verwijzing                                           000000000000000
+0380000018198-69     Andere reden voor contact                                   000000000000000
+0380000018201A25     Angst voor de dood                                          000000000000000
+0380000018228A29.07  DES-gebruik moeder                                          000000000000000
+0380000018236S99.10  Keratoacanthoom                                             000000000000000
+0380000018244W19     Symptomen/klachten borstvoeding                             000000000000000
+0380000018252Z21.02  Probleem met agressie van ouders/familie                    000000000000000
+0380000018309A78.05  Borreliose/Lyme                                             000000000000000
+0380000018317A91.05  Gestoorde glucosetolerantie                                 000000000000000
+0380000018325A91.06  Subklinische hypothyreoidie                                 000000000000000
+0380000018333A91.07  Subklinische hyperthyreoidie                                000000000000000
+0380000018341A97.01  Preventief onderzoek/consult                                000000000000000
+0380000018368A97.02  Kinderwens                                                  000000000000000
+0380000018376A99.01  Dragerschap met risico voor eigen persoon                   000000000000000
+0380000018384A99.02  Dragerschap met risico voor nageslacht/omgeving             000000000000000
+0380000018392B83.06  Verhoogde stollingsneiging                                  000000000000000
+0380000018406D84.05  Oesofagusstenose                                            000000000000000
+0380000018414K84.07  Lang QT interval syndroom (LQTS)                            000000000000000
+0380000018422L99.12  Polymyalgia reumatica                                       000000000000000
+0380000018430N01.01  Geneesmiddel geinduceerde hoofdpijn                         000000000000000
+0380000018449P15.05  Problematisch alcoholgebruik                                000000000000000
+0380000018457P15.06  Binge drinken                                               000000000000000
+0380000018465P71.04  Delier [ex.P15.02]                                          000000000000000
+0380000018473P73.02  Bipolaire stoornis                                          000000000000000
+0380000018481P74.01  Paniekaanvallen/stoornis                                    000000000000000
+0380000018503P74.02  Gegeneraliseerde angststoornis                              000000000000000
+0380000018511S12.01  Tekenbeet                                                   000000000000000
+0380000018538T93.04  Familiaire hypercholesterolemie/lipidemie                   000000000000000
+0380000018546T99.11  Porfyrie                                                    000000000000000
+0380000018597A44     Profylaxe algemeen, niet gespecificeerd                     000000000000000
+0380000018600B44     Profylaxe mbt bloed en bloedvormende organen                000000000000000
+0380000018619D44     Profylaxe mbt tractus digestivus                            000000000000000
+0380000018627F44     Profylaxe mbt oog                                           000000000000000
+0380000018635H44     Profylaxe mbt oor                                           000000000000000
+0380000018643K44     Profylaxe mbt tractus circulatorius                         000000000000000
+0380000018651L44     Profylaxe mbt bewegingsapparaat                             000000000000000
+0380000018678N44     Profylaxe mbt zenuwstelsel                                  000000000000000
+0380000018686P44     Profylaxe psychische problemen                              000000000000000
+0380000018694R44     Profylaxe mbt tractus respiratorius                         000000000000000
+0380000018708S44     Profylaxe mbt huid en subcutis                              000000000000000
+0380000018716T44     Profylaxe endocrien, metabool, voeding                      000000000000000
+0380000018724U44     Profylaxe mbt urinewegen                                    000000000000000
+0380000018732W44     Profylaxe mbt zwangerschap, bevalling, anticonceptie        000000000000000
+0380000018740X44     Profylaxe mbt geslachtsorganen en borsten, vrouw            000000000000000
+0380000018759Y44     Profylaxe mbt geslachtsorganen en borsten, man              000000000000000
+0380000018767Z44     Profylaxe sociale problemen                                 000000000000000
+0380000018783A49.01  Ouderenzorg                                                 000000000000000
+0380000018791A49.02  Polyfarmacie-Medicatiebeoordeling                           000000000000000
+0380000018805D72.05  Drager hepatitis C/chronische hepatitis C                   000000000000000
+0380000018813D97.04  Cirrose                                                     000000000000000
+0380000018821D97.05  Leversteatose                                               000000000000000
+0380000018848K49.01  CVRM                                                        000000000000000
+0380000018856L49.01  Fractuurpreventie                                           000000000000000
+0380000018880D84.06  Barrett oesofagus                                           000000000000000
+0380000018899L99.13  Artritis psoriatica                                         000000000000000
+0380000018902P76.02  Dysthymie                                                   000000000000000
+0380000018910P99.01  Autisme/autisme spectrum                                    000000000000000
+0380000018929R29.02  Prikkelbare luchtwegen                                      000000000000000
+0380000018937S99.11  Actinische keratose                                         000000000000000
+0380000018945S99.12  Lichen sclerosus                                            000000000000000
+0380000018953T99.12  Bijnierschorsinsufficientie                                 000000000000000
+0380000018961T99.13  Adrenogenitaal syndroom                                     000000000000000
+0380000018988U98.03  Albuminurie                                                 000000000000000
+0380000018996A49     Andere preventieve verrichtingen                            000000000000000
+0380000019003K49     Andere preventieve verrichtingen                            000000000000000
+0380000019011L49     Andere preventieve verrichtingen                            000000000000000
+0380000019046P09.01  Genderincongruentie                                         000000000000000
+0380000019054P99.02  Aanpassingsstoornis                                         000000000000000
+0380000019062A69.01  Palliatieve zorg                                            000000000000000
+0380000019070A69.02  Integrale complexe zorg                                     000000000000000
+0380000019089B99.02  Sarcoidosis                                                 000000000000000
+0380000019097S97.03  Diabetisch voetulcus                                        000000000000000
+0380000019100R83.03  Sars-CoV-2 (COVID-19)                                       000000000000000
+0380000019119A01.01  Chronische pijn                                             000000000000000
+0380000019135A50     Medicatie/recept/injectie algemeen                          000000000000000
+0380000019143F99.07  Achtersteglasvochtmembraanloslating                         000000000000000
+0380000019151K77.03  Hartfalen met behouden linkerventrikelejectiefractie        000000000000000
+0380000019178K77.04  Hartfalen met matige of verminderde linkerventrikelejectiefr000000000000000
+0380000019186N99.04  Cerebrale parese                                            000000000000000
+0380000019194R83.04  Langdurige COVID-19                                         000000000000000
+0380000019208X49     Bevolkingsonderzoek Baarmoederhalskanker                    000000000000000
+0380000019216X82.02  Genitale verminking vrouw                                   000000000000000
+0380000019224R78.01  Bronchiolitis                                               000000000000000
+0380300019232W81.04  Zwangerschapshypertensie                                    000000000000000
+
