@@ -3,31 +3,12 @@ import json
 from django.conf import settings
 
 def call_review_api(text, source="medimo", scope="afdeling"):
-    """
-    Stuurt de tekst naar de FastAPI/Lambda microservice en wacht op het eindresultaat.
-    
-    Args:
-        text (str): De ruwe tekst uit het EPD/AIS.
-        source (str): Bron systeem (default "medimo").
-        scope (str): "afdeling" of "patient".
-
-    Returns:
-        tuple: (resultaat_dict, error_lijst)
-               - resultaat_dict is None als het mislukt.
-               - error_lijst bevat strings met foutmeldingen.
-    """
-    
     url = settings.MEDICATIEREVIEW_API_URL
     api_key = getattr(settings, "MEDICATIEREVIEW_API_KEY", None)
 
-    payload = {
-        "text": text,
-        "source": source,
-        "scope": scope,
-    }
+    payload = {"text": text, "source": source, "scope": scope}
 
-    # Headers opbouwen
-    headers = {}
+    headers = {"Content-Type": "application/json"}
     if api_key:
         headers["X-API-Key"] = api_key
 
@@ -35,47 +16,36 @@ def call_review_api(text, source="medimo", scope="afdeling"):
     errors = []
 
     try:
-        # Timeout ruim zetten (120s) omdat het parsen van een hele afdeling 
-        # met AI/analyse logica best even kan duren.
-        with requests.post(
-            url,
-            json=payload,
-            headers=headers,
-            stream=True,
-            timeout=120,
-        ) as r:
-            
-            # 401 expliciet afvangen voor duidelijkere foutmelding
-            if r.status_code == 401:
-                errors.append("Niet geautoriseerd bij de medicatiereview-service (check API key).")
-                return results, errors
+        # GEEN stream: gewoon hele response binnenhalen
+        r = requests.post(url, json=payload, headers=headers, timeout=120)
 
-            # Check op overige HTTP fouten (404, 500, etc) direct bij connectie
-            r.raise_for_status()
-            
-            # We lezen de NDJSON stream regel voor regel
-            for line in r.iter_lines():
-                if not line:
-                    continue
-                
-                try:
-                    data = json.loads(line.decode("utf-8"))
-                    msg_type = data.get("type")
+        if r.status_code == 401:
+            return None, ["Niet geautoriseerd bij de medicatiereview-service (check API key)."]
 
-                    # Alleen eindresultaat of errors gebruiken
-                    if msg_type == "result":
-                        results = data
-                    elif msg_type == "error":
-                        errors.append(data.get("msg", "Onbekende fout in API"))
+        # Als Lambda echt 502/500 geeft, geef body mee (handig)
+        if r.status_code >= 400:
+            return None, [f"HTTP {r.status_code} van medicatiereview-service: {r.text[:1000]}"]
 
-                except json.JSONDecodeError:
-                    # Als een regel niet valide is, skippen we hem
-                    continue
-                        
+        # NDJSON in één keer parsen
+        for line in r.text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            msg_type = data.get("type")
+            if msg_type == "result":
+                results = data
+            elif msg_type == "error":
+                errors.append(data.get("msg", "Onbekende fout in API"))
+
     except requests.exceptions.Timeout:
         errors.append("De analyse duurde te lang (timeout). Probeer een kleinere tekst.")
     except requests.exceptions.ConnectionError:
-        errors.append(f"Kan geen verbinding maken met de medicatiereview-service op {url}. Draait deze wel?")
+        errors.append(f"Kan geen verbinding maken met de medicatiereview-service op {url}.")
     except requests.exceptions.RequestException as e:
         errors.append(f"Fout bij communicatie met de medicatiereview-service: {str(e)}")
 

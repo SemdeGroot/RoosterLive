@@ -20,35 +20,34 @@ from core.utils.calendar_active import get_calendar_sync_status
 # Gebruik constante uit settings, fallback = 1
 ORG_ID_APOTHEEK_JANSEN = getattr(settings, "APOTHEEK_JANSEN_ORG_ID", 1)
 
-
 def format_dutch_name_from_user(user) -> str:
     first = (user.first_name or "").strip()
     last = (user.last_name or "").strip()
     username = (user.username or "").strip()
 
-    if not first and not last:
+    full_name = f"{first} {last}".strip()
+    if not full_name:
         return username
 
-    if first:
-        first_fmt = first.lower().capitalize()
-    else:
-        first_fmt = ""
+    # Als er al een mix van hoofd- en kleine letters in zit: niets doen
+    has_upper = any(c.isupper() for c in full_name)
+    has_lower = any(c.islower() for c in full_name)
+    if has_upper and has_lower:
+        return full_name
 
-    if last:
-        parts = last.lower().split()
-        if len(parts) == 1:
-            last_fmt = parts[0].capitalize()
-        else:
-            for i in range(len(parts) - 1):
-                parts[i] = parts[i].lower()
-            parts[-1] = parts[-1].capitalize()
-            last_fmt = " ".join(parts)
-    else:
-        last_fmt = ""
+    # Alles upper/lower: alleen minimale normalisatie, zonder alles te lowercaseden
+    def cap_first_letter_keep_rest(word: str) -> str:
+        return (word[:1].upper() + word[1:]) if word else word
 
-    full = (first_fmt + " " + last_fmt).strip()
-    return full or username
+    parts = full_name.split()
+    if not parts:
+        return full_name or username
 
+    parts[0] = cap_first_letter_keep_rest(parts[0])
+    if len(parts) > 1:
+        parts[-1] = cap_first_letter_keep_rest(parts[-1])
+
+    return " ".join(parts) or username
 
 @login_required
 def agenda(request):

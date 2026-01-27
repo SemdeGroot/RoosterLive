@@ -33,29 +33,36 @@ def field(form, name):
 def dutch_name(user):
     """
     Formatteert de naam van een User object.
-    Eerste en laatste woord met hoofdletter.
+    - Als de naam al 'goed' lijkt (bevat kleine + hoofdletters), laat hem zoals hij is.
+    - Als de naam volledig lower/upper is, dan pas normaliseren (eerste + laatste woord).
     """
     if not user:
         return "-"
-    
-    # Haal voor- en achternaam op
-    full_name = f"{user.first_name} {user.last_name}".strip()
-    
-    # Fallback als er geen naam is ingevuld
+
+    full_name = f"{(user.first_name or '').strip()} {(user.last_name or '').strip()}".strip()
+
     if not full_name:
         return user.username
 
+    # Als er al een mix van hoofd- en kleine letters in zit, aannemen dat het bewust zo is opgeslagen.
+    has_upper = any(c.isupper() for c in full_name)
+    has_lower = any(c.islower() for c in full_name)
+    if has_upper and has_lower:
+        return full_name  # niets doen
+
+    # Anders (alles upper of alles lower): normaliseer alleen eerste en laatste woord
     parts = full_name.split()
     if not parts:
         return full_name
-        
-    # Eerste woord Capitalizen
-    parts[0] = parts[0].capitalize()
-    
-    # Laatste woord Capitalizen (als er meer dan 1 woord is)
+
+    def cap_first_letter_keep_rest(word: str) -> str:
+        # alternatief voor capitalize() zonder rest te forceren naar lowercase
+        return (word[:1].upper() + word[1:]) if word else word
+
+    parts[0] = cap_first_letter_keep_rest(parts[0])
     if len(parts) > 1:
-        parts[-1] = parts[-1].capitalize()
-        
+        parts[-1] = cap_first_letter_keep_rest(parts[-1])
+
     return " ".join(parts)
 
 @register.filter

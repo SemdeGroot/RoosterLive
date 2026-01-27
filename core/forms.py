@@ -119,13 +119,13 @@ class SimpleUserCreateForm(forms.Form):
     )
 
     def clean_first_name(self):
-        first = (self.cleaned_data.get("first_name") or "").strip().lower()
+        first = (self.cleaned_data.get("first_name") or "").strip()
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
         return first
     
     def clean_last_name(self):
-        last = (self.cleaned_data.get("last_name") or "").strip().lower()
+        last = (self.cleaned_data.get("last_name") or "").strip()
         if not last:
             raise forms.ValidationError("Achternaam is verplicht.")
         return last
@@ -254,13 +254,13 @@ class SimpleUserEditForm(forms.Form):
                 self.fields[f].initial = getattr(profile, f, False)
 
     def clean_first_name(self):
-        first = (self.cleaned_data.get("first_name") or "").strip().lower()
+        first = (self.cleaned_data.get("first_name") or "").strip()
         if not first:
             raise forms.ValidationError("Voornaam is verplicht.")
         return first
 
     def clean_last_name(self):
-        last = (self.cleaned_data.get("last_name") or "").strip().lower()
+        last = (self.cleaned_data.get("last_name") or "").strip()
         if not last:
             raise forms.ValidationError("Achternaam is verplicht.")
         return last

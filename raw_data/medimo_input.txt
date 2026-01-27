@@ -1,0 +1,188 @@
+Overzicht medicatie Argusvlinder
+Een overzicht van alle actieve medicatie in afdeling Argusvlinder. Per patient wordt weergegeven of en zo ja welke geneesmiddelen deze mensen gebruiken.
+
+10 records in selectie.
+________________________________________
+Mevr. M Curie (07-11-1942)
+C   Clozapine tablet 6,25mg	1-0-0 stuks, dagelijks, Continu
+C   Clozapine tablet 6,25mg	0-4-0 stuks, dagelijks, Continu
+C   Colecalciferol tablet 2800ie	2-0-0 stuks, 1x per week, Continu
+=Vitamine D, mag gemalen worden
+C   Duraphat tandpasta 5000ppm	0-0-x gram, dagelijks, Continu
+Op verzoek tandarts
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Continu
+Zn 3dd2 stuks
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 milliliter, dagelijks, Zo nodig
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+bij obstipatie
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 milliliter, dagelijks, Zo nodig
+Dhr. A Einstein (24-08-1940)
+C   Clozapine tablet 6,25mg	0-0-4 stuks, dagelijks, Continu
+C   Colecalciferol tablet 2800ie	2-0-0 stuks, 1x per week, Continu
+=Vitamine D, mag gemalen worden
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Mirtazapine tablet 15mg	0-0-1 stuks, dagelijks, Continu
+C   Paracetamol tablet 500mg	2-0-2 stuks, dagelijks, Continu
+Z   Berodual cfkvr aerosol spuitbus 200do + inhalator	0-0-0 doses, dagelijks, Zo nodig
+zn bij benauwdheid en pols <100, max 4dd 1-2 puffs via voorzetkamer
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 milliliter, dagelijks, Zo nodig
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+zo nodig 1dd2 stuks (4u minstens tussen andere giften laten zitten) bij pijn
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 milliliter, dagelijks, Zo nodig
+Mevr. A Lovelace (23-08-1931)
+C   Amlodipine tablet 10mg	1-0-0 stuks, dagelijks, Continu
+C   Calci chew d3 kauwtablet 500mg/400ie	0-0-1 stuks, dagelijks, Continu
+C   Dorzolamide oogdruppels 20mg/ml fl 5ml+benzalkoniu	1-0-0 druppels, dagelijks, Continu
+linker oog
+C   Duraphat tandpasta 5000ppm	x-0-x gram, dagelijks, Continu
+Op advies tandarts
+C   Ferrofumaraat tablet 200mg	1-0-0 stuks, 2x per week, Continu
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Vidisic carbogel edo ooggel 2mg/g 0,6ml	1-1-1 druppels, dagelijks, Continu
+rechter oog
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+ZN 1-2 stuks extra bij obstipatie
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+bij pijn: zn 1x2 tabletten, max 3 dd 2
+Dhr. I Newton (31-07-1936)
+C   Allopurinol tablet 100mg	1-0-0 stuks, dagelijks, Continu
+C   Beclometason/formoterol aerosol 200/6ug/do 180do i	1-1-0 doses, dagelijks, Continu
+=foster
+C   Colecalciferol tablet 2800ie	2-0-0 stuks, 1x per week, Continu
+=Vitamine D, mag gemalen worden
+C   Duraphat tandpasta 5000ppm	x-0-0 gram, dagelijks, Continu
+C   Haldol drank 2mg/ml	0-0-5 druppels, dagelijks, Continu
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Nortriptyline tablet 50mg	1-0-0 stuks, dagelijks, Continu
+C   Omeprazol capsule msr 20mg	2-0-0 stuks, dagelijks, Continu
+C   Pantoprazol tablet msr 40mg	1-0-0 stuks, dagelijks, Continu (Stop: 24-01-2025 18:59)
+C   Quetiapine tablet fo 25mg	0-0-2 stuks, dagelijks, Continu
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 stuks, dagelijks, Zo nodig
+Z   Morfine injvlst 10mg/ml amp 1ml	0-0-0 milliliter, dagelijks, Zo nodig
+zn 4x daags 2,5 mg (=0,25 ml) bij pijn en/of benauwdheid
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 stuks, dagelijks, Zo nodig
+Dhr. C Darwin (07-01-1950)
+C   Artelac edo oogdruppels 3,2mg/ml tube 0,6ml	08:00u 1-12:00u 1-17:00u 1-21:00u 1 druppels, dagelijks, Continu (Stop: 26-03-2025 11:21)
+4dd 1 druppel in het linkeroog (en bij klachten van irritatie ook in rechteroog) = vidisic
+C   Levothyroxine tablet 100ug (natrium)	1-0-0 stuks, dagelijks, Continu
+C   Levothyroxine tablet 25ug (natrium)	2-0-0 stuks, dagelijks, Continu
+C   Losartan tablet fo 50mg	1-0-0 stuks, dagelijks, Continu
+C   Metoprolol tablet mga 25mg (succinaat)	1-0-0 stuks, dagelijks, Continu
+C   Timolol/brinzolamide oogdr 5/10mg/ml fl 5ml benz	1-0-1 druppels, dagelijks, Continu (Stop: 26-03-2025 11:20)
+2dd 1 druppel in het rechteroog
+C   Vitamine d3 tablet 2800ie ceb	2-0-0 stuks, 1x per week, Continu
+C   Xarelto tablet filmomhuld 15mg	1-0-0 stuks, dagelijks, Continu
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 milliliter, dagelijks, Zo nodig
+2024: Weigert
+Z   Metoprolol tablet 50mg	0-0-0 stuks, dagelijks, Zo nodig
+zn 1dd een halve tablet bij hartkloppingen. Max 2dd een halve tablet.
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+zn tot 3dd 2 tbt.
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 milliliter, dagelijks, Zo nodig
+Dhr. N Bohr (01-01-1955)
+C   Acetylsalicylzuur tablet 80mg	1-0-0 stuks, dagelijks, Continu
+boven de 80 jaar ook omeprazol erbij
+C   Amlodipine tablet 10mg	1-0-0 stuks, dagelijks, Continu
+C   Atorvastatine tablet 40mg	0-0-1 stuks, dagelijks, Continu
+C   Colecalciferol tablet 2800ie	2-0-0 stuks, 1x per week, Continu
+=Vitamine D, mag gemalen worden
+C   Cyanocobalamine tablet 1000ug	1-0-0 stuks, dagelijks, Continu
+(=vitamine B12)
+C   Foliumzuur tablet 0,5mg	1-0-0 stuks, dagelijks, Continu
+C   Fosinopril tablet 10mg	2-0-0 stuks, dagelijks, Continu
+C   Isosorbidemononitraat tablet mga 30mg	1-0-0 stuks, dagelijks, Continu
+= PROMOCARD
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+1x per dag 2 zakjes
+C   Metformine tablet 500mg	08:00u 2-12:00u 2-17:00u 2 stuks, dagelijks, Continu
+C   Paracetamol tablet 500mg	0-2-2 stuks, dagelijks, Continu
+Z   Artelac oogdruppels 3,2mg/ml flacon 10ml	0-0-0 stuks, dagelijks, Zo nodig
+zn 3x daags 1 druppel per oog
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+ZN 1-2 zakjes extra bij uitblijvende ontlasting
+Z   Microlax klysma flacon 5ml	0-0-0 milliliter, dagelijks, Zo nodig
+ZN 1 microlax klysma bij uitblijvende ontlasting
+Z   Nitrolingual oromucosale spray 0,4mg/do flac 250do	0-0-0 doses, dagelijks, Zo nodig
+bij pijn op de borst 1 spray onder de tong, evt na 5 min herhalen, indien niet effectief contact arts
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+Zn 2x per dag 2 tabletten extra
+Z   Triamcinolonacetonide creme 1mg/g	0-0-0 smeren, dagelijks, Zo nodig
+1-2x per dag creme aanbrengen op plekjes in gelaat
+Dhr. A Fleming (29-04-1943)
+C   Citalopram tablet omhuld 10mg	0-0-2 stuks, dagelijks, Continu
+C   Duraphat tandpasta 5000ppm	x-0-x gram, dagelijks, Continu
+2dd tandenpoetsen.
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Risperidon tablet omhuld 0,5mg	12:00u 0.5-17:00u 0.5 stuks, dagelijks, Continu
+C   Vitamine d3 tablet 2800ie ceb	2-0-0 stuks, 1x per week op maandag, Continu
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 stuks, dagelijks, Zo nodig
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+zo nodig bij moeizame/harde ontlasting
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+zn 3dd2 stuks bij pijn en/of koorts
+Z   Risperidon tablet omhuld 0,5mg	0-0-0 stuks, dagelijks, Zo nodig
+zn 1x daags 1 tablet bij agitatie
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 stuks, dagelijks, Zo nodig
+Mevr. R Franklin (22-02-1934)
+C   Cyanocobalamine tablet 1000ug	1-0-0 stuks, dagelijks, Continu
+(=vitamine B12)
+C   Euthyrox tablet 50mcg	1-0-0 stuks, dagelijks, Continu
+C   Foliumzuur tablet 0,5mg	1-0-0 stuks, dagelijks, Continu
+C   Vitamine d3 tablet 2800ie ceb	0-2-0 stuks, 1x per week, Continu
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 stuks, dagelijks, Zo nodig
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+zn tot 3x daags 2tabl bij koorts (indien niet kunnen slikken dan 1 paracetamol zetpil van 1 gram geven)
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 milliliter, dagelijks, Zo nodig
+Mevr. L Meitner (05-03-1936)
+C   Calci chew d3 kauwtablet 500mg/800ie	0-1-0 stuks, dagelijks, Continu
+C   Clopidogrel tablet 75mg	1-0-0 stuks, dagelijks, Continu
+C   Diclofenac gel 23,2mg/g	x-x-x gram, dagelijks, Continu
+Op nek en schouders aanbrengen
+C   Duraphat tandpasta 5000ppm	x-0-x gram, dagelijks, Continu
+C   Loratadine tablet 10mg	0-1-0 stuks, dagelijks, Continu
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, om de dag, Continu
+C   Paracetamol tablet 500mg	2-2-2 stuks, dagelijks, Continu
+Ivm nekpijn
+C   Relvar ellipta inhpdr 92/22mcg 30do	1-0-0 doses, dagelijks, Continu
+C   Rivastigmine capsule 6mg	0-1-0 stuks, dagelijks, Continu
+C   Saflutan oogdruppels 15mcg/ml flacon 0,3ml	0-0-1 druppels, dagelijks, Continu
+beide ogen
+C   Triamcinolonacetonide creme 1mg/g	x-0-0 smeren, om de dag, Continu
+Op beide onderarmen
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 stuks, dagelijks, Zo nodig
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+zn 1-2 stuks extra bij ostipatie
+Z   Oxazepam tablet 10mg	0-0-0 stuks, dagelijks, Zo nodig
+zn 1 tablet uur voor tandarts bezoek
+Z   Salbutamol aerosol 100ug/do 200do inhalator	0-0-0 doses, dagelijks, Zo nodig
+zo nodig tot 3 keer per dag 2 inhalaties bij benauwdheid =wordt tijdelijk als ventolin geleverd
+Z   Triamcinolonacetonide creme 1mg/g	0-0-0 smeren, dagelijks, Zo nodig
+zn 1-2x daags insmeren op jeuk/krabplekken
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 stuks, dagelijks, Zo nodig
+Mevr. C Huygens (09-03-1951)
+C   Clozapine tablet 6,25mg	1-2-0 stuks, dagelijks, Continu
+C   Colecalciferol tablet 2800ie	2-0-0 stuks, 1x per week, Continu
+=Vitamine D, mag gemalen worden
+C   Duraphat tandpasta 5000ppm	x-0-x gram, dagelijks, Continu
+C   Macrogol/zouten pdr v drank (movic/molax/gen citr)	1-0-0 stuks, dagelijks, Continu
+C   Mebeverine capsule mga 200mg	1-1-0 stuks, dagelijks, Continu
+C   Metformine tablet 500mg	1-0-0 stuks, dagelijks, Continu
+C   Paracetamol tablet 500mg	2-2-1 stuks, dagelijks, Continu
+C   Perio aid intensive care gel 0,12%	x-0-x milliliter, dagelijks, Continu
+aanbrengen op slijmvliezen na het poetsen
+C   Steriskin handalcohol	0-0-x milliliter, dagelijks, Continu
+Op vingers/nagels 1x per dag
+C   Triamcinolonacetonide zalf 1mg/g	x-0-0 smeren, om de dag, Continu
+Op labia smeren
+C   Xarelto tablet filmomhuld 10mg	1-0-0 stuks, dagelijks, Continu
+Z   Covid-19 vaccin niet gespecificeerd injvlst	0-0-0 stuks, dagelijks, Zo nodig
+Z   Macrogol/zouten pdr v drank (movic/molax/gen citr)	0-0-0 stuks, dagelijks, Zo nodig
+zo nodig 1st extra bij neiging obstipatie
+Z   Microlax klysma flacon 5ml	0-0-0 milliliter, dagelijks, Zo nodig
+Z   Paracetamol tablet 500mg	0-0-0 stuks, dagelijks, Zo nodig
+zo nodig 2st extra bij pijn of koorts
+Z   Triamcinolonacetonide zalf 1mg/g	0-0-0 smeren, dagelijks, Zo nodig
+zn 1x daags op scheenbeen rechts als eczeem/plek open is
+Z   Vaxigrip tetra injsusp 2024/2025 wwsp 0,5ml	0-0-0 milliliter, dagelijks, Zo nodig
