@@ -4,7 +4,19 @@ from email.mime.image import MIMEImage
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from typing import Iterable
+from core.models import STSHalfje
 
+def delete_stshalfjes_by_ids(item_ids: Iterable[int]) -> int:
+    """
+    Verwijdert STSHalfje regels op basis van IDs.
+    Retourneert het aantal verwijderde rows.
+    """
+    ids = [int(i) for i in item_ids if str(i).isdigit()]
+    if not ids:
+        return 0
+    deleted, _ = STSHalfje.objects.filter(id__in=ids).delete()
+    return deleted
 
 def send_single_stshalfjes_email(
     to_email: str,

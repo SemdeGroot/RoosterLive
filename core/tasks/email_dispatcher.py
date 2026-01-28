@@ -136,7 +136,7 @@ def email_dispatcher_task(self, job: dict):
         return
     
     if job_type == "stshalfjes_single":
-        from core.utils.emails.stshalfjes_email import send_single_stshalfjes_email
+        from core.utils.emails.stshalfjes_email import send_single_stshalfjes_email, delete_stshalfjes_by_ids
 
         with default_storage.open(p["pdf_path"], "rb") as f:
             pdf_content = f.read()
@@ -163,6 +163,9 @@ def email_dispatcher_task(self, job: dict):
                 )
             else:
                 raise
+        item_ids = p.get("item_ids") or []
+        if item_ids:
+            delete_stshalfjes_by_ids(item_ids)
         return 
     
     if job_type == "no_delivery_single":
@@ -197,6 +200,7 @@ def email_dispatcher_task(self, job: dict):
                 )
             else:
                 raise
+
         return
     
     if job_type == "omzettingslijst_single":

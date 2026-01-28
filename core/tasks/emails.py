@@ -1,3 +1,4 @@
+# core/tasks/emails.py
 from celery import shared_task, chord, group
 from core.tasks.email_dispatcher import email_dispatcher_task
 
@@ -175,6 +176,7 @@ def send_stshalfjes_pdf_task(self, organization_ids):
         items = list(qs)
         if not items:
             continue
+        item_ids = [i.id for i in items]
 
         context = {
             "items": items,
@@ -210,6 +212,7 @@ def send_stshalfjes_pdf_task(self, organization_ids):
                 "filename": filename,
                 "logo_path": logo_path,
                 "contact_email": contact_email,
+                "item_ids": item_ids,
             }
         }).set(queue="mail")
 
