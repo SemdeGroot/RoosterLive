@@ -53,7 +53,7 @@
 
 /* Table kolombreedtes */
 table.stshalfjes-table {
-  --c1: 10px;   /* idx */
+  --c1: 20px;   /* idx */
   --c2: 160px;  /* apotheek */
   --c3: 160px;  /* patiënt */
   --c4: 180px;  /* dob */

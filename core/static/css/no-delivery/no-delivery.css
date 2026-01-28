@@ -116,7 +116,7 @@
 }
 
 table.no-delivery-table {
-  --c1: 10px;
+  --c1: 20px;
   --c2: 100px;
   --c3: 140px;
   --c4: 180px;
@@ -129,7 +129,7 @@ table.no-delivery-table {
 
 @media (max-width: 1150px){
   table.no-delivery-table{
-    min-width: 1080px;
+    min-width: 1090px;
   }
 }
 

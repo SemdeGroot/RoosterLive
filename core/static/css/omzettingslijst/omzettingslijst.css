@@ -108,7 +108,7 @@
 
 /* Tabel sizing */
 table.omzettingslijst-table {
-  --c1: 10px;
+  --c1: 20px;
   --c2: 110px;
   --c3: 140px;
   --c4: 180px;
@@ -121,9 +121,9 @@ table.omzettingslijst-table {
   --c11: 140px; /* acties */
 }
 
-@media (max-width: 1520px){
+@media (max-width: 1530px){
   table.omzettingslijst-table{
-    min-width: 1520px;
+    min-width: 1530px;
   }
 }
 
