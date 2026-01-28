@@ -1,9 +1,5 @@
-// static/js/urendoorgeven/urendoorgeven.js
 (function () {
-  // --------------------------
-  // Config
-  // --------------------------
-  const AUTOSAVE_DEBOUNCE_MS = 2000; // pas autosave als user X sec stopt met typen
+  const AUTOSAVE_DEBOUNCE_MS = 2000;
 
   // --------------------------
   // Helpers
@@ -16,25 +12,24 @@
     const hh = parseInt(m[1], 10);
     const mm = parseInt(m[2], 10);
     if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+    if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
     return hh * 60 + mm;
   }
 
-  // dagdeelMeta start/end -> geschatte uren (1 decimaal)
-  function estimatedHoursForDagdeelId(dagdeelId) {
-    const meta = dagdeelMeta[String(dagdeelId)];
-    if (!meta) return null;
+  function format1(n) {
+    const x = Math.round(n * 10) / 10;
+    return x.toFixed(1).replace(".", ",");
+  }
 
-    const s = timeStrToMinutes(meta.start);
-    const e = timeStrToMinutes(meta.end);
-    if (s == null || e == null) return null;
-
-    let mins = 0;
-    if (e === s) mins = 0;
-    else if (e > s) mins = e - s;
-    else mins = (1440 - s) + e; // over midnight
-
-    const hrs = mins / 60;
-    return Math.round(hrs * 10) / 10; // 1 dec
+  function toNumberHours(v) {
+    if (v == null) return 0;
+    let s = String(v).trim();
+    if (!s) return 0;
+    s = s.replace(",", ".");
+    s = s.replace(/[^\d.]/g, "");
+    if (!s) return 0;
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : 0;
   }
 
   function showHoursWarning(warnEl, text) {
@@ -48,17 +43,13 @@
     warnEl.style.display = "block";
   }
 
-  function formatCountdown(ms) {
-    if (ms <= 0) return "Deadline verstreken";
-    const totalMinutes = Math.floor(ms / 60000);
-    const days = Math.floor(totalMinutes / (60 * 24));
-    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-    const minutes = totalMinutes % 60;
-    return `${days} dagen ${pad2(hours)}:${pad2(minutes)}`;
-  }
-
-  function dateToISO(d) {
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function parseISODate(s) {
@@ -73,76 +64,47 @@
     return dt;
   }
 
+  function dateToISO(d) {
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  }
+
   function isoToDMY(iso) {
     const dt = parseISODate(iso);
     if (!dt) return iso;
     return `${pad2(dt.getDate())}-${pad2(dt.getMonth() + 1)}-${dt.getFullYear()}`;
   }
 
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  // --------------------------
+  // iMask
+  // --------------------------
+  function applyTimeMask(input) {
+    if (!input || !window.IMask) return;
+    window.IMask(input, {
+      mask: 'H{:}M',
+      blocks: {
+        H: { mask: window.IMask.MaskedRange, from: 0, to: 23, maxLength: 2 },
+        M: { mask: window.IMask.MaskedRange, from: 0, to: 59, maxLength: 2 }
+      }
+    });
   }
 
-  function toNumberHours(v) {
-    if (v == null) return 0;
-    let s = String(v).trim();
-    if (!s) return 0;
-    s = s.replace(",", ".");
-    s = s.replace(/[^\d.]/g, "");
-    if (!s) return 0;
-    const n = parseFloat(s);
-    return Number.isFinite(n) ? n : 0;
+  function applyBreakMask(input) {
+    if (!input || !window.IMask) return;
+    window.IMask(input, {
+      mask: Number,
+      scale: 1,
+      signed: false,
+      thousandsSeparator: '',
+      padFractionalZeros: false,
+      normalizeZeros: true,
+      radix: ',',
+      mapToRadix: ['.'],
+      min: 0
+    });
   }
-
-  function format1(n) {
-    const x = Math.round(n * 10) / 10;
-    return x.toFixed(1).replace(".", ",");
-  }
-
-  function validateHoursVsEstimated({ inputEl, dagdeelId, warnEl, mode }) {
-    // mode: "table" of "modal" (alleen tekstverschil)
-    if (!inputEl || !dagdeelId) return;
-
-    const v = (inputEl.value || "").trim();
-    if (!v) {
-      showHoursWarning(warnEl, "");
-      return;
-    }
-
-    const entered = toNumberHours(v); // al in jouw file aanwezig
-    const est = estimatedHoursForDagdeelId(dagdeelId);
-
-    if (est == null) {
-      showHoursWarning(warnEl, "");
-      return;
-    }
-
-    // vergelijking op 0.1 nauwkeurig
-    const diff = Math.round((entered - est) * 10) / 10;
-    if (diff === 0) {
-      showHoursWarning(warnEl, "");
-      return;
-    }
-
-    const estLabel = format1(est);
-    const enteredLabel = format1(entered);
-
-    const txt =
-      mode === "modal"
-        ? `Ingevuld ${enteredLabel} uur, geschat ${estLabel} uur. Klopt dit?`
-        : `Ingevuld ${enteredLabel} uur, geschat ${estLabel} uur. Klopt dit?`;
-
-    showHoursWarning(warnEl, txt);
-  }
-
 
   // --------------------------
-  // CSRF + Fetch helpers
+  // CSRF + fetch
   // --------------------------
   function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -190,8 +152,17 @@
   }
 
   // --------------------------
-  // Deadline countdown
+  // Countdown
   // --------------------------
+  function formatCountdown(ms) {
+    if (ms <= 0) return "Deadline verstreken";
+    const totalMinutes = Math.floor(ms / 60000);
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const minutes = totalMinutes % 60;
+    return `${days} dagen ${pad2(hours)}:${pad2(minutes)}`;
+  }
+
   function setupCountdown() {
     const bar = document.querySelector(".uren-deadline-bar");
     const timerEl = document.getElementById("deadlineTimer");
@@ -212,65 +183,98 @@
   }
 
   // --------------------------
-  // Decimal input behavior (max 1 dec)
+  // Weighted calculation per day (overlap with dagdelen)
   // --------------------------
-  function allowDecimalTyping(input) {
-    let v = input.value;
-    v = v.replace(/[^\d,\.]/g, "");
+  let dagdeelMeta = {};
+  function computeDayTotals({ startHHMM, endHHMM, breakHours }) {
+    const s0 = timeStrToMinutes(startHHMM);
+    const e0 = timeStrToMinutes(endHHMM);
+    if (s0 == null || e0 == null) return { total: 0, weighted: 0 };
 
-    const firstSep = v.search(/[,.]/);
-    if (firstSep !== -1) {
-      const before = v.slice(0, firstSep + 1);
-      const after = v.slice(firstSep + 1).replace(/[,.]/g, "");
-      v = before + after;
+    let s = s0;
+    let e = e0;
+    if (e <= s) e += 1440;
+
+    const rawSegments = []; // { mins, allowancePct }
+    let totalMins = 0;
+
+    Object.entries(dagdeelMeta).forEach(([id, meta]) => {
+      const ds0 = timeStrToMinutes(meta.start);
+      const de0 = timeStrToMinutes(meta.end);
+      if (ds0 == null || de0 == null) return;
+
+      let ds = ds0;
+      let de = de0;
+      if (de <= ds) de += 1440;
+
+      let mins = Math.max(0, Math.min(e, de) - Math.max(s, ds));
+      mins = Math.max(mins, Math.max(0, Math.min(e, de + 1440) - Math.max(s, ds + 1440)));
+
+      if (mins > 0) {
+        rawSegments.push({ mins, allowancePct: Number(meta.allowance_pct || 100) });
+        totalMins += mins;
+      }
+    });
+
+    if (totalMins <= 0) return { total: 0, weighted: 0 };
+
+    const br = Math.max(0, toNumberHours(breakHours));
+    const breakMins = Math.round(br * 60);
+
+    if (breakMins >= totalMins) {
+      return { total: 0, weighted: 0, error: "Pauze is groter dan of gelijk aan de gewerkte tijd." };
     }
 
-    const parts = v.split(/[,.]/);
-    if (parts.length === 2) {
-      const sep = v.includes(",") ? "," : ".";
-      v = parts[0] + sep + (parts[1] || "").slice(0, 1);
-    }
-    input.value = v;
+    let remainingBreak = breakMins;
+    const adjusted = rawSegments.map((seg, idx) => {
+      let red = 0;
+      if (breakMins > 0) {
+        if (idx === rawSegments.length - 1) {
+          red = remainingBreak;
+        } else {
+          red = Math.round((seg.mins / totalMins) * breakMins);
+          red = Math.min(red, seg.mins);
+          remainingBreak -= red;
+        }
+      }
+      return { ...seg, mins: Math.max(0, seg.mins - red) };
+    });
+
+    const totalAdjMins = adjusted.reduce((a, x) => a + x.mins, 0);
+    const totalHours = totalAdjMins / 60;
+
+    const weightedHours = adjusted.reduce((a, x) => {
+      const mult = (Number.isFinite(x.allowancePct) ? x.allowancePct : 100) / 100;
+      return a + (x.mins / 60) * mult;
+    }, 0);
+
+    return { total: totalHours, weighted: weightedHours };
   }
 
-  function normalizeOneDecimal(input) {
-    let v = (input.value || "").trim();
-    if (v === "") return;
-
-    v = v.replace(",", ".");
-    v = v.replace(/[^\d.]/g, "");
-
-    const parts = v.split(".");
-    if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
-
-    if (v.includes(".")) {
-      const [a, b] = v.split(".");
-      v = a + "." + (b || "").slice(0, 1);
-    }
-    input.value = v.replace(".", ",");
-  }
-
-  // --------------------------
-  // Totals
-  // --------------------------
   function recalcTotals() {
     const rows = document.querySelectorAll("tr.uren-row");
     let sumHours = 0;
     let sumWeighted = 0;
 
     rows.forEach((row) => {
-      const allowancePct = parseFloat(row.getAttribute("data-allowance-pct") || "100");
-      const mult = (Number.isFinite(allowancePct) ? allowancePct : 100) / 100;
+      const start = row.querySelector('input[name="row_start"]')?.value || "";
+      const end = row.querySelector('input[name="row_end"]')?.value || "";
+      const br = row.querySelector('input[name="row_break"]')?.value || "";
 
-      const inp = row.querySelector('input[name="row_hours"]');
-      const hours = toNumberHours(inp ? inp.value : 0);
-      const weighted = hours * mult;
+      const res = computeDayTotals({ startHHMM: start, endHHMM: end, breakHours: br });
 
-      sumHours += hours;
-      sumWeighted += weighted;
+      const totalEl = row.querySelector(".total-value");
+      const weightedEl = row.querySelector(".weighted-value");
+      const warnEl = row.querySelector(".hours-warning");
 
-      const wEl = row.querySelector(".weighted-value");
-      if (wEl) wEl.textContent = format1(weighted);
+      if (res.error) showHoursWarning(warnEl, res.error);
+      else showHoursWarning(warnEl, "");
+
+      if (totalEl) totalEl.textContent = format1(res.total || 0);
+      if (weightedEl) weightedEl.textContent = format1(res.weighted || 0);
+
+      sumHours += (res.total || 0);
+      sumWeighted += (res.weighted || 0);
     });
 
     const sumHoursEl = document.getElementById("sumHours");
@@ -294,14 +298,14 @@
     if (!any && !empty) {
       const tr = document.createElement("tr");
       tr.id = "emptyRow";
-      tr.innerHTML = `<td colspan="6" class="muted">Nog geen regels. Klik op “Diensten toevoegen”.</td>`;
+      tr.innerHTML = `<td colspan="8" class="muted">Nog geen regels. Klik op “Diensten toevoegen”.</td>`;
       tbody.appendChild(tr);
     }
     if (any && empty) empty.remove();
   }
 
   // --------------------------
-  // Autosave: only POST when changed + debounce
+  // Autosave
   // --------------------------
   let autosaveTimer = null;
   let lastSnapshot = null;
@@ -326,13 +330,12 @@
     if (!form) return "";
 
     const parts = [];
-
     form.querySelectorAll("tr.uren-row").forEach((row) => {
       const date = row.getAttribute("data-date") || "";
-      const did = row.getAttribute("data-dagdeel-id") || "";
-      const inp = row.querySelector('input[name="row_hours"]');
-      const hours = inp ? (inp.value || "").trim() : "";
-      parts.push(`${date}|${did}|${hours}`);
+      const s = row.querySelector('input[name="row_start"]')?.value?.trim() || "";
+      const e = row.querySelector('input[name="row_end"]')?.value?.trim() || "";
+      const b = row.querySelector('input[name="row_break"]')?.value?.trim() || "";
+      parts.push(`${date}|${s}|${e}|${b}`);
     });
 
     const km = form.querySelector('input[name="kilometers"]');
@@ -345,17 +348,19 @@
     const form = document.getElementById("urenForm");
     const fd = new FormData();
 
-    fd.append("action", "autosave");
+    fd.append("action", "autosave_day");
 
     const rowDates = form.querySelectorAll('input[name="row_date"]');
-    const rowDagdeel = form.querySelectorAll('input[name="row_dagdeel_id"]');
-    const rowHours = form.querySelectorAll('input[name="row_hours"]');
+    const rowStarts = form.querySelectorAll('input[name="row_start"]');
+    const rowEnds = form.querySelectorAll('input[name="row_end"]');
+    const rowBreaks = form.querySelectorAll('input[name="row_break"]');
 
-    const n = Math.min(rowDates.length, rowDagdeel.length, rowHours.length);
+    const n = Math.min(rowDates.length, rowStarts.length, rowEnds.length, rowBreaks.length);
     for (let i = 0; i < n; i++) {
       fd.append("row_date", rowDates[i].value);
-      fd.append("row_dagdeel_id", rowDagdeel[i].value);
-      fd.append("row_hours", rowHours[i].value);
+      fd.append("row_start", rowStarts[i].value);
+      fd.append("row_end", rowEnds[i].value);
+      fd.append("row_break", rowBreaks[i].value);
     }
 
     const km = form.querySelector('input[name="kilometers"]');
@@ -396,48 +401,43 @@
   }
 
   // --------------------------
-  // Bind main table inputs + delete confirm
+  // Bind rows
   // --------------------------
-  function bindHoursInput(input) {
-    if (!input) return;
+  function bindDayRow(tr) {
+    if (!tr) return;
 
-    const tr = input.closest("tr.uren-row");
-    const dagdeelId = tr ? tr.getAttribute("data-dagdeel-id") : null;
-    const warnEl = tr ? tr.querySelector(".hours-warning") : null;
+    const startInp = tr.querySelector('input[name="row_start"]');
+    const endInp = tr.querySelector('input[name="row_end"]');
+    const breakInp = tr.querySelector('input[name="row_break"]');
 
-    input.addEventListener("input", () => {
-      allowDecimalTyping(input);
-      validateHoursVsEstimated({ inputEl: input, dagdeelId, warnEl, mode: "table" });
+    if (startInp) applyTimeMask(startInp);
+    if (endInp) applyTimeMask(endInp);
+    if (breakInp) applyBreakMask(breakInp);
+
+    // normalize existing break dots -> commas
+    if (breakInp && breakInp.value && breakInp.value.includes(".")) {
+      breakInp.value = breakInp.value.replace(".", ",");
+    }
+
+    const onChange = () => {
       recalcTotals();
       scheduleAutosave();
-    });
+    };
 
-    input.addEventListener("blur", () => {
-      normalizeOneDecimal(input);
-      validateHoursVsEstimated({ inputEl: input, dagdeelId, warnEl, mode: "table" });
-      recalcTotals();
-      scheduleAutosave();
+    [startInp, endInp, breakInp].forEach((inp) => {
+      if (!inp) return;
+      inp.addEventListener("input", onChange);
+      inp.addEventListener("blur", onChange);
     });
-
-    // initial validation on bind
-    validateHoursVsEstimated({ inputEl: input, dagdeelId, warnEl, mode: "table" });
   }
 
-
   function setupExistingInputs() {
-    document.querySelectorAll('input[name="row_hours"]').forEach((inp) => bindHoursInput(inp));
+    document.querySelectorAll("tr.uren-row").forEach((tr) => bindDayRow(tr));
 
     const km = document.querySelector('input[name="kilometers"]');
     if (km) {
       km.addEventListener("input", () => scheduleAutosave());
       km.addEventListener("blur", () => scheduleAutosave());
-    }
-
-    const form = document.getElementById("urenForm");
-    if (form) {
-      form.addEventListener("submit", () => {
-        document.querySelectorAll('input[name="row_hours"]').forEach((inp) => normalizeOneDecimal(inp));
-      });
     }
   }
 
@@ -457,58 +457,115 @@
   }
 
   // --------------------------
-  // Upsert rows in main table from modal response
+  // Modal
   // --------------------------
-  function upsertRowInTable(rowData) {
+  let plannedByDate = {};
+  let existingByDate = {};
+  let modalFp = null;
+  let modalCurrentIso = null;
+
+  function setModalMsg(text, isError) {
+    const el = document.getElementById("modalMsg");
+    if (!el) return;
+    el.textContent = text || "";
+    el.style.color = isError ? "var(--danger)" : "var(--muted)";
+  }
+
+  function fillModalFieldsForIso(iso) {
+    const ex = existingByDate[iso] || {};
+    const s = document.getElementById("modalStart");
+    const e = document.getElementById("modalEnd");
+    const b = document.getElementById("modalBreak");
+    if (s) s.value = ex.start || "";
+    if (e) e.value = ex.end || "";
+    if (b) b.value = (ex.break || "0,0").replace(".", ",");
+  }
+
+  function getModalSelectedISO() {
+    const input = document.getElementById("modalDate");
+    const val = input ? (input.value || "").trim() : "";
+    const dt = parseISODate(val);
+    if (dt) return dateToISO(dt);
+    return val && val.length === 10 ? val : null;
+  }
+
+  async function saveModalForIso(iso) {
+    const start = (document.getElementById("modalStart")?.value || "").trim();
+    const end = (document.getElementById("modalEnd")?.value || "").trim();
+    const br = (document.getElementById("modalBreak")?.value || "").trim();
+
+    const fd = new FormData();
+    fd.append("action", "modal_day_upsert");
+    fd.append("date", iso);
+    fd.append("start_time", start);
+    fd.append("end_time", end);
+    fd.append("break_hours", br);
+
+    const resp = await postForm(window.location.href, fd);
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok || !data || !data.ok) {
+      return { ok: false, error: (data && data.error) ? data.error : "Opslaan mislukt." };
+    }
+
+    const row = data.row;
+    upsertDayRowInTable(row);
+
+    existingByDate[iso] = { start: row.start, end: row.end, break: row.break };
+
+    lastSnapshot = buildSnapshot();
+    setAutosaveStatus("Opgeslagen ✅", true);
+
+    return { ok: true, row };
+  }
+
+  function upsertDayRowInTable(rowData) {
     const tbody = document.getElementById("urenTbody");
     if (!tbody) return;
 
     ensureEmptyRow();
 
     const iso = rowData.date;
-    const did = String(rowData.dagdeel_id);
 
-    const existing = tbody.querySelector(`tr.uren-row[data-date="${iso}"][data-dagdeel-id="${did}"]`);
-    if (existing) {
-      const inp = existing.querySelector('input[name="row_hours"]');
-      if (inp) inp.value = rowData.actual_hours || "";
-      if (inp) normalizeOneDecimal(inp);
+    let tr = tbody.querySelector(`tr.uren-row[data-date="${iso}"]`);
+    if (tr) {
+      tr.querySelector('input[name="row_start"]').value = rowData.start || "";
+      tr.querySelector('input[name="row_end"]').value = rowData.end || "";
+      tr.querySelector('input[name="row_break"]').value = (rowData.break || "0,0").replace(".", ",");
+      bindDayRow(tr);
       recalcTotals();
+      scheduleAutosave();
       return;
     }
 
-    const tr = document.createElement("tr");
+    tr = document.createElement("tr");
     tr.className = "uren-row";
     tr.setAttribute("data-date", iso);
-    tr.setAttribute("data-dagdeel-id", did);
-    tr.setAttribute("data-allowance-pct", String(rowData.allowance_pct || 100));
 
     tr.innerHTML = `
       <td class="center-col" style="color:var(--muted);">—</td>
       <td><strong>${escapeHtml(rowData.date_label || isoToDMY(iso))}</strong></td>
-      <td>
-        ${escapeHtml(rowData.dagdeel_label || "Dagdeel")}
-        <div class="muted" style="font-size:.85rem;">
-          ${escapeHtml(rowData.start || "")}–${escapeHtml(rowData.end || "")}
-        </div>
-      </td>
+
       <td>
         <input type="hidden" name="row_date" value="${escapeHtml(iso)}">
-        <input type="hidden" name="row_dagdeel_id" value="${escapeHtml(did)}">
-        <input
-          type="text"
-          name="row_hours"
-          value="${escapeHtml(rowData.actual_hours || "")}"
-          class="admin-input uren-hours-input"
-          inputmode="decimal"
-          placeholder="0,0"
-          autocomplete="off"
-        >
+        <input type="text" name="row_start" value="${escapeHtml(rowData.start || "")}"
+               class="admin-input uren-time-input js-time" inputmode="numeric" placeholder="uu:mm" autocomplete="off">
+      </td>
+
+      <td>
+        <input type="text" name="row_end" value="${escapeHtml(rowData.end || "")}"
+               class="admin-input uren-time-input js-time" inputmode="numeric" placeholder="uu:mm" autocomplete="off">
+      </td>
+
+      <td>
+        <input type="text" name="row_break" value="${escapeHtml((rowData.break || "0,0").replace(".", ","))}"
+               class="admin-input uren-break-input js-break" inputmode="decimal" placeholder="0,0" autocomplete="off">
         <div class="hours-warning" style="margin-top:4px; display:none;"></div>
       </td>
-      <td class="weighted-cell">
-        <strong class="weighted-value">0,0</strong>
-      </td>
+
+      <td class="total-cell"><strong class="total-value">0,0</strong></td>
+      <td class="weighted-cell"><strong class="weighted-value">0,0</strong></td>
+
       <td class="center-col">
         <button type="button" class="icon-btn danger js-remove-row" aria-label="Verwijderen">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
@@ -524,8 +581,7 @@
 
     tbody.appendChild(tr);
 
-    const inp = tr.querySelector('input[name="row_hours"]');
-    bindHoursInput(inp);
+    bindDayRow(tr);
 
     const removeBtn = tr.querySelector(".js-remove-row");
     if (removeBtn) {
@@ -541,255 +597,13 @@
 
     renumberRows();
     recalcTotals();
+    scheduleAutosave();
   }
 
-  // --------------------------
-  // Modal: planned dots + existing hours prefill + UNSAVED confirm
-  // --------------------------
-  let plannedByDate = {};
-  let existingByDate = {};
-  let dagdeelMeta = {};
-
-  let modalFp = null;
-  let modalCurrentIso = null;
-  let modalDirty = false;
-  let modalSnapshotByIso = {};
-
-  function getModalSelectedISO() {
-    const input = document.getElementById("modalDate");
-    const val = input ? (input.value || "").trim() : "";
-    const dt = parseISODate(val);
-    if (dt) return dateToISO(dt);
-    // flatpickr may format differently, but we set alt off -> should be ISO
-    return val && val.length === 10 ? val : null;
-  }
-
-  function buildModalSnapshot() {
-    const iso = modalCurrentIso || getModalSelectedISO();
-    const container = document.getElementById("modalDagdeelList");
-    if (!iso || !container) return "";
-    const parts = [];
-    container.querySelectorAll(".modal-hours-input").forEach((inp) => {
-      const did = inp.getAttribute("data-dagdeel-id") || "";
-      const val = (inp.value || "").trim();
-      parts.push(`${did}=${val}`);
-    });
-    return parts.join("|");
-  }
-
-  function setModalDirtyFromInputs() {
-    if (!modalCurrentIso) return;
-    const snap = buildModalSnapshot();
-    const base = modalSnapshotByIso[modalCurrentIso] || "";
-    modalDirty = (snap !== base);
-  }
-
-  function setModalMsg(text, isError) {
-    const el = document.getElementById("modalMsg");
-    if (!el) return;
-    el.textContent = text || "";
-    el.style.color = isError ? "var(--danger)" : "var(--muted)";
-  }
-
-  function buildDagdeelOptions(forIsoDate) {
-    const container = document.getElementById("modalDagdeelList");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const plannedSet = new Set((plannedByDate[forIsoDate] || []).map(String));
-    const existingMap = existingByDate[forIsoDate] || {};
-
-    const entries = Object.entries(dagdeelMeta); // [id, {label, allowance_pct, start, end}]
-    entries.forEach(([id, meta]) => {
-      const isPlanned = plannedSet.has(String(id));
-      const existingVal = (existingMap[String(id)] || "").trim();
-
-      const row = document.createElement("div");
-      row.className = "uren-dagdeel-option";
-      row.setAttribute("data-dagdeel-id", String(id));
-
-      row.innerHTML = `
-      <div class="uren-dagdeel-top">
-        <div class="uren-dagdeel-left">
-          <span class="planned-dot ${isPlanned ? "" : "muted"}"></span>
-          <div>
-            <div style="font-weight:700;">${escapeHtml(meta.label || "Dagdeel")}</div>
-            <div class="muted" style="font-size:.85rem;">
-              ${escapeHtml(meta.start || "")}–${escapeHtml(meta.end || "")}
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:10px;">
-          <input
-            type="text"
-            class="admin-input uren-hours-input modal-hours-input"
-            data-dagdeel-id="${escapeHtml(String(id))}"
-            value="${escapeHtml(existingVal)}"
-            inputmode="decimal"
-            placeholder="0,0"
-            autocomplete="off"
-            style="width:110px;"
-          />
-          <button type="button" class="icon-btn danger modal-clear-btn" title="Leegmaken" aria-label="Leegmaken">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              <line x1="10" y1="11" x2="10" y2="17"/>
-              <line x1="14" y1="11" x2="14" y2="17"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="hours-warning modal-warning" style="margin-top:6px; display:none;"></div>
-    `;
-
-      container.appendChild(row);
-
-      const hoursInput = row.querySelector(".modal-hours-input");
-      const clearBtn = row.querySelector(".modal-clear-btn");
-      const warnEl = row.querySelector(".modal-warning");
-
-      if (hoursInput) {
-        hoursInput.addEventListener("input", () => {
-          allowDecimalTyping(hoursInput);
-          validateHoursVsEstimated({ inputEl: hoursInput, dagdeelId: id, warnEl, mode: "modal" });
-          setModalDirtyFromInputs();
-        });
-        hoursInput.addEventListener("blur", () => {
-          normalizeOneDecimal(hoursInput);
-          validateHoursVsEstimated({ inputEl: hoursInput, dagdeelId: id, warnEl, mode: "modal" });
-          setModalDirtyFromInputs();
-        });
-
-        // initial check
-        validateHoursVsEstimated({ inputEl: hoursInput, dagdeelId: id, warnEl, mode: "modal" });
-      }
-
-      if (clearBtn) {
-        clearBtn.addEventListener("click", () => {
-          if (!confirm("Weet je zeker dat je deze uren wilt leegmaken?")) return;
-          if (hoursInput) hoursInput.value = "";
-          validateHoursVsEstimated({ inputEl: hoursInput, dagdeelId: id, warnEl, mode: "modal" });
-          setModalDirtyFromInputs();
-        });
-      }
-    });
-
-    // baseline snapshot after render
-    modalSnapshotByIso[forIsoDate] = buildModalSnapshot();
-    modalDirty = false;
-  }
-
-  async function saveModalForIso(iso) {
-    const container = document.getElementById("modalDagdeelList");
-    if (!container) return { ok: false, error: "Modal niet beschikbaar." };
-
-    const inputs = Array.from(container.querySelectorAll(".modal-hours-input"));
-    const chosen = [];
-    inputs.forEach((inp) => {
-      const did = inp.getAttribute("data-dagdeel-id");
-      const val = (inp.value || "").trim();
-      if (did && val !== "") chosen.push({ did, val });
-    });
-
-    // niets ingevuld -> markeer clean
-    if (chosen.length === 0) {
-      modalSnapshotByIso[iso] = buildModalSnapshot();
-      modalDirty = false;
-      return { ok: true, rows: [] };
-    }
-
-    // normalize to 1 decimal (comma)
-    chosen.forEach((x) => {
-      let v = String(x.val || "").trim();
-      v = v.replace(",", ".");
-      v = v.replace(/[^\d.]/g, "");
-      const parts = v.split(".");
-      if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
-      if (v.includes(".")) {
-        const [a, b] = v.split(".");
-        v = a + "." + (b || "").slice(0, 1);
-      }
-      x.val = v.replace(".", ",");
-    });
-
-    const fd = new FormData();
-    fd.append("action", "modal_batch_upsert");
-    fd.append("date", iso);
-    chosen.forEach((x) => {
-      fd.append("dagdeel_id", x.did);
-      fd.append("hours", x.val);
-    });
-
-    const resp = await postForm(window.location.href, fd);
-    const data = await resp.json().catch(() => null);
-
-    if (!resp.ok || !data || !data.ok) {
-      return { ok: false, error: (data && data.error) ? data.error : "Opslaan mislukt." };
-    }
-
-    const rows = data.rows || [];
-    rows.forEach((r) => upsertRowInTable(r));
-
-    // update local cache
-    existingByDate[iso] = existingByDate[iso] || {};
-    rows.forEach((r) => {
-      existingByDate[iso][String(r.dagdeel_id)] = r.actual_hours || "";
-    });
-
-    // baseline snapshot
-    modalSnapshotByIso[iso] = buildModalSnapshot();
-    modalDirty = false;
-
-    // main snapshot refresh + green tick
-    lastSnapshot = buildSnapshot();
-    setAutosaveStatus("Opgeslagen ✅", true);
-
-    return { ok: true, rows };
-  }
-
-  async function maybeSaveBeforeLeavingModal(nextActionLabel) {
-    // returns true if it's ok to continue (either saved, or user chose discard)
-    if (!modalCurrentIso) return true;
-
-    setModalDirtyFromInputs();
-    if (!modalDirty) return true;
-
-    const dmy = isoToDMY(modalCurrentIso);
-    const ok = confirm(`Je hebt onopgeslagen wijzigingen voor ${dmy}. Wil je opslaan?`);
-    if (ok) {
-      setModalMsg("Opslaan...", false);
-      try {
-        const res = await saveModalForIso(modalCurrentIso);
-        if (!res.ok) {
-          setModalMsg(res.error || "Opslaan mislukt.", true);
-          return false; // block leaving
-        }
-        setModalMsg("Opgeslagen.", false);
-        return true;
-      } catch (e) {
-        setModalMsg("Netwerkfout.", true);
-        return false;
-      }
-    }
-
-    // discard changes
-    setModalMsg("", false);
-    modalDirty = false;
-    modalSnapshotByIso[modalCurrentIso] = buildModalSnapshot(); // treat current as baseline now
-    return true;
-  }
-
-  // --------------------------
-  // Modal open/close
-  // --------------------------
   function openModal() {
     const modal = document.getElementById("addModal");
     if (!modal) return;
+
     modal.style.display = "block";
     document.body.style.overflow = "hidden";
     setModalMsg("", false);
@@ -797,23 +611,29 @@
     const input = document.getElementById("modalDate");
     if (!input) return;
 
+    applyTimeMask(document.getElementById("modalStart"));
+    applyTimeMask(document.getElementById("modalEnd"));
+    applyBreakMask(document.getElementById("modalBreak"));
+
     const bounds = getWindowBounds();
     const minDate = bounds.startIso || null;
-    const maxDate = bounds.endIso ? parseISODate(bounds.endIso) : null;
-    const maxIso = maxDate ? dateToISO(new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate() - 1)) : null;
+    const endIso = bounds.endIso || null;
 
-    // choose initial date
+    const maxDateObj = endIso ? parseISODate(endIso) : null;
+    const maxIso = maxDateObj
+      ? dateToISO(new Date(maxDateObj.getFullYear(), maxDateObj.getMonth(), maxDateObj.getDate() - 1))
+      : null;
+
     let initialIso = null;
     const existingIso = getModalSelectedISO();
     if (existingIso && isDateInWindow(existingIso)) initialIso = existingIso;
     else if (plannedByDate && Object.keys(plannedByDate).length > 0) initialIso = Object.keys(plannedByDate)[0];
     else if (minDate) initialIso = minDate;
-
     if (!initialIso) initialIso = dateToISO(new Date());
 
-    // init flatpickr once
     if (!modalFp && window.flatpickr) {
       modalFp = window.flatpickr(input, {
+        locale: "nl",
         dateFormat: "Y-m-d",
         defaultDate: initialIso,
         minDate: minDate || undefined,
@@ -825,71 +645,34 @@
             dayElem.classList.add("has-shift");
           }
         },
-        onChange: async function (selectedDates) {
+        onChange: function (selectedDates) {
           if (!selectedDates || !selectedDates[0]) return;
           const nextIso = dateToISO(selectedDates[0]);
-
           if (!isDateInWindow(nextIso)) {
             setModalMsg("Datum valt buiten de periode.", true);
             return;
           }
-
-          // first selection
-          if (!modalCurrentIso) {
-            modalCurrentIso = nextIso;
-            buildDagdeelOptions(nextIso);
-            modalSnapshotByIso[nextIso] = buildModalSnapshot();
-            modalDirty = false;
-            setModalMsg("", false);
-            return;
-          }
-
-          // same date: nothing
-          if (nextIso === modalCurrentIso) return;
-
-          // confirm unsaved changes for current date
-          const canLeave = await maybeSaveBeforeLeavingModal("datum wisselen");
-          if (!canLeave) {
-            // revert selection back
-            if (modalFp) modalFp.setDate(modalCurrentIso, false, "Y-m-d");
-            return;
-          }
-
-          // switch
           modalCurrentIso = nextIso;
-          buildDagdeelOptions(nextIso);
-          modalSnapshotByIso[nextIso] = buildModalSnapshot();
-          modalDirty = false;
+          fillModalFieldsForIso(nextIso);
           setModalMsg("", false);
         },
       });
     } else {
-      // already exists -> just set date
       if (modalFp) modalFp.setDate(initialIso, true, "Y-m-d");
     }
 
-    // ensure day list rendered for current date
     modalCurrentIso = getModalSelectedISO() || initialIso;
-    buildDagdeelOptions(modalCurrentIso);
-    modalSnapshotByIso[modalCurrentIso] = buildModalSnapshot();
-    modalDirty = false;
+    fillModalFieldsForIso(modalCurrentIso);
   }
 
-  async function closeModalWithConfirm() {
+  function closeModal() {
     const modal = document.getElementById("addModal");
     if (!modal) return;
-
-    const okToClose = await maybeSaveBeforeLeavingModal("sluiten");
-    if (!okToClose) return;
-
     modal.style.display = "none";
     document.body.style.overflow = "";
     setModalMsg("", false);
   }
 
-  // --------------------------
-  // Modal submit button
-  // --------------------------
   function setupModalActions() {
     const openBtn = document.getElementById("openAddModalBtn");
     const closeBtn = document.getElementById("closeAddModalBtn");
@@ -898,26 +681,19 @@
     const modal = document.getElementById("addModal");
 
     if (openBtn) openBtn.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
 
-    if (closeBtn) closeBtn.addEventListener("click", closeModalWithConfirm);
-    if (cancelBtn) cancelBtn.addEventListener("click", closeModalWithConfirm);
-
-    // click outside content closes too (with confirm)
     if (modal) {
-      modal.addEventListener("click", async (e) => {
-        if (e.target === modal) {
-          await closeModalWithConfirm();
-        }
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
       });
     }
 
-    // ESC to close (with confirm)
-    document.addEventListener("keydown", async (e) => {
+    document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         const m = document.getElementById("addModal");
-        if (m && m.style.display === "block") {
-          await closeModalWithConfirm();
-        }
+        if (m && m.style.display === "block") closeModal();
       }
     });
 
@@ -928,25 +704,15 @@
         if (!isDateInWindow(iso)) { setModalMsg("Datum valt buiten de periode.", true); return; }
 
         setModalMsg("Opslaan...", false);
-
         try {
           const res = await saveModalForIso(iso);
           if (!res.ok) {
             setModalMsg(res.error || "Opslaan mislukt.", true);
             return;
           }
-
-          // after save, refresh modal baseline/dirty
-          modalCurrentIso = iso;
-          buildDagdeelOptions(iso);
-          modalSnapshotByIso[iso] = buildModalSnapshot();
-          modalDirty = false;
-
-          // recalc totals & ensure empty row removed
+          setModalMsg("Opgeslagen. Je kunt nog een dienst toevoegen.", false);
           recalcTotals();
           ensureEmptyRow();
-
-          setModalMsg("Opgeslagen. Je kunt nog een dienst toevoegen.", false);
         } catch (e) {
           setModalMsg("Netwerkfout.", true);
         }
@@ -955,7 +721,7 @@
   }
 
   // --------------------------
-  // Init JSON data
+  // Init JSON
   // --------------------------
   function initData() {
     dagdeelMeta = loadJsonScript("dagdeelMeta") || {};
@@ -974,7 +740,6 @@
     recalcTotals();
     ensureEmptyRow();
 
-    // autosave baseline snapshot
     lastSnapshot = buildSnapshot();
     setAutosaveStatus("—", null);
 

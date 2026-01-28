@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Min
 from django.utils import timezone
 
-from core.models import ShiftDraft, Availability, UrenMaand, UrenRegel
+from core.models import ShiftDraft, Availability, UrenMaand, UrenRegel, UrenDag
 
 
 def _monday_of_week(d: date) -> date:
@@ -76,10 +76,14 @@ def _active_month(today: date) -> date:
 @transaction.atomic
 def delete_uren_through_month(month_first: date) -> dict:
     """
-    Verwijdert alle UrenRegel en UrenMaand records met month <= month_first.
-
+    Verwijdert alle UrenDag, UrenRegel en UrenMaand records met month <= month_first.
     Return: dict met aantallen.
     """
+    # UrenDag (nieuw)
+    dag_qs = UrenDag.objects.filter(month__lte=month_first)
+    dag_count = dag_qs.count()
+    dag_qs.delete()
+
     # UrenRegel
     regels_qs = UrenRegel.objects.filter(month__lte=month_first)
     regels_count = regels_qs.count()
@@ -91,10 +95,10 @@ def delete_uren_through_month(month_first: date) -> dict:
     maand_qs.delete()
 
     return {
+        "uren_dag_deleted": int(dag_count),
         "uren_regel_deleted": int(regels_count),
         "uren_maand_deleted": int(maand_count),
     }
-
 
 def cleanup_uren_retention(
     *,
@@ -141,4 +145,4 @@ def delete_ureninvoer_through_month(month_first: date) -> int:
     Return: totaal aantal verwijderde records (urenregels + maanden).
     """
     res = delete_uren_through_month(month_first)
-    return int(res["uren_regel_deleted"] + res["uren_maand_deleted"])
+    return int(res["uren_dag_deleted"] + res["uren_regel_deleted"] + res["uren_maand_deleted"])

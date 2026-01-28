@@ -1382,6 +1382,39 @@ class UrenMaandForm(forms.ModelForm):
             raise ValidationError("Kilometers mogen niet negatief zijn.")
         return v
 
+def _clean_hhmm(v, label):
+    if v in (None, ""):
+        raise ValidationError(f"{label} is verplicht.")
+    v = str(v).strip()
+    # verwacht "HH:MM"
+    import re
+    m = re.match(r"^([01]\d|2[0-3]):([0-5]\d)$", v)
+    if not m:
+        raise ValidationError(f"{label} moet in formaat uu:mm zijn.")
+    hh = int(m.group(1))
+    mm = int(m.group(2))
+    from datetime import time
+    return time(hh, mm)
+
+
+class UrenDagInputForm(forms.Form):
+    start_time = forms.CharField(required=True)
+    end_time = forms.CharField(required=True)
+    break_hours = forms.CharField(required=False)
+
+    def clean_start_time(self):
+        return _clean_hhmm(self.cleaned_data.get("start_time"), "Starttijd")
+
+    def clean_end_time(self):
+        return _clean_hhmm(self.cleaned_data.get("end_time"), "Eindtijd")
+
+    def clean_break_hours(self):
+        d = _clean_1_decimal_decimal(self.cleaned_data.get("break_hours"), "Pauze")
+        if d is None:
+            return Decimal("0.0")
+        if d < 0:
+            raise ValidationError("Pauze mag niet negatief zijn.")
+        return d
 
 class Hours1DecimalField(forms.Form):
     hours = forms.CharField(required=False)

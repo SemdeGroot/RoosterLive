@@ -11,7 +11,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/nl.js" defer></script>
 
+  <script src="https://unpkg.com/imask"></script>
   <script src="{% static 'js/urendoorgeven/urendoorgeven.js' %}" defer></script>
 {% endblock %}
 
@@ -24,10 +26,9 @@
         <h2>Uren doorgeven</h2>
         <p>
           Je vult uren in voor <strong>{{ active_month|date:"F Y" }}</strong>.
-          De deadline voor het invullen is: <strong>{{ deadline_local_str }}</strong>.
+          De deadline voor het invullen is: <strong>{{ deadline_local_str }}</strong>. Na deze datum worden de uren automatisch doorgestuurd naar de apotheek.
         </p>
       </div>
-      {# knop is verplaatst onder tabel #}
     </div>
 
     <div class="uren-deadline-bar" data-deadline="{{ deadline_iso }}" style="margin-top:10px;">
@@ -49,7 +50,6 @@
               <th>Start</th>
               <th>Eind</th>
               <th>Toeslag</th>
-              <th>Geschat (uur)</th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +66,6 @@
                   <span class="muted">(geen)</span>
                 {% endif %}
               </td>
-              <td>{{ r.estimated_hours }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -87,45 +86,56 @@
               <tr>
                 <th class="center-col"></th>
                 <th>Datum</th>
-                <th>Dagdeel</th>
-                <th>Gewerkt</th>
-                <th>Totaal (gewogen)</th>
+                <th>Start</th>
+                <th>Eind</th>
+                <th>Pauze<span class="required-asterisk">*</span></th>
+                <th>Totaal uren</th>
+                <th>Gewogen uren (incl. toeslag)</th>
                 <th></th>
               </tr>
             </thead>
+
             <tbody id="urenTbody">
               {% for r in rows %}
-              <tr class="uren-row"
-                  data-date="{{ r.date|date:'Y-m-d' }}"
-                  data-dagdeel-id="{{ r.dagdeel.id }}"
-                  data-allowance-pct="{{ r.dagdeel.allowance_pct }}"
-              >
+              <tr class="uren-row" data-date="{{ r.date|date:'Y-m-d' }}">
                 <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
 
                 <td><strong>{{ r.date|date:"d-m-Y" }}</strong></td>
 
                 <td>
-                  {{ r.dagdeel.get_code_display }}
-                  <div class="muted" style="font-size:.85rem;">
-                    {{ r.dagdeel.start_time|time:"H:i" }}–{{ r.dagdeel.end_time|time:"H:i" }}
-                  </div>
+                  <input type="hidden" name="row_date" value="{{ r.date|date:'Y-m-d' }}">
+                  <input type="text"
+                         name="row_start"
+                         value="{{ r.start_time|time:'H:i' }}"
+                         class="admin-input uren-time-input js-time"
+                         inputmode="numeric"
+                         placeholder="uu:mm"
+                         autocomplete="off">
                 </td>
 
                 <td>
-                  <input type="hidden" name="row_date" value="{{ r.date|date:'Y-m-d' }}">
-                  <input type="hidden" name="row_dagdeel_id" value="{{ r.dagdeel.id }}">
+                  <input type="text"
+                         name="row_end"
+                         value="{{ r.end_time|time:'H:i' }}"
+                         class="admin-input uren-time-input js-time"
+                         inputmode="numeric"
+                         placeholder="uu:mm"
+                         autocomplete="off">
+                </td>
 
-                  <input
-                    type="text"
-                    name="row_hours"
-                    value="{{ r.actual_hours|default:'' }}"
-                    class="admin-input uren-hours-input"
-                    inputmode="decimal"
-                    placeholder="0,0"
-                    autocomplete="off"
-                  >
+                <td>
+                  <input type="text"
+                         name="row_break"
+                         value="{{ r.break_hours }}"
+                         class="admin-input uren-break-input js-break"
+                         inputmode="decimal"
+                         placeholder="0,0"
+                         autocomplete="off">
                   <div class="hours-warning" style="margin-top:4px; display:none;"></div>
+                </td>
 
+                <td class="total-cell">
+                  <strong class="total-value">0,0</strong>
                 </td>
 
                 <td class="weighted-cell">
@@ -146,21 +156,30 @@
               </tr>
               {% empty %}
               <tr id="emptyRow">
-                <td colspan="6" class="muted">Nog geen regels. Klik op “Diensten toevoegen”.</td>
+                <td colspan="8" class="muted">Nog geen regels. Klik op “Diensten toevoegen”.</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+        <div class="form-help-text">
+          <div>
+            <em>Bijvoorbeeld: Start: 08:00, Eind: 18:00, Pauze: 0,5.</em>
+          </div>
+          <div style="margin-top:4px;">
+            <span class="required-asterisk">*</span>
+            <em>Alleen onbetaalde pauzes invullen. Koffiepauzes worden doorbetaald.</em>
+          </div>
+        </div>
 
-      <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-        <button type="button" class="btn btn-save" id="openAddModalBtn">Diensten toevoegen</button>
-      </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+          <button type="button" class="btn btn-save" id="openAddModalBtn">Diensten toevoegen</button>
+        </div>
 
         <div class="uren-summary">
           <div class="uren-summary-row">
             <div>
-              <div class="muted">Totaal gewerkte uren</div>
+              <div class="muted">Totaal gewerkte uren deze maand</div>
               <div class="uren-summary-value" id="sumHours">0,0</div>
             </div>
             <div>
@@ -181,18 +200,17 @@
 
         <script type="application/json" id="dagdeelMeta">
           {
-            {% for r in toeslag_rows %}
-              "{{ r.dagdeel.id }}": {
-                "label": "{{ r.dagdeel.get_code_display }}",
-                "allowance_pct": {{ r.dagdeel.allowance_pct }},
-                "start": "{{ r.dagdeel.start_time|time:'H:i' }}",
-                "end": "{{ r.dagdeel.end_time|time:'H:i' }}"
+            {% for d in dagdelen %}
+              "{{ d.id }}": {
+                "label": "{{ d.get_code_display }}",
+                "allowance_pct": {{ d.allowance_pct }},
+                "start": "{{ d.start_time|time:'H:i' }}",
+                "end": "{{ d.end_time|time:'H:i' }}"
               }{% if not forloop.last %},{% endif %}
             {% endfor %}
           }
         </script>
 
-        {{ planned_dates|json_script:"plannedDatesJson" }}
         {{ planned_by_date|json_script:"plannedByDateJson" }}
         {{ existing_by_date|json_script:"existingByDateJson" }}
 
@@ -223,9 +241,34 @@
       </div>
 
       <div>
-        <label class="section-label">Dagdelen + uren</label>
-        <div class="uren-modal-dagdelen" id="modalDagdeelList"></div>
-        <div class="form-help-text"><em>Vul uren in bij 1 of meerdere dagdelen en klik op “Toevoegen & opslaan”.</em></div>
+        <label class="section-label">Gewerkt</label>
+
+        <div class="uren-modal-times">
+          <div>
+            <div class="muted" style="font-size:.85rem; margin-bottom:6px;">Start</div>
+            <input type="text" class="admin-input js-time" id="modalStart" placeholder="uu:mm" inputmode="numeric" autocomplete="off">
+          </div>
+          <div>
+            <div class="muted" style="font-size:.85rem; margin-bottom:6px;">Eind</div>
+            <input type="text" class="admin-input js-time" id="modalEnd" placeholder="uu:mm" inputmode="numeric" autocomplete="off">
+          </div>
+          <div>
+            <div class="muted" style="font-size:.85rem; margin-bottom:6px;">
+              Pauze (uur)<span class="required-asterisk">*</span>
+            </div>
+            <input type="text" class="admin-input js-break" id="modalBreak" placeholder="0,0" inputmode="decimal" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-help-text">
+          <div>
+            <em>Bijvoorbeeld: Start: 08:00, Eind: 18:00, Pauze: 0,5.</em>
+          </div>
+          <div style="margin-top:4px;">
+            <span class="required-asterisk">*</span>
+            <em>Alleen onbetaalde pauzes invullen. Koffiepauzes worden doorbetaald.</em>
+          </div>
+        </div>
       </div>
     </div>
 

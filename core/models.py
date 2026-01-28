@@ -1551,6 +1551,42 @@ class UrenRegel(models.Model):
 
     def __str__(self):
         return f"{self.user_id} {self.date} {self.dagdeel.code} ({self.actual_hours})"
+
+class UrenDag(models.Model):
+    """
+    1 record per user per datum met start/eind/pauze (de nieuwe UX input).
+    We blijven UrenRegel vullen als afgeleide tabel.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="uren_dagen",
+    )
+
+    month = models.DateField(db_index=True, help_text="Eerste dag van de actieve maand.")
+    date = models.DateField(db_index=True)
+
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    # pauze in uren met 1 decimaal (bijv. 0,5)
+    break_hours = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=Decimal("0.0"),
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "date"], name="uniq_user_date_urendag"),
+        ]
+        ordering = ["date", "id"]
+
+    def __str__(self):
+        return f"{self.user_id} {self.date} {self.start_time}-{self.end_time} (break={self.break_hours})"
     
 # KompasGPT
 class ScrapedPage(models.Model):
