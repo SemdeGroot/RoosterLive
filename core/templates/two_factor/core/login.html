@@ -16,6 +16,13 @@
 {% endblock %}
 
 {% block content %}
+<noscript>
+  <style>
+    #passwordBlock { display: block !important; }
+    #passkeyStatus { display: none !important; }
+    #passkeyLoginError { display: none !important; }
+  </style>
+</noscript>
 
   {# GEEN messages hier: _base.html rendert ze al #}
 
@@ -31,8 +38,10 @@
       <label class="section-label" for="{{ form.username.id_for_label }}">Naam of E-mail</label>
       {{ form.username }}
 
-      <label class="section-label" for="{{ form.password.id_for_label }}">Wachtwoord</label>
-      {{ form.password }}
+      <div id="passwordBlock" style="display:none;">
+        <label class="section-label" for="{{ form.password.id_for_label }}">Wachtwoord</label>
+        {{ form.password }}
+      </div>
 
       <button class="btn btn-save" type="submit" style="padding: 12px;" data-haptic>{% trans "Inloggen" %}</button>
 
@@ -51,6 +60,12 @@
          class="passkey-message"
          aria-live="polite"
          aria-atomic="true"></p>
+
+      <p id="passkeyLoginError"
+        class="passkey-message error"
+        style="display:none;"
+        aria-live="polite"
+        aria-atomic="true"></p>
 
       <p class="forgot-password forgot-password--left">
         <a href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>

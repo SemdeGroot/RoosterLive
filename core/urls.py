@@ -42,7 +42,7 @@ from core.views.reviewplanner import reviewplanner
 from core.views.portavita import portavita_check
 from core.views.houdbaarheidcheck import houdbaarheidcheck
 from core.views.health import health
-from core.views.passkeys import PasskeySetupView, passkey_registration_options,passkey_register, passkey_password_login, passkey_authenticate,passkey_should_offer, passkey_skip
+from core.views.passkeys import PasskeySetupView, passkey_registration_options,passkey_register, passkey_password_login, passkey_authenticate,passkey_should_offer, passkey_skip, passkey_login_options
 from core.views.native_biometric import native_biometric_enable,native_biometric_login, native_biometric_revoke, native_biometric_skip, native_biometric_password_login
 from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen, afleverstatus
 from core.views.kompasgpt import kompasgpt
@@ -69,6 +69,7 @@ urlpatterns = [
     path("api/passkeys/authenticate/", passkey_authenticate, name="passkeys_authenticate"),
     # API: “eerste login op dit device, passkey aanbieden?”
     path("api/passkeys/should-offer/", passkey_should_offer,name="passkeys_should_offer"),
+    path("api/passkeys/login/options/", passkey_login_options, name="passkeys_login_options"),
     # API: “Overslaan” op setup-pagina
     path("api/passkeys/skip/", passkey_skip, name="passkeys_skip"),
     # Native biometric

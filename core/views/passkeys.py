@@ -27,7 +27,8 @@ from webauthn.helpers.structs import (
     ResidentKeyRequirement,
     UserVerificationRequirement,
     PublicKeyCredentialDescriptor,
-    PublicKeyCredentialType,  
+    PublicKeyCredentialType,
+    AuthenticatorAttachment,  
 )
 from webauthn.helpers.exceptions import (
     InvalidRegistrationResponse,
@@ -40,6 +41,28 @@ from core.models import WebAuthnPasskey
 # =========================
 # interne helpers
 # =========================
+def resolve_user_from_identifier(identifier: str):
+    """
+    Resolve op basis van:
+    - email (met @)
+    - unieke first_name
+    Raises ValueError bij niet-unieke voornaam.
+    """
+    User = get_user_model()
+    ident = (identifier or "").strip()
+    if not ident:
+        return None
+
+    if "@" in ident:
+        return User.objects.filter(email__iexact=ident).only("id").first()
+
+    qs = User.objects.filter(first_name__iexact=ident).only("id")
+    cnt = qs.count()
+    if cnt == 1:
+        return qs.first()
+    if cnt > 1:
+        raise ValueError("Deze voornaam komt vaker voor. Log in met je e-mailadres.")
+    return None
 
 def _get_rp_id(request: HttpRequest) -> str:
     """
@@ -127,7 +150,6 @@ class PasskeySetupView(TemplateView):
 @login_required
 def passkey_registration_options(request: HttpRequest):
     body = json.loads(request.body.decode("utf-8"))
-    device_hash = body.get("device_hash") or ""
 
     user = request.user
     rp_id = _get_rp_id(request)
@@ -163,7 +185,7 @@ def passkey_registration_options(request: HttpRequest):
 
     # challenge als base64url-string opslaan; we decoderen straks weer naar bytes
     challenge_b64u = opts["challenge"]
-    _store_reg_state(request, challenge_b64u, device_hash)
+    _store_reg_state(request, challenge_b64u, "")
 
     return JsonResponse(opts)
 
@@ -212,16 +234,15 @@ def passkey_register(request: HttpRequest):
     sign_count = verification.sign_count
     backed_up = getattr(verification, "credential_backed_up", False)
 
-    # Eén passkey per (user, device_hash)
     WebAuthnPasskey.objects.update_or_create(
-        user=user,
-        device_hash=device_hash or "",
+        credential_id=credential_id_b64u,
         defaults={
-            "credential_id": credential_id_b64u,
+            "user": user,
             "public_key": public_key_bytes,
             "sign_count": sign_count,
             "backed_up": bool(backed_up),
             "last_used_at": timezone.now(),
+            "device_hash": "",  # legacy veld, niet meer gebruiken
         },
     )
 
@@ -367,38 +388,24 @@ def passkey_authenticate(request: HttpRequest):
 # EERSTE LOGIN → PASSKEY OFFER (per device)
 # POST /api/passkeys/should-offer/
 # =========================
-
 @require_POST
 @login_required
 def passkey_should_offer(request: HttpRequest):
-    """
-    Aangeroepen door je JS (checkOfferPasskey).
-    Logica:
-      - Als user op dit apparaat al een passkey heeft: geen offer.
-      - Als user eerder 'overslaan' heeft gekozen voor dit device: geen offer.
-      - Anders: wel offer, met setup_url.
-    """
     body = json.loads(request.body.decode("utf-8"))
-    device_hash = body.get("device_hash") or ""
     next_url = body.get("next") or (request.path + request.META.get("QUERY_STRING", ""))
 
     user = request.user
 
-    if not device_hash:
+    # user heeft al minstens één passkey -> nooit offeren
+    if WebAuthnPasskey.objects.filter(user=user).exists():
         return JsonResponse({"offer": False})
 
-    # Heeft al passkey op dit device?
-    if WebAuthnPasskey.objects.filter(user=user, device_hash=device_hash).exists():
-        return JsonResponse({"offer": False})
-
-    # In deze sessie 'skip' gekozen?
-    if _is_passkey_skip_for_device(request, device_hash):
+    # in deze sessie geskipt?
+    if bool(request.session.get("webauthn_skip_offer", False)):
         return JsonResponse({"offer": False})
 
     setup_url = reverse("passkey_setup")
-    # next param toevoegen
     setup_url = f"{setup_url}?{urlencode({'next': next_url})}"
-
     return JsonResponse({"offer": True, "setup_url": setup_url})
 
 
@@ -410,11 +417,46 @@ def passkey_should_offer(request: HttpRequest):
 @require_POST
 @login_required
 def passkey_skip(request: HttpRequest):
-    """
-    Wordt aangeroepen door JS wanneer gebruiker op 'Overslaan' klikt op de setup pagina.
-    Die JS stuurt device_hash → wij markeren die in de session.
-    """
-    body = json.loads(request.body.decode("utf-8"))
-    device_hash = body.get("device_hash") or ""
-    _mark_passkey_skip_for_device(request, device_hash)
+    request.session["webauthn_skip_offer"] = True
     return JsonResponse({"ok": True})
+
+@require_POST
+def passkey_login_options(request: HttpRequest):
+    body = json.loads(request.body.decode("utf-8"))
+    identifier = (body.get("identifier") or "").strip()
+    next_url = body.get("next") or "/"
+
+    if not identifier:
+        return JsonResponse({"ok": True, "has_passkey": False})
+
+    try:
+        user = resolve_user_from_identifier(identifier)
+    except ValueError as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+
+    if user is None:
+        # anti user-enumeration: doe alsof er geen passkey is
+        return JsonResponse({"ok": True, "has_passkey": False})
+
+    passkeys = WebAuthnPasskey.objects.filter(user=user)
+    if not passkeys.exists():
+        return JsonResponse({"ok": True, "has_passkey": False})
+
+    allowed_credentials = [
+        PublicKeyCredentialDescriptor(
+            id=base64url_to_bytes(pk.credential_id),
+            type=PublicKeyCredentialType.PUBLIC_KEY,
+        )
+        for pk in passkeys
+    ]
+
+    options = generate_authentication_options(
+        rp_id=_get_rp_id(request),
+        allow_credentials=allowed_credentials,
+        user_verification=UserVerificationRequirement.REQUIRED,
+    )
+
+    opts = json.loads(options_to_json(options))
+    _store_auth_state(request, opts["challenge"], user.id, next_url)
+
+    return JsonResponse({"ok": True, "has_passkey": True, "options": opts})

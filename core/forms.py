@@ -419,72 +419,87 @@ class RosterUploadForm(forms.Form):
 
 class IdentifierAuthenticationForm(AuthenticationForm):
     """
-    Login met gebruikersnaam, e-mailadres of unieke voornaam.
-    Form zelf pusht GEEN messages; dat doet de view. Dit voorkomt dubbele meldingen.
+    Login met e-mail of unieke voornaam.
+    Password is optioneel: leeg = alleen identifier check (voor passkey pad),
+    gevuld = normale password login (fallback).
     """
 
     username = forms.CharField(
-        label=_("Gebruikersnaam, e-mailadres of voornaam"),
-        widget=forms.TextInput(attrs={"autofocus": True}),
+        label=_("Naam of e-mail"),
+        widget=forms.TextInput(attrs={"autofocus": True, "autocomplete": "username"}),
     )
 
+    # AuthenticationForm definieert password al; we maken hem optioneel in __init__
     error_messages = {
-        "invalid_login": _(
-            "Combinatie niet gevonden. Controleer je gegevens en probeer het opnieuw."
-        ),
-        "inactive": _(
-            "Dit account is (nog) niet actief. Neem contact op met een beheerder."
-        ),
-        "multiple_firstname": _(
-            "Er zijn meerdere gebruikers met deze voornaam. Log in met je e-mailadres."
-        ),
-        "password_required": _("Voer je wachtwoord in."),
+        "invalid_login": _("Combinatie niet gevonden. Controleer je gegevens en probeer het opnieuw."),
+        "inactive": _("Dit account is (nog) niet actief. Neem contact op met een beheerder."),
+        "multiple_firstname": _("Deze voornaam komt vaker voor. Log in met je e-mailadres."),
+        "unknown_identifier": _("Combinatie niet gevonden. Log in met je e-mailadres."),
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # maak password optioneel (belangrijk voor passkey-first)
+        if "password" in self.fields:
+            self.fields["password"].required = False
+            self.fields["password"].widget.attrs.update({
+                "autocomplete": "current-password",
+            })
 
     def confirm_login_allowed(self, user):
         if not user.is_active:
             raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
 
+    def _resolve_user(self, identifier: str):
+        ident = (identifier or "").strip()
+        if not ident:
+            return None
+
+        # email
+        if "@" in ident:
+            return UserModel.objects.filter(email__iexact=ident).first()
+
+        # voornaam (uniek)
+        qs = UserModel.objects.filter(first_name__iexact=ident)
+        cnt = qs.count()
+        if cnt == 1:
+            return qs.first()
+        if cnt > 1:
+            raise forms.ValidationError(self.error_messages["multiple_firstname"], code="multiple_firstname")
+        return None
+
     def clean(self):
-        identifier = (self.cleaned_data.get("username") or "").strip().lower()
-        password   = self.cleaned_data.get("password")
+        identifier = (self.cleaned_data.get("username") or "").strip()
+        password = self.cleaned_data.get("password")  # kan leeg zijn
 
-        if not password:
-            raise forms.ValidationError(self.error_messages["password_required"], code="password_required")
-
-        resolved_username = None
-        if "@" in identifier:
-            u = UserModel.objects.filter(email__iexact=identifier).only("username").first()
-            if u:
-                resolved_username = u.username
-        else:
-            u = UserModel.objects.filter(username__iexact=identifier).only("username").first()
-            if u:
-                resolved_username = u.username
-            else:
-                qs = UserModel.objects.filter(first_name__iexact=identifier).only("username")
-                cnt = qs.count()
-                if cnt == 1:
-                    resolved_username = qs.first().username
-                elif cnt > 1:
-                    raise forms.ValidationError(self.error_messages["multiple_firstname"], code="multiple_firstname")
-
-        user = authenticate(
-            self.request,
-            username=resolved_username or identifier,
-            password=password,
-        )
+        # 1) resolve user op basis van identifier
+        user = self._resolve_user(identifier)
         if user is None:
-            # Laat Django/two_factor flow lopen, maar met jouw NL tekst
-            raise self.get_invalid_login_error()
+            raise forms.ValidationError(self.error_messages["unknown_identifier"], code="unknown_identifier")
 
         self.confirm_login_allowed(user)
-        self.user_cache = user
+
+        # 2) Als password leeg is: geen password login, maar wél user_cache zetten
+        #    (zodat je passkey pad kan starten)
+        if not password:
+            raise forms.ValidationError(
+                _("Vul je wachtwoord in of gebruik passkey om in te loggen."),
+                code="password_required",
+            )
+
+        # 3) Password gevuld: normale password-auth
+        authed = authenticate(self.request, username=user.get_username(), password=password)
+        if authed is None:
+            raise self.get_invalid_login_error()
+
+        self.confirm_login_allowed(authed)
+        self.user_cache = authed
         return self.cleaned_data
 
     def get_invalid_login_error(self):
         return forms.ValidationError(self.error_messages["invalid_login"], code="invalid_login")
-
+    
 class MyAuthenticationTokenForm(AuthenticationTokenForm):
     """
     Toon slechts 2 meldingen:

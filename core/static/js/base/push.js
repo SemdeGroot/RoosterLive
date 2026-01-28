@@ -502,6 +502,20 @@
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
 
+    function isProbablyMobile() {
+    // Modern (Chromium): betrouwbaar
+    if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+      return navigator.userAgentData.mobile;
+    }
+    // Fallback
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function isDesktopPwaStandalone() {
+    return isStandalone && !isProbablyMobile();
+  }
+
+
     const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
 
     const { modal, btnAllow, btnDecl, btnCloseX, titleEl, textEl } = getModalEls();
@@ -657,6 +671,7 @@
     }
 
     window.offerPushPrompt = function () {
+      if (isDesktopPwaStandalone()) return; 
       if (!modal || Notification.permission !== 'default' || !isStandalone) return;
 
       resetModalUI();
@@ -670,6 +685,7 @@
     };
 
     window.offerPushRepairPrompt = function () {
+      if (isDesktopPwaStandalone()) return;  
       if (!modal || Notification.permission !== 'granted' || !isStandalone) return;
 
       setModalUI({
@@ -705,6 +721,7 @@
     let isChecking = false;
 
     async function runPushHealthCheck() {
+      if (isDesktopPwaStandalone()) return;
       if (!isStandalone || isChecking) return;
       isChecking = true;
 

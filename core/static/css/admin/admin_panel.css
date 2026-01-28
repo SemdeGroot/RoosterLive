@@ -91,13 +91,13 @@
 
 /* USERS: 8 kolommen */
 table.user-table{
-  --c1:70px;   /* Actief */
+  --c1:90px;   /* Actief */
   --c2:120px;  /* Voornaam */
-  --c3:120px;  /* Achternaam */
+  --c3:140px;  /* Achternaam */
   --c4:160px;  /* Organisatie */
   --c5:160px;  /* Functies */
   --c6:140px;  /* Dienstverband */
-  --c7:140px;  /* Groep */
+  --c7:180px;  /* Groep */
   --c8:120px;  /* Acties */
 }
 table.user-table th:nth-child(1),
@@ -164,7 +164,7 @@ table.afdeling-table {
 @media (max-width: 900px) {
   /* USERS: 70 + 120 + 120 + 160 + 140 + 140 + 120 = 870 */
   table.user-table {
-    min-width: 1050px;
+    min-width: 1150px;
   }
 
   /* GROUPS: 180 + 200 + 90 + 120 = 590 */
