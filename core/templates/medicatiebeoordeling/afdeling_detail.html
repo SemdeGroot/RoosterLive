@@ -1,116 +1,143 @@
 {% extends "base.html" %}
 {% load static %}
-{% load tz %}          {% load form_extras %} {% block title %}{{ afdeling.afdeling }}{% endblock %}
+{% load tz %}
+{% load form_extras %}
+
+{% block title %}{{ afdeling.afdeling }}{% endblock %}
 {% block header_title %}Review: {{ afdeling.afdeling }}{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+
+  <script src="{% static 'js/base/table.js' %}" defer></script>
   <script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
 <div class="card birthdays-card">
-    <div class="agenda-section">
-        <div class="birthday-header agenda-section-header">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/afdeling.svg' %}" alt="Afdeling icoon" class="birthday-icon">
 
-        <img src="{% static 'img/afdeling.svg' %}" 
-            alt="Afdeling icoon" 
-            class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>{{ afdeling.afdeling }}</h2>
+        <p>{{ patienten|length }} patiënten</p>
 
-        <div class="birthday-header-text">
-            <h2>{{ afdeling.afdeling }}</h2>
-            <p>{{ patienten|length }} patiënten</p>
+        <p style="font-size:0.85rem; color:var(--muted);">
+          Laatst gewijzigd:
+          {% if afdeling.updated_at %}
+            {{ afdeling.updated_at|date:"d-m-Y H:i" }}
+          {% else %}
+            {{ afdeling.created_at|date:"d-m-Y H:i" }}
+          {% endif %}
+          door
+          <strong>
+            {% if afdeling.updated_by %}
+              {{ afdeling.updated_by|dutch_name }}
+            {% else %}
+              {{ afdeling.created_by|dutch_name }}
+            {% endif %}
+          </strong>
+        </p>
+      </div>
 
-            <p style="font-size:0.85rem; color:var(--muted);">
-                Laatst gewijzigd:
-                {% if afdeling.updated_at %}
-                    {{ afdeling.updated_at|date:"d-m-Y H:i" }}
-                {% else %}
-                    {{ afdeling.created_at|date:"d-m-Y H:i" }}
-                {% endif %}
-                door
-                <strong>
-                {% if afdeling.updated_by %}
-                    {{ afdeling.updated_by|dutch_name }}
-                {% else %}
-                    {{ afdeling.created_by|dutch_name }}
-                {% endif %}
-                </strong>
-            </p>
-        </div>
-
-        <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="text-align: center;">
-            Naar Overzicht
-        </a>
-        <a href="{% url 'medicatiebeoordeling_afdeling_export_pdf' afdeling.pk %}" class="btn btn-save" style="text-align: right;">
-            Exporteer afdeling als PDF
-        </a>
+      <a href="{% url 'medicatiebeoordeling_list' %}" class="btn" style="text-align:center;">
+        Terug naar Historie
+      </a>
+      <a href="{% url 'medicatiebeoordeling_afdeling_export_pdf' afdeling.pk %}" class="btn btn-save" style="text-align:right;">
+        Exporteer afdeling als PDF
+      </a>
     </div>
 
+    <div class="search-container">
+      <input type="text" id="liveSearchPatient" class="search-input" placeholder="Typ om te zoeken op naam of geboortedatum...">
+    </div>
 
-        <div class="search-container">
-            <input type="text" id="liveSearchPatient" class="search-input" placeholder="Typ om te zoeken op naam of geboortedatum...">
-        </div>
+    {# data-crud wrapper zodat base/table.js sorteert #}
+    <div data-crud data-table="#tableDetailPatient" data-page-size="99999">
+      <div class="table-scroll">
+        <table id="tableDetailPatient" class="crud-table med-table table-patient-list">
+          <thead>
+            <tr>
+              <th>Naam</th>
+              <th data-sort="date">Geb. Datum</th>
+              <th data-sort="date">Gewijzigd</th>
+              <th>Door</th>
+              <th data-nosort>Actie</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for patient in patienten %}
+              <tr>
+                <td>
+                  <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}"
+                     style="font-weight:bold; color:var(--text); text-decoration:none;">
+                    {{ patient.naam }}
+                  </a>
+                </td>
 
-        <table id="tableDetailPatient" class="med-table table-patient-list">
-            <thead>
-                <tr>
-                    <th>Naam</th>
-                    <th>Geb. Datum</th> <th>Gewijzigd</th>
-                    <th>Door</th>
-                    <th>Actie</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for patient in patienten %}
-                <tr>
-                    <td>
-                        <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}"
-                        style="font-weight:bold; color:var(--text); text-decoration:none;">
-                            {{ patient.naam }}
-                        </a>
-                    </td>
-                    
-                    <td style="color:var(--muted);">
-                        {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
-                    </td>
-                    
-                    <td>
-                        {% if patient.updated_at %}
-                            {{ patient.updated_at|date:"d-m-Y H:i" }}
-                        {% else %}
-                            {{ patient.created_at|date:"d-m-Y H:i" }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if patient.updated_by %}
-                            {{ patient.updated_by|dutch_name }}
-                        {% else %}
-                            {{ patient.created_by|dutch_name }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="display:flex; gap:6px;">
-                            <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}" class="btn btn-save" style="padding:6px 12px; font-size: 0.9em;">
-                                Bekijk
-                            </a>
-                            <form method="post" action="{% url 'medicatiebeoordeling_delete_patient' patient.pk %}" onsubmit="return confirm('Weet je zeker dat je patiënt {{ patient.naam }} wilt verwijderen?');" style="margin:0;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" style="text-align:center; color:var(--muted);">Geen patiënten gevonden.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+                <td style="color:var(--muted);">
+                  {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
+                </td>
+
+                <td>
+                  {% if patient.updated_at %}
+                    {{ patient.updated_at|date:"d-m-Y H:i" }}
+                  {% else %}
+                    {{ patient.created_at|date:"d-m-Y H:i" }}
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if patient.updated_by %}
+                    {{ patient.updated_by|dutch_name }}
+                  {% else %}
+                    {{ patient.created_by|dutch_name }}
+                  {% endif %}
+                </td>
+
+                <td>
+                  <div style="display:flex; gap:6px;">
+                    <a href="{% url 'medicatiebeoordeling_patient_detail' patient.pk %}"
+                       class="btn btn-save"
+                       style="padding:6px 12px; font-size:0.9em;">
+                      Bekijk
+                    </a>
+
+                    <form method="post"
+                          action="{% url 'medicatiebeoordeling_delete_patient' patient.pk %}"
+                          onsubmit="return confirm('Weet je zeker dat je patiënt {{ patient.naam }} wilt verwijderen?');"
+                          style="margin:0;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger" style="padding:6px; min-width:auto;" title="Verwijderen">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" style="text-align:center; color:var(--muted);">Geen patiënten gevonden.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
+      </div>
+
+      {# Verborgen knop zodat jouw huidige base/table.js (die btn verwacht) initialiseert #}
+      <div class="crud-more-wrap" style="display:none;">
+        <button type="button" class="btn" data-crud-more>Toon meer</button>
+      </div>
     </div>
+
+  </div>
 </div>
 {% endblock %}

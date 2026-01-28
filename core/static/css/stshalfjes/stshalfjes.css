@@ -56,7 +56,7 @@ table.stshalfjes-table {
   --c1: 10px;   /* idx */
   --c2: 160px;  /* apotheek */
   --c3: 160px;  /* patiënt */
-  --c4: 150px;  /* dob */
+  --c4: 180px;  /* dob */
   --c5: 260px;  /* gehalveerd */
   --c6: 260px;  /* alternatief */
   --c7: 90px;   /* acties */
@@ -64,7 +64,7 @@ table.stshalfjes-table {
 
 @media (max-width: 1000px){
   table.stshalfjes-table{
-    min-width: 1090px;
+    min-width: 1120px;
   }
 }
 

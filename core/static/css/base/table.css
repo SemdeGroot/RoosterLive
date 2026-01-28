@@ -158,3 +158,30 @@ tr.is-hidden-row{ display:none !important; }
   border-top:2px solid var(--border);
   margin:18px 0 14px;
 }
+
+/* Sort indicators */
+table.crud-table thead th.is-sortable{
+  user-select:none;
+  position:relative;
+  padding-right:22px;
+}
+
+table.crud-table thead th.is-sortable::after{
+  content:"⇅";
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  opacity:.35;
+  font-size:.9em;
+}
+
+table.crud-table thead th.is-sorted-asc::after{
+  content:"↑";
+  opacity:.9;
+}
+
+table.crud-table thead th.is-sorted-desc::after{
+  content:"↓";
+  opacity:.9;
+}

@@ -29,6 +29,9 @@
           De deadline voor het invullen is: <strong>{{ deadline_local_str }}</strong>. Na deze datum worden de uren automatisch doorgestuurd naar de apotheek.
         </p>
       </div>
+        <a href="{% url 'personeel_tiles' %}" class="btn btn-save">
+          Terug naar Personeel
+        </a>
     </div>
 
     <div class="uren-deadline-bar" data-deadline="{{ deadline_iso }}" style="margin-top:10px;">

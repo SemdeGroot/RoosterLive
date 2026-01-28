@@ -48,7 +48,7 @@ TILE_GROUPS = {
         {"name": "Review planner", "img": "reviewplanner.svg",
          "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
         {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
-        {"name": "Houdbaarheid check", "img": "houdbaarheid.svg",
+        {"name": "Houdbaarheidscheck", "img": "houdbaarheid.svg",
          "url_name": "houdbaarheidcheck", "perm": "can_edit_houdbaarheidcheck"},
         {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
     ],

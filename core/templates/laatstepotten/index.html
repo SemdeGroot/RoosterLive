@@ -74,9 +74,9 @@
                 <th class="center-col"></th>
                 <th>ZI-nummer</th>
                 <th>Geneesmiddel</th>
-                <th>Datum</th>
+                <th data-sort="date">Datum</th>
                 <th>Afhandeling</th>
-                <th>Acties</th>
+                <th data-nosort>Acties</th>
               </tr>
             </thead>
             <tbody>
@@ -150,6 +150,9 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+        <div class="crud-more-wrap">
+          <button type="button" class="btn small" data-crud-more>Toon meer</button>
         </div>
       </div>
     </div>

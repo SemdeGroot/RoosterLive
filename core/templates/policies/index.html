@@ -27,18 +27,28 @@
           <p>Klik op de items om te openen.</p>
         </div>
 
-        {% if can_edit %}
-          <button
-            type="button"
-            class="btn btn-save js-toggle-form"
-            data-target="#werkafspraken-form-{{ category.category }}"
-            aria-expanded="false"
-            aria-controls="werkafspraken-form-{{ category.category }}"
-            title="Werkafspraak toevoegen"
-          >
-            Toevoegen
-          </button>
-        {% endif %}
+        <div class="header-actions">
+          {% if category.category == "baxter" %}
+            <a href="{% url 'baxter_tiles' %}" class="btn">Terug naar {{ category.name }}</a>
+          {% elif category.category == "openbare" %}
+            <a href="{% url 'openbare_tiles' %}" class="btn">Terug naar {{ category.name }}</a>
+          {% elif category.category == "instelling" %}
+            <a href="{% url 'instellings_tiles' %}" class="btn">Terug naar {{ category.name }}</a>
+          {% endif %}
+
+          {% if can_edit %}
+            <button
+              type="button"
+              class="btn btn-save js-toggle-form"
+              data-target="#werkafspraken-form-{{ category.category }}"
+              aria-expanded="false"
+              aria-controls="werkafspraken-form-{{ category.category }}"
+              title="Werkafspraak toevoegen"
+            >
+              Toevoegen
+            </button>
+          {% endif %}
+        </div>
       </div>
 
       {% if can_edit %}

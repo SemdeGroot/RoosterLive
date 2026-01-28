@@ -264,7 +264,7 @@ def kiosk_login_view(request):
         return redirect(reverse("two_factor:login"))
 
     User = get_user_model()
-    kiosk_user, _ = User.objects.get_or_create(
+    kiosk_user, _created = User.objects.get_or_create(
         username="apotheek_kiosk",
         defaults={
             'first_name': 'Apotheek', 
@@ -276,7 +276,7 @@ def kiosk_login_view(request):
     # Koppel de rol
     kiosk_user.groups.set([config.standaard_rol])
 
-    # HIER GING HET MIS: We gebruiken nu auth_login i.p.v. login
+    # We gebruiken nu auth_login i.p.v. login
     auth_login(request, kiosk_user, backend='django.contrib.auth.backends.ModelBackend')
     
     # Markeer sessie voor de 2FA library

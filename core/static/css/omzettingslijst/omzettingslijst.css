@@ -109,21 +109,21 @@
 /* Tabel sizing */
 table.omzettingslijst-table {
   --c1: 10px;
-  --c2: 90px;
+  --c2: 110px;
   --c3: 140px;
-  --c4: 150px;
+  --c4: 180px;
   --c5: 220px;  /* gevraagd */
   --c6: 220px;  /* geleverd */
   --c7: 180px;  /* omschrijving */
-  --c8: 120px;  /* vanaf */
+  --c8: 150px;  /* vanaf */
   --c9: 60px;   /* sts */
   --c10: 80px;  /* roller */
   --c11: 140px; /* acties */
 }
 
-@media (max-width: 1440px){
+@media (max-width: 1520px){
   table.omzettingslijst-table{
-    min-width: 1440px;
+    min-width: 1520px;
   }
 }
 
