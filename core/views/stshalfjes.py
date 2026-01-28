@@ -104,7 +104,7 @@ def export_stshalfjes_pdf(request):
         "apotheek": apotheek,  # kan None zijn
         "generated_at": timezone.localtime(timezone.now()),
         "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-        "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+        "signature_path": _static_abs_path("img/handtekening_roel.png"),
         "contact_email": contact_email,
     }
 

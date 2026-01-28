@@ -228,7 +228,7 @@ def export_omzettingslijst_pdf(request):
         "generated_at": timezone.localtime(timezone.now()),
         "dag_datum": dag_datum,
         "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-        "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+        "signature_path": _static_abs_path("img/handtekening_roel.png"),
         "contact_email": contact_email,
     }
 

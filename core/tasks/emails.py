@@ -41,7 +41,7 @@ def send_nazendingen_pdf_task(self, organization_ids):
         "nazendingen": nazendingen,
         "generated_at": timezone.localtime(timezone.now()),
         "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-        "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+        "signature_path": _static_abs_path("img/handtekening_roel.png"),
         "contact_email": contact_email,
     }
 
@@ -183,7 +183,7 @@ def send_stshalfjes_pdf_task(self, organization_ids):
             "apotheek": org,
             "generated_at": timezone.localtime(timezone.now()),
             "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-            "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+            "signature_path": _static_abs_path("img/handtekening_roel.png"),
             "contact_email": contact_email,
         }
 
@@ -297,7 +297,7 @@ def send_no_delivery_pdf_task(self, no_delivery_list_ids):
             "entries": entries,
             "generated_at": timezone.localtime(timezone.now()),
             "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-            "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+            "signature_path": _static_abs_path("img/handtekening_roel.png"),
             "contact_email": contact_email,
             "dag_datum": dag_datum,
         }
@@ -413,7 +413,7 @@ def send_omzettingslijst_pdf_task(self, omzettingslijst_ids):
             "entries": entries,
             "generated_at": timezone.localtime(timezone.now()),
             "logo_path": _static_abs_path("img/app_icon-1024x1024.png"),
-            "signature_path": _static_abs_path("img/handtekening_apotheker.png"),
+            "signature_path": _static_abs_path("img/handtekening_roel.png"),
             "contact_email": contact_email,
             "dag_datum": dag_datum,
         }
