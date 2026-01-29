@@ -5,11 +5,7 @@
   <meta charset="utf-8" />
   <title></title>
   <style>
-    @page{
-      /* Veelgebruikt labelformaat voor kleine Zebra etiketten */
-      size: 70mm 30mm;
-      margin: 0;
-    }
+    @page { size: 70mm 30mm; margin: 0; }
 
     html, body{
       width: 70mm;
@@ -18,138 +14,128 @@
       padding: 0;
       background: #fff;
       font-family: Arial, Helvetica, sans-serif;
-      color: #111;
+      color: #000;
     }
 
-    /* --- SAFE AREA (Zebra) --- */
     .label{
       box-sizing: border-box;
       width: 100%;
       height: 100%;
-      padding: 3.2mm;          /* iets ruimer = veiliger voor printers */
+      padding-top: 3mm;
+      padding-right: 2mm;
+      padding-bottom: 1.5mm;
+      padding-left: 5mm;
       display: flex;
       flex-direction: column;
-      overflow: hidden;         /* nooit buiten label renderen */
+      overflow: hidden;
     }
 
-    /* --- HEADER: klein linksboven, logo verticaal gecentreerd met tekst --- */
-    .hdr{
+    /* TOP: 2 kolommen (zelfde grid als omzettingslijst) */
+    .top{
       display: flex;
-      align-items: center;
-      gap: 1.8mm;
-      margin-bottom: 1.2mm;
-      flex: 0 0 auto;
-    }
-
-    .hdr img{
-      width: 3.8mm;
-      height: 3.8mm;
-      object-fit: contain;
-      display: block;
-      flex: 0 0 auto;
-    }
-
-    .hdr .meta{
-      line-height: 1.08;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;             /* ellipsis werkt */
-    }
-
-    .hdr .meta .org{
-      font-size: 5.6pt;
-      font-weight: 700;
-      letter-spacing: 0.1px;
-      color: #0b2a5b;            /* donkerblauw mag, geen achtergrond */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 42mm;
-    }
-
-    .hdr .meta .who{
-      font-size: 4.9pt;
-      color: #333;
-      margin-top: 0.2mm;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 42mm;
-    }
-
-    .hdr .meta .addr{
-      font-size: 4.7pt;
-      color: #555;
-      margin-top: 0.15mm;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 42mm;
-    }
-
-    /* --- BODY: "Niet geleverd" blok gecentreerd in etiket --- */
-    .body{
+      gap: 2.1mm;
+      align-items: flex-start;
+      justify-content: space-between;
       flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;       /* horizontaal centreren */
-      text-align: center;
-      justify-content: center;   /* verticaal centreren binnen resterende ruimte */
-      padding-top: 0.6mm;        /* kleine shift naar beneden (fijner voor marge boven) */
-      padding-bottom: 0.6mm;
       min-height: 0;
     }
 
-    .badge{
-      font-size: 5.6pt;
-      font-weight: 800;
-      letter-spacing: 0.35px;
-      color: #111;
-      margin: 0 0 0.8mm 0;
-      text-transform: uppercase;
+    .left{
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .right{
+      flex: 0 0 20mm;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+      gap: 0.5mm;
+    }
+
+    .logo{
+      width: 10mm;
+      height: 10mm;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* TYPO (zelfde stijl/compactheid) */
+    .title{
+      font-size: 7pt;
+      font-weight: 700;
+      line-height: 1.12;
+      margin: 0 0 1mm 0;
     }
 
     .drug{
-    font-size: 6.2pt;
-    font-weight: 800;
-    letter-spacing: 0.1px;
-    color: #0b2a5b;
-    margin: 0 0 0.8mm 0;
+      font-size: 7pt;
+      font-weight: 700;
+      line-height: 1.12;
+      margin: 0 0 0.45mm 0;
+      overflow-wrap: anywhere;
+    }
 
-    max-width: 100%;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip; 
-    overflow-wrap: anywhere; 
-    word-break: break-word;
-  }
+    .patient{
+      font-size: 7pt;
+      font-weight: 700;
+      line-height: 1.06;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
 
-  .line{
-    font-size: 5.0pt;
-    color: #111;
-    margin: 0.25mm 0;
+    .vanaf{
+      font-size: 7pt;
+      font-weight: 500;
+      line-height: 1.06;
+      margin: 0.35mm 0 0 0;
+      overflow-wrap: anywhere;
+    }
 
-    max-width: 100%;
-    white-space: normal;        /* <-- wrap aan */
-    overflow: visible;          /* <-- geen clipping/ellipsis */
-    text-overflow: clip;        /* <-- geen ellipsis */
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
+    .org{
+      font-size: 5.5pt;
+      font-weight: 700;
+      line-height: 1.06;
+      margin: 0;
+    }
 
+    .addr{
+      font-size: 5.5pt;
+      font-weight: 600;
+      line-height: 1.06;
+      margin: 0;
+    }
 
-    .muted{ color: #444; }
-
-    .ftr{
-      flex: 0 0 auto;
-      margin-top: 0.8mm;
-      font-size: 4.4pt;
-      color: #666;
-      text-align: center;
+    .date{
+      font-size: 5.5pt;
+      font-weight: 400;
       line-height: 1;
       white-space: nowrap;
-      padding-right: 0.6mm;
+      text-align: right;
+      flex: 0 0 auto;
+    }
+
+    /* DISCLAIMER onderaan (zelfde plek als omzettingslijst) */
+    .bottom{
+      flex: 0 0 auto;
+      margin-top: 0.55mm;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1.4mm;
+    }
+
+    .note{
+      font-size: 5.8pt;
+      font-weight: 500;
+      line-height: 1.10;
+      max-width: 60mm;
+      overflow: hidden;
+      font-style: italic;
     }
   </style>
 </head>
@@ -157,34 +143,43 @@
 <body>
   <div class="label">
 
-    <div class="hdr">
-      {% if logo_path %}
-        <img src="file://{{ logo_path }}" alt="Apotheek Jansen" />
-      {% endif %}
-      <div class="meta">
+    <div class="top">
+      <!-- LINKS -->
+      <div class="left">
+        <div class="title">Niet geleverd:</div>
+
+        <div class="drug">
+          {{ geneesmiddel|default:"-" }}
+        </div>
+
+        <div class="patient">
+          {{ patient_naam|default:"-" }} - {% if geboortedatum %}{{ geboortedatum|date:"d-m-Y" }}{% else %}-{% endif %}
+        </div>
+
+        <div class="vanaf">
+          Vanaf: {% if vanaf_datum %}{{ vanaf_datum|date:"d-m-Y" }}{% else %}-{% endif %}
+        </div>
+      </div>
+
+      <!-- RECHTS -->
+      <div class="right">
+        {% if logo_path %}
+          <img class="logo" src="file://{{ logo_path }}" alt="Logo" />
+        {% endif %}
         <div class="org">Apotheek Jansen</div>
-        <div class="who">Spacelab 2, Amersfoort</div>
+        <div class="addr">Spacelab 2, Amersfoort</div>
+        <div class="date">
+          {% if generated_at %}{{ generated_at|date:"d-m-Y" }}{% endif %}
+        </div>
       </div>
     </div>
 
-    <div class="body">
-      <div class="badge">Niet geleverd:</div>
-
-      <div class="drug">
-        {{ geneesmiddel|default:"-" }}
+    <div class="bottom">
+      <div class="note">
+        <strong>Let op:</strong> dit geneesmiddel is niet geleverd vanaf
+        {% if vanaf_datum %}{{ vanaf_datum|date:"d-m-Y" }}{% else %}-{% endif %}.
+        Excuses voor het ongemak. Neem bij vragen contact op met de apotheek.
       </div>
-
-      <div class="line muted">
-        Vanaf: {% if vanaf_datum %}{{ vanaf_datum|date:"d-m-Y" }}{% else %}-{% endif %}
-      </div>
-
-      <div class="line">
-        {{ patient_naam|default:"-" }} - {% if geboortedatum %}{{ geboortedatum|date:"d-m-Y" }}{% else %}-{% endif %}
-      </div>
-    </div>
-
-    <div class="ftr">
-      {% if generated_at %}{{ generated_at|date:"d-m-Y" }}{% endif %}
     </div>
 
   </div>
