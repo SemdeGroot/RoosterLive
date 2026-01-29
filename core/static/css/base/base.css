@@ -477,6 +477,15 @@ th,td{
 }
 .footer a.footer-linkedin:hover{ opacity:1; }
 
+.footer a{
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.footer a:hover{
+  color: var(--text);
+}
+
 /* Tablet */
 @media (min-width:600px){
   .header{ padding:14px 20px; gap:16px; }

@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Privacyverklaring</title>
+
+  <link rel="stylesheet" href="{% static 'css/base/colors.css' %}">
+
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      let meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.id = 'meta-theme-color';
+      meta.content = color;
+      document.head.appendChild(meta);
+    })();
+  </script>
+
+  <script src="{% static 'js/base/light_dark.js' %}" defer></script>
+  <meta name="color-scheme" content="dark light">
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    body {
+      margin: 0; padding: 24px; font-family: -apple-system, sans-serif;
+      background: var(--bg); color: var(--text); text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; box-sizing: border-box;
+      padding-bottom: 60px; /* Optische correctie voor PWA statusbar */
+    }
+    .card {
+      width: 100%; max-width: 360px; padding: 32px 24px; background: var(--panel-2);
+      border-radius: 16px; border: 1px solid var(--border);
+      box-shadow: 0 8px 24px var(--card-shadow); position: relative; overflow: hidden;
+      box-sizing: border-box;
+      text-align: left;
+    }
+    /* Zelfde “streep” als ip_restricted */
+    .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent); }
+
+    /* Logo zoals ip_restricted */
+    .app-icon { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 16px; display: block; }
+
+    h1 { margin: 0 0 12px; font-size: 20px; font-weight: 600; text-align: center; }
+    h2 { margin: 18px 0 8px; font-size: 14px; font-weight: 700; color: var(--text); }
+    p { font-size: 14px; line-height: 1.6; margin: 10px 0; color: var(--muted); }
+    ul { margin: 8px 0 12px; padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    li { margin: 6px 0; }
+    a { color: var(--muted); text-decoration: underline; }
+    a:hover { color: var(--text); }
+
+    .btn {
+      color: var(--text); background: var(--button-color); border: 1px solid var(--border);
+      padding: 10px 20px; border-radius: 10px; cursor: pointer; font: inherit;
+      display: inline-flex; transition: all .2s ease; font-size: 15px; font-weight: 500;
+      margin-top: 16px;
+    }
+    .btn:hover { background: var(--button-hover); border-color: var(--accent); }
+    .btn:active { transform: scale(0.98); }
+
+    .actions { display: flex; justify-content: center; }
+    .small { font-size: 12px; color: var(--muted); margin: 10px 0 0; text-align: center; }
+  </style>
+</head>
+
+<body class="login-page">
+  <div class="card">
+
+    <!-- Logo toegevoegd zoals ip_restricted -->
+    <img src="{% static 'img/app_icon_trans-512x512.png' %}" alt="App" class="app-icon">
+
+    <h1>Privacyverklaring</h1>
+    <p class="small">Laatst bijgewerkt: 29 januari 2026</p>
+
+    <div class="actions">
+      <button class="btn" onclick="history.back()">Ga terug</button>
+    </div>
+
+    <p>
+      Deze app is een <strong>interne</strong> applicatie van <strong>Apotheek Jansen Amersfoort</strong>.
+      Wij verwerken persoonsgegevens alleen wanneer dit nodig is om de app goed te laten functioneren
+      en om interne werkprocessen veilig en correct te ondersteunen.
+      We slaan alleen gegevens op die hiervoor noodzakelijk zijn.
+    </p>
+
+    <h2>1. Wie is verantwoordelijk?</h2>
+    <p>
+      <strong>Apotheek Jansen Amersfoort</strong><br>
+      Spacelab 2, Amersfoort<br>
+      Liendertseweg 32, Amersfoort<br><br>
+      Voor vragen kun je contact opnemen met de beheerder via:<br>
+      <a href="mailto:baxterezorg@apotheekjansen.com">baxterezorg@apotheekjansen.com</a>
+    </p>
+
+    <h2>2. Voor wie geldt dit?</h2>
+    <p>Deze privacyverklaring geldt voor:</p>
+    <ul>
+      <li><strong>Gebruikers</strong> (medewerkers) met een account in de app.</li>
+      <li>
+        <strong>Klanten/organisaties</strong> waarvan wij contactgegevens verwerken
+        om transactionele e-mails te sturen over productieprocessen en relevante wijzigingen.
+      </li>
+    </ul>
+
+    <h2>3. Welke gegevens verwerken we?</h2>
+
+    <p><strong>Gebruikers (medewerkers)</strong></p>
+    <ul>
+      <li>Accountgegevens: e-mail, naam, login- en sessiegegevens.</li>
+      <li>Profielgegevens: organisatie, functie, geboortedatum, telefoonnummer en (optioneel) profielfoto.</li>
+      <li>Planninggegevens: beschikbaarheid, ingeplande diensten, taken en agenda-items.</li>
+      <li>Notificatie-instellingen: voorkeuren voor e-mail- en pushmeldingen.</li>
+      <li>Beveiligingsgegevens: 2FA, passkeys en push tokens.</li>
+    </ul>
+
+    <p><strong>Klanten/organisaties</strong></p>
+    <ul>
+      <li>Organisatienaam en type organisatie.</li>
+      <li>E-mailadressen en telefoonnummers voor transactionele communicatie.</li>
+    </ul>
+
+    <h2>4. Patiëntgegevens</h2>
+    <p>
+      Sommige onderdelen van de app kunnen in beperkte gevallen informatie bevatten
+      die direct of indirect herleidbaar is tot een patiënt. Dit gebeurt alleen wanneer dit noodzakelijk is voor het werkproces.
+    </p>
+
+    <p>Wanneer patiëntgegevens worden verwerkt, gelden altijd de volgende maatregelen:</p>
+    <ul>
+      <li>Gevoelige velden zoals naam en geboortedatum worden <strong>versleuteld opgeslagen</strong>.</li>
+      <li>Deze onderdelen zijn alleen toegankelijk voor gebruikers met <strong>specifieke rechten</strong>.</li>
+      <li><strong>Alle pagina’s waarin patiëntgegevens voorkomen zijn IP-afgeschermd</strong> en alleen bereikbaar binnen het beveiligde netwerk van Apotheek Jansen Amersfoort.</li>
+    </ul>
+
+    <h2>5. Waarom verwerken we gegevens?</h2>
+    <ul>
+      <li>Toegang geven tot de app en veilig inloggen mogelijk maken.</li>
+      <li>Roosters, beschikbaarheid en dienstplanning ondersteunen.</li>
+      <li>Interne communicatie via nieuws, agenda en meldingen.</li>
+      <li>Transactionele e-mails sturen aan klanten over productieprocessen.</li>
+    </ul>
+
+    <h2>6. Op welke grondslag (AVG) doen we dat?</h2>
+    <p>
+      Wij verwerken persoonsgegevens omdat dit nodig is voor interne organisatie,
+      bedrijfsvoering en beveiliging.
+      Wanneer bijzondere gegevens worden verwerkt (zoals patiëntgegevens),
+      gebeurt dit uitsluitend wanneer noodzakelijk binnen het zorgproces,
+      met passende waarborgen.
+    </p>
+
+    <h2>7. Toegang en permissies</h2>
+    <p>
+      We gebruiken een streng rechten- en groepssysteem.
+      Medewerkers krijgen alleen toegang tot onderdelen die zij nodig hebben voor hun functie.
+      Dit zorgt ervoor dat gegevens zo beperkt mogelijk zichtbaar zijn binnen de organisatie.
+    </p>
+
+    <h2>8. Profiel en notificaties</h2>
+    <p>
+      In de profielsectie kun je jouw gegevens inzien als medewerker.
+      Gebruikers kunnen (binnenkort) zelf beheren welke profielinformatie zichtbaar is voor collega’s.
+      Ook kunnen notificatievoorkeuren worden ingesteld, zoals het ontvangen van e-mails of pushmeldingen.
+    </p>
+
+    <h2>9. Met wie delen we gegevens?</h2>
+    <p>
+      De app is intern en persoonsgegevens worden niet gedeeld met derden,
+      behalve wanneer dit technisch noodzakelijk is voor de werking van e-mail- en notificatiesystemen.
+      Dit gebeurt altijd beveiligd en uitsluitend voor het bedoelde doel.
+    </p>
+
+    <h2>10. Hoe lang bewaren we gegevens?</h2>
+    <p>
+      Gebruikersgegevens bewaren we zolang iemand bij Apotheek Jansen werkt
+      en toegang nodig heeft tot de app.
+      Bij uitdiensttreding worden accounts gedeactiveerd en gegevens verwijderd waar mogelijk.
+    </p>
+
+    <h2>11. Beveiliging</h2>
+    <p>
+      We nemen maatregelen zoals versleuteling, toegangscontrole via permissies,
+      beveiligde sessies via Multi-Factor Authenticatie en IP-afscherming van gevoelige pagina’s.
+    </p>
+
+    <h2>12. Jouw rechten</h2>
+    <p>
+      Je hebt recht op inzage, correctie en in sommige gevallen verwijdering van je gegevens.
+      Je kunt hiervoor contact opnemen met de beheerder via
+      <a href="mailto:baxterezorg@apotheekjansen.com">baxterezorg@apotheekjansen.com</a>.
+    </p>
+
+    <h2>13. Wijzigingen</h2>
+    <p>
+      We kunnen deze privacyverklaring aanpassen wanneer de app verandert.
+      De nieuwste versie staat altijd op deze pagina.
+    </p>
+
+    <div class="actions">
+      <button class="btn" onclick="history.back()">Ga terug</button>
+    </div>
+
+  </div>
+</body>
+</html>
