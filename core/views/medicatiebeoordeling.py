@@ -14,7 +14,7 @@ from core.views._helpers import can, _static_abs_path, _render_pdf
 from core.tiles import build_tiles
 from core.forms import MedicatieReviewForm, AfdelingEditForm
 from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, Organization
-from core.services.medicatiereview_api import call_review_api
+from core.services.medicatiereview_api import call_review_api, sync_standaardvragen_to_db
 from core.utils.medication import group_meds_by_jansen
 from core.decorators import ip_restricted
 from core.views.export_review_pdf import _build_patient_block
@@ -438,6 +438,7 @@ def review_create(request):
                         )
                         new_patients_created += 1
                         new_pat.refresh_from_db()
+                        sync_standaardvragen_to_db(new_pat, request.user)
 
                         n_naam_clean = new_pat.naam.strip().lower()
                         n_dob_str = str(new_pat.geboortedatum) if new_pat.geboortedatum else "onbekend"
@@ -503,7 +504,7 @@ def review_create(request):
                         created_by=request.user,
                         updated_by=request.user
                     )
-
+                    sync_standaardvragen_to_db(new_pat, request.user)
                     restored = _restore_history_comments(new_pat, p_data, history_map, request.user)
 
                     selected_afdeling.updated_by = request.user
@@ -602,7 +603,12 @@ def patient_detail(request, pk):
             # Importeer _build_patient_block, _render_pdf en _static_abs_path bovenin je bestand!
             
             # Ververs patient object om nieuwe comments mee te nemen
-            patient.refresh_from_db()
+            patient = (
+                MedicatieReviewPatient.objects
+                .select_related("afdeling")
+                .prefetch_related("comments")
+                .get(pk=patient.pk)
+            )
             block = _build_patient_block(patient)
 
             context = {
@@ -636,40 +642,10 @@ def patient_detail(request, pk):
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    # 3. Injecteer Standaardvragen (in MEMORY)
     med_to_group = {}
     for gid, gdata in grouped_meds:
         for m in gdata['meds']:
             med_to_group[m['clean']] = gid
-
-    for vraag_item in vragen:
-        middelen_str = vraag_item.get("betrokken_middelen", "")
-        if not middelen_str: continue
-        
-        target_group_id = None
-        for med_naam, gid in med_to_group.items():
-            if med_naam in middelen_str:
-                target_group_id = gid
-                break
-        
-        if target_group_id:
-            vraag_tekst = f"{vraag_item['vraag']}"
-            
-            if target_group_id in comments_lookup:
-                existing_comment = comments_lookup[target_group_id]
-                if vraag_tekst not in (existing_comment.tekst or ""):
-                    if existing_comment.tekst:
-                        existing_comment.tekst += "\n" + vraag_tekst
-                    else:
-                        existing_comment.tekst = vraag_tekst
-            else:
-                temp_comment = MedicatieReviewComment(
-                    patient=patient,
-                    jansen_group_id=target_group_id,
-                    tekst=vraag_tekst,
-                    historie=""
-                )
-                comments_lookup[target_group_id] = temp_comment
 
     return render(request, "medicatiebeoordeling/patient_detail.html", {
         "patient": patient,

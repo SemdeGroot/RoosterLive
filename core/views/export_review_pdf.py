@@ -33,57 +33,12 @@ class PdfPatientBlock:
 # =========================
 
 def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
-    """
-    Exact dezelfde logica als patient_detail,
-    maar zonder analyses renderen.
-    """
     analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
-    vragen = analysis.get("analyses", {}).get("standaardvragen", [])
-
     grouped_meds = group_meds_by_jansen(meds)
 
-    # Comments ophalen
     db_comments = patient.comments.all()
-    comments_lookup: Dict[str, MedicatieReviewComment] = {
-        c.jansen_group_id: c for c in db_comments
-    }
-
-    # Injecteer standaardvragen
-    med_to_group = {}
-    for gid, gdata in grouped_meds:
-        for m in gdata.get("meds", []):
-            med_to_group[m.get("clean")] = gid
-
-    for vraag in vragen:
-        middelen = vraag.get("betrokken_middelen", "")
-        if not middelen:
-            continue
-
-        target_gid = None
-        for med, gid in med_to_group.items():
-            if med and med in middelen:
-                target_gid = gid
-                break
-
-        if not target_gid:
-            continue
-
-        vraag_tekst = vraag.get("vraag", "").strip()
-        if not vraag_tekst:
-            continue
-
-        if target_gid in comments_lookup:
-            c = comments_lookup[target_gid]
-            if vraag_tekst not in (c.tekst or ""):
-                c.tekst = (c.tekst + "\n" + vraag_tekst).strip() if c.tekst else vraag_tekst
-        else:
-            comments_lookup[target_gid] = MedicatieReviewComment(
-                patient=patient,
-                jansen_group_id=target_gid,
-                tekst=vraag_tekst,
-                historie=""
-            )
+    comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
     return PdfPatientBlock(
         patient=patient,

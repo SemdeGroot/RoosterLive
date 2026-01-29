@@ -1,6 +1,10 @@
+# core/services/medicatiereview_api.py
 import requests
 import json
 from django.conf import settings
+from django.db import transaction
+from core.models import MedicatieReviewComment, MedicatieReviewPatient
+from core.utils.medication import group_meds_by_jansen
 
 def call_review_api(text, source="medimo", scope="afdeling", geboortedatum=None):
     url = settings.MEDICATIEREVIEW_API_URL
@@ -51,3 +55,67 @@ def call_review_api(text, source="medimo", scope="afdeling", geboortedatum=None)
         errors.append(f"Fout bij communicatie met de medicatiereview-service: {str(e)}")
 
     return results, errors
+
+def sync_standaardvragen_to_db(patient: MedicatieReviewPatient, user=None) -> int:
+    """
+    Maak standaardvragen uit analysis_data 1-op-1 aan als DB-comments,
+    maar alleen als er nog géén comment-record bestaat voor die jansen_group_id.
+    Hierdoor:
+      - vragen worden 'echt' bewerkbaar/verwijderbaar
+      - als apotheker tekst leeg maakt en opslaat -> record bestaat -> komt niet terug
+    """
+    analysis = patient.analysis_data or {}
+    meds = analysis.get("geneesmiddelen", [])
+    vragen = analysis.get("analyses", {}).get("standaardvragen", []) or []
+    if not vragen:
+        return 0
+
+    grouped_meds = group_meds_by_jansen(meds)
+
+    # map medicatie-clean -> group_id
+    med_to_group = {}
+    for gid, gdata in grouped_meds:
+        for m in gdata.get("meds", []):
+            clean = m.get("clean")
+            if clean:
+                med_to_group[clean] = gid
+
+    # bestaande comment-records (ook lege tekst!) tellen als "bestaat al"
+    existing_gids = set(
+        patient.comments.values_list("jansen_group_id", flat=True)
+    )
+
+    created = 0
+    to_create = []
+
+    for vraag in vragen:
+        middelen = (vraag.get("betrokken_middelen") or "").strip()
+        vraag_tekst = (vraag.get("vraag") or "").strip()
+        if not middelen or not vraag_tekst:
+            continue
+
+        target_gid = None
+        for med, gid in med_to_group.items():
+            if med in middelen:
+                target_gid = gid
+                break
+        if not target_gid:
+            continue
+
+        if target_gid in existing_gids:
+            continue
+
+        to_create.append(MedicatieReviewComment(
+            patient=patient,
+            jansen_group_id=target_gid,
+            tekst=vraag_tekst,
+            historie="",
+            updated_by=user
+        ))
+        existing_gids.add(target_gid)
+
+    if to_create:
+        MedicatieReviewComment.objects.bulk_create(to_create)
+        created = len(to_create)
+
+    return created
