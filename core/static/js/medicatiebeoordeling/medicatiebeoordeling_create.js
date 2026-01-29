@@ -24,18 +24,21 @@ $(document).ready(function() {
     // ==========================================
     const instructions = {
         'medimo_afdeling': `
-            1. Controleer rechtsboven of de juiste zorginstelling geselecteerd is.<br>
-            2. Ga naar <em>Alle overzichten</em> en kies <em>Overzicht medicatie patiënt</em>.<br>
-            3. Selecteer de gewenste afdeling.<br>
-            4. Selecteer en kopieer alles vanaf de kop <em>Overzicht medicatie Afdeling</em> tot en met de laatste medicatieregel.<br>
-            5. Plak de tekst in het vak hieronder en start de analyse.
+        1. Controleer rechtsboven of de juiste zorginstelling geselecteerd is.<br>
+        2. Ga naar <em>Alle overzichten</em> en kies <em>Overzicht medicatie patiënt/bewoner/cliënt/gebruiker</em> (verschilt per organisatie).<br>
+        3. Selecteer de gewenste afdeling.<br>
+        4. Selecteer en kopieer alles vanaf de kop <em>Overzicht medicatie Afdeling</em> t/m de laatste medicatieregel.
+            <strong>Let op:</strong> als je niet het volledige overzicht van de hele afdeling kopieert, kan er data verloren gaan. Het systeem verwijdert namelijk patiënten die niet meer in het overzicht staan.
+            Wil je slechts één patiënt beoordelen? Kies dan <em>Individueel</em> bij <em>Type Review</em> in het formulier.<br>
+        5. Plak de tekst in het vak hieronder en start de analyse.
         `,
         'medimo_patient': `
-            1. Controleer rechtsboven of de juiste zorginstelling is geselecteerd.<br>
-            2. Zoek rechtsboven de patiënt die je wilt beoordelen.<br>
-            3. Vul hierboven de afdeling in die onder de naam van de patiënt staat.<br>
-            4. Kopieer de gegevens door op de knop <em>Medicatie</em> te klikken.<br>
-            5. Plak het overzicht in het tekstvak hieronder.
+        1. Controleer rechtsboven of de juiste zorginstelling geselecteerd is.<br>
+        2. Zoek rechtsboven de patiënt die je wilt beoordelen.<br>
+        3. Selecteer hierboven de afdeling die onder de naam van de patiënt staat.<br>
+        4. Vul de naam en geboortedatum van de patiënt exact in zoals in Medimo.<br>
+        5. Kopieer de gegevens door op de knop <em>Medicatie</em> te klikken.<br>
+        6. Plak het overzicht in het tekstvak hieronder en start de analyse.
         `
     };
 
@@ -82,12 +85,85 @@ $(document).ready(function() {
     toggleSinglePatientFields();
 
     // ==========================================
-    // 4. IMASK: GEBOORTEDATUM (dd-mm-jjjj)
+    // 4. IMASK: GEBOORTEDATUM (dd-mm-jjjj) agenda-style + min/max
     // ==========================================
+    (function () {
     const dobEl = document.getElementById('id_patient_geboortedatum');
-    if (dobEl && window.IMask) {
-        IMask(dobEl, { mask: '00-00-0000' });
+    if (!dobEl || !window.IMask) return;
+
+    // placeholder komt uit HTML; hier alleen als fallback
+    if (!dobEl.getAttribute('placeholder')) {
+        dobEl.setAttribute('placeholder', 'dd-mm-jjjj');
     }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const minYear = 1900;
+    const maxYear = today.getFullYear();
+
+    const dobMask = IMask(dobEl, {
+        mask: 'd-m-Y',
+        lazy: true,        // geen underscores
+        overwrite: true,
+        autofix: false,    // agenda gebruikt false; ranges blokkeren al veel
+        blocks: {
+        d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+        m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+        Y: { mask: IMask.MaskedRange, from: minYear, to: maxYear, maxLength: 4 }
+        }
+    });
+
+    function parseDMY(value) {
+        const parts = (value || '').split('-');
+        if (parts.length !== 3) return null;
+
+        const dd = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10);
+        const yyyy = parseInt(parts[2], 10);
+
+        if (!dd || !mm || !yyyy) return null;
+        if (yyyy < minYear || yyyy > maxYear) return null;
+
+        // echte kalenderdatum check (31-02 mag niet)
+        const d = new Date(yyyy, mm - 1, dd);
+        if (
+        d.getFullYear() !== yyyy ||
+        d.getMonth() !== (mm - 1) ||
+        d.getDate() !== dd
+        ) return null;
+
+        // niet in de toekomst
+        const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        if (dateOnly > today) return null;
+
+        return dateOnly;
+    }
+
+    function setInvalid(isInvalid) {
+        dobEl.classList.toggle('is-invalid', !!isInvalid);
+    }
+
+    // Blur = valideren
+    dobEl.addEventListener('blur', function () {
+        const v = dobEl.value.trim();
+
+        // als dit veld optioneel is: leeg is ok
+        if (!v) return setInvalid(false);
+
+        // IMask compleet?
+        if (!dobMask.masked.isComplete) return setInvalid(true);
+
+        // min/max + echte datum
+        const parsed = parseDMY(v);
+        setInvalid(!parsed);
+    });
+
+    // Tijdens typen: haal error weg
+    dobEl.addEventListener('input', function () {
+        setInvalid(false);
+    });
+    })();
+
 
     // ==========================================
     // 5. TABEL FILTER (ZOEKFUNCTIE)

@@ -36,7 +36,7 @@
         {% endif %}
 
         <div style="margin-bottom: 24px;">
-            <label class="section-label">Selecteer Afdeling</label>
+            <label class="section-label" style="margin-bottom: 6px;">Selecteer Afdeling</label>
 
             {{ form.afdeling_id }}
 
@@ -59,14 +59,14 @@
         {# --- EXTRA: SINGLE PATIENT VELDEN --- #}
         <div id="single-patient-fields" style="display:none; margin-bottom: 15px;">
             <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                <div style="margin-bottom: 15px; flex:1;">
+                <div style="margin-bottom: 0px; flex:1;">
                     <label class="section-label">{{ form.patient.label }}</label>
                     {{ form.patient }}
                     {% if form.patient.errors %}
                         <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.patient.errors }}</div>
                     {% endif %}
                 </div>
-                <div style="margin-bottom: 15px; flex:1;">
+                <div style="margin-bottom: 0px; flex:1;">
                     <label class="section-label">{{ form.patient_geboortedatum.label }}</label>
                     {{ form.patient_geboortedatum }}
                     {% if form.patient_geboortedatum.errors %}
@@ -78,11 +78,11 @@
 
         <div style="margin-bottom: 15px;">
             <div id="instruction-wrapper" style="display:none; margin-bottom: 15px;">
-                <label class="section-label">Instructie:</label>
-                <div id="instruction-content" class="alert alert-info" style="margin-bottom: 10px; font-size: 0.9em; background-color: var(--bg); color: var(--text); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
+                <label class="section-label" style="margin-bottom: 6px;">Instructie:</label>
+                <div id="instruction-content" class="alert alert-info" style="margin-bottom: 24px; font-size: 0.9em; background-color: var(--bg); color: var(--text); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
                 </div>
             </div>
-
+            <label class="section-label">Medicatieoverzicht:</label>
             {{ form.medimo_text }}
         </div>
 

@@ -78,12 +78,13 @@ def _restore_history_comments(new_pat, p_data, history_map, user):
     for group_id, group_data in grouped_meds:
         key = (n_naam_clean, n_dob_str, group_id)
         if key in history_map:
-            MedicatieReviewComment.objects.create(
+            MedicatieReviewComment.objects.update_or_create(
                 patient=new_pat,
                 jansen_group_id=group_id,
-                historie=history_map[key],
-                tekst="",
-                updated_by=user
+                defaults={
+                    "historie": history_map[key],
+                    "updated_by": user,
+                }
             )
             restored += 1
     return restored
@@ -449,12 +450,13 @@ def review_create(request):
                         for group_id, group_data in grouped_meds:
                             key = (n_naam_clean, n_dob_str, group_id)
                             if key in history_map:
-                                MedicatieReviewComment.objects.create(
+                                MedicatieReviewComment.objects.update_or_create(
                                     patient=new_pat,
                                     jansen_group_id=group_id,
-                                    historie=history_map[key],
-                                    tekst="",
-                                    updated_by=request.user
+                                    defaults={
+                                        "historie": history_map[key],
+                                        "updated_by": request.user,
+                                    }
                                 )
                                 comments_restored += 1
 

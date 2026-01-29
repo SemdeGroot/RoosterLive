@@ -345,7 +345,7 @@ ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
 if DEBUG:
     # Lokaal: we pakken de DEV url of vallen terug op localhost
-    MEDICATIEREVIEW_API_URL = os.getenv("DEV_MEDICATIEREVIEW_API_URL", "http://127.0.0.1:8001/api/review")
+    MEDICATIEREVIEW_API_URL = os.getenv("PROD_MEDICATIEREVIEW_API_URL", "http://127.0.0.1:8001/api/review")
 else:
     # Productie: we pakken de PROD url (Lambda)
     MEDICATIEREVIEW_API_URL = os.getenv("PROD_MEDICATIEREVIEW_API_URL")

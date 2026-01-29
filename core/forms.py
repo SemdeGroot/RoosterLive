@@ -7,7 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 from datetime import datetime
 
@@ -833,7 +833,6 @@ class InschrijvingItemForm(forms.ModelForm):
         return url
     
 class MedicatieReviewForm(forms.Form):
-
     afdeling_id = forms.ModelChoiceField(
         queryset=MedicatieReviewAfdeling.objects.none(),
         required=True,
@@ -859,17 +858,24 @@ class MedicatieReviewForm(forms.Form):
 
     patient = forms.CharField(
         required=False,
-        label="Patiënt (zoals in Medimo)",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_patient'})
+        label="Patiëntnaam (zoals in Medimo)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_patient',
+            'placeholder': 'Bijv. Dhr. A Einstein of Mevr. M Curie',
+            'autocomplete': 'off',
+        })
     )
 
     patient_geboortedatum = forms.CharField(
         required=False,
         label="Geboortedatum",
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
+            'class': 'form-control js-date',
             'id': 'id_patient_geboortedatum',
-            'placeholder': 'dd-mm-jjjj'
+            'placeholder': 'dd-mm-jjjj',
+            'inputmode': 'numeric',
+            'autocomplete': 'off',
         })
     )
 
@@ -878,7 +884,7 @@ class MedicatieReviewForm(forms.Form):
         widget=forms.Textarea(attrs={
             'class': 'form-input',
             'rows': 12,
-            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier...'
+            'placeholder': 'Kopieer het medicatieoverzicht volgens de instructies hierboven en plak het hier...'
         }),
         required=True
     )
@@ -895,30 +901,40 @@ class MedicatieReviewForm(forms.Form):
         """
         Parse dd-mm-jjjj naar date.
         - Als leeg: return None (wordt in clean() verplicht gemaakt bij scope=patient)
-        - Als fout: raise ValidationError (dan staat error netjes op het veld)
+        - Valideert ook:
+          * jaar >= 1900
+          * niet in de toekomst
         """
         raw = (self.cleaned_data.get("patient_geboortedatum") or "").strip()
         if not raw:
             return None
+
         try:
-            return datetime.strptime(raw, "%d-%m-%Y").date()
+            d = datetime.strptime(raw, "%d-%m-%Y").date()
         except ValueError:
             raise forms.ValidationError("Ongeldige datum. Gebruik dd-mm-jjjj.")
+
+        if d.year < 1900:
+            raise forms.ValidationError("Geboortedatum kan niet vóór 1900 liggen.")
+
+        today = timezone.localdate()
+        if d > today:
+            raise forms.ValidationError("Geboortedatum kan niet in de toekomst liggen.")
+
+        return d
 
     def clean(self):
         cleaned = super().clean()
         scope = cleaned.get("scope")
 
         if scope == "patient":
-            # patient is al getrimd door clean_patient()
             patient = cleaned.get("patient") or ""
-            dob_date = cleaned.get("patient_geboortedatum")  # dit is nu date of None
+            dob_date = cleaned.get("patient_geboortedatum")  # date of None
 
             if not patient:
                 self.add_error("patient", "Vul de patiëntnaam in (zoals in Medimo).")
 
             if not dob_date:
-                # als leeg -> None, dus hier verplicht maken
                 self.add_error("patient_geboortedatum", "Vul de geboortedatum in (dd-mm-jjjj).")
 
         return cleaned
