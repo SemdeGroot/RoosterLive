@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.template.loader import render_to_string
+from django.db import transaction
 
 # Imports van jouw helpers, forms en models
 from core.views._helpers import can, _static_abs_path, _render_pdf
@@ -44,6 +45,63 @@ def format_dutch_user_name(user):
         parts[-1] = parts[-1].capitalize()
         
     return " ".join(parts)
+
+def _patient_key(naam: str, geboortedatum) -> tuple[str, str]:
+    naam_clean = (naam or "").strip().lower()
+    dob_str = str(geboortedatum) if geboortedatum else "onbekend"
+    return naam_clean, dob_str
+
+def _build_history_map_for_patients(patients_qs):
+    """
+    Zelfde als jouw afdeling-logica, maar works voor 1 of meerdere patiënten.
+    Returns: dict[(naam_clean, dob_str, group_id)] = oude_tekst
+    """
+    history_map = {}
+    patients = patients_qs.prefetch_related("comments")
+    for old_pat in patients:
+        p_naam_clean, p_dob_str = _patient_key(old_pat.naam, old_pat.geboortedatum)
+
+        for comment in old_pat.comments.all():
+            content_to_save = comment.tekst or ""
+            if content_to_save:
+                key = (p_naam_clean, p_dob_str, comment.jansen_group_id)
+                history_map[key] = content_to_save
+    return history_map
+
+def _restore_history_comments(new_pat, p_data, history_map, user):
+    meds = p_data.get("geneesmiddelen", [])
+    grouped_meds = group_meds_by_jansen(meds)
+
+    n_naam_clean, n_dob_str = _patient_key(new_pat.naam, new_pat.geboortedatum)
+
+    restored = 0
+    for group_id, group_data in grouped_meds:
+        key = (n_naam_clean, n_dob_str, group_id)
+        if key in history_map:
+            MedicatieReviewComment.objects.create(
+                patient=new_pat,
+                jansen_group_id=group_id,
+                historie=history_map[key],
+                tekst="",
+                updated_by=user
+            )
+            restored += 1
+    return restored
+
+def _find_existing_patient_in_afdeling(selected_afdeling, patient_name, patient_dob):
+    """
+    patient_dob is date object (preferred), or string.
+    Vergelijkt gedecrypteerde waarden via Python.
+    """
+    target_name = (patient_name or "").strip().lower()
+    target_dob_str = str(patient_dob) if patient_dob else "onbekend"
+
+    candidates = selected_afdeling.patienten.all().only("id", "naam", "geboortedatum")
+    for pat in candidates:
+        p_name, p_dob = _patient_key(pat.naam, pat.geboortedatum)
+        if p_name == target_name and p_dob == target_dob_str:
+            return pat
+    return None
 
 # --- STANDAARD LIST VIEW (Server-side rendered) ---
 @ip_restricted
@@ -271,80 +329,106 @@ def clear_afdeling_review(request, pk):
 def review_create(request):
     """
     Formulier om nieuwe review te starten.
+    - scope=afdeling: bestaande flow (alles vervangen)
+    - scope=patient: vervang alleen 1 patiënt binnen de gekozen afdeling, met behoud van historie
     """
     if not can(request.user, "can_perform_medicatiebeoordeling"):
         return HttpResponseForbidden("Geen rechten om uit te voeren.")
 
-    # Context data voor de dropdown (alleen afdelingen nodig)
-    all_afdelingen = MedicatieReviewAfdeling.objects.select_related('organisatie').order_by('afdeling', 'organisatie__name')
-    
-    # Init form
+    all_afdelingen = (
+        MedicatieReviewAfdeling.objects
+        .select_related("organisatie")
+        .order_by("afdeling", "organisatie__name")
+    )
+
     review_form = MedicatieReviewForm()
 
-    # We checken direct op de start button of gewoon POST, 
-    # omdat dit nu de enige actie op de pagina is.
     if request.method == "POST" and "btn_start_review" in request.POST:
         review_form = MedicatieReviewForm(request.POST)
-        
-        if review_form.is_valid():
-            selected_afdeling = review_form.cleaned_data['afdeling_id']
-            text = review_form.cleaned_data['medimo_text']
-            source = review_form.cleaned_data['source']
-            scope = review_form.cleaned_data['scope']
 
-            result, errors = call_review_api(text, source, scope)
+        if review_form.is_valid():
+            selected_afdeling = review_form.cleaned_data["afdeling_id"]
+            text = review_form.cleaned_data["medimo_text"]
+            source = review_form.cleaned_data["source"]
+            scope = review_form.cleaned_data["scope"]
+
+            # Single patient inputs: door Form al opgeschoond/gevalideerd
+            patient_name = review_form.cleaned_data.get("patient")  # string (getrimd)
+            patient_dob = review_form.cleaned_data.get("patient_geboortedatum")  # date object of None
+
+            # --------------------------
+            # API CALL
+            # --------------------------
+            if scope == "patient":
+                # geboortedatum altijd aanwezig door form-validatie (maar check safe)
+                result, errors = call_review_api(
+                    text, source, scope,
+                    geboortedatum=patient_dob.isoformat() if patient_dob else None
+                )
+            else:
+                result, errors = call_review_api(text, source, scope)
 
             if errors:
-                for e in errors: messages.error(request, e)
-            elif result:
-                parsed_naam = result.get("afdeling", "").strip()
-                selected_naam = selected_afdeling.afdeling.strip()
+                for e in errors:
+                    messages.error(request, e)
+                return render(request, "medicatiebeoordeling/create.html", {
+                    "form": review_form,
+                    "afdelingen": all_afdelingen,
+                })
 
-                if parsed_naam.lower() != selected_naam.lower():
-                    messages.error(request, 
+            if not result:
+                messages.error(request, "Geen antwoord van server.")
+                return render(request, "medicatiebeoordeling/create.html", {
+                    "form": review_form,
+                    "afdelingen": all_afdelingen,
+                })
+
+            # --------------------------
+            # AFDELING MATCH CHECK
+            # --------------------------
+            parsed_naam = (result.get("afdeling") or "").strip()
+            selected_naam = (selected_afdeling.afdeling or "").strip()
+
+            if scope == "afdeling":
+                if parsed_naam and parsed_naam.lower() != selected_naam.lower():
+                    messages.error(
+                        request,
                         f"⚠️ FOUT: Je selecteerde '{selected_naam}', maar de tekst is van '{parsed_naam}'."
                     )
-                else:
-                    # 3. Match OK -> Verwerk Data
-                    
-                    # --- STAP A: Historie veiligstellen ---
+                    return render(request, "medicatiebeoordeling/create.html", {
+                        "form": review_form,
+                        "afdelingen": all_afdelingen,
+                    })
+
+            patients_data = result.get("data", []) or []
+
+            # ==========================
+            # 1) SCOPE: AFDELING
+            # ==========================
+            if scope == "afdeling":
+                with transaction.atomic():
                     history_map = {}
-                    
-                    # We halen de oude patiënten op
-                    current_patients = selected_afdeling.patienten.all().prefetch_related('comments')
-                    
+
+                    current_patients = selected_afdeling.patienten.all().prefetch_related("comments")
                     for old_pat in current_patients:
-                        # 1. Naam normaliseren (kleine letters, geen spaties rondom)
                         p_naam_clean = old_pat.naam.strip().lower()
-                        
-                        # 2. Datum normaliseren naar string 'YYYY-MM-DD'
                         p_dob_str = str(old_pat.geboortedatum) if old_pat.geboortedatum else "onbekend"
 
                         for comment in old_pat.comments.all():
-                            # We slaan op als er tekst of historie was
-                            content_to_save = ""
-                            if comment.tekst:
-                                content_to_save += comment.tekst
-                            
-                            # Als er iets te bewaren is, stop het in de map
+                            content_to_save = comment.tekst or ""
                             if content_to_save:
-                                # De sleutel is: (naam, geboortedatum, groep_id)
                                 key = (p_naam_clean, p_dob_str, comment.jansen_group_id)
                                 history_map[key] = content_to_save
 
-                    # --- STAP B: Database opschonen ---
                     selected_afdeling.patienten.all().delete()
                     selected_afdeling.updated_by = request.user
                     selected_afdeling.save()
 
-                    # --- STAP C: Nieuwe patiënten & Comments herstellen ---
-                    patients_data = result.get("data", [])
                     new_patients_created = 0
                     comments_restored = 0
-                    
+
                     for p_data in patients_data:
-                        # 1. Patiënt aanmaken
-                        new_pat = MedicatieReviewPatient(
+                        new_pat = MedicatieReviewPatient.objects.create(
                             afdeling=selected_afdeling,
                             naam=p_data.get("naam", "Onbekend"),
                             geboortedatum=p_data.get("geboortedatum"),
@@ -352,40 +436,91 @@ def review_create(request):
                             created_by=request.user,
                             updated_by=request.user
                         )
-                        new_pat.save()
                         new_patients_created += 1
-                        
-                        # CRUCIAAL: Haal de patiënt direct vers op uit de DB.
                         new_pat.refresh_from_db()
-                        
-                        # 2. Sleutel genereren voor lookup 
+
                         n_naam_clean = new_pat.naam.strip().lower()
                         n_dob_str = str(new_pat.geboortedatum) if new_pat.geboortedatum else "onbekend"
 
-                        # 3. Checken op historie
                         meds = p_data.get("geneesmiddelen", [])
                         grouped_meds = group_meds_by_jansen(meds)
-                        
+
                         for group_id, group_data in grouped_meds:
                             key = (n_naam_clean, n_dob_str, group_id)
-                            
                             if key in history_map:
-                                old_text = history_map[key]
-                                
-                                # We maken de comment aan met de oude tekst in 'historie'
                                 MedicatieReviewComment.objects.create(
                                     patient=new_pat,
                                     jansen_group_id=group_id,
-                                    historie=old_text,
-                                    tekst="", # Leeg voor nieuwe input
+                                    historie=history_map[key],
+                                    tekst="",
                                     updated_by=request.user
                                 )
                                 comments_restored += 1
-                    
-                    messages.success(request, f"Analyse geslaagd. {new_patients_created} patiënten verwerkt ({comments_restored} x opmerkingen uit historie toegevoegd).")
-                    return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
-            else:
-                messages.error(request, "Geen antwoord van server.")
+
+                messages.success(
+                    request,
+                    f"Analyse geslaagd. {new_patients_created} patiënten verwerkt "
+                    f"({comments_restored} x opmerkingen uit historie toegevoegd)."
+                )
+                return redirect("medicatiebeoordeling_afdeling_detail", pk=selected_afdeling.pk)
+
+            # ==========================
+            # 2) SCOPE: PATIENT
+            # ==========================
+            if scope == "patient":
+                if not patients_data:
+                    messages.error(request, "Geen patiënt gevonden in response.")
+                    return render(request, "medicatiebeoordeling/create.html", {
+                        "form": review_form,
+                        "afdelingen": all_afdelingen,
+                    })
+
+                p_data = patients_data[0]
+
+                # Matching uitsluitend op form-waarden (jouw waarheid)
+                match_name = patient_name
+                match_dob = patient_dob
+
+                with transaction.atomic():
+                    existing = _find_existing_patient_in_afdeling(
+                        selected_afdeling,
+                        match_name,
+                        match_dob
+                    )
+
+                    history_map = {}
+                    if existing:
+                        history_map = _build_history_map_for_patients(
+                            MedicatieReviewPatient.objects.filter(pk=existing.pk)
+                        )
+                        existing.delete()
+
+                    new_pat = MedicatieReviewPatient.objects.create(
+                        afdeling=selected_afdeling,
+                        naam=match_name,          # altijd uit form
+                        geboortedatum=match_dob,  # altijd uit form (date object)
+                        analysis_data=p_data,
+                        created_by=request.user,
+                        updated_by=request.user
+                    )
+
+                    restored = _restore_history_comments(new_pat, p_data, history_map, request.user)
+
+                    selected_afdeling.updated_by = request.user
+                    selected_afdeling.save()
+
+                if existing:
+                    messages.success(request, f"Single patient review bijgewerkt. ({restored} x historie toegevoegd).")
+                else:
+                    messages.success(request, f"Single patient review toegevoegd. ({restored} x historie toegevoegd).")
+
+                return redirect("medicatiebeoordeling_patient_detail", pk=new_pat.pk)
+
+            messages.error(request, "Onbekende scope.")
+            return render(request, "medicatiebeoordeling/create.html", {
+                "form": review_form,
+                "afdelingen": all_afdelingen,
+            })
 
     return render(request, "medicatiebeoordeling/create.html", {
         "form": review_form,

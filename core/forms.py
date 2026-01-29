@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
+from datetime import datetime
 
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
@@ -830,46 +831,97 @@ class InschrijvingItemForm(forms.ModelForm):
         if " " in url:
             raise ValidationError("URL mag geen spaties bevatten.")
         return url
-
-class MedicatieReviewForm(forms.Form):
     
+class MedicatieReviewForm(forms.Form):
+
     afdeling_id = forms.ModelChoiceField(
-        queryset=MedicatieReviewAfdeling.objects.none(), # Wordt in view gevuld
+        queryset=MedicatieReviewAfdeling.objects.none(),
         required=True,
         widget=forms.Select(attrs={'class': 'form-control django-select2'})
     )
-    
+
     BRON_CHOICES = [("medimo", "Medimo")]
-    SCOPE_CHOICES = [("afdeling", "Volledige Afdeling")]#, ("patient", "Individuele Patiënt")
+    SCOPE_CHOICES = [("afdeling", "Volledige Afdeling"), ("patient", "Individuele Patiënt")]
 
     source = forms.ChoiceField(
-        choices=BRON_CHOICES, 
+        choices=BRON_CHOICES,
         initial="medimo",
         label="Bron (AIS)",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_source'})
     )
+
     scope = forms.ChoiceField(
-        choices=SCOPE_CHOICES, 
+        choices=SCOPE_CHOICES,
         initial="afdeling",
         label="Type Review",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_scope'})
     )
-    
+
+    patient = forms.CharField(
+        required=False,
+        label="Patiënt (zoals in Medimo)",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_patient'})
+    )
+
+    patient_geboortedatum = forms.CharField(
+        required=False,
+        label="Geboortedatum",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_patient_geboortedatum',
+            'placeholder': 'dd-mm-jjjj'
+        })
+    )
+
     medimo_text = forms.CharField(
         label="Plak hier de tekst uit het geselecteerde AIS",
         widget=forms.Textarea(attrs={
-            'class': 'form-input', 
-            'rows': 12, 
-            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier... Bijvoorbeeld:\n\nOverzicht medicatie Argusvlinder\nEen overzicht van alle actieve medicatie in afdeling Argusvlinder. Per patient wordt weergegeven of en zo ja welke geneesmiddelen deze mensen gebruiken.\n\n10 records in selectie\n________________________________________\nDhr. A Einstein (14-03-1879)\nC   Clozapine tablet 6,25mg	0-0-4 stuks, dagelijks, Continu\nEtc...'
+            'class': 'form-input',
+            'rows': 12,
+            'placeholder': 'Kopieer de tekst van de afdeling en plak deze hier...'
         }),
         required=True
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Vul de queryset zodat validatie werkt
         self.fields['afdeling_id'].queryset = MedicatieReviewAfdeling.objects.all()
 
+    def clean_patient(self):
+        # Trim altijd; maakt matching stabieler
+        return (self.cleaned_data.get("patient") or "").strip()
+
+    def clean_patient_geboortedatum(self):
+        """
+        Parse dd-mm-jjjj naar date.
+        - Als leeg: return None (wordt in clean() verplicht gemaakt bij scope=patient)
+        - Als fout: raise ValidationError (dan staat error netjes op het veld)
+        """
+        raw = (self.cleaned_data.get("patient_geboortedatum") or "").strip()
+        if not raw:
+            return None
+        try:
+            return datetime.strptime(raw, "%d-%m-%Y").date()
+        except ValueError:
+            raise forms.ValidationError("Ongeldige datum. Gebruik dd-mm-jjjj.")
+
+    def clean(self):
+        cleaned = super().clean()
+        scope = cleaned.get("scope")
+
+        if scope == "patient":
+            # patient is al getrimd door clean_patient()
+            patient = cleaned.get("patient") or ""
+            dob_date = cleaned.get("patient_geboortedatum")  # dit is nu date of None
+
+            if not patient:
+                self.add_error("patient", "Vul de patiëntnaam in (zoals in Medimo).")
+
+            if not dob_date:
+                # als leeg -> None, dus hier verplicht maken
+                self.add_error("patient_geboortedatum", "Vul de geboortedatum in (dd-mm-jjjj).")
+
+        return cleaned
 
 class AfdelingEditForm(forms.ModelForm):
     class Meta:

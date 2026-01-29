@@ -24,8 +24,6 @@
   </style>
 </noscript>
 
-  {# GEEN messages hier: _base.html rendert ze al #}
-
   <form method="post" autocomplete="off" novalidate>
     {% csrf_token %}
     {{ wizard.management_form }}
@@ -35,7 +33,10 @@
 
     {# STAP 1: username + password #}
     {% if form.username and form.password %}
-      <label class="section-label" for="{{ form.username.id_for_label }}">Naam of E-mail</label>
+        <p class="password-logintext">
+        Vul je voornaam of e-mailadres in (als je voornaam niet uniek is). Bevestig daarna met je passkey. Lukt dat niet, gebruik dan je wachtwoord en 2FA-code.
+      </p>
+      <label class="section-label" for="{{ form.username.id_for_label }}">Voornaam of E-mail</label>
       {{ form.username }}
 
       <div id="passwordBlock" style="display:none;">

@@ -79,8 +79,8 @@ body {
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 10px var(--shadow);
-  margin: 30px auto; /* 40px boven/onder */
-  margin-bottom: 40px;
+  margin: 20px auto; /* 40px boven/onder */
+  margin-bottom: 0px;
 }
 
 .logo-login{
@@ -243,6 +243,14 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
   text-align:center;
   color:var(--muted);
   margin-top: 0;
+  font-size: 1.0rem;
+  line-height: 1.4;
+}
+
+.password-logintext{
+  text-align:center;
+  color:var(--muted);
+  margin-top: 24px !important;
   font-size: 1.0rem;
   line-height: 1.4;
 }

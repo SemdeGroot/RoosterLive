@@ -1,7 +1,7 @@
 // Bestand: static/js/medicatiebeoordeling/medicatiebeoordeling_create.js
 
 $(document).ready(function() {
-    
+
     // ==========================================
     // 1. SELECT2 INITIALISATIE
     // ==========================================
@@ -11,11 +11,10 @@ $(document).ready(function() {
         width: '100%'
     });
 
-    // Zorg dat de focus direct in het zoekveld komt bij openen
     $select.on('select2:open', function() {
         const searchField = document.querySelector('.select2-search__field');
         if (searchField) {
-            searchField.placeholder = "Typ om te zoeken..."; 
+            searchField.placeholder = "Typ om te zoeken...";
             searchField.focus();
         }
     });
@@ -23,8 +22,6 @@ $(document).ready(function() {
     // ==========================================
     // 2. DYNAMISCHE INSTRUCTIES (Source & Scope)
     // ==========================================
-    
-    // Definieer hier de teksten. 
     const instructions = {
         'medimo_afdeling': `
             1. Controleer rechtsboven of de juiste zorginstelling geselecteerd is.<br>
@@ -43,12 +40,12 @@ $(document).ready(function() {
     };
 
     function updateInstruction() {
-        const source = $('#id_source').val(); 
+        const source = $('#id_source').val();
         const scope = $('#id_scope').val();
-        
-        const $wrapper = $('#instruction-wrapper'); 
-        const $content = $('#instruction-content'); 
-        
+
+        const $wrapper = $('#instruction-wrapper');
+        const $content = $('#instruction-content');
+
         const key = `${source}_${scope}`;
 
         if (instructions[key]) {
@@ -65,11 +62,39 @@ $(document).ready(function() {
     updateInstruction();
 
     // ==========================================
-    // 3. TABEL FILTER (ZOEKFUNCTIE)
+    // 3. SINGLE PATIENT: SHOW/HIDE EXTRA FIELDS
+    // ==========================================
+    function toggleSinglePatientFields() {
+        const scope = $('#id_scope').val();
+        const $block = $('#single-patient-fields');
+
+        if (scope === 'patient') {
+            $block.slideDown(200);
+        } else {
+            $block.slideUp(200);
+            // optioneel: velden leegmaken als je terugschakelt
+            $('#id_patient').val('');
+            $('#id_patient_geboortedatum').val('');
+        }
+    }
+
+    $('#id_scope').on('change', toggleSinglePatientFields);
+    toggleSinglePatientFields();
+
+    // ==========================================
+    // 4. IMASK: GEBOORTEDATUM (dd-mm-jjjj)
+    // ==========================================
+    const dobEl = document.getElementById('id_patient_geboortedatum');
+    if (dobEl && window.IMask) {
+        IMask(dobEl, { mask: '00-00-0000' });
+    }
+
+    // ==========================================
+    // 5. TABEL FILTER (ZOEKFUNCTIE)
     // ==========================================
     $('#manageSearchInput').on('keyup', function() {
         const filter = $(this).val().toLowerCase();
-        
+
         $('.manage-row').each(function() {
             const $row = $(this);
             const text = $row.text().toLowerCase();
@@ -78,9 +103,8 @@ $(document).ready(function() {
     });
 
     // ==========================================
-    // 5. REVIEW LOADING OVERLAY (Start Analyse)
+    // 6. REVIEW LOADING OVERLAY (Start Analyse)
     // ==========================================
-    // Alleen voor het formulier dat de medicatiereview start
     const $reviewForm = $('form').filter(function() {
         return $(this).find('input[name="btn_start_review"]').length > 0;
     });
@@ -90,41 +114,32 @@ $(document).ready(function() {
             const $overlay = $('#review-loading-overlay');
             if (!$overlay.length) return;
 
-            // Basis state
             $('#review-loading-main').text('Applicatie opstarten...');
             $overlay.removeClass('is-long-wait').addClass('is-visible');
 
-            // Oude timers opruimen (voor het geval van back/forward nav)
             if (window.reviewLoadingTimers && window.reviewLoadingTimers.length) {
                 window.reviewLoadingTimers.forEach(function(id) { clearTimeout(id); });
             }
             window.reviewLoadingTimers = [];
 
-            // Na 5 seconden: andere tekst
             window.reviewLoadingTimers.push(
                 setTimeout(function() {
                     $('#review-loading-main').text('Medicatiereview uitvoeren...');
                 }, 5000)
             );
 
-            // Na 20 seconden: overlay een subtiel "lange wachttijd" accent geven
             window.reviewLoadingTimers.push(
                 setTimeout(function() {
                     $overlay.addClass('is-long-wait');
                 }, 20000)
             );
-
-            // Geen preventDefault: formulier mag normaal submitten
-            // De overlay blijft zichtbaar totdat de server response terug is
         });
     }
-
 });
 
 // ==========================================
-// 4. GLOBALE FUNCTIES (Voor onclick="" attributes)
+// GLOBALE FUNCTIES (Voor onclick="" attributes)
 // ==========================================
-
 window.toggleEditRow = function(id) {
     const row = document.getElementById('edit-row-' + id);
     if (row) {
