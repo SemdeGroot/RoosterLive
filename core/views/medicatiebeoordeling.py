@@ -13,9 +13,9 @@ from django.db import transaction
 from core.views._helpers import can, _static_abs_path, _render_pdf
 from core.tiles import build_tiles
 from core.forms import MedicatieReviewForm, AfdelingEditForm
-from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, Organization
+from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient, MedicatieReviewComment, MedicatieReviewMedGroupOverride
 from core.services.medicatiereview_api import call_review_api, sync_standaardvragen_to_db
-from core.utils.medication import group_meds_by_jansen
+from core.utils.medication import group_meds_by_jansen, get_jansen_group_choices
 from core.decorators import ip_restricted
 from core.views.export_review_pdf import _build_patient_block
 
@@ -553,31 +553,36 @@ def patient_detail(request, pk):
     if not can(request.user, "can_view_medicatiebeoordeling"):
         return HttpResponseForbidden()
 
-    # Gebruik select_related en prefetch voor betere performance bij export
     patient = (
         MedicatieReviewPatient.objects
         .select_related("afdeling")
-        .prefetch_related("comments")
+        .prefetch_related("comments", "med_group_overrides")
         .get(pk=pk)
     )
-    
-    analysis = patient.analysis_data 
+
+    analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
     vragen = analysis.get("analyses", {}).get("standaardvragen", [])
 
-    # 1. Groeperen op Jansen ID
-    grouped_meds = group_meds_by_jansen(meds)
+    # -----------------------------
+    # OVERRIDES LOOKUP
+    # -----------------------------
+    overrides_qs = patient.med_group_overrides.all()
+    overrides_lookup = {(o.med_clean or "").strip(): o.target_jansen_group_id for o in overrides_qs}
+    override_name_lookup = {(o.med_clean or "").strip(): (o.override_name or "") for o in overrides_qs}
+
+    grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
 
     # --- POST ---
     if request.method == "POST":
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
-        # Stap A: Opslaan van alle wijzigingen
+        # A) Comments/historie opslaan (jouw bestaande logic)
         for group_id, group_data in grouped_meds:
             key_tekst = f"comment_{group_id}"
             key_historie = f"historie_{group_id}"
-            
+
             defaults_data = {"updated_by": request.user}
 
             if key_tekst in request.POST:
@@ -591,24 +596,74 @@ def patient_detail(request, pk):
                 jansen_group_id=group_id,
                 defaults=defaults_data
             )
-        
+
+        # B) Overrides opslaan/verwijderen + override_name
+        override_updates = 0
+        override_deletes = 0
+
+        for key, med_clean in request.POST.items():
+            if not key.startswith("override_med_clean__"):
+                continue
+
+            suffix = key.replace("override_med_clean__", "", 1)  # "<gid>__<idx>"
+            target_key = f"override_target__{suffix}"
+            name_key = f"override_name__{suffix}"
+
+            if target_key not in request.POST:
+                continue
+
+            med_clean = (med_clean or "").strip()
+            raw_target = (request.POST.get(target_key) or "").strip()
+            override_name = (request.POST.get(name_key) or "").strip()
+
+            if not med_clean:
+                continue
+
+            # empty target = override verwijderen
+            if raw_target == "":
+                deleted, _ = MedicatieReviewMedGroupOverride.objects.filter(
+                    patient=patient,
+                    med_clean=med_clean
+                ).delete()
+                if deleted:
+                    override_deletes += 1
+                continue
+
+            try:
+                target_gid = int(raw_target)
+            except ValueError:
+                continue
+
+            # 1/2 NOOIT toestaan
+            # 50 WEL toestaan (Buiten formularium)
+            if target_gid in (1, 2):
+                messages.error(request, "Override niet toegestaan naar Vallen? of Malen?.")
+                continue
+
+            MedicatieReviewMedGroupOverride.objects.update_or_create(
+                patient=patient,
+                med_clean=med_clean,
+                defaults={
+                    "target_jansen_group_id": target_gid,
+                    "override_name": override_name,
+                    "updated_by": request.user,
+                }
+            )
+            override_updates += 1
+
         patient.updated_by = request.user
         patient.save()
-        
-        afdeling = patient.afdeling
-        afdeling.updated_by = request.user
-        afdeling.save()
 
-        # Stap B: Check of we ook moeten exporteren
+        if patient.afdeling:
+            patient.afdeling.updated_by = request.user
+            patient.afdeling.save()
+
+        # Export
         if request.POST.get("action") == "save_export":
-            # We bouwen het blok opnieuw op met de zojuist opgeslagen data
-            # Importeer _build_patient_block, _render_pdf en _static_abs_path bovenin je bestand!
-            
-            # Ververs patient object om nieuwe comments mee te nemen
             patient = (
                 MedicatieReviewPatient.objects
                 .select_related("afdeling")
-                .prefetch_related("comments")
+                .prefetch_related("comments", "med_group_overrides")
                 .get(pk=patient.pk)
             )
             block = _build_patient_block(patient)
@@ -634,27 +689,24 @@ def patient_detail(request, pk):
             resp["Content-Disposition"] = f'attachment; filename="medicatiebeoordeling_{patient.naam}.pdf"'
             return resp
 
-        # Standaard redirect na alleen opslaan
-        messages.success(request, "Opmerkingen en historie opgeslagen.")
+        messages.success(request, "Opmerkingen opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
     # --- GET ---
-    
-    # 2. Haal bestaande comments op
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    med_to_group = {}
-    for gid, gdata in grouped_meds:
-        for m in gdata['meds']:
-            med_to_group[m['clean']] = gid
+    jansen_choices = [(cid, cname) for cid, cname in get_jansen_group_choices() if cid not in (1, 2)]
 
     return render(request, "medicatiebeoordeling/patient_detail.html", {
         "patient": patient,
         "afdeling": patient.afdeling,
         "analysis": analysis,
         "grouped_meds": grouped_meds,
-        "comments_lookup": comments_lookup
+        "comments_lookup": comments_lookup,
+        "jansen_choices": jansen_choices,
+        "overrides_lookup": overrides_lookup,
+        "override_name_lookup": override_name_lookup,
     })
 
 @login_required

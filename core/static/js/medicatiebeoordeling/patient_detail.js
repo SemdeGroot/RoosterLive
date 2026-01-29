@@ -1,52 +1,80 @@
-document.addEventListener("DOMContentLoaded", function () {
-    let formDirty = false;
+// static/js/medicatiebeoordeling/patient_detail.js
 
-    // 1. Luister op document-niveau naar ELKE input
-    // Dit werkt altijd, zelfs als de selector 'form' faalt
-    document.addEventListener('input', function (e) {
-        if (e.target.closest('form')) {
-            formDirty = true;
-        }
-    });
-
-    // 2. Vlag uitzetten bij verzenden
-    document.addEventListener('submit', function (e) {
-        formDirty = false;
-    });
-
-    // 3. Specifieke afvanging voor de Terug-knop via de class of ID
-    document.addEventListener('click', function (e) {
-        // We kijken of de klik op de terug-knop was (via ID of de btn-danger class)
-        const isBackBtn = e.target.id === 'backBtn' || e.target.closest('#backBtn');
-        
-        if (isBackBtn && formDirty) {
-            const confirmLeave = confirm("Je hebt onopgeslagen wijzigingen. Wil je de pagina verlaten?");
-            if (!confirmLeave) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-        }
-    });
-
-    // 4. Tab sluiten / Browser navigatie
-    window.addEventListener('beforeunload', function (e) {
-        if (formDirty) {
-            e.preventDefault();
-            e.returnValue = ''; 
-        }
-    });
-    
+$(document).ready(function () {
   // ==========================================
-  // 1. BUILD TEXT (per Jansen categorie)
-  //    - met medicatie: (optioneel titel) + middelen + opmerkingen
-  //    - zonder medicatie: titel + opmerkingen
+  // 0. SELECT2 (NIET OPTIONEEL) voor Jansen dropdowns
+  // ==========================================
+  const $jansenSelects = $(".django-select2-jansen").select2({
+    placeholder: "Kies een Jansen categorie...",
+    allowClear: true,
+    width: "100%",
+  });
+
+  $jansenSelects.on("select2:open", function () {
+    const searchField = document.querySelector(".select2-search__field");
+    if (searchField) {
+      searchField.placeholder = "Typ om te zoeken...";
+      searchField.focus();
+    }
+  });
+
+  // Preselect values die vanuit template in window.__jansenPreselect komen
+  if (window.__jansenPreselect && Array.isArray(window.__jansenPreselect)) {
+    window.__jansenPreselect.forEach(function (item) {
+      const sel = document.querySelector(`select[name="${item.selectName}"]`);
+      if (!sel) return;
+
+      // Als value leeg is: laat op standaard staan
+      if (item.value && item.value !== "") {
+        $(sel).val(item.value).trigger("change");
+      }
+    });
+  }
+
+  // ==========================================
+  // 1. DIRTY CHECK (jouw bestaande gedrag)
+  // ==========================================
+  let formDirty = false;
+
+  document.addEventListener("input", function (e) {
+    if (e.target.closest("form")) {
+      formDirty = true;
+    }
+  });
+
+  document.addEventListener("submit", function () {
+    formDirty = false;
+  });
+
+  document.addEventListener("click", function (e) {
+    const isBackBtn = e.target.id === "backBtn" || e.target.closest("#backBtn");
+    if (isBackBtn && formDirty) {
+      const confirmLeave = confirm("Je hebt onopgeslagen wijzigingen. Wil je de pagina verlaten?");
+      if (!confirmLeave) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    }
+  });
+
+  window.addEventListener("beforeunload", function (e) {
+    if (formDirty) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  // ==========================================
+  // 2. MEDIMO COPY (jouw bestaande functies)
   // ==========================================
   function buildMedimoTextFromGroup(groupEl, groupId, includeTitle = false) {
-    // Medicatie + gebruik
-    const rows = groupEl.querySelectorAll("table.med-table tbody tr");
+    const rows = groupEl.querySelectorAll("table tbody tr");
     const lines = [];
 
+    // alleen “echte” med rows meenemen: edit-rows overslaan
     rows.forEach((tr) => {
+      if (tr.classList.contains("edit-row")) return;
+
       const tds = tr.querySelectorAll("td");
       if (tds.length >= 2) {
         const middel = (tds[0].innerText || "").trim();
@@ -55,15 +83,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // Titel
     const titleEl = groupEl.querySelector(".jansen-title");
     const title = (titleEl?.innerText || "").trim();
 
-    // Opmerkingen (textarea)
     const commentTa = groupEl.querySelector(`textarea[name="comment_${groupId}"]`);
     const commentVal = commentTa ? (commentTa.value || "").trim() : "";
 
-    // GEEN MEDICATIE: titel + opmerkingen
     if (lines.length === 0) {
       let text = title || "";
       if (commentVal) {
@@ -72,11 +97,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return text.trim();
     }
 
-    // WEL MEDICATIE
     let text = "";
 
     if (includeTitle && title) {
-      // harde enter tussen titel en geneesmiddelen
       text += `${title}\n\n`;
     }
 
@@ -89,9 +112,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return text.trim();
   }
 
-  // ==========================================
-  // 2. CLIPBOARD HELPER
-  // ==========================================
   async function copyTextToClipboard(text) {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -125,11 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1200);
   }
 
-  // ==========================================
-  // 3. COPY PER CATEGORIE
-  // ==========================================
   document.querySelectorAll(".btn-copy-medimo").forEach((btn) => {
-    // skip de copy-all knop (die gebruikt dezelfde styling class)
     if (btn.classList.contains("btn-copy-all-medimo")) return;
 
     btn.addEventListener("click", async () => {
@@ -137,7 +153,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const groupEl = btn.closest(".med-group");
       if (!groupEl || !groupId) return;
 
-      // per-categorie: geen titel, behalve als je dat ooit wil veranderen
       const text = buildMedimoTextFromGroup(groupEl, groupId, false);
 
       try {
@@ -151,12 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // ==========================================
-  // 4. COPY ALL FOR MEDIMO
-  //    - altijd titel
-  //    - harde enter tussen titel en middelen
-  //    - bij geen medicatie: titel + opmerkingen
-  // ==========================================
   function buildAllMedimoText() {
     const groups = document.querySelectorAll(".med-group");
     const parts = [];
@@ -188,3 +197,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// ==========================================
+// GLOBALE FUNCTIE: inline edit row toggle
+// ==========================================
+window.toggleEditRow = function (id) {
+  const row = document.getElementById("edit-row-" + id);
+  if (row) {
+    row.style.display = (row.style.display === "none" || row.style.display === "") ? "table-row" : "none";
+  }
+};

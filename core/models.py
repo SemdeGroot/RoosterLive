@@ -9,6 +9,7 @@ import uuid
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 import secrets
+from core.utils.medication import get_jansen_group_choices
 
 class SoftDeleteQuerySet(models.QuerySet):
     def active(self):
@@ -1124,6 +1125,36 @@ class MedicatieReviewComment(models.Model):
 
     class Meta:
         unique_together = ("patient", "jansen_group_id")
+
+class MedicatieReviewMedGroupOverride(models.Model):
+    patient = models.ForeignKey(
+        "core.MedicatieReviewPatient",
+        on_delete=models.CASCADE,
+        related_name="med_group_overrides",
+    )
+
+    # exact gm.clean (sleutel)
+    med_clean = models.CharField(max_length=255)
+
+    # display-naam override
+    override_name = models.CharField(max_length=255, blank=True, default="")
+
+    # target groep (met choices uit jouw JSON)
+    target_jansen_group_id = models.IntegerField(choices=get_jansen_group_choices())
+
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        unique_together = ("patient", "med_clean")
+
+    def __str__(self) -> str:
+        return f"{self.patient_id}: {self.med_clean} -> {self.target_jansen_group_id}"
 
 class VoorraadItem(models.Model):
     # Kolom 1: ZI-nummer (Verplicht 8 cijfers)

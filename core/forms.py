@@ -10,10 +10,10 @@ from django.utils import timezone
 from decimal import Decimal
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 from datetime import datetime
-
+from core.utils.medication import get_jansen_group_choices
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel, NoDeliveryEntry, NoDeliveryList, Omzettingslijst, OmzettingslijstEntry
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel, NoDeliveryEntry, NoDeliveryList, Omzettingslijst, OmzettingslijstEntry, MedicatieReviewMedGroupOverride
 
 UserModel = get_user_model()
 
@@ -938,6 +938,22 @@ class MedicatieReviewForm(forms.Form):
                 self.add_error("patient_geboortedatum", "Vul de geboortedatum in (dd-mm-jjjj).")
 
         return cleaned
+
+class MedGroupOverrideForm(forms.ModelForm):
+    target_jansen_group_id = forms.ChoiceField(
+        choices=get_jansen_group_choices(),
+        required=True,
+        widget=forms.Select(attrs={"class": "django-select2 admin-select"}),
+    )
+
+    override_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "admin-input", "placeholder": "Optioneel: aangepaste naam"}),
+    )
+
+    class Meta:
+        model = MedicatieReviewMedGroupOverride
+        fields = ("override_name", "target_jansen_group_id")
 
 class AfdelingEditForm(forms.ModelForm):
     class Meta:

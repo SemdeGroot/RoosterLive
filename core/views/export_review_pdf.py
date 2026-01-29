@@ -17,9 +17,6 @@ from core.models import (
 from core.utils.medication import group_meds_by_jansen
 
 
-# =========================
-# Datacontainer
-# =========================
 @dataclass
 class PdfPatientBlock:
     patient: MedicatieReviewPatient
@@ -28,14 +25,14 @@ class PdfPatientBlock:
     comments_lookup: Dict[str, MedicatieReviewComment]
 
 
-# =========================
-# Helpers
-# =========================
-
 def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
     analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
-    grouped_meds = group_meds_by_jansen(meds)
+
+    # OVERRIDES (clean -> target id)
+    overrides_lookup = {o.med_clean: o.target_jansen_group_id for o in patient.med_group_overrides.all()}
+
+    grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
 
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
@@ -47,9 +44,7 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
         comments_lookup=comments_lookup,
     )
 
-# =========================
-# Views
-# =========================
+
 @login_required
 def export_patient_review_pdf(request, pk: int) -> HttpResponse:
     if not can(request.user, "can_view_medicatiebeoordeling"):
@@ -58,7 +53,7 @@ def export_patient_review_pdf(request, pk: int) -> HttpResponse:
     patient = (
         MedicatieReviewPatient.objects
         .select_related("afdeling")
-        .prefetch_related("comments")
+        .prefetch_related("comments", "med_group_overrides")  # <- belangrijk
         .filter(pk=pk)
         .first()
     )
@@ -102,7 +97,7 @@ def export_afdeling_review_pdf(request, pk: int) -> HttpResponse:
         afdeling.patienten
         .all()
         .select_related("afdeling")
-        .prefetch_related("comments")
+        .prefetch_related("comments", "med_group_overrides")  # <- belangrijk
         .order_by("naam")
     )
 

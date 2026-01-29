@@ -7,256 +7,365 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/medicatiebeoordeling/medicatiebeoordeling.css' %}">
   <link rel="stylesheet" href="{% static 'css/agenda/agenda.css' %}">
+
+  {# JOUW TABLE STYLING (jouw pad!) #}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+
+  {# JOUW SELECT2 STYLING #}
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
 <form method="post">
-    {% csrf_token %}
-    <div id="patient-pdf-root">
+  {% csrf_token %}
+
+  <div id="patient-pdf-root">
+
     <div class="review-card">
-        <div class="card-header">
-            <div>
-                <h2 class="main-title">{{ patient.naam }}</h2>
-                <div class="header-meta">
-                    <div class="header-meta-item">
-                        <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
-                        {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
-                    </div>
-                    
-                    {% if afdeling.afdeling %}
-                    <div class="header-meta-item">
-                        <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
-                        {{ afdeling.afdeling }}
-                    </div>
-                    {% endif %}
-                </div>
+      <div class="card-header">
+        <div>
+          <h2 class="main-title">{{ patient.naam }}</h2>
+
+          <div class="header-meta">
+            <div class="header-meta-item">
+              <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+              </svg>
+              {{ patient.geboortedatum|date:"d-m-Y"|default:"Onbekend" }}
             </div>
-            
-            <div style="display:flex; gap:10px;">
-                <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn" id="backBtn">Terug naar Afdeling</a>
-                <button type="submit" class="btn btn-save">Opslaan</button>
-            </div>
+
+            {% if afdeling.afdeling %}
+              <div class="header-meta-item">
+                <svg class="header-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+                </svg>
+                {{ afdeling.afdeling }}
+              </div>
+            {% endif %}
+          </div>
         </div>
+
+        <div style="display:flex; gap:10px;">
+          <a href="{% url 'medicatiebeoordeling_afdeling_detail' afdeling.pk %}" class="btn" id="backBtn">Terug naar Afdeling</a>
+          <button type="submit" class="btn btn-save">Opslaan</button>
+        </div>
+      </div>
     </div>
 
+    {# -------- Analyses card (ongewijzigd) -------- #}
     <div class="review-card">
-        <div class="card-header">
-            <h3 class="sub-title">Analyses</h3> 
-        </div>
-        <div class="card-body">
-            <div class="analysis-container">
-                
-                <div class="analysis-box">
-                    <div class="analysis-header-row">
-                        <img src="{% static 'img/stop.svg' %}" class="icon-md" alt="STOPP">
-                        <h4 class="analysis-title">Mogelijke STOPP Criteria</h4>
-                    </div>
-                    
-                    <div class="criteria-content {% if analysis.analyses.stopp %}stopp-box{% else %}safe-box{% endif %}">
-                        {% if analysis.analyses.stopp %}
-                            <strong style="display:block; margin-bottom:8px; color:#e0c070;">
-                                {{ analysis.analyses.stopp|length }} criteria gevonden:
-                            </strong>
-                            <ul style="padding-left:20px; margin:0;">
-                                {% for item in analysis.analyses.stopp %}
-                                    <li style="margin-bottom:8px;">
-                                        {{ item.description }}
-                                        <div style="font-size:0.85em; opacity:0.7; margin-top:2px;">
-                                            <em>Door: {{ item.triggering_medicines }}</em>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div style="display:flex; align-items:center; gap:8px; color:#9cdca3;">
-                                Geen STOPP-criteria gevonden.
-                            </div>
-                        {% endif %}
-                    </div>
+      <div class="card-header">
+        <h3 class="sub-title">Analyses</h3>
+      </div>
+      <div class="card-body">
+        <div class="analysis-container">
+
+          <div class="analysis-box">
+            <div class="analysis-header-row">
+              <img src="{% static 'img/stop.svg' %}" class="icon-md" alt="STOPP">
+              <h4 class="analysis-title">Mogelijke STOPP Criteria</h4>
+            </div>
+
+            <div class="criteria-content {% if analysis.analyses.stopp %}stopp-box{% else %}safe-box{% endif %}">
+              {% if analysis.analyses.stopp %}
+                <strong style="display:block; margin-bottom:8px; color:#e0c070;">
+                  {{ analysis.analyses.stopp|length }} criteria gevonden:
+                </strong>
+                <ul style="padding-left:20px; margin:0;">
+                  {% for item in analysis.analyses.stopp %}
+                    <li style="margin-bottom:8px;">
+                      {{ item.description }}
+                      <div style="font-size:0.85em; opacity:0.7; margin-top:2px;">
+                        <em>Door: {{ item.triggering_medicines }}</em>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div style="display:flex; align-items:center; gap:8px; color:#9cdca3;">
+                  Geen STOPP-criteria gevonden.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="analysis-box">
+            <div class="analysis-header-row">
+              <img src="{% static 'img/anticholinerg.svg' %}" class="icon-md" alt="ACB">
+              <h4 class="analysis-title">Anticholinerge Belasting</h4>
+            </div>
+
+            {% with score=analysis.analyses.acb.score %}
+              <div class="criteria-content acb-dynamic-box
+                {% if score == 0 %}acb-score-0
+                {% elif score == 1 %}acb-score-1
+                {% elif score == 2 %}acb-score-2
+                {% else %}acb-score-high{% endif %}">
+
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                  <strong class="acb-text-color" style="font-size:1.1rem;">
+                    Score: {{ score }}
+                  </strong>
+                  <span style="opacity:0.8;">|</span>
+                  <span {% if score == 0 %}style="color: #9cdca3;"{% endif %}>
+                    {{ analysis.analyses.acb.interpretatie }}
+                  </span>
                 </div>
 
-                <div class="analysis-box">
-                    <div class="analysis-header-row">
-                        <img src="{% static 'img/anticholinerg.svg' %}" class="icon-md" alt="STOPP">
-                        <h4 class="analysis-title">Anticholinerge Belasting</h4>
-                    </div>
-
-                    {% with score=analysis.analyses.acb.score %}
-                    <div class="criteria-content acb-dynamic-box 
-                        {% if score == 0 %}acb-score-0
-                        {% elif score == 1 %}acb-score-1
-                        {% elif score == 2 %}acb-score-2
-                        {% else %}acb-score-high{% endif %}">
-                        
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                            <strong class="acb-text-color" style="font-size:1.1rem;">
-                                Score: {{ score }}
-                            </strong>
-                            
-                            <span style="opacity:0.8;">|</span>
-                            
-                            <span {% if score == 0 %}style="color: #9cdca3;"{% endif %}>
-                                {{ analysis.analyses.acb.interpretatie }}
-                            </span>
-                        </div>
-
-                        {% if analysis.analyses.acb.details %}
-                            <ul style="padding-left:20px; margin:0;">
-                                {% for detail in analysis.analyses.acb.details %}
-                                    <li>
-                                        {{ detail.middel }} 
-                                        <span style="opacity:0.7; font-size:0.9em;">(Score: {{ detail.score }})</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                    </div>
-                    {% endwith %}
-                </div>
-
-                {% if analysis.analyses.dubbelmedicatie %}
-                <div class="analysis-box">
-                    <div class="analysis-header-row">
-                        <img src="{% static 'img/warning.svg' %}" class="icon-md" alt="Warn">
-                        <h4 class="analysis-title">Dubbelmedicatie</h4>
-                    </div>
-                    
-                    <div class="criteria-content dubbel-box">
-                        <strong style="display:block; margin-bottom:8px; color:#ffb0b0;">
-                            Mogelijke dubbelmedicatie:
-                        </strong>
-                        <ul style="padding-left:20px; margin:0;">
-                            {% for item in analysis.analyses.dubbelmedicatie %}
-                                <li style="margin-bottom:6px;">
-                                    <strong>{{ item.groep }}</strong>: 
-                                    <span style="opacity:0.8;">{{ item.middelen|join:", " }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
+                {% if analysis.analyses.acb.details %}
+                  <ul style="padding-left:20px; margin:0;">
+                    {% for detail in analysis.analyses.acb.details %}
+                      <li>
+                        {{ detail.middel }}
+                        <span style="opacity:0.7; font-size:0.9em;">(Score: {{ detail.score }})</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
                 {% endif %}
+              </div>
+            {% endwith %}
+          </div>
+
+          {% if analysis.analyses.dubbelmedicatie %}
+            <div class="analysis-box">
+              <div class="analysis-header-row">
+                <img src="{% static 'img/warning.svg' %}" class="icon-md" alt="Warn">
+                <h4 class="analysis-title">Dubbelmedicatie</h4>
+              </div>
+
+              <div class="criteria-content dubbel-box">
+                <strong style="display:block; margin-bottom:8px; color:#ffb0b0;">
+                  Mogelijke dubbelmedicatie:
+                </strong>
+                <ul style="padding-left:20px; margin:0;">
+                  {% for item in analysis.analyses.dubbelmedicatie %}
+                    <li style="margin-bottom:6px;">
+                      <strong>{{ item.groep }}</strong>:
+                      <span style="opacity:0.8;">{{ item.middelen|join:", " }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
+          {% endif %}
         </div>
+      </div>
     </div>
 
+    {# -------- Medicatie + opmerkingen card -------- #}
     <div class="review-card">
-        <div class="card-header">
-            <h3 class="sub-title">Medicatieoverzicht & Opmerkingen</h3>
-        </div>
-        <div class="card-body">
-            <div style="display:flex; flex-direction:column; gap:32px;">
-                {% for group_id, group_data in grouped_meds %}
-                    <div class="med-group" data-group-id="{{ group_id }}">
-                        
-            <div class="jansen-header">
+      <div class="card-header">
+        <h3 class="sub-title">Medicatieoverzicht & Opmerkingen</h3>
+      </div>
+
+      <div class="card-body">
+
+        <div style="display:flex; flex-direction:column; gap:32px;">
+          {% for group_id, group_data in grouped_meds %}
+            <div class="med-group" data-group-id="{{ group_id }}">
+
+              <div class="jansen-header">
                 <h4 class="jansen-title">{{ group_data.naam }}</h4>
 
                 <button
-                    type="button"
-                    class="btn-copy-medimo"
-                    data-group-id="{{ group_id }}"
-                    title="Kopieer voor Medimo"
+                  type="button"
+                  class="btn-copy-medimo"
+                  data-group-id="{{ group_id }}"
+                  title="Kopieer voor Medimo"
                 >
-                    <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1z"/>
-                        <path d="M18 5H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h8v14z"/>
-                    </svg>
-                    <span class="copy-label">Kopieer voor Medimo</span>
-                </button>
-            </div>
-
-
-                       {% if group_data.meds %}
-                        <table class="med-table table-medication">
-                            <thead>
-                                <tr>
-                                    <th>Middel</th>
-                                    <th>Gebruik</th>
-                                    <th>Opmerking (Medimo)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for gm in group_data.meds %}
-                                <tr>
-                                    <td><strong style="color:var(--text);">{{ gm.clean }}</strong></td>
-                                    <td>{{ gm.gebruik }}</td>
-                                    <td style="color:var(--muted); font-size:0.9em;">{{ gm.opmerking|default:"-" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}
-
-
-                        <div>
-                            {% with comment=comments_lookup|get_item:group_id %}
-                                
-                        {# 1. Eerder besproken (Historie) (bewerkbaar) #}
-                                {% if comment and comment.historie %}
-                                    <div style="margin-top: 20px; margin-bottom: 8px;">
-                                        <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
-                                            Eerder besproken:
-                                        </label>
-                                        <textarea 
-                                            name="historie_{{ group_id }}" 
-                                            class="med-comment-box" 
-                                            style="font-style: italic;"
-                                        >{{ comment.historie }}</textarea>
-                                    </div>
-                                {% endif %}
-
-                                {# 2. Opmerkingen (Nieuw) #}
-                                {% if comment and comment.historie %}
-                                    <div style="margin-top: 12px;">
-                                {% else %}
-                                    <div style="margin-top: 20px;">
-                                {% endif %}
-                                    <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
-                                        Opmerkingen:
-                                    </label>
-                                    <textarea 
-                                        name="comment_{{ group_id }}" 
-                                        class="med-comment-box" 
-                                        placeholder="Typ hier uw opmerking..."
-                                    >{{ comment.tekst|default:"" }}</textarea>
-                                </div>
-                                
-                            {% endwith %}
-                        </div>
-                        
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div style="margin-top:32px; text-align:right;">
-                 <button type="submit" class="btn btn-save">
-                    Opslaan
-                </button>
-            </div>
-            <div style="text-align:center; margin-top: -40px;">
-            <button
-                type="button"
-                class="btn-copy-medimo btn-copy-all-medimo"
-                title="Kopieer alles voor Medimo"
-            >
-                <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1z"/>
                     <path d="M18 5H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h8v14z"/>
-                </svg>
-                <span class="copy-label">Kopieer alles voor Medimo</span>
-            </button>
-            </div>
-            <div style="margin-top: -42px; text-align:left;">
-                <button type="submit" name="action" value="save_export" class="btn btn-save">
-                    Opslaan & Exporteer als PDF
+                  </svg>
+                  <span class="copy-label">Kopieer voor Medimo</span>
                 </button>
+              </div>
+
+              {% if group_data.meds %}
+                <div class="table-scroll">
+                  <table class="crud-table compact" style="--c1: 28%; --c2: 28%; --c3: 28%; --c4: 16%;">
+                    <thead>
+                      <tr>
+                        <th>Middel</th>
+                        <th>Gebruik</th>
+                        <th>Opmerking (Medimo)</th>
+                        <th class="center-col">Acties</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {% for gm in group_data.meds %}
+                        <tr>
+                          <td class="wrap">
+                            {% if override_name_lookup and override_name_lookup|get_item:gm.clean %}
+                              <strong style="color:var(--text);">{{ override_name_lookup|get_item:gm.clean }}</strong>
+                            {% else %}
+                              <strong style="color:var(--text);">{{ gm.clean }}</strong>
+                            {% endif %}
+                          </td>
+
+                          <td>{{ gm.gebruik }}</td>
+
+                          <td style="color:var(--muted); font-size:0.9em;">
+                            {{ gm.opmerking|default:"-" }}
+                          </td>
+
+                          <td class="center-col">
+                            <button
+                              type="button"
+                              class="icon-btn"
+                              title="Bewerken"
+                              aria-label="Bewerken"
+                              onclick="toggleEditRow('{{ group_id }}-{{ forloop.counter0 }}')"
+                            >
+                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                                   stroke="currentColor" stroke-width="2"
+                                   stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+
+                        {# INLINE EDIT ROW (table.css) #}
+                        <tr id="edit-row-{{ group_id }}-{{ forloop.counter0 }}" class="edit-row" style="display:none;">
+                            <td colspan="4">
+                                <div class="edit-wrap">
+                                <div class="edit-grid" style="grid-template-columns: 1fr;">
+
+                                    <div>
+                                    <label>Geneesmiddelnaam</label>
+                                    <input
+                                        class="admin-input"
+                                        type="text"
+                                        name="override_name__{{ group_id }}__{{ forloop.counter0 }}"
+                                        value="{% if override_name_lookup and override_name_lookup|get_item:gm.clean %}{{ override_name_lookup|get_item:gm.clean }}{% else %}{{ gm.clean }}{% endif %}"
+                                        placeholder="Pas de naam aan (optioneel)"
+                                    >
+                                    </div>
+
+                                    <div>
+                                    <label>Jansen categorie (override)</label>
+
+                                    <input
+                                        type="hidden"
+                                        name="override_med_clean__{{ group_id }}__{{ forloop.counter0 }}"
+                                        value="{{ gm.clean }}"
+                                    >
+
+                                    <select
+                                        name="override_target__{{ group_id }}__{{ forloop.counter0 }}"
+                                        class="django-select2-jansen admin-select"
+                                    >
+                                        <option value="">— standaard (op basis van ATC3) —</option>
+
+                                        {% for cid, cname in jansen_choices %}
+                                        <option
+                                            value="{{ cid }}"
+                                            {% if overrides_lookup and overrides_lookup|get_item:gm.clean == cid %}selected{% endif %}
+                                        >
+                                            {{ cname }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    </div>
+
+                                </div>
+
+                                <div class="actions-wrap" style="justify-content:flex-end; margin-top: 16px;">
+                                    <button
+                                    type="button"
+                                    class="btn btn-danger"
+                                    onclick="toggleEditRow('{{ group_id }}-{{ forloop.counter0 }}')"
+                                    >
+                                    Annuleren
+                                    </button>
+
+                                    <button
+                                    type="submit"
+                                    class="btn btn-save"
+                                    name="save_row__{{ group_id }}__{{ forloop.counter0 }}"
+                                    value="1"
+                                    >
+                                    Opslaan
+                                    </button>
+                                </div>
+                                </div>
+                            </td>
+                            </tr>
+
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+
+              <div>
+                {% with comment=comments_lookup|get_item:group_id %}
+
+                  {% if comment and comment.historie %}
+                    <div style="margin-top: 20px; margin-bottom: 8px;">
+                      <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
+                        Eerder besproken:
+                      </label>
+                      <textarea
+                        name="historie_{{ group_id }}"
+                        class="med-comment-box"
+                        style="font-style: italic;"
+                      >{{ comment.historie }}</textarea>
+                    </div>
+                  {% endif %}
+
+                    <div class="comment-block {% if comment and comment.historie %}has-history{% else %}no-history{% endif %}">
+
+                    <label style="font-size: 0.85em; color: var(--muted); font-weight: bold; margin-bottom: 4px; display: block;">
+                      Opmerkingen:
+                    </label>
+                    <textarea
+                      name="comment_{{ group_id }}"
+                      class="med-comment-box"
+                      placeholder="Typ hier uw opmerking..."
+                    >{{ comment.tekst|default:"" }}</textarea>
+                  </div>
+
+                {% endwith %}
+              </div>
+
             </div>
+          {% endfor %}
         </div>
+
+        <div style="margin-top:32px; text-align:right;">
+          <button type="submit" class="btn btn-save">Opslaan</button>
+        </div>
+
+        <div style="text-align:center; margin-top: -40px;">
+          <button type="button" class="btn-copy-medimo btn-copy-all-medimo" title="Kopieer alles voor Medimo">
+            <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1z"/>
+              <path d="M18 5H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h8v14z"/>
+            </svg>
+            <span class="copy-label">Kopieer alles voor Medimo</span>
+          </button>
+        </div>
+
+        <div style="margin-top: -42px; text-align:left;">
+          <button type="submit" name="action" value="save_export" class="btn btn-save">
+            Opslaan & Exporteer als PDF
+          </button>
+        </div>
+
+      </div>
     </div>
-    </div>
+
+  </div>
 </form>
 {% endblock %}
+
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{% static 'js/medicatiebeoordeling/patient_detail.js' %}"></script>
 {% endblock %}

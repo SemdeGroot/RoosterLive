@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "name": "Vallen?"
+  },
+  {
+    "id": 2,
+    "name": "Malen?"
+  },
+  {
+    "id": 3,
+    "name": "CVRM"
+  },
+  {
+    "id": 4,
+    "name": "Bloedstolling"
+  },
+  {
+    "id": 5,
+    "name": "Diabetes"
+  },
+  {
+    "id": 6,
+    "name": "Jicht"
+  },
+  {
+    "id": 7,
+    "name": "Valpreventie"
+  },
+  {
+    "id": 8,
+    "name": "Pijn"
+  },
+  {
+    "id": 9,
+    "name": "Psychofarmaca"
+  },
+  {
+    "id": 10,
+    "name": "Parkinson"
+  },
+  {
+    "id": 11,
+    "name": "Spierrelaxantia"
+  },
+  {
+    "id": 12,
+    "name": "Anemie"
+  },
+  {
+    "id": 13,
+    "name": "Astma/Copd"
+  },
+  {
+    "id": 14,
+    "name": "Allergie"
+  },
+  {
+    "id": 15,
+    "name": "Hoest"
+  },
+  {
+    "id": 16,
+    "name": "Antibiotica"
+  },
+  {
+    "id": 17,
+    "name": "Antimycotica"
+  },
+  {
+    "id": 18,
+    "name": "Antimycobacteriele middelen"
+  },
+  {
+    "id": 19,
+    "name": "Antivirale middelen"
+  },
+  {
+    "id": 20,
+    "name": "Hypofyse- en hypothalamus en verwante verbindingen"
+  },
+  {
+    "id": 21,
+    "name": "Schildklierhormonen"
+  },
+  {
+    "id": 22,
+    "name": "Corticosteroiden systemisch"
+  },
+  {
+    "id": 23,
+    "name": "Hormonen"
+  },
+  {
+    "id": 24,
+    "name": "Maag/darm"
+  },
+  {
+    "id": 25,
+    "name": "Lever"
+  },
+  {
+    "id": 26,
+    "name": "Calciumregulerende middelen"
+  },
+  {
+    "id": 27,
+    "name": "Pancreashormonen"
+  },
+  {
+    "id": 28,
+    "name": "Huid"
+  },
+  {
+    "id": 29,
+    "name": "Urogenitaal"
+  },
+  {
+    "id": 30,
+    "name": "RLS"
+  },
+  {
+    "id": 31,
+    "name": "Ogen"
+  },
+  {
+    "id": 32,
+    "name": "Neus"
+  },
+  {
+    "id": 33,
+    "name": "Mond"
+  },
+  {
+    "id": 34,
+    "name": "Oren"
+  },
+  {
+    "id": 35,
+    "name": "Vaccins"
+  },
+  {
+    "id": 36,
+    "name": "Sera en immunoglobulinen"
+  },
+  {
+    "id": 37,
+    "name": "Oncolytica"
+  },
+  {
+    "id": 38,
+    "name": "Reuma"
+  },
+  {
+    "id": 39,
+    "name": "Immunostimulantia"
+  },
+  {
+    "id": 40,
+    "name": "Immunosuppressiva"
+  },
+  {
+    "id": 41,
+    "name": "Anabolen"
+  },
+  {
+    "id": 42,
+    "name": "Wormen"
+  },
+  {
+    "id": 43,
+    "name": "Overig"
+  },
+  {
+    "id": 50,
+    "name": "Buiten formularium?"
+  }
+]

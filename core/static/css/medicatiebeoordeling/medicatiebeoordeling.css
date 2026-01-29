@@ -320,3 +320,6 @@
 .btn-copy-medimo.is-copied{
     border-color: var(--accent);
 }
+
+.comment-block.has-history { margin-top: 12px; }
+.comment-block.no-history  { margin-top: 20px; }
