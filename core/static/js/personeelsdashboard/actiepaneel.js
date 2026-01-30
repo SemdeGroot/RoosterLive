@@ -1,3 +1,4 @@
+// actiepaneel.js — migrated from group -> function (without breaking existing logic)
 (() => {
   function $(sel, root = document) { return root.querySelector(sel); }
   function $all(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
@@ -360,10 +361,11 @@
 
   function selectRect(rect) {
     const user_id = Number(rect.dataset.userId);
-    const group = rect.dataset.group;
+    const func = rect.dataset.function;
     const firstname = rect.dataset.firstname;
     const date = rect.dataset.date;
     const period = rect.dataset.period;
+    const function_rank = Number(rect.dataset.functionRank || 9999);
 
     const k = `${user_id}|${date}|${period}`;
     if (state.selected.has(k)) return;
@@ -372,23 +374,23 @@
 
     if (eff) {
       if (eff.kind === "draft_delete") {
-        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "draft_delete" });
+        state.selected.set(k, { user_id, function: func, function_rank, firstname, date, period, existing: true, kind: "draft_delete" });
         state.assigned.set(k, { location_id: "", task_id: "" });
       } else if (eff.kind === "draft_upsert") {
-        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "draft_upsert" });
+        state.selected.set(k, { user_id, function: func, function_rank, firstname, date, period, existing: true, kind: "draft_upsert" });
         state.assigned.set(k, {
           location_id: String(eff.draft.location_id ?? ""),
           task_id: String(eff.draft.task_id ?? "")
         });
       } else {
-        state.selected.set(k, { user_id, group, firstname, date, period, existing: true, kind: "published" });
+        state.selected.set(k, { user_id, function: func, function_rank, firstname, date, period, existing: true, kind: "published" });
         state.assigned.set(k, {
           location_id: String(eff.published.location_id ?? ""),
           task_id: String(eff.published.task_id ?? "")
         });
       }
     } else {
-      state.selected.set(k, { user_id, group, firstname, date, period, existing: false, kind: "available" });
+      state.selected.set(k, { user_id, function: func, function_rank, firstname, date, period, existing: false, kind: "available" });
       state.assigned.set(k, { location_id: "", task_id: "" });
     }
 
@@ -446,7 +448,7 @@
   }
 
   function shiftCardHeader(item){
-    const line1 = `${item.firstname} – ${item.group}`;
+    const line1 = `${item.firstname} – ${item.function || "Functie onbekend"}`;
     const line2 = `${periodLabel(item.period)} – ${item.date}`;
 
     let pillKind = "available";
@@ -507,7 +509,7 @@
     locSel.addEventListener("change", () => {
       const locId = locSel.value;
       state.assigned.set(k, { location_id: String(locId || ""), task_id: "" });
-      state.dirty.add(k); // altijd: we zijn aan het bewerken
+      state.dirty.add(k);
 
       if (locId) {
         setActiveLocation(String(locId));
@@ -547,7 +549,7 @@
     const user_id = shiftLike.user_id;
     const date = shiftLike.date;
     const period = shiftLike.period;
-    const group = shiftLike.group;
+    const func = shiftLike.function;
     const firstname = shiftLike.firstname;
 
     const k = `${user_id}|${date}|${period}`;
@@ -563,7 +565,8 @@
     card.className = `pd-item pd-item--assigned ${kind === "published" ? "pd-item--existing" : ""}`;
     card.dataset.key = k;
 
-    const showDeleteBtn = (kind !== "available");
+    const showDeleteBtn = (kind === "published" || kind === "draft_upsert" || kind === "draft_delete");
+
     card.innerHTML = `
       <div class="pd-item-main">
         ${shiftCardHeader({
@@ -572,7 +575,7 @@
           period,
           date,
           firstname,
-          group
+          function: func
         })}
       </div>
 
@@ -580,6 +583,7 @@
         ${buildLocationSelect(a.location_id)}
         ${buildTaskSelect(a.location_id, a.task_id)}
         ${showDeleteBtn ? deleteButtonHtml() : ""}
+        ${removeButtonHtml()}
       </div>
     `;
 
@@ -590,7 +594,7 @@
       const locId = String(locSel.value || "");
 
       if (!state.selected.has(k)) {
-        state.selected.set(k, { user_id, group, firstname, date, period, existing: kind !== "available", kind });
+        state.selected.set(k, { user_id, function: func, firstname, date, period, existing: kind !== "available", kind });
       }
 
       state.assigned.set(k, { location_id: locId, task_id: "" });
@@ -610,7 +614,7 @@
       const taskId = String(taskSel.value || "");
 
       if (!state.selected.has(k)) {
-        state.selected.set(k, { user_id, group, firstname, date, period, existing: kind !== "available", kind });
+        state.selected.set(k, { user_id, function: func, firstname, date, period, existing: kind !== "available", kind });
       }
 
       state.assigned.set(k, { ...cur, task_id: taskId });
@@ -624,6 +628,20 @@
     if (delBtn) {
       delBtn.addEventListener("click", async () => {
         await toggleDeleteDraftByKey(k);
+      });
+    }
+
+    const rmBtn = card.querySelector('[data-action="remove"]');
+    if (rmBtn) {
+      rmBtn.addEventListener("click", () => {
+        // Als hij in selected zit: deselect (zoals links)
+        if (state.selected.has(k)) {
+          deselectByKey(k);
+        } else {
+          // Hij komt uit effective list (published/draft) -> gewoon rerender, niets muteren
+          // (want panel is een view op data)
+          card.remove();
+        }
       });
     }
 
@@ -656,6 +674,9 @@
       });
 
       const data = await res.json();
+      if (data.mode === "noop") {
+        return;
+      }
       if (!data.ok) throw new Error(data.error || "Verwijderen mislukt.");
 
       if (data.mode === "undone") {
@@ -664,13 +685,14 @@
         const pubMap = buildPublishedMap();
         const pub = pubMap.get(k) || null;
         const rect = findRectByKey(k);
-        const g = rect?.dataset.group || pub?.group || "—";
+
+        const f = rect?.dataset.function || pub?.function || "Functie onbekend";
         const fn = rect?.dataset.firstname || pub?.firstname || "—";
 
         const merged = {
           id: data.draft_id || null,
           user_id: Number(user_id),
-          group: g,
+          function: f,
           firstname: fn,
           date,
           period,
@@ -707,9 +729,15 @@
     const items = Array.from(state.selected.values());
     items.sort((a, b) => {
       if (!!b.existing !== !!a.existing) return (b.existing ? 1 : 0) - (a.existing ? 1 : 0);
-      const ag = (a.group || "").toLowerCase();
-      const bg = (b.group || "").toLowerCase();
-      if (ag !== bg) return ag.localeCompare(bg);
+
+      const ar = Number(a.function_rank ?? 9999);
+      const br = Number(b.function_rank ?? 9999);
+      if (ar !== br) return ar - br;
+
+      const afn = (a.function || "").toLowerCase();
+      const bfn = (b.function || "").toLowerCase();
+      if (afn !== bfn) return afn.localeCompare(bfn);
+
       const af = (a.firstname || "").toLowerCase();
       const bf = (b.firstname || "").toLowerCase();
       return af.localeCompare(bf);
@@ -753,7 +781,8 @@
       list.push({
         kind: "published",
         user_id: s.user_id,
-        group: s.group,
+        function: s.function,
+        function_rank: s.function_rank,
         firstname: s.firstname,
         date: s.date,
         period: s.period,
@@ -767,7 +796,8 @@
         list.push({
           kind: "draft_delete",
           user_id: d.user_id,
-          group: d.group,
+          function: d.function,
+          function_rank: d.function_rank,
           firstname: d.firstname,
           date: d.date,
           period: d.period,
@@ -778,7 +808,8 @@
         list.push({
           kind: "draft_upsert",
           user_id: d.user_id,
-          group: d.group,
+          function: d.function,
+          function_rank: d.function_rank,
           firstname: d.firstname,
           date: d.date,
           period: d.period,
@@ -846,7 +877,6 @@
       if (!PERIODS.includes(per)) continue;
 
       const taskId = String(a.task_id || "");
-
       const previewKind = "editing";
 
       if (!taskId) {
@@ -854,7 +884,8 @@
         staging?.appendChild(panelShiftCard({
           kind: previewKind,
           user_id: it.user_id,
-          group: it.group,
+          function: it.function,
+          function_rank: it.function_rank,
           firstname: it.firstname,
           date: it.date,
           period: it.period,
@@ -866,7 +897,8 @@
         container?.appendChild(panelShiftCard({
           kind: previewKind,
           user_id: it.user_id,
-          group: it.group,
+          function: it.function,
+          function_rank: it.function_rank,
           firstname: it.firstname,
           date: it.date,
           period: it.period,
@@ -980,6 +1012,19 @@
       return (loc?.min?.[p] ?? 0);
     }
 
+    function setOkWarn(el, x, y){
+      if (!el) return;
+      el.classList.remove("pd-status-ok", "pd-status-warn");
+
+      const xx = Number(x) || 0;
+      const yy = Number(y) || 0;
+
+      // y=0 => altijd "ok" (anders wordt 0/0 oranje)
+      const ok = (yy <= 0) ? true : (xx >= yy);
+
+      el.classList.add(ok ? "pd-status-ok" : "pd-status-warn");
+    }
+
     function taskMinPeriod(locId, taskId, p) {
       const loc = locations.find(x => String(x.id) === String(locId));
       const t = (loc?.tasks || []).find(tt => String(tt.id) === String(taskId));
@@ -993,14 +1038,20 @@
       const y = locMinTotal(locId);
 
       const el = document.getElementById(`pdLocPillCount-${locId}`);
-      if (el) el.textContent = `${x}/${y}`;
+      if (el) {
+        el.textContent = `${x}/${y}`;
+        setOkWarn(el.closest(".pd-pill"), x, y);  // <-- NIEUW
+      }
 
       PERIODS.forEach(p => {
         const xp = lp[p] ?? 0;
         const yp = locMinPeriod(locId, p);
 
         const pillEl = document.getElementById(`pdLocPeriodPill-${locId}-${p}`);
-        if (pillEl) pillEl.textContent = `${xp}/${yp}`;
+        if (pillEl) {
+          pillEl.textContent = `${xp}/${yp}`;
+          setOkWarn(pillEl.closest(".pd-pill"), xp, yp);
+        }
 
         const headEl = document.getElementById(`pdLocPeriodHeader-${locId}-${p}`);
         if (headEl) headEl.textContent = `${xp}/${yp}`;
@@ -1087,13 +1138,16 @@
       (data.saved || []).forEach(s => {
         const k = `${s.user_id}|${s.date}|${s.period}`;
         const rect = findRectByKey(k);
-        const group = rect?.dataset.group || state.selected.get(k)?.group || "—";
+
+        const f = rect?.dataset.function || state.selected.get(k)?.function || "Functie onbekend";
+        const fr = Number(rect?.dataset.functionRank || state.selected.get(k)?.function_rank || 9999);
         const firstname = rect?.dataset.firstname || state.selected.get(k)?.firstname || "—";
 
         const merged = {
           id: s.draft_id,
           user_id: s.user_id,
-          group,
+          function: f,
+          function_rank: fr,
           firstname,
           date: s.date,
           period: s.period,
@@ -1189,6 +1243,7 @@
     if (!p || !PERIODS.includes(p)) return;
     setPeriodForAllLocations(p);
   });
+
 /* =========================================================
    Unsaved changes guard (navigatie prompt)
    ========================================================= */
@@ -1196,11 +1251,9 @@
 let _suppressBeforeUnload = false;
 
 function hasUnsavedChanges() {
-  // Alles wat verloren gaat bij navigeren:
   if (computeReadyToSaveCount() > 0) return true;
   if (state.dirty.size > 0) return true;
 
-  // Ook “nieuwe” selections waar al iets gekozen is (loc of task)
   for (const it of state.selected.values()) {
     if (it.existing) continue;
     const k = keyOf(it);
@@ -1246,33 +1299,25 @@ async function maybeSaveThenNavigate(navigateFn) {
 
   if (ok) {
     const res = await saveConcept();
-    // Als opslaan mislukt: NIET navigeren (anders verlies je wijzigingen)
     if (!res || !res.ok) return;
   }
 
-  // Bewuste navigatie (met of zonder opslaan) -> geen 2e browser prompt
   _suppressBeforeUnload = true;
-
-  // safety: als navigatie om welke reden dan ook niet doorgaat, zet terug
   setTimeout(() => { _suppressBeforeUnload = false; }, 1500);
 
   navigateFn();
 }
 
 function bindUnsavedGuards() {
-  // 1) Day picker
   const dayPicker = document.getElementById('dayPicker');
   if (dayPicker) {
     dayPicker.addEventListener('change', (e) => {
-      // capture-phase: voorkom dat personeeldashboard.js al navigeert
       e.stopImmediatePropagation();
-
       const targetVal = e.target.value;
       maybeSaveThenNavigate(() => goToDayIdx(targetVal));
     }, true);
   }
 
-  // 2) Prev/next week buttons
   const btnPrev = document.getElementById('prevWeekBtn');
   const btnNext = document.getElementById('nextWeekBtn');
 
@@ -1281,15 +1326,12 @@ function bindUnsavedGuards() {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
-
       const target = btn.dataset.target;
       if (!target) return;
-
       maybeSaveThenNavigate(() => goToMonday(target));
     }, true);
   });
 
-  // 3) Week menu click (week opties)
   const weekMenu = document.getElementById('weekMenu');
   if (weekMenu) {
     weekMenu.addEventListener('click', (e) => {
@@ -1306,7 +1348,6 @@ function bindUnsavedGuards() {
     }, true);
   }
 
-  // 4) Safety net bij refresh/close/back: native browser prompt
   window.addEventListener('beforeunload', beforeUnloadHandler);
 }
 

@@ -137,7 +137,9 @@
     </div>
   </div>
 </div>
-
+    <p class="pd-hint-muted">
+  * Vaste medewerkers zijn <strong>dikgedrukt</strong>.
+</p>
     </div>
   </div>
 
@@ -163,7 +165,7 @@
         <div class="search-bar">
           <input type="text"
                  id="userSearch"
-                 placeholder="Zoek op groep of naam…"
+                 placeholder="Zoek op functie of naam…"
                  class="admin-input">
         </div>
 
@@ -179,7 +181,7 @@
 
             <thead>
               <tr>
-                <th class="no-vlines">Groep</th>
+                <th class="no-vlines">Functie*</th>
                 <th class="no-vlines">Voornaam</th>
 
                 <th class="slot-head">
@@ -207,14 +209,20 @@
 
             <tbody id="matrixBody">
               {% for r in rows %}
-                <tr class="matrix-row"
-                    data-user-id="{{ r.user_id }}"
-                    data-group="{{ r.group }}"
-                    data-firstname="{{ r.firstname }}"
-                    {{ r.data_attrs|safe }}>
+                  <tr class="matrix-row"
+                      data-user-id="{{ r.user_id }}"
+                      data-firstname="{{ r.firstname }}"
+                      data-function="{{ r.function }}"
+                      data-function-rank="{{ r.function_rank }}"
+                      data-dienstverband="{{ r.dienstverband }}"
+                      {{ r.data_attrs|safe }}>
+                  <td class="cell-wrap no-vlines {% if r.is_vast %}is-vast{% endif %}">
+                    {{ r.function }}
+                  </td>
 
-                  <td class="cell-wrap no-vlines">{{ r.group }}</td>
-                  <td class="cell-wrap no-vlines">{{ r.firstname }}</td>
+                  <td class="cell-wrap no-vlines {% if r.is_vast %}is-vast{% endif %}">
+                    {{ r.firstname }}
+                  </td>
 
                   <td class="slot-cell">
                     <div
@@ -223,7 +231,8 @@
                       role="button"
                       tabindex="{% if r.cell.morning %}0{% else %}-1{% endif %}"
                       data-user-id="{{ r.user_id }}"
-                      data-group="{{ r.group }}"
+                      data-function="{{ r.function }}"
+                      data-function-rank="{{ r.function_rank }}"
                       data-firstname="{{ r.firstname }}"
                       data-date="{{ selected_day_ctx.iso }}"
                       data-period="morning"></div>
@@ -236,7 +245,8 @@
                       role="button"
                       tabindex="{% if r.cell.afternoon %}0{% else %}-1{% endif %}"
                       data-user-id="{{ r.user_id }}"
-                      data-group="{{ r.group }}"
+                      data-function="{{ r.function }}"
+                      data-function-rank="{{ r.function_rank }}"
                       data-firstname="{{ r.firstname }}"
                       data-date="{{ selected_day_ctx.iso }}"
                       data-period="afternoon"></div>
@@ -249,7 +259,8 @@
                       role="button"
                       tabindex="{% if r.cell.evening %}0{% else %}-1{% endif %}"
                       data-user-id="{{ r.user_id }}"
-                      data-group="{{ r.group }}"
+                      data-function="{{ r.function }}"
+                      data-function-rank="{{ r.function_rank }}"
                       data-firstname="{{ r.firstname }}"
                       data-date="{{ selected_day_ctx.iso }}"
                       data-period="evening"></div>

@@ -164,17 +164,21 @@
   function sortBySlot(slotId){
     if (!body || !slotId) return;
 
-    const [d, part] = String(slotId).split('|');
+    const [, part] = String(slotId).split('|');
     const rows = Array.from(body.querySelectorAll('.matrix-row'));
 
     rows.sort((a, b) => {
-      const aAvail = Number(a.getAttribute(`data-${d}-${part}`));
-      const bAvail = Number(b.getAttribute(`data-${d}-${part}`));
+      const aAvail = Number(a.getAttribute(`data-avail-${part}`) || 0);
+      const bAvail = Number(b.getAttribute(`data-avail-${part}`) || 0);
       if (bAvail !== aAvail) return bAvail - aAvail;
 
-      const ag = (a.getAttribute('data-group') || '').toLowerCase();
-      const bg = (b.getAttribute('data-group') || '').toLowerCase();
-      if (ag !== bg) return ag.localeCompare(bg);
+      const ar = Number(a.getAttribute('data-function-rank') || 9999);
+      const br = Number(b.getAttribute('data-function-rank') || 9999);
+      if (ar !== br) return ar - br;
+
+      const at = (a.getAttribute('data-function') || '').toLowerCase();
+      const bt = (b.getAttribute('data-function') || '').toLowerCase();
+      if (at !== bt) return at.localeCompare(bt);
 
       const af = (a.getAttribute('data-firstname') || '').toLowerCase();
       const bf = (b.getAttribute('data-firstname') || '').toLowerCase();
@@ -210,9 +214,9 @@
         return;
       }
       allRows.forEach(r => {
-        const g = (r.getAttribute('data-group') || '').toLowerCase();
+        const fn = (r.getAttribute('data-function') || '').toLowerCase();
         const f = (r.getAttribute('data-firstname') || '').toLowerCase();
-        const hit = g.includes(q) || f.includes(q);
+        const hit = fn.includes(q) || f.includes(q);
         r.style.display = hit ? '' : 'none';
       });
     });

@@ -29,6 +29,19 @@ def _user_group(u):
     g = u.groups.first() if hasattr(u, "groups") else None
     return g.name if g else "Onbekend"
 
+def _user_function_title(u):
+    prof = getattr(u, "profile", None)
+    fn = getattr(prof, "function", None) if prof else None
+    return fn.title if fn else "Functie onbekend"
+
+def _user_function_rank(u):
+    prof = getattr(u, "profile", None)
+    fn = getattr(prof, "function", None) if prof else None
+    return int(fn.ranking) if fn else 9999  # onbekend onderaan
+
+def _user_dienstverband(u):
+    prof = getattr(u, "profile", None)
+    return getattr(prof, "dienstverband", None) if prof else None
 
 def _user_firstname_cap(u):
     fn = (u.first_name or "").strip()
@@ -60,8 +73,6 @@ def personeelsdashboard_view(request):
 
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
-
-    Availability.objects.filter(date__lt=min_monday).delete()
 
     # Weekselectie (ongewijzigd) ...
     qs_week = request.GET.get("week")
@@ -104,16 +115,19 @@ def personeelsdashboard_view(request):
     av_qs = (
         Availability.objects
         .filter(date__in=days)
-        .select_related("user")
+        .select_related("user", "user__profile", "user__profile__function")
         .prefetch_related("dagdelen", "user__groups")
     )
 
 
     users = sorted(
         {av.user for av in av_qs},
-        key=lambda u: (_user_group(u).lower(), _user_firstname_cap(u).lower())
+        key=lambda u: (
+            _user_function_rank(u),
+            _user_function_title(u).lower(),
+            _user_firstname_cap(u).lower()
+        )
     )
-
     matrix = defaultdict(lambda: {d: {"morning": False, "afternoon": False, "evening": False} for d in days})
 
     for av in av_qs:
@@ -162,16 +176,26 @@ def personeelsdashboard_view(request):
         is_evening = matrix[u][selected_day]["evening"]
         if not (is_morning or is_afternoon or is_evening):
             continue
+        func_title = _user_function_title(u)
+        func_rank = _user_function_rank(u)
+        dienstverband = _user_dienstverband(u) or "oproep"
+        is_vast = (dienstverband == "vast")
 
         data_attrs_parts = [
-            f'data-{selected_iso}-morning="{"1" if is_morning else "0"}"',
-            f'data-{selected_iso}-afternoon="{"1" if is_afternoon else "0"}"',
-            f'data-{selected_iso}-evening="{"1" if is_evening else "0"}"',
+        f'data-avail-morning="{"1" if is_morning else "0"}"',
+        f'data-avail-afternoon="{"1" if is_afternoon else "0"}"',
+        f'data-avail-evening="{"1" if is_evening else "0"}"',
+        f'data-function="{func_title}"',
+        f'data-function-rank="{func_rank}"',
+        f'data-dienstverband="{dienstverband}"',
         ]
 
         rows.append({
             "user_id": u.id,
-            "group": _user_group(u),
+            "function": func_title,
+            "function_rank": func_rank,
+            "dienstverband": dienstverband,
+            "is_vast": is_vast,
             "firstname": _user_firstname_cap(u),
             "cell": {"date": selected_day, "morning": is_morning, "afternoon": is_afternoon, "evening": is_evening},
             "data_attrs": " ".join(data_attrs_parts),
@@ -200,7 +224,6 @@ def personeelsdashboard_view(request):
         .prefetch_related(Prefetch("tasks", queryset=Task.objects.order_by("name")))
     )
 
-    overall_min = {"morning": 0, "afternoon": 0, "evening": 0}
     locations_payload = []
     for loc in locations:
         tasks_payload = []
@@ -224,7 +247,7 @@ def personeelsdashboard_view(request):
     published_qs = (
         Shift.objects
         .filter(date=selected_day)
-        .select_related("user", "task", "task__location")
+        .select_related("user", "user__profile", "user__profile__function", "task", "task__location")
         .prefetch_related("user__groups")
         .order_by("period", "user__first_name", "user__username")
     )
@@ -234,7 +257,9 @@ def personeelsdashboard_view(request):
         published_payload.append({
             "id": s.id,
             "user_id": s.user_id,
-            "group": _user_group(s.user),
+            "function": _user_function_title(s.user),
+            "function_rank": _user_function_rank(s.user),
+            "dienstverband": _user_dienstverband(s.user) or "oproep",
             "firstname": _user_firstname_cap(s.user),
             "date": s.date.isoformat(),
             "period": s.period,
@@ -244,11 +269,12 @@ def personeelsdashboard_view(request):
             "location_name": s.task.location.name,
         })
 
+
     # Draft shifts voor geselecteerde dag (wat admin nog niet gepubliceerd heeft)
     drafts_qs = (
         ShiftDraft.objects
         .filter(date=selected_day)
-        .select_related("user", "task", "task__location")
+        .select_related("user", "user__profile", "user__profile__function", "task", "task__location")
         .prefetch_related("user__groups")
         .order_by("period", "user__first_name", "user__username")
     )
@@ -259,16 +285,19 @@ def personeelsdashboard_view(request):
         draft_payload.append({
             "id": d.id,
             "user_id": d.user_id,
-            "group": _user_group(d.user),
+            "function": _user_function_title(d.user),
+            "function_rank": _user_function_rank(d.user),
+            "dienstverband": _user_dienstverband(d.user) or "oproep",
             "firstname": _user_firstname_cap(d.user),
             "date": d.date.isoformat(),
             "period": d.period,
-            "action": d.action,              # "upsert" | "delete"
+            "action": d.action,
             "task_id": task.id if task else None,
             "task_name": task.name if task else None,
             "location_id": task.location_id if task else None,
             "location_name": task.location.name if task else None,
         })
+
 
     pd_data = {
         "selectedDate": selected_day.isoformat(),
@@ -276,7 +305,6 @@ def personeelsdashboard_view(request):
         "weekEnd": week_end.isoformat(),
 
         "locations": locations_payload,
-        "overallMin": overall_min,
 
         "publishedShifts": published_payload,
         "draftShifts": draft_payload,
@@ -400,7 +428,11 @@ def delete_shift_api(request):
         draft.delete()
         return JsonResponse({"ok": True, "mode": "undone"})
     else:
-        # mark pending delete (published blijft bestaan totdat publish)
+        # Alleen delete markeren als er echt een published shift bestaat.
+        exists = Shift.objects.filter(user_id=user_id, date=d, period=period).exists()
+        if not exists:
+            return JsonResponse({"ok": True, "mode": "noop"})
+
         obj, _ = ShiftDraft.objects.update_or_create(
             user_id=user_id,
             date=d,

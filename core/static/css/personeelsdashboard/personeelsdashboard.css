@@ -803,3 +803,32 @@ button.pd-pill{
 
   .pd-right-spacer{ display: none; }
 }
+
+.is-vast{
+  font-weight: 900 !important;
+}
+
+.pd-hint-muted{
+  margin: 10px 0 0 0;
+  font-size: 0.9rem;
+  opacity: .75;
+}
+
+/* status kleuren op basis van target gehaald */
+.pd-status-ok{
+  background: var(--pd-green-soft-1) !important;
+  border-color: var(--pd-green) !important;
+  box-shadow: 0 0 0 4px var(--pd-green-ring);
+}
+
+.pd-status-warn{
+  background: var(--pd-orange-soft) !important;
+  border-color: var(--pd-orange) !important;
+  box-shadow: 0 0 0 4px var(--pd-orange-soft);
+}
+
+/* zorg dat tekst leesbaar blijft */
+.pd-status-ok .pd-pill-label,
+.pd-status-warn .pd-pill-label{
+  color: var(--muted);
+}

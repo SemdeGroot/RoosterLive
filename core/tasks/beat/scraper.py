@@ -83,8 +83,8 @@ def run_kompas_scraper(test_mode=False, categories=None):
             elif existing_urls_map[url] < seven_days_ago:
                 outdated_items.append(item)
 
-        # Prioriteit: Nieuw eerst, dan de rest, totaal max 350 (of 3 bij test_mode)
-        batch_limit = 3 if test_mode else 350
+        # Prioriteit: Nieuw eerst, dan de rest, totaal max 300 (of 3 bij test_mode)
+        batch_limit = 3 if test_mode else 300
         urls = (new_items + outdated_items)[:batch_limit]
         
         total_to_analyze = len(urls)
