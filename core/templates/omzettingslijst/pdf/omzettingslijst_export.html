@@ -5,6 +5,12 @@
   <title>Omzettingslijst</title>
 
   <style>
+    /* A4 LANDSCAPE */
+    @page {
+      size: A4 landscape;
+      margin: 12mm 12mm 14mm 12mm;
+    }
+
     .muted { color: #666; }
 
     /* HEADER (zelfde gevoel als STS halfjes / no_delivery) */
@@ -34,15 +40,16 @@
       line-height: 1.1;
     }
 
+    /* HEADER META: 3 kolommen (dus 3x2 velden = 6 items) */
     .pdf-submeta{
       margin-top: 6px;
       margin-bottom: 6px;
       font-size: 10.5pt;
       color:#111;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr; /* 3 kolommen */
       gap: 4px 18px;
-      max-width: 720px;
+      max-width: 980px;
     }
 
     .pdf-submeta > div{
@@ -65,6 +72,11 @@
       margin-top: 10px;
       font-size: 10.5pt;
     }
+
+    /* Herhaal de header op elke pagina in PDF */
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+
     th, td {
       padding: 8px 8px;
       vertical-align: top;
@@ -129,10 +141,12 @@
 
       <div class="pdf-submeta">
         <div><strong>Gegenereerd:</strong> {{ generated_at|date:"d-m-Y" }}</div>
-        <div><strong>Apotheek:</strong> {{ selected_list.apotheek.name|default:"-" }}</div>
+        <div><strong>Organisatie:</strong> {{ selected_list.apotheek.name|default:"-" }}</div>
+        <div><strong>Contact:</strong> {{ contact_email }}</div>
 
         <div><strong>Week:</strong> {{ selected_list.week }}</div>
         <div><strong>Dag:</strong> {{ selected_list.get_dag_display }}</div>
+        <div><strong>Jaar:</strong> {{ selected_list.jaar }}</div>
 
         <div><strong>Datum:</strong>
           {% if dag_datum %}
@@ -141,7 +155,8 @@
             -
           {% endif %}
         </div>
-        <div><span class="muted">{{ contact_email }}</span></div>
+        <div></div>
+        <div></div>
       </div>
     </div>
   </div>
@@ -152,27 +167,26 @@
   <table>
     <thead>
       <tr>
-        <th style="width:4%; text-align:center; color:#666;"></th>
-        <th style="width:9%;">Afdeling</th>
-        <th style="width:16%;">Patiënt</th>
-        <th style="width:11%;">Geboortedatum</th>
-        <th style="width:21%;">Gevraagd</th>
-        <th style="width:21%;">Geleverd</th>
-        <th style="width:11%;">Vanaf datum</th>
-        <th style="width:7%;">STS</th>
-        <th style="width:8%;">Roller</th>
+        <th style="width:3.5%; text-align:center; color:#666;"></th>
+        <th style="width:8%;">Afdeling</th>
+        <th style="width:13%;">Patiënt</th>
+        <th style="width:9%;">Geboortedatum</th>
+        <th style="width:20%;">Gevraagd</th>
+        <th style="width:20%;">Geleverd</th>
+        <th style="width:17.5%;">Omschrijving</th>
+        <th style="width:9%;">Vanaf</th>
       </tr>
     </thead>
 
     <tbody>
       {% for item in entries %}
         <tr>
-          <td style="width:4%; text-align:center; color:#666;">{{ forloop.counter }}</td>
+          <td style="width:3.5%; text-align:center; color:#666;">{{ forloop.counter }}</td>
 
-          <td style="width:9%;">{{ item.afdeling|default:"-" }}</td>
-          <td style="width:16%;">{{ item.patient_naam|default:"-" }}</td>
+          <td style="width:8%;">{{ item.afdeling|default:"-" }}</td>
+          <td style="width:13%;">{{ item.patient_naam|default:"-" }}</td>
 
-          <td style="width:11%; color:#666;">
+          <td style="width:9%; color:#666;">
             {% if item.patient_geboortedatum %}
               {{ item.patient_geboortedatum|date:"d-m-Y" }}
             {% else %}
@@ -180,7 +194,7 @@
             {% endif %}
           </td>
 
-          <td style="width:21%;">
+          <td style="width:17%;">
             {% if item.gevraagd_geneesmiddel %}
               <strong>{{ item.gevraagd_geneesmiddel.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.gevraagd_geneesmiddel.zi_nummer }}</span>
@@ -189,7 +203,7 @@
             {% endif %}
           </td>
 
-          <td style="width:21%;">
+          <td style="width:17%;">
             {% if item.geleverd_geneesmiddel %}
               <strong>{{ item.geleverd_geneesmiddel.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.geleverd_geneesmiddel.zi_nummer }}</span>
@@ -198,7 +212,16 @@
             {% endif %}
           </td>
 
-          <td style="width:11%; color:#666;">
+          <!-- NIEUW: OMSCHRIJVING -->
+          <td style="width:18%;">
+            {% if item.omschrijving_geneesmiddel %}
+              {{ item.omschrijving_geneesmiddel }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td style="width:9%; color:#666;">
             {% if item.vanaf_datum %}
               {{ item.vanaf_datum|date:"d-m-Y" }}
             {% else %}
@@ -206,12 +229,10 @@
             {% endif %}
           </td>
 
-          <td style="width:7%;">{{ item.sts_paraaf|default:"-" }}</td>
-          <td style="width:8%;">{{ item.roller_paraaf|default:"-" }}</td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="9" class="muted" style="text-align:center; padding:20px;">
+          <td colspan="8" class="muted" style="text-align:center; padding:20px;">
             Geen entries gevonden.
           </td>
         </tr>
