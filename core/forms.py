@@ -1250,9 +1250,8 @@ class NoDeliveryListForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["apotheek"].queryset = Organization.objects.filter(
-            org_type=Organization.ORG_TYPE_APOTHEEK
-        ).order_by("name")
+        self.fields["apotheek"].queryset = Organization.objects.all().order_by("name")
+
 
 
 class NoDeliveryEntryForm(forms.ModelForm):

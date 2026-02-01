@@ -198,7 +198,7 @@ function initApotheekSelect2($element, $dropdownParent) {
 
   $element.select2({
     width: "100%",
-    placeholder: $element.data("placeholder") || "Zoek apotheek...",
+    placeholder: $element.data("placeholder") || "Zoek organisatie...",
     allowClear: true,
     minimumResultsForSearch: 0,
     dropdownParent: $dropdownParent || null,
