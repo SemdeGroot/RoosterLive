@@ -1237,6 +1237,12 @@ class LaatstePot(models.Model):
         return f"{self.voorraad_item.naam} ({self.datum})"
 
 class STSHalfje(models.Model):
+    afdeling = models.CharField(
+        max_length=10,
+        blank=True,
+        default="",
+        verbose_name="Afdeling",
+    )
     item_gehalveerd = models.ForeignKey(
         'VoorraadItem',
         on_delete=models.CASCADE,

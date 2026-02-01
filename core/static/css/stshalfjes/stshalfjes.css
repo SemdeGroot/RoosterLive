@@ -10,13 +10,40 @@
   margin-top: 5px;
 }
 
-/* 1 - 2 - 2 grid */
 .stshalfjes-edit-grid{
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
+
+  /* 4 rijen met “middenrij” die 3 kolommen heeft */
+  grid-template-columns: 1fr 3fr 1fr;   /* 3 kolommen alléén relevant voor rij 2 */
+  grid-template-areas:
+    "org org org"
+    "afd pat dob"
+    "half half half"
+    "alt  alt  alt";
 }
+
+/* Laat items krimpen (belangrijk voor select2/inputs) */
+.stshalfjes-edit-grid > *{ min-width: 0; }
+
+/* 1) Organisatie (jouw .stshalfjes-grid-full is de 1e child) */
+.stshalfjes-edit-grid > :nth-child(1){ grid-area: org; }
+
+/* 2) Afdeling */
+.stshalfjes-edit-grid > :nth-child(2){ grid-area: afd; }
+
+/* 3) Patiënt */
+.stshalfjes-edit-grid > :nth-child(3){ grid-area: pat; }
+
+/* 4) Geboortedatum */
+.stshalfjes-edit-grid > :nth-child(4){ grid-area: dob; }
+
+/* 5) Item gehalveerd */
+.stshalfjes-edit-grid > :nth-child(5){ grid-area: half; }
+
+/* 6) Alternatief */
+.stshalfjes-edit-grid > :nth-child(6){ grid-area: alt; }
 
 /* Full width row (apotheek) */
 .stshalfjes-grid-full{
@@ -54,17 +81,18 @@
 /* Table kolombreedtes */
 table.stshalfjes-table {
   --c1: 20px;   /* idx */
-  --c2: 160px;  /* apotheek */
-  --c3: 160px;  /* patiënt */
-  --c4: 180px;  /* dob */
-  --c5: 260px;  /* gehalveerd */
-  --c6: 260px;  /* alternatief */
-  --c7: 90px;   /* acties */
+  --c2: 160px;  /* organisatie/apotheek */
+  --c3: 110px;  /* afdeling */
+  --c4: 160px;  /* patiënt */
+  --c5: 180px;  /* dob */
+  --c6: 260px;  /* gehalveerd */
+  --c7: 260px;  /* alternatief */
+  --c8: 90px;   /* acties */
 }
 
 @media (max-width: 1000px){
   table.stshalfjes-table{
-    min-width: 1120px;
+    min-width: 1230px;
   }
 }
 

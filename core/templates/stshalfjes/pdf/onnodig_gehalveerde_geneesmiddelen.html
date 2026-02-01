@@ -187,16 +187,18 @@
         <th style="width:4%; text-align:center; color:#666;"></th>
 
         {% if not apotheek %}
-          <th style="width:16%;">Organisatie</th>
-          <th style="width:14%;">Patiënt</th>
+          <th style="width:15%;">Organisatie</th>
+          <th style="width:9%;">Afdeling</th>
+          <th style="width:12%;">Patiënt</th>
           <th style="width:10%;">Geboortedatum</th>
-          <th style="width:28%;">Wordt gehalveerd</th>
-          <th style="width:28%;">Alternatief beschikbaar</th>
+          <th style="width:25%;">Wordt gehalveerd</th>
+          <th style="width:25%;">Alternatief beschikbaar</th>
         {% else %}
-          <th style="width:18%;">Patiënt</th>
-          <th style="width:12%;">Geboortedatum</th>
-          <th style="width:35%;">Wordt gehalveerd</th>
-          <th style="width:35%;">Alternatief beschikbaar</th>
+          <th style="width:12%;">Afdeling</th>
+          <th style="width:20%;">Patiënt</th>
+          <th style="width:14%;">Geboortedatum</th>
+          <th style="width:25%;">Wordt gehalveerd</th>
+          <th style="width:25%;">Alternatief beschikbaar</th>
         {% endif %}
       </tr>
     </thead>
@@ -207,37 +209,39 @@
           <td style="width:4%; text-align:center; color:#666;">{{ forloop.counter }}</td>
 
           {% if not apotheek %}
-            <td style="width:16%;">{{ item.apotheek.name|default:"-" }}</td>
-            <td style="width:14%;">{{ item.patient_naam|default:"-" }}</td>
-            <td style="width:10%; color:#666;">
+            <td>{{ item.apotheek.name|default:"-" }}</td>
+            <td>{{ item.afdeling|default:"-" }}</td>
+            <td>{{ item.patient_naam|default:"-" }}</td>
+            <td style="color:#666;">
               {% if item.patient_geboortedatum %}
                 {{ item.patient_geboortedatum|date:"d-m-Y" }}
               {% else %}
                 -
               {% endif %}
             </td>
-            <td style="width:28%;">
+            <td>
               <strong>{{ item.item_gehalveerd.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</span>
             </td>
-            <td style="width:28%;">
+            <td>
               <strong>{{ item.item_alternatief.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.item_alternatief.zi_nummer }}</span>
             </td>
           {% else %}
-            <td style="width:18%;">{{ item.patient_naam|default:"-" }}</td>
-            <td style="width:12%; color:#666;">
+            <td>{{ item.afdeling|default:"-" }}</td>
+            <td>{{ item.patient_naam|default:"-" }}</td>
+            <td style="color:#666;">
               {% if item.patient_geboortedatum %}
                 {{ item.patient_geboortedatum|date:"d-m-Y" }}
               {% else %}
                 -
               {% endif %}
             </td>
-            <td style="width:35%;">
+            <td>
               <strong>{{ item.item_gehalveerd.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.item_gehalveerd.zi_nummer }}</span>
             </td>
-            <td style="width:35%;">
+            <td>
               <strong>{{ item.item_alternatief.naam }}</strong><br>
               <span class="muted">ZI-nummer: {{ item.item_alternatief.zi_nummer }}</span>
             </td>
@@ -245,7 +249,7 @@
         </tr>
       {% empty %}
         <tr>
-          <td colspan="{% if apotheek %}5{% else %}6{% endif %}"
+          <td colspan="{% if apotheek %}6{% else %}7{% endif %}"
               class="muted"
               style="text-align:center; padding:20px;">
             Geen meldingen gevonden.

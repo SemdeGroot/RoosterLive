@@ -1186,6 +1186,7 @@ class STSHalfjeForm(forms.ModelForm):
         model = STSHalfje
         fields = [
             "apotheek",
+            "afdeling", 
             "patient_naam_enc",
             "patient_geboortedatum_enc",
             "item_gehalveerd",
@@ -1193,9 +1194,15 @@ class STSHalfjeForm(forms.ModelForm):
         ]
         labels = {
             "patient_naam_enc": "Patiënt",
-            "apotheek": "Apotheek",
+            "apotheek": "Organisatie",
+            "afdeling": "Afdeling", 
         }
         widgets = {
+            "afdeling": forms.TextInput(attrs={
+                "class": "admin-input",
+                "placeholder": "Afdeling...",
+                "autocomplete": "off",
+            }),
             "patient_naam_enc": forms.TextInput(attrs={
                 "class": "admin-input",
                 "placeholder": "Naam patiënt...",
@@ -1215,9 +1222,8 @@ class STSHalfjeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["item_gehalveerd"].queryset = VoorraadItem.objects.all()
         self.fields["item_alternatief"].queryset = VoorraadItem.objects.all()
-        self.fields["apotheek"].queryset = Organization.objects.filter(
-            org_type=Organization.ORG_TYPE_APOTHEEK
-        ).order_by("name")
+        self.fields["apotheek"].queryset = Organization.objects.all().order_by("name")
+
         
 class NoDeliveryListForm(forms.ModelForm):
     class Meta:

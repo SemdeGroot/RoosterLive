@@ -25,9 +25,7 @@ def stshalfjes(request):
     can_edit = can(request.user, "can_edit_baxter_sts_halfjes")
     can_send = can(request.user, "can_send_baxter_sts_halfjes")
 
-    apotheken = Organization.objects.filter(
-        org_type=Organization.ORG_TYPE_APOTHEEK
-    ).order_by("name")
+    apotheken = Organization.objects.all().order_by("name")
 
     form = STSHalfjeForm()
 

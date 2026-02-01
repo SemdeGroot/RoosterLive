@@ -23,7 +23,7 @@
       <img src="{% static 'img/omzettingslijst.svg' %}" alt="" class="birthday-icon">
       <div class="birthday-header-text">
         <h2>Omzettingslijst</h2>
-        <p>Beheer omzettingslijsten per apotheek, week en dag.</p>
+        <p>Beheer omzettingslijsten per organisate, week en dag.</p>
       </div>
 
       <div class="header-actions">
@@ -36,7 +36,7 @@
       <div class="ol-panel">
         <div class="ol-panel-header ol-panel-header-row">
           <div>
-            <h3 style="margin:0;">Selecteer apotheek</h3>
+            <h3 style="margin:0;">Selecteer organisatie</h3>
             <div style="margin-top:4px; color:var(--muted);">
               Voeg hier omzettingslijsten toe of selecteer lijsten om te openen
             </div>
@@ -57,13 +57,13 @@
 
               <div class="omzettingslijst-list-grid">
                 <div class="ol-grid-full">
-                  <label class="select2-label">Apotheek</label>
+                  <label class="select2-label">Organisatie</label>
                   <select
                     name="apotheek"
                     id="id_apotheek_list"
                     class="select2-apotheek"
                     style="width:100%;"
-                    data-placeholder="Zoek apotheek..."
+                    data-placeholder="Zoek organisatie..."
                   >
                     <option value="">----------</option>
                     {% for apo in apotheken %}
@@ -118,12 +118,12 @@
 
             <div class="ol-inline-grid">
               <div class="ol-grow">
-                <label class="select2-label">Zoek omzettingslijst op apotheek, week of dag</label>
+                <label class="select2-label">Zoek omzettingslijst op organisatie, week of dag</label>
                 <select
                   id="id_list_picker"
                   name="selected_list_id"
                   style="width:100%;"
-                  data-placeholder="Zoek op apotheek, week of dag..."
+                  data-placeholder="Zoek op organisatie, week of dag..."
                 >
                   {% if selected_list %}
                     <option value="{{ selected_list.id }}" selected>
@@ -557,7 +557,7 @@
               <select name="recipients" id="id_recipients" multiple="multiple" style="width:100%;"></select>
 
               <p style="margin:12px 0 0 0; color:var(--muted); font-size:0.95em;">
-                Per geselecteerde lijst wordt één PDF gegenereerd en verstuurd naar de gekoppelde apotheek.
+                Per geselecteerde lijst wordt één PDF gegenereerd en verstuurd naar de gekoppelde organisaties.
               </p>
             </div>
 
@@ -576,7 +576,7 @@
           <h3 style="margin:0;">Entries</h3>
         </div>
         <div class="ol-panel-body" style="color:var(--muted);">
-          Kies eerst hierboven een apotheek/week/dag lijst of maak een nieuwe lijst aan.
+          Kies eerst hierboven een organisatie/week/dag lijst of maak een nieuwe lijst aan.
         </div>
       </div>
       {% endif %}

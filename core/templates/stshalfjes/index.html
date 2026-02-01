@@ -49,13 +49,13 @@
           <div class="stshalfjes-edit-grid" style="margin-bottom: 15px;">
 
             <div class="stshalfjes-grid-full">
-              <label class="select2-label">Apotheek</label>
+              <label class="select2-label">Organisatie</label>
               <select
                 name="apotheek"
                 id="id_apotheek"
                 class="select2-apotheek"
                 style="width:100%;"
-                data-placeholder="Zoek apotheek..."
+                data-placeholder="Zoek organisatie..."
               >
                 <option value="">----------</option>
                 {% for apo in apotheken %}
@@ -68,6 +68,14 @@
 
               {% if form.apotheek.errors %}
                 <div class="field-error">{{ form.apotheek.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="section-label">Afdeling</label>
+              {{ form.afdeling }}
+              {% if form.afdeling.errors %}
+                <div class="field-error">{{ form.afdeling.errors }}</div>
               {% endif %}
             </div>
 
@@ -123,7 +131,8 @@
             <thead>
               <tr>
                 <th class="center-col"></th>
-                <th>Apotheek</th>
+                <th>Organisatie</th>
+                <th>Afdeling</th>
                 <th>Patiënt</th>
                 <th data-sort="date">Geboortedatum</th>
                 <th>Wordt gehalveerd</th>
@@ -137,6 +146,7 @@
               <tr class="sts-row" id="row-{{ item.id }}">
                 <td class="center-col" style="color:var(--muted);">{{ forloop.counter }}</td>
                 <td class="wrap">{{ item.apotheek.name|default:"-" }}</td>
+                <td class="wrap">{{ item.afdeling|default:"-" }}</td>
                 <td class="wrap">{{ item.patient_naam|default:"-" }}</td>
                 <td style="color: var(--muted);">
                   {% if item.patient_geboortedatum %}
@@ -187,7 +197,7 @@
 
               {% if can_edit %}
               <tr id="edit-row-{{ item.id }}" class="edit-row" style="display:none;">
-                <td colspan="7">
+                <td colspan="8">
                   <div class="edit-wrap">
                     <form method="post" autocomplete="off">
                       {% csrf_token %}
@@ -197,8 +207,8 @@
                       <div class="stshalfjes-edit-grid">
 
                         <div class="stshalfjes-grid-full">
-                          <label class="select2-label">Apotheek</label>
-                          <select name="apotheek" class="select2-apotheek-edit" style="width:100%;" data-placeholder="Zoek apotheek...">
+                          <label class="select2-label">Organisatie</label>
+                          <select name="apotheek" class="select2-apotheek-edit" style="width:100%;" data-placeholder="Zoek organisatie...">
                             <option value="">----------</option>
                             {% for apo in apotheken %}
                               <option value="{{ apo.id }}" {% if item.apotheek and item.apotheek.id == apo.id %}selected{% endif %}>
@@ -206,6 +216,18 @@
                               </option>
                             {% endfor %}
                           </select>
+                        </div>
+
+                        <div>
+                          <label class="section-label">Afdeling</label>
+                          <input
+                            type="text"
+                            name="afdeling"
+                            value="{{ item.afdeling }}"
+                            class="admin-input"
+                            placeholder="Afdeling..."
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div>
@@ -233,7 +255,7 @@
                         </div>
 
                         <div>
-                          <label class="section-label">Huidig (halveren):</label>
+                          <label class="section-label">Item dat gehalveerd wordt:</label>
                           <select name="item_gehalveerd" class="select2-edit" style="width:100%;">
                             <option value="{{ item.item_gehalveerd_id }}" selected>
                               {{ item.item_gehalveerd.naam }}
@@ -242,7 +264,7 @@
                         </div>
 
                         <div>
-                          <label class="section-label">Alternatief:</label>
+                          <label class="section-label">Alternatief (lagere sterkte):</label>
                           <select name="item_alternatief" class="select2-edit" style="width:100%;">
                             <option value="{{ item.item_alternatief_id }}" selected>
                               {{ item.item_alternatief.naam }}
@@ -264,7 +286,7 @@
 
               {% empty %}
               <tr>
-                <td colspan="7" style="text-align:center; padding:20px; color:var(--muted);">
+                <td colspan="8" style="text-align:center; padding:20px; color:var(--muted);">
                   Nog geen meldingen gevonden.
                 </td>
               </tr>
@@ -334,7 +356,7 @@
         </select>
 
         <p style="margin:12px 0 0 0; color:var(--muted); font-size:0.95em;">
-          Elke apotheek ontvangt alleen meldingen die aan die apotheek gekoppeld zijn.
+          Elke organisatie ontvangt alleen meldingen die aan die organisatie gekoppeld zijn.
         </p>
       </div>
 
