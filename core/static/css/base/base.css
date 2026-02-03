@@ -6,6 +6,7 @@
   --pad-top: 12px;
   --pad-bottom: 12px;
   --pad-x: 16px;
+
 }
 
 *{box-sizing:border-box}
@@ -461,6 +462,11 @@ th,td{
   font-size:11px;
   text-align:center;
   max-width:100vw;
+}
+
+/* Desktop installed PWA: extra breathing room onderin */
+.pwa-standalone-desktop .footer{
+  padding-bottom: calc(var(--pad-bottom) + var(--inset-bottom));
 }
 
 .footer a.footer-linkedin{

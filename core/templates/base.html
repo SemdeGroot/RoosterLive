@@ -59,6 +59,26 @@
       window.addEventListener('DOMContentLoaded', () => observer.disconnect());
     })();
   </script>
+  <script>
+  (function() {
+    const doc = document.documentElement;
+
+    // Detect installed PWA standalone
+    const isStandalone =
+      window.matchMedia?.('(display-mode: standalone)')?.matches ||
+      window.navigator.standalone === true;
+
+    // Detect "desktop-ish"
+    const isProbablyMobile =
+      (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean')
+        ? navigator.userAgentData.mobile
+        : /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isStandalone && !isProbablyMobile) {
+      doc.classList.add('pwa-standalone-desktop');
+    }
+  })();
+  </script>
 
   <script src="{% static 'js/base/light_dark.js' %}" defer></script>
   <script>
