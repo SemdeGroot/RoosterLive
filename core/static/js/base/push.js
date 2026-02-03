@@ -503,18 +503,15 @@
       window.navigator.standalone === true;
 
     function isProbablyMobile() {
-    // Modern (Chromium): betrouwbaar
-    if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
-      return navigator.userAgentData.mobile;
+      if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+        return navigator.userAgentData.mobile;
+      }
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
-    // Fallback
-    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  }
 
-  function isDesktopPwaStandalone() {
-    return isStandalone && !isProbablyMobile();
-  }
-
+    function isDesktopPwaStandalone() {
+      return isStandalone && !isProbablyMobile();
+    }
 
     const onHttps = location.protocol === 'https:' || location.hostname === 'localhost';
 
@@ -612,6 +609,65 @@
         return JSON.stringify({ endpoint: j.endpoint, keys: j.keys });
       } catch (_) {
         return sub && sub.endpoint ? String(sub.endpoint) : '';
+      }
+    }
+
+    function isAuthenticatedWeb() {
+      const htmlAuth = document.documentElement?.dataset?.auth;
+      const bodyAuth = document.body?.dataset?.auth;
+      return htmlAuth === '1' || bodyAuth === '1';
+    }
+
+    window.pushSyncOnLogin = async function () {
+      if (!VAPID || !onHttps) return;
+      if (Notification.permission !== 'granted') return;
+
+      try {
+        const reg = await registerSW();
+        if (!reg) return;
+
+        // Alleen lezen: géén subscribe() hier
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+
+        const fp = subFingerprint(sub);
+
+        const lastFpKey = 'lastPushSubFingerprint';
+        const lastLoginSyncKey = 'lastPushLoginSyncTimestamp';
+
+        const lastFp = localStorage.getItem(lastFpKey) || '';
+        const lastLoginSync = parseInt(localStorage.getItem(lastLoginSyncKey) || '0', 10);
+
+        // Anti-dubbel-run bij login redirects (1 minuut)
+        if (Date.now() - lastLoginSync < 60 * 1000 && fp === lastFp) return;
+
+        // Alleen naar backend als fingerprint nieuw/anders is
+        if (!lastFp || fp !== lastFp) {
+          await saveSubscription(sub);
+          localStorage.setItem(lastFpKey, fp);
+        }
+
+        localStorage.setItem(lastLoginSyncKey, String(Date.now()));
+      } catch (e) {
+        console.warn('[push] pushSyncOnLogin faalde:', e);
+      }
+    };
+
+    async function runLoginPushSyncOncePerSession() {
+      if (!isStandalone) return;
+      if (!isAuthenticatedWeb()) return;
+      if (Notification.permission !== 'granted') return;
+
+      const sessionKey = 'pushLoginSyncDoneThisSession_v1';
+      try {
+        if (sessionStorage.getItem(sessionKey) === '1') return;
+      } catch (_) {}
+
+      try {
+        await window.pushSyncOnLogin?.();
+        try { sessionStorage.setItem(sessionKey, '1'); } catch (_) {}
+      } catch (_) {
+        // niet flaggen; dan kan hij later in sessie nog een keer proberen
       }
     }
 
@@ -758,5 +814,12 @@
         visibilityTimeout = setTimeout(runPushHealthCheck, 1000);
       }
     });
+    // Login resync: 1x per sessie (per tab)
+    window.addEventListener('load', runLoginPushSyncOncePerSession);
+
+    window.addEventListener('pageshow', () => {
+      setTimeout(runLoginPushSyncOncePerSession, 150);
+    });
+
   })();
 })();
