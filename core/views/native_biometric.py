@@ -21,6 +21,22 @@ from core.forms import IdentifierAuthenticationForm
 # Config helpers
 # -------------------------
 
+def resolve_user_from_identifier(identifier: str):
+    User = get_user_model()
+    ident = (identifier or "").strip()
+    if not ident:
+        return None
+    if "@" in ident:
+        return User.objects.filter(email__iexact=ident).only("id").first()
+
+    qs = User.objects.filter(first_name__iexact=ident).only("id")
+    cnt = qs.count()
+    if cnt == 1:
+        return qs.first()
+    if cnt > 1:
+        raise ValueError("Deze voornaam komt vaker voor. Log in met je e-mailadres.")
+    return None
+
 def _pepper() -> str:
     """
     Extra server-side 'pepper' bovenop de secret hashing.
@@ -151,55 +167,55 @@ def native_biometric_enable(request: HttpRequest):
 # -------------------------
 @require_POST
 def native_biometric_login(request: HttpRequest):
-    """
-    Biometrische login voor WebView:
-    App unlockt secret via biometrie en stuurt device_id + secret.
-    Server logt user in (Django session).
-
-    Verwacht JSON:
-      {
-        "device_id": "...",
-        "device_secret": "..."
-      }
-    """
     try:
         body = json.loads(request.body.decode("utf-8"))
     except Exception:
         return JsonResponse({"ok": False, "error": "Invalid JSON"}, status=400)
 
+    identifier = (body.get("identifier") or "").strip()
     device_id = (body.get("device_id") or "").strip()
     device_secret = (body.get("device_secret") or "").strip()
     next_url = body.get("next") or "/"
 
-    if not device_id or not device_secret:
-        return JsonResponse({"ok": False, "error": "device_id en device_secret zijn verplicht"}, status=400)
+    # Houd errors uniform om geen info te lekken
+    if not identifier or not device_id or not device_secret:
+        return JsonResponse({"ok": False, "error": "Login mislukt"}, status=400)
 
-    # Rate limit (simpel)
     if not _rate_limit_ok(request, device_id=device_id, window_seconds=60, max_attempts=10):
         return JsonResponse({"ok": False, "error": "Te veel pogingen, probeer later opnieuw."}, status=429)
 
-    # Vind actieve device record(s)
-    qs = NativeBiometricDevice.objects.select_related("user").filter(device_id=device_id, is_active=True)
-    dev: Optional[NativeBiometricDevice] = qs.first()
+    try:
+        user = resolve_user_from_identifier(identifier)
+    except ValueError as e:
+        # voornaam niet uniek -> user moet email gebruiken
+        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+
+    if not user:
+        return JsonResponse({"ok": False, "error": "Login mislukt"}, status=400)
+
+    dev = NativeBiometricDevice.objects.select_related("user").filter(
+        user=user,
+        device_id=device_id,
+        is_active=True,
+    ).first()
+
     if not dev:
-        return JsonResponse({"ok": False, "error": "Onbekend device"}, status=400)
+        return JsonResponse({"ok": False, "error": "Login mislukt"}, status=400)
 
     expected = dev.secret_hash
     got = _hash_secret(device_secret)
 
     if not _safe_equals(expected, got):
-        return JsonResponse({"ok": False, "error": "Biometrische login mislukt"}, status=400)
+        return JsonResponse({"ok": False, "error": "Login mislukt"}, status=400)
+    
+    if not user.is_active:
+        return JsonResponse({"ok": False, "error": "Login mislukt"}, status=400)
 
-    # Login → session cookie
-    user = dev.user
     login(request, user)
-
     dev.last_used_at = timezone.now()
     dev.save(update_fields=["last_used_at"])
 
-    next_url = body.get("next") or "/"
     return JsonResponse({"ok": True, "redirect_url": next_url})
-
 
 
 # -------------------------
