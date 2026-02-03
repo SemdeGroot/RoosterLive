@@ -1,7 +1,6 @@
 // haptic_feedback.js
 // Mobile-only haptic feedback that triggers ONLY on a real tap/click (not on scroll).
-// Uses the same hapticTick logic as refresh.js (vibrate + iOS switch/label hack).
-// Also blocks the synthetic label.click() from bubbling to document (prevents menu close interference).
+// Respects user preference: window.APP_SETTINGS.haptics_enabled (default true)
 
 (function () {
   const isMobileDevice =
@@ -10,6 +9,14 @@
     (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
 
   if (!isMobileDevice) return;
+
+  function isHapticsEnabled() {
+    // default ON when not present
+    const v = window.APP_SETTINGS && typeof window.APP_SETTINGS.haptics_enabled !== "undefined"
+      ? window.APP_SETTINGS.haptics_enabled
+      : true;
+    return v !== false;
+  }
 
   window.HapticFeedback = {
     tick: hapticTick,
@@ -23,61 +30,61 @@
   }
 
   async function hapticTick() {
-      // 1) Native Capacitor haptics als we echt native draaien
-      try {
-        const Cap = window.Capacitor;
+    if (!isHapticsEnabled()) return;
 
-        // Capacitor v8: Cap.isNativePlatform() bestaat.
-        const isNative =
-          !!Cap &&
-          typeof Cap.isNativePlatform === "function" &&
-          Cap.isNativePlatform();
+    // 1) Native Capacitor haptics (native app)
+    try {
+      const Cap = window.Capacitor;
 
-        const Haptics = Cap?.Plugins?.Haptics;
+      const isNative =
+        !!Cap &&
+        typeof Cap.isNativePlatform === "function" &&
+        Cap.isNativePlatform();
 
-        if (isNative && Haptics && typeof Haptics.impact === "function") {
-          // ImpactStyle: "LIGHT" | "MEDIUM" | "HEAVY"
-          await Haptics.impact({ style: "LIGHT" });
-          return;
-        }
-      } catch (e) {
-        // als native faalt → fallback hieronder
-      }
+      const Haptics = Cap?.Plugins?.Haptics;
 
-      // 2) Web/PWA fallback: bestaande vibrate + iOS switch/label hack
-      if (navigator.vibrate) {
-        navigator.vibrate(40);
+      if (isNative && Haptics && typeof Haptics.impact === "function") {
+        await Haptics.impact({ style: "LIGHT" });
         return;
       }
-
-      const el = document.createElement("div");
-      const id = "haptic-" + Math.random().toString(36).slice(2);
-
-      el.innerHTML =
-        '<input type="checkbox" id="' + id + '" switch />' +
-        '<label for="' + id + '"></label>';
-
-      el.style.cssText =
-        "position:fixed;left:-9999px;top:auto;width:1px;height:1px;" +
-        "overflow:hidden;opacity:0;pointer-events:none;";
-
-      // Prevent the synthetic label click from reaching document click handlers
-      el.addEventListener(
-        "click",
-        (ev) => {
-          ev.stopPropagation();
-          ev.stopImmediatePropagation();
-        },
-        true
-      );
-
-      document.body.appendChild(el);
-
-      const label = el.querySelector("label");
-      if (label) label.click();
-
-      setTimeout(() => el.remove(), 500);
+    } catch (e) {
+      // fallback below
     }
+
+    // 2) Web/PWA fallback: vibrate + iOS switch/label hack
+    if (navigator.vibrate) {
+      navigator.vibrate(40);
+      return;
+    }
+
+    const el = document.createElement("div");
+    const id = "haptic-" + Math.random().toString(36).slice(2);
+
+    el.innerHTML =
+      '<input type="checkbox" id="' + id + '" switch />' +
+      '<label for="' + id + '"></label>';
+
+    el.style.cssText =
+      "position:fixed;left:-9999px;top:auto;width:1px;height:1px;" +
+      "overflow:hidden;opacity:0;pointer-events:none;";
+
+    // Prevent the synthetic label click from reaching document click handlers
+    el.addEventListener(
+      "click",
+      (ev) => {
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+      },
+      true
+    );
+
+    document.body.appendChild(el);
+
+    const label = el.querySelector("label");
+    if (label) label.click();
+
+    setTimeout(() => el.remove(), 500);
+  }
 
   function bindHaptics(selector = "[data-haptic]") {
     const nodes = Array.from(document.querySelectorAll(selector));
@@ -86,7 +93,7 @@
       if (node.__hapticBound) return;
       node.__hapticBound = true;
 
-      const TAP_MOVE_THRESHOLD = 10; // px; above this we treat as scroll/drag
+      const TAP_MOVE_THRESHOLD = 10; // px
       let startX = 0;
       let startY = 0;
       let moved = false;
@@ -96,6 +103,7 @@
       let lastTapTs = 0;
 
       const shouldSkip = () => {
+        if (!isHapticsEnabled()) return true;
         const attr = node.getAttribute("data-haptic");
         if (attr && attr.toLowerCase() === "off") return true;
         if (node.matches("button:disabled, [aria-disabled='true']")) return true;
@@ -122,14 +130,12 @@
         const wasMoved = moved;
         pointerId = null;
 
-        // Only tick if it was a real tap (not a scroll)
         if (!wasMoved && !shouldSkip()) {
           lastTapTs = Date.now();
           hapticTick();
         }
       };
 
-      // Pointer Events (best on modern mobile)
       if (window.PointerEvent) {
         node.addEventListener(
           "pointerdown",
@@ -166,7 +172,7 @@
           { passive: true }
         );
       } else {
-        // Fallback for older Safari: touch events
+        // older Safari
         node.addEventListener(
           "touchstart",
           (e) => {
@@ -202,12 +208,12 @@
         );
       }
 
-      // Click fallback (keyboard / non-touch / odd cases). Ignore if we just handled a tap.
+      // Click fallback (keyboard / odd cases). Ignore if we just handled a tap.
       node.addEventListener(
         "click",
         () => {
           if (shouldSkip()) return;
-          if (Date.now() - lastTapTs < 700) return; // avoid double tick
+          if (Date.now() - lastTapTs < 700) return;
           hapticTick();
         },
         { passive: true }

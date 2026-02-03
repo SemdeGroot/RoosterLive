@@ -1,17 +1,18 @@
 (function () {
   function $(id) { return document.getElementById(id); }
 
-  // ===== CAPACITOR HELPERS (nieuw) =====
+  // ===== CONFIG =====
+  const SETTINGS_UPDATE_URL = "/profiel/settings/update/";
+
+  // ===== CAPACITOR HELPERS =====
   function isCapacitorNative() {
     const cap = window.Capacitor;
     if (!cap) return false;
 
-    // Capacitor 5/6/7/8 hebben vaak isNativePlatform()
     if (typeof cap.isNativePlatform === "function") {
       try { return cap.isNativePlatform(); } catch (_) { /* ignore */ }
     }
 
-    // fallback
     const platform = (typeof cap.getPlatform === "function") ? cap.getPlatform() : "web";
     return platform !== "web";
   }
@@ -23,7 +24,6 @@
   }
 
   async function capacitorPhotoToFile(photo) {
-    // We gebruiken webPath (meest betrouwbaar voor fetch → blob)
     const webPath = photo && photo.webPath ? photo.webPath : null;
     if (!webPath) throw new Error("Geen webPath teruggekregen van Camera plugin.");
 
@@ -39,25 +39,6 @@
     const filename = `avatar.${ext}`;
     return new File([blob], filename, { type: blob.type || `image/${ext}` });
   }
-
-  // ===== NOTIF UI =====
-  function syncChildBlocks() {
-    document.querySelectorAll("[data-child-of]").forEach((block) => {
-      const parentId = block.getAttribute("data-child-of");
-      const parent = document.getElementById(parentId);
-      if (!parent) return;
-      block.classList.toggle("is-disabled", !parent.checked);
-    });
-  }
-
-  document.addEventListener("change", (e) => {
-    const t = e.target;
-    if (!t) return;
-    if (t.id === "id_push_enabled" || t.id === "id_email_enabled") {
-      syncChildBlocks();
-    }
-  });
-  document.addEventListener("DOMContentLoaded", syncChildBlocks);
 
   // ===== FLASH =====
   function showFlash(level, text) {
@@ -78,10 +59,126 @@
   }
 
   function getCSRFToken() {
+    // Works because your page already has csrf token in forms
     const el = document.querySelector("input[name=csrfmiddlewaretoken]");
     return el ? el.value : "";
   }
 
+  // ===== AUTOSAVE SETTINGS =====
+  const savingKeys = new Set();
+
+  const PREF_KEYS = new Set([
+    "push_enabled", "push_new_roster", "push_new_agenda", "push_news_upload", "push_dienst_changed",
+    "push_birthday_self", "push_birthday_apojansen", "push_uren_reminder",
+    "email_enabled", "email_birthday_self", "email_uren_reminder", "email_diensten_overzicht"
+  ]);
+
+  const PROFILE_KEYS = new Set([
+    "haptics_enabled"
+  ]);
+
+  async function saveSetting(key, valueBool) {
+    try {
+      const res = await fetch(SETTINGS_UPDATE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ key: key, value: !!valueBool }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Opslaan mislukt.");
+
+      return true;
+    } catch (err) {
+      console.error(err);
+      showFlash("error", err?.message || "Opslaan mislukt.");
+      return false;
+    }
+  }
+
+  function setAppSetting(key, value) {
+    // Keep global settings in sync so haptic_feedback.js can react instantly
+    window.APP_SETTINGS = window.APP_SETTINGS || {};
+    window.APP_SETTINGS[key] = value;
+  }
+
+  function setBusy(el, busy) {
+    // Optional tiny UX: disable while saving to prevent double-toggles
+    if (!el) return;
+    el.disabled = !!busy;
+  }
+
+  async function handleToggleAutosave(checkboxEl, key) {
+    if (!checkboxEl) return;
+
+    if (savingKeys.has(key)) return;
+    savingKeys.add(key);
+
+    const prev = !checkboxEl.checked; // because change already applied
+    const next = !!checkboxEl.checked;
+
+    setBusy(checkboxEl, true);
+
+    const ok = await saveSetting(key, next);
+
+    setBusy(checkboxEl, false);
+    savingKeys.delete(key);
+
+    if (!ok) {
+      // revert
+      checkboxEl.checked = prev;
+      // keep UI consistent
+      if (checkboxEl.id === "id_push_enabled" || checkboxEl.id === "id_email_enabled") {
+        syncChildBlocks();
+      }
+      return;
+    }
+
+    // success: if this is an app setting, update runtime
+    if (PROFILE_KEYS.has(key)) {
+      setAppSetting(key, next);
+    }
+  }
+
+  // ===== NOTIF UI =====
+  function syncChildBlocks() {
+    document.querySelectorAll("[data-child-of]").forEach((block) => {
+      const parentId = block.getAttribute("data-child-of");
+      const parent = document.getElementById(parentId);
+      if (!parent) return;
+      block.classList.toggle("is-disabled", !parent.checked);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", syncChildBlocks);
+
+  // Autosave listener for ALL checkboxes on this page (that match known keys)
+  document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (!t || t.type !== "checkbox") return;
+
+    // App voorkeuren: fixed id -> key
+    if (t.id === "id_haptics_enabled") {
+      handleToggleAutosave(t, "haptics_enabled");
+      return;
+    }
+
+    // Notification preferences: name matches key
+    const name = t.name || "";
+    if (PREF_KEYS.has(name)) {
+      handleToggleAutosave(t, name);
+
+      // keep your children enabled/disabled in sync immediately
+      if (t.id === "id_push_enabled" || t.id === "id_email_enabled") {
+        syncChildBlocks();
+      }
+    }
+  });
+
+  // ===== CANVAS UTILS =====
   function toBlobAsync(canvas, type, quality) {
     return new Promise((resolve) => {
       canvas.toBlob((b) => resolve(b), type, quality);
@@ -112,7 +209,6 @@
   const saveCroppedBtn = $("saveCroppedBtn");
   const avatarPreview = $("avatarPreview");
 
-  // label die nu je file input triggert (nieuw: intercept in native)
   const avatarPickLabel = document.querySelector('label[for="avatarInput"]');
 
   let cropper = null;
@@ -123,11 +219,6 @@
     if (!saveCroppedBtn) return;
     saveCroppedBtn.disabled = !enabled;
     if (label) saveCroppedBtn.textContent = label;
-  }
-
-  function openModal() {
-    if (!cropModal) return;
-    cropModal.style.display = "flex";
   }
 
   function destroyCropper() {
@@ -146,26 +237,23 @@
 
   function closeModal({ resetFile = false } = {}) {
     if (cropModal) cropModal.style.display = "none";
-    document.body.style.overflow = ""; // Herstel scroll
+    document.body.style.overflow = "";
     destroyCropper();
     if (resetFile) resetFileInput();
     setSaveState(true, "Opslaan");
   }
 
   async function startCropperFromFile(file) {
-    if (!file || !cropImage) return;
+    if (!file || !cropImage || !cropModal) return;
 
     setSaveState(false, "Laden…");
     destroyCropper();
 
     if (avatarFilename) avatarFilename.textContent = file.name || "";
 
-    // 1. Toon de modal direct (nodig voor berekening)
     cropModal.style.display = "flex";
-    // Voorkom scrollen van de achtergrond (body)
     document.body.style.overflow = "hidden";
 
-    // 2. Wacht op Cropper library
     try {
       await waitFor(() => typeof window.Cropper === "function", 5000);
     } catch (_) {
@@ -176,21 +264,19 @@
 
     const url = URL.createObjectURL(file);
 
-    // 3. Gebruik een Image object om te pre-loaden (Safari stabieler)
     const tempImg = new Image();
     tempImg.onload = () => {
       cropImage.src = url;
 
-      // Forceer layout frame
       requestAnimationFrame(() => {
         setTimeout(() => {
           try {
             cropper = new window.Cropper(cropImage, {
               aspectRatio: 1,
               viewMode: 1,
-              dragMode: 'move',
+              dragMode: "move",
               autoCropArea: 1,
-              checkOrientation: true, // Cruciaal voor iPhone foto's!
+              checkOrientation: true,
               background: false,
               responsive: true,
               ready() {
@@ -201,6 +287,7 @@
           } catch (e) {
             console.error(e);
             showFlash("error", "Cropper kon niet starten.");
+            closeModal({ resetFile: true });
           }
         }, 100);
       });
@@ -208,39 +295,32 @@
     tempImg.src = url;
   }
 
-  // in Capacitor native: open fotobibliotheek i.p.v. file input
+  // Native: open fotobibliotheek
   if (avatarPickLabel) {
     avatarPickLabel.addEventListener("click", async (e) => {
-      if (!isCapacitorNative()) return; // browser: normale input open
+      if (!isCapacitorNative()) return;
       const Camera = getCapacitorCameraPlugin();
-      if (!Camera) return; // fallback: laat label z'n default doen
+      if (!Camera) return;
 
       e.preventDefault();
 
       try {
-        // Strings werken zonder enums/imports
         const photo = await Camera.getPhoto({
           quality: 92,
-          resultType: "uri", // CameraResultType.Uri
-          source: "photos",  // CameraSource.Photos (native fotobibliotheek)
-          // allowEditing: false, // jij cropt zelf
+          resultType: "uri",
+          source: "photos",
         });
 
         if (!photo) return;
 
         const file = await capacitorPhotoToFile(photo);
         startCropperFromFile(file);
-
       } catch (err) {
-        // User-cancel is normaal; geen harde flash nodig
-        // Als je wél wilt melden:
-        // showFlash("error", "Kon fotobibliotheek niet openen.");
         console.error(err);
       }
     });
   }
 
-  // Event Listeners voor de Input en Modal buttons (bestaand)
   if (avatarInput) {
     avatarInput.addEventListener("change", () => {
       const file = avatarInput.files && avatarInput.files[0] ? avatarInput.files[0] : null;
@@ -297,27 +377,22 @@
           body: fd,
         });
 
-        // Probeer ALTIJD de JSON te parsen, ook bij status 400/500
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          // Check of de server een specifieke flash melding heeft gestuurd (zoals Rekognition)
           if (data.flash && data.flash.text) {
             showFlash(data.flash.level || "error", data.flash.text);
           } else {
             showFlash("error", data.error || "Er ging iets mis bij het uploaden.");
           }
-          // BELANGRIJK: stop hier, want res.ok is false
           uploading = false;
           setSaveState(true, "Opslaan");
           return;
         }
 
-        // Succes geval
         if (avatarPreview && data.avatar_url) avatarPreview.src = data.avatar_url;
         showFlash("success", "Profielfoto opgeslagen.");
         closeModal({ resetFile: true });
-
       } catch (err) {
         console.error(err);
         showFlash("error", "Netwerkfout of server onbereikbaar.");

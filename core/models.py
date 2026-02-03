@@ -753,6 +753,9 @@ class UserProfile(models.Model):
 
     phone_number = models.CharField("Telefoonnummer", max_length=15, blank=True, default="")
 
+    # App voorkeuren
+    haptics_enabled = models.BooleanField("Haptic feedback", default=True)
+
     def clear_workdays(self):
         for f in (
             "work_mon_am","work_mon_pm","work_tue_am","work_tue_pm","work_wed_am","work_wed_pm",

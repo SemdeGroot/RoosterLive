@@ -1,11 +1,11 @@
 # core/views/profiel.py
 from __future__ import annotations
-
+import json
 import io
 
 import boto3
 from PIL import Image
-
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -235,3 +235,46 @@ def avatar_remove(request):
         "avatar_url": settings.STATIC_URL + "img/user.svg",
         "flash": {"level": "success", "text": "Profielfoto verwijderd."},
     })
+
+@require_POST
+@login_required
+def profiel_update_settings(request):
+    if not can(request.user, "can_access_profiel"):
+        return JsonResponse({"error": "Geen toegang."}, status=403)
+
+    profile: UserProfile = request.user.profile
+    prefs, _ = NotificationPreferences.objects.get_or_create(profile=profile)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"error": "Ongeldige JSON."}, status=400)
+
+    key = (payload.get("key") or "").strip()
+    value = payload.get("value")
+
+    # Only allow boolean toggles
+    if not isinstance(value, bool):
+        return JsonResponse({"error": "Value must be boolean."}, status=400)
+
+    # Map keys -> model fields
+    PROFILE_FIELDS = {"haptics_enabled"}
+    PREF_FIELDS = {
+        "push_enabled", "push_new_roster", "push_new_agenda", "push_news_upload",
+        "push_dienst_changed", "push_birthday_self", "push_birthday_apojansen",
+        "push_uren_reminder",
+        "email_enabled", "email_birthday_self", "email_uren_reminder",
+        "email_diensten_overzicht",
+    }
+
+    if key in PROFILE_FIELDS:
+        setattr(profile, key, value)
+        profile.save(update_fields=[key])
+        return JsonResponse({"ok": True})
+
+    if key in PREF_FIELDS:
+        setattr(prefs, key, value)
+        prefs.save(update_fields=[key])
+        return JsonResponse({"ok": True})
+
+    return JsonResponse({"error": "Onbekende setting."}, status=400)

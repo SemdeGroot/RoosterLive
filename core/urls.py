@@ -10,7 +10,7 @@ from core.views.nazendingen import nazendingen_view, medications_search_api, exp
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
 from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen, dagdeel_update
-from core.views.profiel import profiel_index, avatar_upload, avatar_remove
+from core.views.profiel import profiel_index, avatar_upload, avatar_remove, profiel_update_settings
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
 from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api, publish_shifts_api
@@ -150,6 +150,7 @@ urlpatterns = [
     path("profiel/", profiel_index, name="profiel"),
     path("profiel/avatar/upload/", avatar_upload, name="profiel_avatar_upload"),
     path("profiel/avatar/remove/", avatar_remove, name="profiel_avatar_remove"),
+    path("profiel/settings/update/", profiel_update_settings, name="profiel_settings_update"),
     # Bezorgers
     path("bezorgers/", bezorgers_tiles, name="bezorgers_tiles"),
     path("bezorgers/bakken-bezorgen", bakkenbezorgen, name="bakkenbezorgen"),

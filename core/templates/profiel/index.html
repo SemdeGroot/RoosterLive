@@ -126,6 +126,20 @@
 
       <hr class="crud-divider">
 
+<section class="profile-section">
+  <h3 style="margin-bottom:12px;">App voorkeuren</h3>
+
+  <div class="notif-block">
+    <div class="notif-header">
+      <h4 style="margin:0;">Haptic feedback</h4>
+    </div>
+
+    <div class="notif-grid" data-child-of="id_haptics_enabled_master">
+      {% include "profiel/_switch.html" with id="id_haptics_enabled" name="haptics_enabled" label="Trilling bij sommige knoppen" checked=profile.haptics_enabled %}
+    </div>
+  </div>
+</section>
+
       <section class="profile-section">
           <h3 style="margin-bottom:12px;">Notificaties</h3>
 
@@ -184,9 +198,6 @@
               Stuur testnotificatie
             </button>
           </form>
-          <button class="btn btn-save" type="submit" form="prefsForm" data-haptic>
-            Voorkeuren opslaan
-          </button>
         </div>
       </section>
 

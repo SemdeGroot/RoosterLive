@@ -12,6 +12,12 @@ from core.permissions_cache import bump_perm_version, delete_permset, get_cached
 
 User = get_user_model()
 
+# Profiel init
+@receiver(post_save, sender=User, dispatch_uid="core.ensure_user_profile")
+def ensure_user_profile(sender, instance, created, **kwargs):
+    # Maak profiel aan als user is aangemaakt (en ook als hij om wat voor reden ontbreekt)
+    UserProfile.objects.get_or_create(user=instance)
+
 # === Notification init ===
 @receiver(post_save, sender=UserProfile, dispatch_uid="core.ensure_notif_prefs")
 def ensure_notif_prefs(sender, instance: UserProfile, **kwargs):

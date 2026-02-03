@@ -61,6 +61,11 @@
   </script>
 
   <script src="{% static 'js/base/light_dark.js' %}" defer></script>
+  <script>
+  window.APP_SETTINGS = window.APP_SETTINGS || {};
+  window.APP_SETTINGS.haptics_enabled =
+    ("{% if request.user.is_authenticated and request.user.profile and request.user.profile.haptics_enabled %}1{% else %}0{% endif %}" === "1");
+  </script>
 
   <title>{% block title %}{% endblock %}</title>
 
@@ -74,7 +79,7 @@
   <link rel="stylesheet" href="{% static 'css/base/nav.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/installprompt.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/refresh.css' %}">
-  <script src="/static/js/base/haptic_feedback.js"></script>
+  <script src="{% static 'js/base/haptic_feedback.js' %}" defer></script>
 
   <link rel="manifest" href="{% url 'manifest.json' %}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'pwa/icons/favicon-32x32.png' %}">
