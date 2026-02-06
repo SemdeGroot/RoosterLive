@@ -10,10 +10,11 @@ from django.utils import timezone
 from decimal import Decimal
 from .views._helpers import PERM_LABELS, PERM_SECTIONS
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from core.utils.medication import get_jansen_group_choices
 from two_factor.forms import AuthenticationTokenForm, TOTPDeviceForm 
 
-from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel, NoDeliveryEntry, NoDeliveryList, Omzettingslijst, OmzettingslijstEntry, MedicatieReviewMedGroupOverride
+from core.models import UserProfile, Organization, AgendaItem, NewsItem, Werkafspraak, MedicatieReviewAfdeling, Nazending, VoorraadItem, StandaardInlog, LaatstePot, STSHalfje, Location, Task, OnboardingFormulier, InschrijvingItem, UrenMaand, UrenRegel, NotificationPreferences, Function, Dagdeel, NoDeliveryEntry, NoDeliveryList, Omzettingslijst, OmzettingslijstEntry, MedicatieReviewMedGroupOverride, ReviewPlanner
 
 UserModel = get_user_model()
 
@@ -1542,3 +1543,58 @@ class HoudbaarheidCheckForm(forms.Form):
         if not v:
             raise forms.ValidationError("RVG nummer is verplicht.")
         return v
+    
+class ReviewPlannerForm(forms.ModelForm):
+    class Meta:
+        model = ReviewPlanner
+        fields = ["datum", "afdeling", "status", "arts", "tijd", "bijzonderheden"]
+        widgets = {
+            "datum": forms.TextInput(attrs={
+                "class": "admin-input js-date",
+                "placeholder": "dd-mm-jjjj",
+                "autocomplete": "off",
+                "inputmode": "numeric",
+            }),
+            "afdeling": forms.Select(attrs={
+                "class": "select2-single js-afdeling",
+                "style": "width: 100%",
+            }),
+            "status": forms.Select(attrs={
+                "class": "admin-input js-status rp-status-select",
+            }),
+            "arts": forms.TextInput(attrs={
+                "class": "admin-input js-arts",
+                "placeholder": "Vrije tekst...",
+                "autocomplete": "off",
+            }),
+            "tijd": forms.TextInput(attrs={
+                "class": "admin-input js-time",
+                "placeholder": "uu:mm",
+                "autocomplete": "off",
+                "inputmode": "numeric",
+            }),
+            "bijzonderheden": forms.TextInput(attrs={
+                "class": "admin-input js-notes",
+                "placeholder": "Bijzonderheden...",
+                "autocomplete": "off",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["afdeling"].queryset = MedicatieReviewAfdeling.objects.all().order_by("organisatie__name", "afdeling")
+
+    def clean_datum(self):
+        d = self.cleaned_data.get("datum")
+        if not d:
+            return d
+
+        today = timezone.localdate()
+        cutoff = today - relativedelta(weeks=8)
+
+        if d < cutoff:
+            raise forms.ValidationError("Datum mag niet verder dan 8 weken terug liggen.")
+        if d < today:
+            raise forms.ValidationError("Datum mag niet in het verleden liggen.")
+
+        return d

@@ -1645,3 +1645,54 @@ class ScrapedPage(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.category})"
+    
+class ReviewPlanner(models.Model):
+    STATUS_PREP = "prep"
+    STATUS_SENT = "sent"
+    STATUS_DONE = "done"
+
+    STATUS_CHOICES = [
+        (STATUS_PREP, "In voorbereiding"),
+        (STATUS_SENT, "Verstuurd"),
+        (STATUS_DONE, "Uitgevoerd"),
+    ]
+
+    # kern velden
+    datum = models.DateField(null=True, blank=True)
+    afdeling = models.ForeignKey(
+        "MedicatieReviewAfdeling",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewplanner_items",
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PREP)
+
+    arts = models.CharField(max_length=255, blank=True)
+    tijd = models.TimeField(null=True, blank=True)
+    bijzonderheden = models.TextField(blank=True)
+
+    # tracking / ownership
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reviewplanner_created",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reviewplanner_updated",
+    )
+
+    class Meta:
+        ordering = ["-datum", "-updated_at"]
+        verbose_name = "Review planner"
+        verbose_name_plural = "Review planner"
+
+    def __str__(self):
+        afd = self.afdeling.afdeling if self.afdeling_id else "—"
+        return f"{self.datum or '—'} | {afd} | {self.get_status_display()}"

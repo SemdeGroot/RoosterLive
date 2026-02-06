@@ -1,11 +1,230 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Review planner{% endblock %}
 {% block header_title %}Review planner{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+  <link rel="stylesheet" href="{% static 'css/reviewplanner/reviewplanner.css' %}">
+
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Review planner</h3>
-  <p>Hier komt later de inhoud voor de Review planner.</p>
+<div class="card card-inner">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <img src="{% static 'img/reviewplanner.svg' %}" alt="" class="birthday-icon">
+      <div class="birthday-header-text">
+        <h2>Review planner</h2>
+        <p>Plan medicatiereviews en houd status bij. Wijzigingen worden automatisch opgeslagen.</p>
+      </div>
+
+      <a href="{% url 'medicatiebeoordeling_tiles' %}" class="btn">Terug</a>
+
+      {% if can_edit %}
+        <button type="button" class="btn btn-save" id="openAddModalBtn">Review toevoegen</button>
+      {% endif %}
+    </div>
+
+    <div class="card-inner" style="padding-top:0;">
+
+      <form method="post" autocomplete="off" id="reviewPlannerForm"
+            data-can-edit="{% if can_edit %}1{% else %}0{% endif %}"
+            data-today="{{ today_iso }}"
+            data-cutoff="{{ cutoff_iso }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="autosave">
+
+        <div class="table-scroll">
+          <table class="crud-table reviewplanner-table" id="reviewPlannerTable">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Afdeling</th>
+                <th>Status</th>
+                <th>Arts</th>
+                <th>Tijd</th>
+                <th>Bijzonderheden</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="reviewPlannerTbody">
+              {% for r in rows %}
+              <tr class="rp-row" data-id="{{ r.id }}">
+
+                <td>
+                  <input type="hidden" name="row_id" value="{{ r.id }}">
+                  <input type="text" name="row_datum"
+                         value="{% if r.datum %}{{ r.datum|date:'d-m-Y' }}{% endif %}"
+                         class="admin-input rp-date js-date"
+                         placeholder="dd-mm-jjjj" inputmode="numeric" autocomplete="off"
+                         {% if not can_edit %}disabled{% endif %}>
+                </td>
+
+                <td>
+                  <select name="row_afdeling"
+                          class="select2-single rp-afdeling js-afdeling"
+                          style="width: 100%;"
+                          {% if not can_edit %}disabled{% endif %}>
+                    <option value=""></option>
+                    {% for a in afdelingen %}
+                      <option value="{{ a.id }}" {% if r.afdeling_id == a.id %}selected{% endif %}>
+                        {{ a.afdeling }} - {{ a.locatie }} - {{ a.organisatie.name }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </td>
+
+                <td>
+                  <select name="row_status"
+                          class="admin-input rp-status js-status"
+                          {% if not can_edit %}disabled{% endif %}>
+                    {% for k,label in status_choices %}
+                      <option value="{{ k }}" {% if r.status == k %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+
+                <td>
+                  <input type="text" name="row_arts"
+                         value="{{ r.arts }}"
+                         class="admin-input rp-arts js-arts"
+                         placeholder="Vrije tekst..."
+                         autocomplete="off"
+                         {% if not can_edit %}disabled{% endif %}>
+                </td>
+
+                <td>
+                  <input type="text" name="row_tijd"
+                         value="{% if r.tijd %}{{ r.tijd|time:'H:i' }}{% endif %}"
+                         class="admin-input rp-time js-time"
+                         placeholder="uu:mm"
+                         inputmode="numeric"
+                         autocomplete="off"
+                         {% if not can_edit %}disabled{% endif %}>
+                </td>
+
+                <td class="wrap">
+                  <input type="text" name="row_bijzonderheden"
+                         value="{{ r.bijzonderheden }}"
+                         class="admin-input rp-notes js-notes"
+                         placeholder="Bijzonderheden..."
+                         autocomplete="off"
+                         {% if not can_edit %}disabled{% endif %}>
+                </td>
+
+                <td class="center-col">
+                  {% if can_edit %}
+                  <button type="button" class="icon-btn danger js-remove-row" aria-label="Verwijderen">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr id="emptyRow">
+                <td colspan="7" class="muted">Nog geen items. {% if can_edit %}Klik op “Review toevoegen”.{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <script type="application/json" id="afdelingenJson">
+          [
+            {% for a in afdelingen %}
+              {
+                "id": {{ a.id }},
+                "label": "{{ a.afdeling|escapejs }} - {{ a.locatie|escapejs }} - {{ a.organisatie.name|escapejs }}"
+              }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          ]
+        </script>
+      </form>
+    </div>
+  </div>
 </div>
+
+{% if can_edit %}
+<div id="addModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content" style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:760px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <div>
+        <h2 style="margin:0; font-size: 1.4rem;">Review toevoegen</h2>
+      </div>
+      <span id="closeAddModalBtn" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <div class="rp-modal-grid">
+      <div>
+        <label class="section-label">Datum</label>
+        <input type="text" class="admin-input js-date" id="modalDatum" placeholder="dd-mm-jjjj" autocomplete="off" inputmode="numeric">
+        <div class="muted" style="margin-top:6px; font-size:.9rem;">
+          Geen datums in het verleden toegestaan.
+        </div>
+      </div>
+
+      <div>
+        <label class="section-label">Afdeling</label>
+        <select class="select2-single" id="modalAfdeling" style="width:100%;">
+          <option value=""></option>
+          {% for a in afdelingen %}
+            <option value="{{ a.id }}">{{ a.afdeling }} - {{ a.locatie }} - {{ a.organisatie.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="section-label">Status</label>
+        <select class="admin-input rp-status" id="modalStatus">
+          {% for k,label in status_choices %}
+            <option value="{{ k }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="section-label">Arts</label>
+        <input type="text" class="admin-input" id="modalArts" placeholder="Vrije tekst..." autocomplete="off">
+      </div>
+
+      <div>
+        <label class="section-label">Tijd</label>
+        <input type="text" class="admin-input js-time" id="modalTijd" placeholder="uu:mm" autocomplete="off" inputmode="numeric">
+      </div>
+
+      <div>
+        <label class="section-label">Bijzonderheden</label>
+        <input type="text" class="admin-input" id="modalBijzonderheden" placeholder="Bijzonderheden..." autocomplete="off">
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top: 1px solid var(--border); padding-top: 18px;">
+      <button type="button" class="btn btn-danger" id="modalCancelBtn">Annuleren</button>
+      <button type="button" class="btn btn-save" id="modalAddBtn">Toevoegen</button>
+    </div>
+
+    <div id="modalMsg" class="muted" style="margin-top:12px;"></div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://unpkg.com/imask"></script>
+<script src="{% static 'js/reviewplanner/reviewplanner.js' %}" defer></script>
 {% endblock %}

@@ -1,0 +1,61 @@
+/* Table widths (zelfde style als je andere tabellen) */
+table.reviewplanner-table{
+  --c1: 130px;  /* datum */
+  --c2: 500px;  /* afdeling */
+  --c3: 150px;  /* status */
+  --c4: 150px;  /* arts */
+  --c5: 90px;   /* tijd */
+  --c6: 240px;  /* bijzonderheden */
+  --c7: 50px;   /* actie */
+}
+
+@media (max-width: 900px){
+  table.reviewplanner-table{ min-width: 1090px; }
+}
+
+/* Modal grid */
+.rp-modal-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 700px){
+  .rp-modal-grid{ grid-template-columns: 1fr; }
+}
+
+/* Status dropdown = pill look */
+.rp-status{
+  border-radius: 999px !important;
+  font-weight: 700;
+  padding-left: 12px;
+  padding-right: 12px;
+  border: 1px solid var(--border);
+}
+
+/* Kleurschaal: prep / sent / done */
+.rp-status--prep{
+  background: rgba(234, 179, 8, 0.12);   /* geel */
+  border-color: rgba(234, 179, 8, 0.35);
+  color: var(--text);
+}
+.rp-status--sent{
+  background: rgba(59, 130, 246, 0.12);  /* blauw */
+  border-color: rgba(59, 130, 246, 0.35);
+  color: var(--text);
+}
+.rp-status--done{
+  background: rgba(34, 197, 94, 0.12);   /* groen */
+  border-color: rgba(34, 197, 94, 0.35);
+  color: var(--text);
+}
+
+/* Select2 in modal: zorg dat dropdown boven overlay zit */
+.select2-container--open{
+  z-index: 100000 !important;
+}
+
+/* input invalid (date past) */
+.is-invalid{
+  border-color: var(--danger) !important;
+}

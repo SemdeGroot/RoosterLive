@@ -143,7 +143,7 @@ urlpatterns = [
     path('afdeling/<int:pk>/clear/', med_views.clear_afdeling_review, name='medicatiebeoordeling_clear_afdeling'),
     path("medicatiebeoordeling/delete/patient/<int:pk>/", med_views.delete_patient, name="medicatiebeoordeling_delete_patient"),
     # Reviwiew planner
-    path("review-planner/", reviewplanner, name="reviewplanner"),
+    path("instellingsapotheek/review-planner/", reviewplanner, name="reviewplanner"),
     path("portavita-check/", portavita_check, name="portavita-check"),
     path("houdbaarheid-check/", houdbaarheidcheck, name="houdbaarheidcheck"),
     # Profiel
