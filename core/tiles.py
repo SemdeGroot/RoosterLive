@@ -1,165 +1,124 @@
 # core/tiles.py
 from core.views._helpers import can
 
+# Badge classes die in CSS bestaan.
+C = {
+    "blue": "i-blue",
+    "sky": "i-sky",
+    "cyan": "i-cyan",
+    "teal": "i-teal",
+    "emerald": "i-emerald",
+    "green": "i-green",
+    "lime": "i-lime",
+    "amber": "i-amber",
+    "orange": "i-orange",
+    "red": "i-red",
+    "rose": "i-rose",
+    "pink": "i-pink",
+    "fuchsia": "i-fuchsia",
+    "violet": "i-violet",
+    "indigo": "i-indigo",
+}
+
 TILE_GROUPS = {
     "home": [
-        {"name": "Agenda", "img": "agenda.svg", "url_name": "agenda", "perm": "can_view_agenda"},
-        {"name": "Nieuws", "img": "nieuws.svg", "url_name": "news", "perm": "can_view_news"},
-        {"name": "Rooster", "img": "rooster_large.svg", "url_name": "rooster", "perm": "can_view_roster"},
-        {"name": "Beschikbaarheid", "img": "beschikbaarheid.svg", "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid"},
-        {"name": "Onboarding", "img": "onboarding.svg", "url_name": "onboarding_tiles", "perm": "can_view_onboarding"},
-        {"name": "Personeel", "img": "personeel.svg", "url_name": "personeel_tiles", "perm": "can_view_personeel"},
-        {"name": "Baxterproductie", "img": "factory.svg", "url_name": "baxter_tiles", "perm": "can_view_baxter"},
-        {"name": "Openbare Apo",    "img": "openbareapo.svg", "url_name": "openbare_tiles", "perm": "can_view_openbare_apo"},
-        {"name": "Instellingsapotheek", "img": "instellingsapotheek.svg", "url_name": "instellings_tiles", "perm": "can_view_instellings_apo"},
-        {"name": "Bezorgers", "img": "delivery.svg", "url_name": "bezorgers_tiles", "perm": "can_view_bezorgers"},
-        {"name": "Profiel", "img": "profile.svg", "url_name": "profiel", "perm": "can_access_profiel"},
-        {"name": "Beheer", "img": "beheer.svg", "url_name": "beheer_tiles", "perm": "can_access_admin"},
+        {"name": "Agenda", "img": "agenda-lucide.svg", "badge_class": C["sky"], "url_name": "agenda", "perm": "can_view_agenda", "desc": "Bekijk afspraken en planning."},
+        {"name": "Nieuws", "img": "nieuws-lucide.svg", "badge_class": C["amber"], "url_name": "news", "perm": "can_view_news", "desc": "Updates en mededelingen."},
+        {"name": "Rooster", "img": "rooster-lucide.svg", "badge_class": C["indigo"], "url_name": "rooster", "perm": "can_view_roster", "desc": "Snel je diensten checken."},
+        {"name": "Beschikbaarheid", "img": "beschikbaarheid-lucide.svg", "badge_class": C["emerald"], "url_name": "mijnbeschikbaarheid", "perm": "can_send_beschikbaarheid", "desc": "Geef je tijden door."},
+        {"name": "Onboarding", "img": "onboarding-lucide.svg", "badge_class": C["violet"], "url_name": "onboarding_tiles", "perm": "can_view_onboarding", "desc": "Startinfo, team en checklist."},
+        {"name": "Personeel", "img": "personeel.svg", "badge_class": C["teal"], "url_name": "personeel_tiles", "perm": "can_view_personeel", "desc": "Alles rondom personeel."},
+        {"name": "Baxterproductie", "img": "baxterproductie-lucide.svg", "badge_class": C["orange"], "url_name": "baxter_tiles", "perm": "can_view_baxter", "desc": "Baxter workflows en lijsten."},
+        {"name": "Openbare Apo", "img": "openbareapo-lucide.svg", "badge_class": C["cyan"], "url_name": "openbare_tiles", "perm": "can_view_openbare_apo", "desc": "Tools voor de openbare apotheek."},
+        {"name": "Instellingsapotheek", "img": "instellingsapo-lucide.svg", "badge_class": C["emerald"], "url_name": "instellings_tiles", "perm": "can_view_instellings_apo", "desc": "Intramuraal en controles."},
+        {"name": "Bezorgers", "img": "bezorgers-lucide.svg", "badge_class": C["green"], "url_name": "bezorgers_tiles", "perm": "can_view_bezorgers", "desc": "Bezorgtaken en status."},
+        {"name": "Profiel", "img": "profiel-lucide.svg", "badge_class": C["pink"], "url_name": "profiel", "perm": "can_access_profiel", "desc": "Instellingen en gegevens."},
+        {"name": "Beheer", "img": "admin-user-lucide.svg", "badge_class": C["fuchsia"], "url_name": "beheer_tiles", "perm": "can_access_admin", "desc": "Admin en configuratie."},
     ],
 
     "personeel": [
-        {"name": "Teamdashboard", "img": "teamdashboard.svg", "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard"},
-        {"name": "Diensten", "img": "diensten.svg", "url_name": "mijndiensten", "perm": "can_view_diensten"},
-        {"name": "Uren doorgeven", "img": "uren_doorgeven.svg", "url_name": "urendoorgeven", "perm": "can_view_urendoorgeven"},
-        {"name": "Ziek melden", "img": "ziek.svg", "url_name": "ziekmelden", "perm": "can_view_ziekmelden"},
-        {"name": "Inschrijven", "img": "inschrijven.svg", "url_name": "inschrijvingen", "perm": "can_view_inschrijven"},
+        {"name": "Teamdashboard", "img": "teamdashboard-lucide.svg", "badge_class": C["indigo"], "url_name": "beschikbaarheidpersoneel", "perm": "can_view_beschikbaarheidsdashboard", "desc": "Overzicht van bezetting."},
+        {"name": "Diensten", "img": "diensten-lucide.svg", "badge_class": C["sky"], "url_name": "mijndiensten", "perm": "can_view_diensten", "desc": "Bekijk je diensten."},
+        {"name": "Uren doorgeven", "img": "clock-lucide.svg", "badge_class": C["amber"], "url_name": "urendoorgeven", "perm": "can_view_urendoorgeven", "desc": "Registreer je uren."},
+        {"name": "Ziek melden", "img": "ziekmelden-lucide.svg", "badge_class": C["red"], "url_name": "ziekmelden", "perm": "can_view_ziekmelden", "desc": "Snel ziekmelding doen."},
+        {"name": "Inschrijven", "img": "inschrijven-lucide.svg", "badge_class": C["teal"], "url_name": "inschrijvingen", "perm": "can_view_inschrijven", "desc": "Schrijf je in op diensten."},
     ],
 
     "onboarding": [
-        {"name": "Team", "img": "wieiswie.svg", "url_name": "whoiswho", "perm": "can_view_whoiswho"},
-        {"name": "Formulieren", "img": "formulieren.svg", "url_name": "onboarding_formulieren", "perm": "can_view_forms"},
-        {"name": "Checklist", "img": "checklist.svg", "url_name": "checklist", "perm": "can_view_checklist"},
+        {"name": "Team", "img": "team-lucide.svg", "badge_class": C["teal"], "url_name": "whoiswho", "perm": "can_view_whoiswho", "desc": "Wie is wie in het team."},
+        {"name": "Formulieren", "img": "onboarding_forms-lucide.svg", "badge_class": C["violet"], "url_name": "onboarding_formulieren", "perm": "can_view_forms", "desc": "Belangrijke formulieren."},
+        {"name": "Checklist", "img": "checklist-lucide.svg", "badge_class": C["lime"], "url_name": "checklist", "perm": "can_view_checklist", "desc": "Alles stap voor stap."},
     ],
 
     "baxter": [
-        {"name": "Voorraad",        "img": "voorraad.svg", "url_name": "medications",              "perm": "can_view_av_medications"},
-        {"name": "Nazendingen",     "img": "nazendingen.svg",     "url_name": "nazendingen",              "perm": "can_view_av_nazendingen"},
-        {"name": "Omzettingslijst", "img": "omzettingslijst.svg", "url_name": "baxter_omzettingslijst",   "perm": "can_view_baxter_omzettingslijst"},
-        {"name": "Geen levering",   "img": "no-delivery.svg",     "url_name": "baxter_no_delivery",       "perm": "can_view_baxter_no_delivery"},
-        {"name": "STS halfjes",     "img": "sts_halfjes.svg",       "url_name": "stshalfjes",       "perm": "can_view_baxter_sts_halfjes"},
-        {"name": "Laatste potten",  "img": "laatstepotten.svg",    "url_name": "laatstepotten",    "perm": "can_view_baxter_laatste_potten"},
-        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Voorraad", "img": "voorraad-lucide.svg", "badge_class": C["blue"], "url_name": "medications", "perm": "can_view_av_medications", "desc": "Zoek en beheer voorraad."},
+        {"name": "Nazendingen", "img": "nazendingen-lucide.svg", "badge_class": C["amber"], "url_name": "nazendingen", "perm": "can_view_av_nazendingen", "desc": "Nazendingen verwerken."},
+        {"name": "Omzettingslijst", "img": "omzettingslijst-lucide.svg", "badge_class": C["indigo"], "url_name": "baxter_omzettingslijst", "perm": "can_view_baxter_omzettingslijst", "desc": "Omzettingen en alternatieven."},
+        {"name": "Geen levering", "img": "geenlevering-lucide.svg", "badge_class": C["red"], "url_name": "baxter_no_delivery", "perm": "can_view_baxter_no_delivery", "desc": "Signalering bij ontbrekende levering."},
+        {"name": "STS halfjes", "img": "stshalfje-lucide.svg", "badge_class": C["pink"], "url_name": "stshalfjes", "perm": "can_view_baxter_sts_halfjes", "desc": "STS halfjes beheren."},
+        {"name": "Laatste potten", "img": "laatstepotten-lucide.svg", "badge_class": C["teal"], "url_name": "laatstepotten", "perm": "can_view_baxter_laatste_potten", "desc": "Overzicht laatste potten."},
+        {"name": "Werkafspraken", "img": "werkafspraken-lucide.svg", "badge_class": C["emerald"], "url_name": "policies", "perm": "can_view_policies", "desc": "Afspraken en beleid."},
     ],
 
-       "openbare": [
-        # Deze verwijst naar de dashboard view
-        {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
-         "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review planner", "img": "reviewplanner.svg",
-         "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
-        {"name": "Houdbaarheidscheck", "img": "houdbaarheid.svg",
-         "url_name": "houdbaarheidcheck", "perm": "can_edit_houdbaarheidcheck"},
-        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
+    "openbare": [
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling-lucide.svg", "badge_class": C["indigo"], "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling", "desc": "Start of beheer reviews."},
+        {"name": "Review planner", "img": "reviewplanner-lucide.svg", "badge_class": C["sky"], "url_name": "reviewplanner", "perm": "can_view_reviewplanner", "desc": "Plan en volg reviews."},
+        {"name": "KompasGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Snel zoeken in info."},
+        {"name": "Houdbaarheidscheck", "img": "houdbaarheidcheck-lucide.svg", "badge_class": C["orange"], "url_name": "houdbaarheidcheck", "perm": "can_edit_houdbaarheidcheck", "desc": "Controleer houdbaarheid."},
+        {"name": "Werkafspraken", "img": "werkafspraken-lucide.svg", "badge_class": C["emerald"], "url_name": "policies", "perm": "can_view_policies", "desc": "Afspraken en beleid."},
     ],
 
     "instellings": [
-        # Deze verwijst ook naar de dashboard view
-        {"name": "Medicatiereview", "img": "medicatiebeoordeling.svg",
-         "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling"},
-        {"name": "Review planner", "img": "reviewplanner.svg",
-         "url_name": "reviewplanner", "perm": "can_view_reviewplanner"},
-        {"name": "KompasGPT", "img": "caduceus.svg", "url_name": "kompasgpt", "perm": "can_view_kompasgpt"},
-        {"name": "Portavita check", "img": "portavita.svg",
-         "url_name": "portavita-check", "perm": "can_view_portavita"},
-        {"name": "Werkafspraken", "img": "werkafspraken.svg", "url_name": "policies", "perm": "can_view_policies"},
+        {"name": "Medicatiereview", "img": "medicatiebeoordeling-lucide.svg", "badge_class": C["violet"], "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling", "desc": "Reviews voor intramuraal."},
+        {"name": "Review planner", "img": "reviewplanner-lucide.svg", "badge_class": C["sky"], "url_name": "reviewplanner", "perm": "can_view_reviewplanner", "desc": "Plannen en opvolgen."},
+        {"name": "KompasGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Snel beslisondersteuning."},
+        {"name": "Portavita check", "img": "portavitacheck-lucide.svg", "badge_class": C["teal"], "url_name": "portavita-check", "perm": "can_view_portavita", "desc": "Controleer Portavita."},
+        {"name": "Werkafspraken", "img": "werkafspraken-lucide.svg", "badge_class": C["emerald"], "url_name": "policies", "perm": "can_view_policies", "desc": "Afspraken en beleid."},
     ],
 
     "bezorgers": [
-        {"name": "Bakken bezorgen", "img": "delivery-completed.svg",
-         "url_name": "bakkenbezorgen", "perm": "can_view_bakkenbezorgen"},
-        {"name": "Afleverstatus", "img": "bezorgstatus.svg",
-         "url_name": "afleverstatus", "perm": "can_view_afleverstatus"},
+        {"name": "Bakken bezorgen", "img": "bakkenbezorgen-lucide.svg", "badge_class": C["orange"], "url_name": "bakkenbezorgen", "perm": "can_view_bakkenbezorgen", "desc": "Ritten en bakkenbeheer."},
+        {"name": "Afleverstatus", "img": "afleverstatus-lucide.svg", "badge_class": C["green"], "url_name": "afleverstatus", "perm": "can_view_afleverstatus", "desc": "Status per aflevering."},
     ],
 
-    # De subtiles voor Medicatiebeoordeling
     "medicatiebeoordeling": [
-        {
-            "name": "Nieuwe Review",
-            "img": "createreview.svg",
-            "url_name": "medicatiebeoordeling_create",
-            "perm": "can_perform_medicatiebeoordeling"
-        },
-        {
-            "name": "Historie",
-            "img": "history.svg",
-            "url_name": "medicatiebeoordeling_list",
-            "perm": "can_view_medicatiebeoordeling"
-        },
-        {
-            "name": "Instellingen",
-            "img": "reviewsettings.svg",
-            "url_name": "medicatiebeoordeling_settings", # Placeholder URL
-            "perm": "can_perform_medicatiebeoordeling"
-        },
+        {"name": "Nieuwe Review", "img": "nieuwereview-lucide.svg", "badge_class": C["emerald"], "url_name": "medicatiebeoordeling_create", "perm": "can_perform_medicatiebeoordeling", "desc": "Maak een nieuwe review."},
+        {"name": "Historie", "img": "historie-lucide.svg", "badge_class": C["blue"], "url_name": "medicatiebeoordeling_list", "perm": "can_view_medicatiebeoordeling", "desc": "Bekijk afgeronde reviews."},
+        {"name": "Instellingen", "img": "standaardvragen-lucide.svg", "badge_class": C["violet"], "url_name": "medicatiebeoordeling_settings", "perm": "can_perform_medicatiebeoordeling", "desc": "Standaardvragen en opties."},
     ],
+
     "beheer": [
-        {
-            "name": "Gebruikers", 
-            "img": "user.svg",
-            "url_name": "admin_users", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Groepen", 
-            "img": "group.svg",
-            "url_name": "admin_groups", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Afdelingen", 
-            "img": "afdeling.svg",
-            "url_name": "admin_afdelingen", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Organisaties", 
-            "img": "organisatie.svg",
-            "url_name": "admin_orgs", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Taken", 
-            "img": "taken.svg",
-            "url_name": "admin_taken", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Functies", 
-            "img": "functies.svg",
-            "url_name": "admin_functies", 
-            "perm": "can_access_admin"
-        },
-        {
-            "name": "Bezorgen", 
-            "img": "admin_delivery.svg",
-            "url_name": "admin_bezorgen", 
-            "perm": "can_access_admin"
-        },
+        {"name": "Gebruikers", "img": "admin-user-lucide.svg", "badge_class": C["violet"], "url_name": "admin_users", "perm": "can_access_admin", "desc": "Beheer gebruikersaccounts."},
+        {"name": "Groepen", "img": "team-lucide.svg", "badge_class": C["teal"], "url_name": "admin_groups", "perm": "can_access_admin", "desc": "Groepen en rechten."},
+        {"name": "Afdelingen", "img": "admin-afdelingen-lucide.svg", "badge_class": C["indigo"], "url_name": "admin_afdelingen", "perm": "can_access_admin", "desc": "Afdelingen beheren."},
+        {"name": "Organisaties", "img": "admin-organisaties.svg", "badge_class": C["sky"], "url_name": "admin_orgs", "perm": "can_access_admin", "desc": "Organisaties beheren."},
+        {"name": "Taken", "img": "admin_taken-lucide.svg", "badge_class": C["amber"], "url_name": "admin_taken", "perm": "can_access_admin", "desc": "Taken en checklist items."},
+        {"name": "Functies", "img": "admin-functies-lucide.svg", "badge_class": C["pink"], "url_name": "admin_functies", "perm": "can_access_admin", "desc": "Functies en rollen."},
+        {"name": "Bezorgen", "img": "bezorgers-lucide.svg", "badge_class": C["orange"], "url_name": "admin_bezorgen", "perm": "can_access_admin", "desc": "Instellingen voor bezorging."},
     ],
 }
 
 
 def build_tiles(user, group="home"):
     """
-    Geef tiles terug voor een bepaalde groep (home, personnel, ...),
-    gefilterd op permissies.
+    Geef tiles terug voor een bepaalde groep, gefilterd op permissies.
     """
-    tiles = []
     if not user.is_authenticated:
-        return tiles
+        return []
 
+    tiles = []
     for t in TILE_GROUPS.get(group, []):
         perm = t.get("perm")
         if perm is None or can(user, perm):
-            # alleen velden teruggeven die de templates gebruiken
             tiles.append({
                 "name": t["name"],
+                "desc": t.get("desc", ""),
                 "img": t["img"],
+                "badge_class": t.get("badge_class", C["indigo"]),
                 "url_name": t["url_name"],
             })
-
     return tiles
+
 
 # --- NAV TREE EXTENSIONS (non-breaking) ---
 
@@ -186,7 +145,6 @@ def build_nav_tree_recursive(user, root_group="home", max_depth=10):
     """
     Bouw een recursieve navigatieboom op basis van TILE_GROUPS.
     Elk item krijgt: children = [...]
-    max_depth beschermt tegen loops.
     """
     if max_depth <= 0:
         return []
@@ -196,11 +154,8 @@ def build_nav_tree_recursive(user, root_group="home", max_depth=10):
     for item in root_items:
         child_group = _resolve_child_group(item.get("url_name"))
         if child_group:
-            # Recursief children opbouwen
             item["children"] = build_nav_tree_recursive(
-                user,
-                root_group=child_group,
-                max_depth=max_depth - 1
+                user, root_group=child_group, max_depth=max_depth - 1
             )
         else:
             item["children"] = []

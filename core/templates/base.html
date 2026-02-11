@@ -35,7 +35,7 @@
         doc.style.setProperty('--inset-top', '30px');
         doc.style.setProperty('--inset-bottom', '22px');
       }
-      
+
       // 4. Sidebar status (persist, no-flash)
       try {
         const v = localStorage.getItem('sidebarCollapsed_v1'); // '1' | '0' | null
@@ -210,7 +210,9 @@
       <form action="{% url 'logout' %}" method="post" class="nav-logout-form">
         {% csrf_token %}
         <button type="submit" class="nav-link nav-logout">
-          <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
+          <span
+            class="nav-icon nav-icon--danger icon-badge i-red"
+            style="--icon: url('{% static 'img/lucide/logout-lucide.svg' %}');"></span>
           <span class="nav-label">Uitloggen</span>
         </button>
       </form>
@@ -252,7 +254,9 @@
       <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <button type="submit" class="nav-link nav-logout" data-haptic>
-          <span class="nav-icon" style="--icon: url('{% static 'img/logout.svg' %}')"></span>
+          <span
+            class="nav-icon nav-icon--danger icon-badge i-red"
+            style="--icon: url('{% static 'img/lucide/logout-lucide.svg' %}');"></span>
           <span class="nav-label">Uitloggen</span>
         </button>
       </form>

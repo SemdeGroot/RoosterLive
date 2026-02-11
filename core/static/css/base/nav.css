@@ -665,3 +665,17 @@ summary.nav-link{
         justify-content: flex-start;
     }
 }
+
+/* Navbar icons: neutral, no rainbow */
+.sidebar .nav-icon.icon-badge,
+.nav-panel .nav-icon.icon-badge{
+  --icon-color-rgb: var(--muted-rgb);
+}
+
+/* Logout icon stays red (overrides the neutral navbar icons) */
+.sidebar .nav-icon--danger.icon-badge,
+.nav-panel .nav-icon--danger.icon-badge{
+  --icon-color-rgb: var(--c-red);
+  --icon-badge-alpha: 0.16;
+  --icon-badge-border-alpha: 0.22;
+}

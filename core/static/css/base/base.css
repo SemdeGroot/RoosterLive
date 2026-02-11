@@ -6,10 +6,10 @@
   --pad-top: 12px;
   --pad-bottom: 12px;
   --pad-x: 16px;
-
 }
 
-*{box-sizing:border-box}
+*{ box-sizing:border-box; }
+
 html,body{
   height: 100% !important;
   margin:0;
@@ -19,14 +19,18 @@ html,body{
   overflow-x:hidden;
   overflow-anchor: none;
 }
-/* Verwijder standaard tap-highlight en klik box op alle elementen */
-* {
-  -webkit-tap-highlight-color: transparent; /* Verwijder de zwarte/doorzichtige highlight bij touch */
-  outline: none !important; /* Verwijder de outline bij focus (standaard bij klikken op links en knoppen) */
-  box-shadow: none !important; /* Verwijder box-shadow effect bij klikken */
+
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
 }
 
-html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
+/* Verwijder standaard tap-highlight en klik box op alle elementen */
+*{
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+}
 
 /* App container */
 .app{
@@ -44,17 +48,17 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   transform: translateY(40px);
 }
 
-.header {
-  position: sticky; 
-  top: 0; 
+.header{
+  position: sticky;
+  top: 0;
   z-index: 1000;
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   gap: 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   max-width: 100vw;
-  /* De 12px is je eigen witruimte, --sat is de statusbalk hoogte */
+
   padding-top: calc(var(--pad-top) + var(--inset-top));
   padding-bottom: var(--pad-bottom);
   padding-left: var(--pad-x);
@@ -62,15 +66,38 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 }
 
 .logo-wrap{
-  background:#fff; padding:8px 12px; border-radius:12px;
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  background:#fff;
+  padding:8px 12px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
 }
-.logo{ max-height:32px; width:auto; object-fit:contain; display:block; }
 
-.title-wrapper{ flex:1 1 auto; min-width:0; display:flex; align-items:center; }
+.logo{
+  max-height:32px;
+  width:auto;
+  object-fit:contain;
+  display:block;
+}
+
+.title-wrapper{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  align-items:center;
+}
+
 .title{
-  font-size:1.2rem; font-weight:700; letter-spacing:.3px; margin:0; line-height:1.3;
-  word-break:break-word; overflow-wrap:anywhere; hyphens:auto;
+  font-size:1.2rem;
+  font-weight:700;
+  letter-spacing:.3px;
+  margin:0;
+  line-height:1.3;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  hyphens:auto;
 }
 
 /* Content & cards */
@@ -82,7 +109,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   overflow-x:hidden;
   align-content:start;
   align-items:start;
-  position:relative; /* nodig voor pseudo-element positioning */
+  position:relative;
 }
 
 .card{
@@ -94,7 +121,8 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   max-width:100%;
   position:relative;
 }
-.card-inner{padding:16px}
+
+.card-inner{ padding:16px; }
 
 /* Egale blauwe streep die de rand overschrijft */
 .card::before{
@@ -112,10 +140,9 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
 
 /* ---------- Centraal Flash Messages Systeem ---------- */
 
-.flash {
+.flash{
   position: absolute;
-  /* Desktop standaard */
-  top: 18px; 
+  top: 18px;
   left: 18px;
   right: 18px;
   z-index: 9999;
@@ -125,7 +152,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   border-left: 5px solid var(--flash-border);
   padding: 12px 16px;
   border-radius: 10px;
-  background: #1a1f26; 
+  background: #1a1f26;
   color: var(--text-button) !important;
 
   white-space: normal;
@@ -138,52 +165,47 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
              flash-hide 0.3s ease-in 4.5s forwards;
 }
 
-/* Media Query voor Mobile: Match de marges van de cards/content */
-@media (max-width: 480px) {
-  .flash {
-    top: 14px;   /* Matcht .content { padding: 14px; } */
+@media (max-width: 480px){
+  .flash{
+    top: 14px;
     left: 14px;
     right: 14px;
   }
 }
 
-@media (max-width: 360px) {
-  .flash {
-    top: 12px;   /* Matcht .content { padding: 12px; } */
+@media (max-width: 360px){
+  .flash{
+    top: 12px;
     left: 12px;
     right: 12px;
   }
 }
 
-/* Specifieke status kleuren - Iets donkerder maar herkenbaar van kleur */
-
-/* Succes (Groen - Diep bosgroen) */
-.flash-success {
-  --flash-border: #22c55e; /* Felle rand voor accent */
-  background: #14532d !important; 
+.flash-success{
+  --flash-border: #22c55e;
+  background: #14532d !important;
   color: var(--text-button) !important;
 }
 
-/* Foutmelding (Rood - Donker robijnrood) */
-.flash-error, .flash-danger {
-  --flash-border: #ef4444; /* Felle rand voor accent */
+.flash-error,
+.flash-danger{
+  --flash-border: #ef4444;
   background: #7f1d1d !important;
   color: var(--text-button) !important;
 }
 
-/* Info (Blauw - Diep marineblauw) */
-.flash-info {
-  --flash-border: #3b82f6; /* Felle rand voor accent */
+.flash-info{
+  --flash-border: #3b82f6;
   background: var(--accent) !important;
   color: var(--text-button) !important;
 }
 
-@keyframes flash-show {
+@keyframes flash-show{
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes flash-hide {
+@keyframes flash-hide{
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-10px); }
 }
@@ -216,15 +238,14 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   outline-offset:2px;
 }
 
-.btn:disabled{
-  cursor:not-allowed;
-}
+.btn:disabled{ cursor:not-allowed; }
 
 .btn-danger{
   background-color:var(--danger) !important;
   border-color:var(--danger-border) !important;
   color:var(--text-button) !important;
 }
+
 .btn-danger:hover{
   border-color:var(--danger-border) !important;
   background-color:var(--danger-hover) !important;
@@ -242,7 +263,6 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   width:100%;
   margin-top:8px;
 }
-
 
 /* -------------------------------------------------------
    ICON BUTTONS (edit/delete)
@@ -262,9 +282,7 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   cursor:pointer;
   transition:background .2s ease, border-color .2s ease;
 }
-.icon-btn:hover{
-  background:var(--button-hover-blue);
-}
+.icon-btn:hover{ background:var(--button-hover-blue); }
 .icon-btn svg{ display:block; }
 
 .icon-btn.danger{
@@ -291,11 +309,11 @@ html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
   margin:6px 0 12px;
   font-size:16px;
 }
+
 textarea{
   resize: vertical !important;
   max-width: 100%;
 }
-
 
 /* Uploadknop terug naar OS-default */
 input[type="file"]{
@@ -327,132 +345,237 @@ th,td{
   word-wrap:break-word;
 }
 
-/* --- Tiles --- */
+/* =======================================================
+   TILES (RECTANGLES) + ICON BADGE
+   (opgeschoond; voorkomt vierkante tegels door overrides)
+   ======================================================= */
 
-.tiles { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); 
-  gap: 10px; 
+/* Grid */
+.tiles{
+  display:grid;
+  grid-template-columns: 1fr; /* mobile: 1 brede */
+  gap:10px;
 }
 
-.tile { display: block; text-decoration: none; color: inherit; }
-.tile:visited { color: inherit; }
+@media (min-width: 480px){
+  .tiles{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap:14px;
+  }
+}
 
-.tile-box {
+@media (min-width: 900px){
+  .tiles{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap:16px;
+  }
+}
+
+@media (min-width: 1200px){
+  .tiles{
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* force 2 */
+    gap:18px;
+  }
+}
+
+/* Link wrapper */
+.tile{ display:block; text-decoration:none; color:inherit; }
+.tile:visited{ color:inherit; }
+
+/* Card */
+.tile-box{
   background: var(--tiles);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 6px 20px var(--shadow);
-  
+
   padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 115px;
-  
+  display:flex;
+  flex-direction: row;
+  align-items:center;
+  justify-content:flex-start;
+  gap: 10px;
+
+  /* rechthoek: laat dit overal laag */
+  min-height: 92px;
+  width: 100%;
+
   transition: box-shadow .2s ease, background .2s ease, border-color .2s ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* De hover effecten (staan standaard aan voor alles) */
-.tile-box:hover {
+/* JOUW hover styling (ongewijzigd) */
+.tile-box:hover{
   background: var(--button-hover);
   border-color: var(--accent);
   box-shadow: 0 10px 28px var(--shadow);
 }
 
-/* DE RESET: Dit is de methode uit je oude base.css die de hover op mobiel sloopt */
-@media (hover: none) and (pointer: coarse) {
-  .tile-box:hover {
+/* JOUW reset voor mobile hover (ongewijzigd) */
+@media (hover: none) and (pointer: coarse){
+  .tile-box:hover{
     background: var(--tiles);
     border-color: var(--border);
     box-shadow: 0 6px 20px var(--shadow);
   }
 }
 
-/* Iconen & Afbeeldingen */
-.tile-img {
-  width: 65px; 
-  height: 65px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* Tekst */
+.tile-text{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:6px;
+  flex:1;
+  min-width:0;
 }
 
-.tile-img svg, .tile-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.tile-title,
+.tile-name{
+  color: var(--text);
+  font-weight: 600;
+  text-align:left;
+  font-size: 0.9rem;
+  width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-.tile-name { 
-  color: var(--text); 
-  font-weight: 600; 
-  text-align: center; 
-  font-size: 0.8rem;
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tile-desc{
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow:hidden;
+
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  line-clamp: 2;
 }
 
-/* --- MEDIA QUERIES VOOR OPSCHALEN (JOUW ORIGINELE MATEN) --- */
-
-/* Vanaf 360px */
-@media (min-width: 360px) {
-  .tiles { gap: 12px; }
-  .tile-box { 
-    padding: 12px; 
-    min-height: 125px; 
-    gap: 8px;
-  }
-  .tile-img { width: 80px; height: 80px; }
-  .tile-name { font-size: 0.85rem; }
+/* schaal zonder squares te maken */
+@media (min-width: 360px){
+  .tiles{ gap:12px; }
+  .tile-box{ padding:12px; min-height:96px; gap:12px; }
+  .tile-title, .tile-name{ font-size:0.95rem; }
+  .tile-desc{ font-size:0.82rem; }
 }
 
-/* TABLET (480px - 900px) */
-@media (min-width: 480px) {
-  .tiles { 
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px; 
-  }
-  .tile-box { 
-    min-height: 150px; 
-    padding: 16px;
-    gap: 10px;
-  }
-  .tile-img { width: 110px; height: 110px; }
-  .tile-name { font-size: 0.95rem; }
+@media (min-width: 480px){
+  .tile-box{ padding:14px; min-height:100px; gap:14px; }
+  .tile-title, .tile-name{ font-size:1.0rem; }
+  .tile-desc{ font-size:0.86rem; }
 }
 
-/* DESKTOP (900px+) */
-@media (min-width: 900px) {
-  .tiles { 
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-    gap: 18px; 
-  }
-  .tile-box { 
-    min-height: 180px; 
-    padding: 18px;
-    gap: 10px;
-  }
-  .tile-img { width: 140px; height: 140px; }
-  .tile-name { font-size: 1rem; }
+@media (min-width: 900px){
+  .tile-box{ padding:16px; min-height:104px; gap:16px; }
+  .tile-title, .tile-name{ font-size:1.05rem; }
+  .tile-desc{ font-size:0.9rem; }
 }
 
 /* Hele kleine schermen */
-@media (max-width: 319px) {
-  .tiles { grid-template-columns: 1fr; }
+@media (max-width: 319px){
+  .tiles{ grid-template-columns: 1fr; }
+}
+
+/* =========================
+   ICON BADGE (Lucide via CSS mask)
+   ========================= */
+.icon-badge{
+  --icon-color-rgb: var(--c-blue);
+
+  --badge-size: 64px;
+  --glyph-size: 30px;
+
+  width: var(--badge-size);
+  height: var(--badge-size);
+  display:grid;
+  place-items:center;
+  border-radius: 18px;
+
+  background: rgb(var(--icon-color-rgb) / var(--icon-badge-alpha, 0.18));
+  border: 1px solid rgb(var(--icon-color-rgb) / var(--icon-badge-border-alpha, 0.25));
+  box-shadow: 0 10px 26px var(--shadow);
+}
+
+.icon-badge::before{
+  content:"";
+  width: var(--glyph-size);
+  height: var(--glyph-size);
+
+  background: rgb(var(--icon-color-rgb));
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+/* Kleur-helpers */
+.i-blue    { --icon-color-rgb: var(--c-blue); }
+.i-indigo  { --icon-color-rgb: var(--c-indigo); }
+.i-violet  { --icon-color-rgb: var(--c-violet); }
+.i-pink    { --icon-color-rgb: var(--c-pink); }
+.i-red     { --icon-color-rgb: var(--c-red); }
+.i-orange  { --icon-color-rgb: var(--c-orange); }
+.i-amber   { --icon-color-rgb: var(--c-amber); }
+.i-green   { --icon-color-rgb: var(--c-green); }
+.i-emerald { --icon-color-rgb: var(--c-emerald); }
+.i-teal    { --icon-color-rgb: var(--c-teal); }
+.i-cyan    { --icon-color-rgb: var(--c-cyan); }
+.i-sky     { --icon-color-rgb: var(--c-sky); }
+.i-lime    { --icon-color-rgb: var(--c-lime); }
+.i-rose    { --icon-color-rgb: var(--c-rose); }
+.i-fuchsia { --icon-color-rgb: var(--c-fuchsia); }
+
+/* Tile icon sizing (template: class="tile-icon icon-badge ...") */
+.tile-icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* zelfde element -> geen spatie */
+.tile-icon.icon-badge{
+  --badge-size: 58px;
+  --glyph-size: 28px;
+  border-radius: 16px;
+}
+
+@media (min-width: 360px){
+  .tile-icon.icon-badge{
+    --badge-size: 64px;
+    --glyph-size: 30px;
+    border-radius: 18px;
+  }
+}
+
+@media (min-width: 480px){
+  .tile-icon.icon-badge{
+    --badge-size: 72px;
+    --glyph-size: 34px;
+    border-radius: 20px;
+  }
+}
+
+@media (min-width: 900px){
+  .tile-icon.icon-badge{
+    --badge-size: 78px;
+    --glyph-size: 36px;
+    border-radius: 22px;
+  }
 }
 
 /* Footer */
 .footer{
-  position:sticky; bottom:0; z-index:1000;
-  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px;
+  position:sticky;
+  bottom:0;
+  z-index:1000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
   padding-top: var(--pad-bottom);
   padding-bottom: calc(var(--pad-bottom) + var(--inset-bottom));
   background:var(--panel);
@@ -476,11 +599,13 @@ th,td{
   transition: opacity .2s ease;
 }
 .footer a.footer-linkedin svg{ display:block; }
+
 .footer-content{
   display:inline-flex;
   align-items:center;
   gap:4px;
 }
+
 .footer a.footer-linkedin:hover{ opacity:1; }
 
 .footer a{
@@ -488,28 +613,19 @@ th,td{
   text-decoration: underline;
 }
 
-.footer a:hover{
-  color: var(--text);
-}
+.footer a:hover{ color: var(--text); }
 
 /* Tablet */
 @media (min-width:600px){
   .header{ padding:14px 20px; gap:16px; }
   .logo{ max-height:44px; }
   .title{ font-size:1.5rem; }
-  
-  .tiles{ 
-    /* Verlaag de min-width van 200px naar 160px of 150px */
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-    gap: 16px; 
-  }
-  
-  .tile-box{ padding:18px; min-height:160px; }
-  
-  .tile-img{ 
-    /* Gebruik hier ook weer width ipv max-width voor Android */
-    width: 120px; 
-    height: 120px; 
+
+  /* LET OP: tiles overrides expres verwijderd om rechthoeken te behouden */
+
+  .tile-img{
+    width: 120px;
+    height: 120px;
     display: block;
     margin: 0 auto;
   }
@@ -532,11 +648,10 @@ th,td{
   .logo{ max-height:52px; }
   .logo-wrap{ grid-area:logo; padding:10px 16px; border-radius:16px; }
   .title-wrapper{ grid-area:title; }
-
   .title{ font-size:1.9rem; }
 
-  .tiles{ grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
-  .tile-box{ padding:18px; min-height:180px; }
+  /* LET OP: tiles overrides expres verwijderd om rechthoeken te behouden */
+
   .tile-img{ width:140px; height:140px; }
   .tile-name{ font-size:1rem; }
 }
@@ -605,9 +720,14 @@ th,td{
 .btn-ghost{ padding:12px 16px; border-radius:10px; border:1px solid #333; background:transparent; color:#ddd; }
 
 .push-close{
-  position:absolute; top:8px; right:8px;
-  border:0; background:transparent; color:var(--text);
-  font-size:18px; cursor:pointer;
+  position:absolute;
+  top:8px;
+  right:8px;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  font-size:18px;
+  cursor:pointer;
 }
 .push-close:hover{ color:var(--button-hover); }
 
@@ -636,7 +756,8 @@ th,td{
 }
 .coach-arrow{
   position:absolute;
-  width:0; height:0;
+  width:0;
+  height:0;
   border:10px solid transparent;
 }
 
@@ -752,40 +873,39 @@ textarea.form-input::placeholder{
   color:var(--muted);
   font-size:0.9rem;
 }
+
 /* Secties binnen dezelfde card */
-.agenda-section {
+.agenda-section{
   margin-top: 20px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
-/* Extra helper class die je gebruikt in de combi */
-.agenda-section-header {
-  align-items: center;
-}
 
-.agenda-section:first-of-type {
+/* Extra helper class die je gebruikt in de combi */
+.agenda-section-header{ align-items: center; }
+
+.agenda-section:first-of-type{
   margin-top: 0;
   padding-top: 0;
   border-top: none;
 }
+
 @media (max-width: 720px){
   .birthday-header{
     flex-wrap: wrap;
-    row-gap: 10px; 
+    row-gap: 10px;
   }
 
-  /* Zet de actions-wrapper op een eigen regel */
   .birthday-header > .header-actions{
     flex: 0 0 100%;
     width: 100%;
-    margin-left: 0;     /* override desktop "naar rechts duwen" */
+    margin-left: 0;
     margin-top: 10px;
     display: flex;
-    flex-direction: column; /* elke knop op nieuwe regel */
+    flex-direction: column;
     gap: 10px;
   }
 
-  /* Losse button/link direct in de header ook op eigen regel */
   .birthday-header > .btn{
     flex: 0 0 100%;
     width: 100%;
@@ -794,24 +914,24 @@ textarea.form-input::placeholder{
     display: block;
   }
 
-  /* Buttons binnen header-actions: 100% breed */
   .birthday-header > .header-actions .btn{
     width: 100%;
     display: block;
   }
 }
+
 /* -------------------------------------------------------
    HEADER & ADD SECTION
 ------------------------------------------------------- */
-.header-actions {
+.header-actions{
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.add-section-panel {
-  background-color: var(--panel); /* Iets afwijkende achtergrond */
+.add-section-panel{
+  background-color: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 15px;
@@ -819,7 +939,7 @@ textarea.form-input::placeholder{
   margin-top: 5px;
 }
 
-.cropper-container * {
-  box-shadow: none !important; /* optioneel, maar wees voorzichtig met !important in base.css */
-  outline: initial !important; 
+.cropper-container *{
+  box-shadow: none !important;
+  outline: initial !important;
 }

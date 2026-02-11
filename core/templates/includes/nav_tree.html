@@ -12,8 +12,10 @@
       <summary
         class="nav-link nav-item--summary {% if request.resolver_match.url_name == item.url_name %}active{% endif %}"
       >
-        <span class="nav-icon"
-              style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
+      <span
+        class="nav-icon icon-badge {{ item.badge_class|default:'i-indigo' }}"
+        style="--icon: url('{% static 'img/lucide/' %}{{ item.img }}')"></span>
+
 
         <span class="nav-label">{{ item.name }}</span>
 
@@ -36,8 +38,9 @@
        class="nav-link {% if request.resolver_match.url_name == item.url_name %}active{% endif %}"
        data-haptic
     >
-      <span class="nav-icon"
-            style="--icon: url('{% static 'img/' %}{{ item.img }}')"></span>
+    <span
+      class="nav-icon icon-badge {{ item.badge_class|default:'i-indigo' }}"
+      style="--icon: url('{% static 'img/lucide/' %}{{ item.img }}')"></span>
 
       <span class="nav-label">{{ item.name }}</span>
 

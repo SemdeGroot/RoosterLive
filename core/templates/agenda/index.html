@@ -17,11 +17,11 @@
   {# --------- ALGEMENE AGENDA --------- #}
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
-      <img
-        src="{% static 'img/algemeen.svg' %}"
-        alt="Algemene agenda"
-        class="birthday-icon"
-      >
+    <span
+      class="birthday-icon icon-badge i-sky"
+      style="--icon: url('{% static 'img/lucide/algemene-agenda-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
 
       <div class="birthday-header-text">
         <h2>Algemeen</h2>
@@ -256,11 +256,11 @@
   {# --------- UITJES --------- #}
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
-      <img
-        src="{% static 'img/uitjes.svg' %}"
-        alt="Uitjes"
-        class="birthday-icon"
-      >
+    <span
+      class="birthday-icon icon-badge i-teal"
+      style="--icon: url('{% static 'img/lucide/uitjes-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
       <div class="birthday-header-text">
         <h2>Uitjes</h2>
         <p>Geplande uitjes</p>
@@ -481,11 +481,11 @@
   {# --------- VERJAARDAGEN --------- #}
   <div class="agenda-section">
     <div class="birthday-header">
-      <img
-        src="{% static 'img/balloons.svg' %}"
-        alt="Verjaardagen"
-        class="birthday-icon"
-      >
+    <span
+      class="birthday-icon icon-badge i-rose"
+      style="--icon: url('{% static 'img/lucide/verjaardagen-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
       <div class="birthday-header-text">
         <h2>Verjaardagen</h2>
         <p>Vandaag t/m {{ four_weeks_later|date:"j F"|lower }}</p>

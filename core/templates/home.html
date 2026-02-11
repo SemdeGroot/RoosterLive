@@ -20,10 +20,15 @@
     {% for t in tiles %}
       <a href="{% url t.url_name %}" class="tile" aria-label="{{ t.name }}" data-haptic>
       <div class="tile-box">
-        <div class="tile-icon">
-          <img src="{% static 'img/' %}{{ t.img }}" alt="{{ t.name }}" class="tile-img">
+        <div class="tile-icon" aria-hidden="true">
+          <span
+            class="icon-badge {{ t.badge_class|default:'i-indigo' }}"
+            style="--icon: url('{% static 'img/lucide/' %}{{ t.img }}');"></span>
         </div>
-        <div class="tile-name">{{ t.name }}</div>
+        <div class="tile-text">
+          <div class="tile-title">{{ t.name }}</div>
+          <div class="tile-desc">{{ t.desc }}</div>
+        </div>
       </div>
       </a>
     {% endfor %}
