@@ -8,7 +8,7 @@ class PartialManifestStaticFilesStorage(ManifestStaticFilesStorage):
     ManifestStaticFilesStorage, maar zonder hashing voor bepaalde paden.
     Bijvoorbeeld voor PWA icons en screenshots in 'pwa/' en 'img/'.
     """
-
+    manifest_strict = False
     EXCLUDED_PREFIXES = ("pwa/", "img/")
 
     def hashed_name(self, name, content=None, filename=None):
@@ -38,7 +38,7 @@ class PartialManifestStaticFilesS3Storage(ManifestFilesMixin, StaticRootS3Boto3S
     Combineert ManifestFilesMixin (hashing) met S3 storage,
     plus jouw uitzondering voor bepaalde prefixes.
     """
-
+    manifest_strict = False
     EXCLUDED_PREFIXES = ("pwa/", "img/")
 
     def hashed_name(self, name, content=None, filename=None):

@@ -25,6 +25,8 @@ services:
       - redis
       - pgbouncer
     restart: unless-stopped
+    healthcheck:
+      disable: true
 
   celery-beat:
     container_name: rooster-celery-beat
@@ -38,6 +40,8 @@ services:
     volumes:
       - celerybeat_data:/var/run/celery
     restart: unless-stopped
+    healthcheck:
+      disable: true
 
   redis:
     container_name: rooster-redis
