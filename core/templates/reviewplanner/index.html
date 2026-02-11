@@ -28,10 +28,12 @@
       {% if can_edit %}
         <button type="button" class="btn btn-save" id="openAddModalBtn">Review toevoegen</button>
       {% endif %}
+      {% if can_edit %}
+        <a href="{% url 'reviewplanner_export_overview' %}" class="btn">Export overzicht</a>
+      {% endif %}
     </div>
 
     <div class="card-inner" style="padding-top:0;">
-
       <form method="post" autocomplete="off" id="reviewPlannerForm"
             data-can-edit="{% if can_edit %}1{% else %}0{% endif %}"
             data-today="{{ today_iso }}"
@@ -48,6 +50,8 @@
                 <th>Status</th>
                 <th>Arts</th>
                 <th>Tijd</th>
+                <th>Voorbereid door</th>
+                <th>Uitgevoerd door</th>
                 <th>Bijzonderheden</th>
                 <th></th>
               </tr>
@@ -56,7 +60,6 @@
             <tbody id="reviewPlannerTbody">
               {% for r in rows %}
               <tr class="rp-row" data-id="{{ r.id }}">
-
                 <td>
                   <input type="hidden" name="row_id" value="{{ r.id }}">
                   <input type="text" name="row_datum"
@@ -94,7 +97,7 @@
                   <input type="text" name="row_arts"
                          value="{{ r.arts }}"
                          class="admin-input rp-arts js-arts"
-                         placeholder="Vrije tekst..."
+                         placeholder="Naam van arts..."
                          autocomplete="off"
                          {% if not can_edit %}disabled{% endif %}>
                 </td>
@@ -109,6 +112,28 @@
                          {% if not can_edit %}disabled{% endif %}>
                 </td>
 
+                <td>
+                  <select name="row_voorbereid_door" class="admin-input" {% if not can_edit %}disabled{% endif %}>
+                    <option value=""></option>
+                    {% for u in eligible_users %}
+                      <option value="{{ u.id }}" {% if r.voorbereid_door_id == u.id %}selected{% endif %}>
+                        {{ u.get_full_name|default:u.username }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </td>
+
+                <td>
+                  <select name="row_uitgevoerd_door" class="admin-input" {% if not can_edit %}disabled{% endif %}>
+                    <option value=""></option>
+                    {% for u in eligible_users %}
+                      <option value="{{ u.id }}" {% if r.uitgevoerd_door_id == u.id %}selected{% endif %}>
+                        {{ u.get_full_name|default:u.username }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </td>
+
                 <td class="wrap">
                   <input type="text" name="row_bijzonderheden"
                          value="{{ r.bijzonderheden }}"
@@ -121,20 +146,21 @@
                 <td class="center-col">
                   {% if can_edit %}
                   <button type="button" class="icon-btn danger js-remove-row" aria-label="Verwijderen">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      <line x1="10" y1="11" x2="10" y2="17"/>
-                      <line x1="14" y1="11" x2="14" y2="17"/>
-                    </svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
                   </button>
                   {% endif %}
                 </td>
               </tr>
               {% empty %}
               <tr id="emptyRow">
-                <td colspan="7" class="muted">Nog geen items. {% if can_edit %}Klik op “Review toevoegen”.{% endif %}</td>
+                <td colspan="9" class="muted">Nog geen items. {% if can_edit %}Klik op “Review toevoegen”.{% endif %}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -151,6 +177,18 @@
             {% endfor %}
           ]
         </script>
+
+        <script type="application/json" id="eligibleUsersJson">
+          [
+            {% for u in eligible_users %}
+              {
+                "id": {{ u.id }},
+                "label": "{{ u.get_full_name|default:u.username|escapejs }}"
+              }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          ]
+        </script>
+
       </form>
     </div>
   </div>
@@ -172,7 +210,7 @@
         <label class="section-label">Datum</label>
         <input type="text" class="admin-input js-date" id="modalDatum" placeholder="dd-mm-jjjj" autocomplete="off" inputmode="numeric">
         <div class="muted" style="margin-top:6px; font-size:.9rem;">
-          Geen datums in het verleden toegestaan.
+          Geen data in het verleden toegestaan.
         </div>
       </div>
 
@@ -197,12 +235,32 @@
 
       <div>
         <label class="section-label">Arts</label>
-        <input type="text" class="admin-input" id="modalArts" placeholder="Vrije tekst..." autocomplete="off">
+        <input type="text" class="admin-input" id="modalArts" placeholder="Naam van arts..." autocomplete="off">
       </div>
 
       <div>
         <label class="section-label">Tijd</label>
         <input type="text" class="admin-input js-time" id="modalTijd" placeholder="uu:mm" autocomplete="off" inputmode="numeric">
+      </div>
+
+      <div>
+        <label class="section-label">Voorbereid door</label>
+        <select class="admin-input" id="modalVoorbereidDoor">
+          <option value=""></option>
+          {% for u in eligible_users %}
+            <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="section-label">Uitgevoerd door</label>
+        <select class="admin-input" id="modalUitgevoerdDoor">
+          <option value=""></option>
+          {% for u in eligible_users %}
+            <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+          {% endfor %}
+        </select>
       </div>
 
       <div>

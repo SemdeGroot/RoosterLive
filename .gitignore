@@ -53,3 +53,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+.repomixignore
+repomix.config.json
+repomix.instructions.json
+repomix-output.xml

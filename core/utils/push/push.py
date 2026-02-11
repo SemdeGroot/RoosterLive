@@ -338,7 +338,7 @@ def send_uren_reminder_push(user_id, reminder_date):
     payload = {
         "title": "Herinnering: Uren doorgeven",
         "body": f"Herinnering: Je hebt nog geen uren doorgegeven voor {reminder_date.strftime('%B %Y')}. Vergeet dit niet in te dienen.",
-        "url": "/uren-doorgeven/",
+        "url": "/personeel/uren-doorgeven/",
         "tag": f"uren-reminder-{reminder_date.year}-{reminder_date.month}",
     }
 

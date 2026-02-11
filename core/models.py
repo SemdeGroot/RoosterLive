@@ -1671,6 +1671,20 @@ class ReviewPlanner(models.Model):
     arts = models.CharField(max_length=255, blank=True)
     tijd = models.TimeField(null=True, blank=True)
     bijzonderheden = models.TextField(blank=True)
+    voorbereid_door = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewplanner_voorbereid",
+    )
+    uitgevoerd_door = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewplanner_uitgevoerd",
+    )
 
     # tracking / ownership
     created_at = models.DateTimeField(auto_now_add=True)

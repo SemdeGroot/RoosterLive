@@ -128,19 +128,27 @@
     app.addEventListener('transitionend', onDone);
   };
 
-  // Altijd dicht bij elke pageload (dus collapsed = true)
-  apply(true, false);
-  try { localStorage.setItem(key, '1'); } catch {}
+  const readCollapsed = () => {
+    try {
+      const v = localStorage.getItem(key);  // '1' | '0' | null
+      if (v === null) return false;         // default: open
+      return v === '1';
+    } catch {
+      return false;
+    }
+  };
 
-  // Ook bij back/forward cache restores: weer dicht
-  window.addEventListener('pageshow', () => {
-    apply(true, false);
-    try { localStorage.setItem(key, '1'); } catch {}
-  });
+  const applyFromStorage = () => apply(readCollapsed(), false);
+
+  // Init: sync app + aria met wat inline in head al bepaalde
+  applyFromStorage();
+
+  // BFCache restores: opnieuw syncen
+  window.addEventListener('pageshow', applyFromStorage);
 
   btn.addEventListener('click', () => {
-    const next = !app.classList.contains('sidebar-collapsed'); // toggle
-    try { localStorage.setItem(key, next ? '1' : '0'); } catch {}
-    apply(next, true);
+    const nextCollapsed = !app.classList.contains('sidebar-collapsed');
+    try { localStorage.setItem(key, nextCollapsed ? '1' : '0'); } catch {}
+    apply(nextCollapsed, true);
   });
 })();

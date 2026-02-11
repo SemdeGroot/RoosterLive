@@ -38,7 +38,7 @@ from core.views.stshalfjes import stshalfjes, export_stshalfjes_pdf, email_stsha
 from core.views.laatstepotten import laatstepotten
 from core.views.openbare import openbare_tiles
 from core.views.instellings import instellings_tiles
-from core.views.reviewplanner import reviewplanner
+from core.views.reviewplanner import reviewplanner, reviewplanner_export_overview
 from core.views.portavita import portavita_check
 from core.views.houdbaarheidcheck import houdbaarheidcheck
 from core.views.health import health
@@ -95,7 +95,7 @@ urlpatterns = [
     path("personeel/uren-doorgeven/", urendoorgeven_view, name="urendoorgeven"),
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
     path("personeel/inschrijven/", inschrijvingen, name="inschrijvingen"),
-    path("onboarding/wie-is-wie/", whoiswho, name="whoiswho"),
+    path("onboarding/team/", whoiswho, name="whoiswho"),
     path("onboarding/formulieren/", onboarding_formulieren, name="onboarding_formulieren"),
     path("onboarding/checklist/", checklist, name="checklist"),
 
@@ -144,6 +144,7 @@ urlpatterns = [
     path("medicatiebeoordeling/delete/patient/<int:pk>/", med_views.delete_patient, name="medicatiebeoordeling_delete_patient"),
     # Reviwiew planner
     path("instellingsapotheek/review-planner/", reviewplanner, name="reviewplanner"),
+    path("instellingsapotheek/review-planner/export-overview/", reviewplanner_export_overview, name="reviewplanner_export_overview"),
     path("portavita-check/", portavita_check, name="portavita-check"),
     path("houdbaarheid-check/", houdbaarheidcheck, name="houdbaarheidcheck"),
     # Profiel

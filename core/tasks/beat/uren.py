@@ -31,7 +31,7 @@ def monthly_uren_export_task(self):
     if res.row_count == 0 or not res.xlsx_storage_path or not res.filename:
         return
 
-    to_email = "semdegroot2003@gmail.com"
+    to_email = "grootrk@apotheekjansen.com"
     contact_email = settings.DEFAULT_FROM_EMAIL
     logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "app_icon_trans-512x512.png")
 

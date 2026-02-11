@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static form_extras %}
 
-{% block title %}Wie is wie?{% endblock %}
-{% block header_title %}Wie is wie?{% endblock %}
+{% block title %}Team{% endblock %}
+{% block header_title %}Team{% endblock %}
 
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/profiel/profiel.css' %}">
@@ -20,7 +20,7 @@
             <div class="birthday-header agenda-section-header">
                 <img src="{% static 'img/wieiswie.svg' %}" alt="" class="birthday-icon">
                 <div class="birthday-header-text">
-                    <h2>Wie is wie?</h2>
+                    <h2>Team</h2>
                     <p>Overzicht van alle collega's en hun contactgegevens.</p>
                 </div>
                 <a href="{% url 'onboarding_tiles' %}" class="btn btn-save">

@@ -35,12 +35,15 @@
         doc.style.setProperty('--inset-top', '30px');
         doc.style.setProperty('--inset-bottom', '22px');
       }
-
-      // 4. Sidebar status
+      
+      // 4. Sidebar status (persist, no-flash)
       try {
-        localStorage.setItem('sidebarCollapsed_v1', '1');
-      } catch {}
-      doc.classList.remove('sidebar-open');
+        const v = localStorage.getItem('sidebarCollapsed_v1'); // '1' | '0' | null
+        const isCollapsed = (v === null) ? false : (v === '1'); // default: open
+        doc.classList.toggle('sidebar-open', !isCollapsed);
+      } catch {
+        doc.classList.add('sidebar-open');
+      }
 
       // 5. Mode Switch Observer
       const isLight = (savedTheme === 'light');

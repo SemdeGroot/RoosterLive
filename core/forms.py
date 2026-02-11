@@ -1547,7 +1547,10 @@ class HoudbaarheidCheckForm(forms.Form):
 class ReviewPlannerForm(forms.ModelForm):
     class Meta:
         model = ReviewPlanner
-        fields = ["datum", "afdeling", "status", "arts", "tijd", "bijzonderheden"]
+        fields = [
+            "datum", "afdeling", "status", "arts", "tijd", "bijzonderheden",
+            "voorbereid_door", "uitgevoerd_door",
+        ]
         widgets = {
             "datum": forms.TextInput(attrs={
                 "class": "admin-input js-date",
@@ -1564,7 +1567,7 @@ class ReviewPlannerForm(forms.ModelForm):
             }),
             "arts": forms.TextInput(attrs={
                 "class": "admin-input js-arts",
-                "placeholder": "Vrije tekst...",
+                "placeholder": "Naam van arts...",
                 "autocomplete": "off",
             }),
             "tijd": forms.TextInput(attrs={
@@ -1578,6 +1581,8 @@ class ReviewPlannerForm(forms.ModelForm):
                 "placeholder": "Bijzonderheden...",
                 "autocomplete": "off",
             }),
+            "voorbereid_door": forms.Select(attrs={"class": "admin-input"}),
+            "uitgevoerd_door": forms.Select(attrs={"class": "admin-input"}),
         }
 
     def __init__(self, *args, **kwargs):

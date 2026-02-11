@@ -72,7 +72,7 @@
 
   function validateNotPast(dmy) {
     const d = parseDMY(dmy);
-    if (!d) return { ok: true }; // server valideert definitief
+    if (!d) return { ok: true };
     const today = todayFromForm();
     if (today && d < today) return { ok: false, error: "Datum mag niet in het verleden liggen." };
     const cutoff = cutoffFromForm();
@@ -86,11 +86,11 @@
   function applyTimeMask(input) {
     if (!input || !window.IMask) return;
     window.IMask(input, {
-      mask: 'H{:}M',
+      mask: "H{:}M",
       blocks: {
         H: { mask: window.IMask.MaskedRange, from: 0, to: 23, maxLength: 2 },
-        M: { mask: window.IMask.MaskedRange, from: 0, to: 59, maxLength: 2 }
-      }
+        M: { mask: window.IMask.MaskedRange, from: 0, to: 59, maxLength: 2 },
+      },
     });
   }
 
@@ -100,21 +100,20 @@
     const maxYear = 2100;
 
     window.IMask(input, {
-      mask: 'd-m-Y',
+      mask: "d-m-Y",
       lazy: true,
       overwrite: true,
       autofix: false,
       blocks: {
         d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
         m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
-        Y: { mask: IMask.MaskedRange, from: minYear, to: maxYear, maxLength: 4 }
-      }
+        Y: { mask: IMask.MaskedRange, from: minYear, to: maxYear, maxLength: 4 },
+      },
     });
   }
 
   // --------------------------
   // Select2 init
-  //   - Modal fix: dropdownParent + destroy/re-init
   // --------------------------
   function initSelect2(el, opts) {
     if (!el) return;
@@ -123,16 +122,18 @@
 
     const $el = $(el);
 
-    // als al select2: destroy zodat modal correct werkt
     if ($el.hasClass("select2-hidden-accessible")) {
       try { $el.select2("destroy"); } catch (e) {}
     }
 
-    const config = Object.assign({
-      placeholder: "Klik om te zoeken...",
-      allowClear: true,
-      width: "100%",
-    }, (opts || {}));
+    const config = Object.assign(
+      {
+        placeholder: "Klik om te zoeken...",
+        allowClear: true,
+        width: "100%",
+      },
+      opts || {}
+    );
 
     $el.select2(config);
 
@@ -146,7 +147,7 @@
   }
 
   // --------------------------
-  // Status pill op de dropdown zelf
+  // Status pill
   // --------------------------
   function applyStatusPill(selectEl) {
     if (!selectEl) return;
@@ -173,8 +174,10 @@
       const st = row.querySelector('select[name="row_status"]')?.value || "";
       const arts = row.querySelector('input[name="row_arts"]')?.value?.trim() || "";
       const tijd = row.querySelector('input[name="row_tijd"]')?.value?.trim() || "";
+      const voorbereid = row.querySelector('select[name="row_voorbereid_door"]')?.value || "";
+      const uitgevoerd = row.querySelector('select[name="row_uitgevoerd_door"]')?.value || "";
       const bijz = row.querySelector('input[name="row_bijzonderheden"]')?.value?.trim() || "";
-      parts.push([rid, datum, afd, st, arts, tijd, bijz].join("|"));
+      parts.push([rid, datum, afd, st, arts, tijd, voorbereid, uitgevoerd, bijz].join("|"));
     });
 
     return parts.join(";");
@@ -193,6 +196,8 @@
       fd.append("row_status", row.querySelector('select[name="row_status"]')?.value || "prep");
       fd.append("row_arts", row.querySelector('input[name="row_arts"]')?.value || "");
       fd.append("row_tijd", row.querySelector('input[name="row_tijd"]')?.value || "");
+      fd.append("row_voorbereid_door", row.querySelector('select[name="row_voorbereid_door"]')?.value || "");
+      fd.append("row_uitgevoerd_door", row.querySelector('select[name="row_uitgevoerd_door"]')?.value || "");
       fd.append("row_bijzonderheden", row.querySelector('input[name="row_bijzonderheden"]')?.value || "");
     });
 
@@ -241,7 +246,7 @@
     if (!any && !empty) {
       const tr = document.createElement("tr");
       tr.id = "emptyRow";
-      tr.innerHTML = `<td colspan="7" class="muted">Nog geen items.</td>`;
+      tr.innerHTML = `<td colspan="9" class="muted">Nog geen items.</td>`;
       tbody.appendChild(tr);
     }
     if (any && empty) empty.remove();
@@ -254,6 +259,8 @@
     const timeInp = tr.querySelector('input[name="row_tijd"]');
     const afdSel = tr.querySelector('select[name="row_afdeling"]');
     const stSel = tr.querySelector('select[name="row_status"]');
+    const voorbereidSel = tr.querySelector('select[name="row_voorbereid_door"]');
+    const uitgevoerdSel = tr.querySelector('select[name="row_uitgevoerd_door"]');
 
     if (dateInp) applyDateMask(dateInp);
     if (timeInp) applyTimeMask(timeInp);
@@ -264,7 +271,6 @@
     const onChange = () => {
       if (stSel) applyStatusPill(stSel);
 
-      // snelle client-side check (server blijft leidend)
       if (dateInp && dateInp.value) {
         const v = validateNotPast(dateInp.value);
         dateInp.classList.toggle("is-invalid", !v.ok);
@@ -280,6 +286,16 @@
     });
 
     [afdSel, stSel].forEach((sel) => {
+      if (!sel) return;
+      const $ = window.jQuery;
+      if ($ && $(sel).hasClass("select2-hidden-accessible")) {
+        $(sel).off("change.rp_autosave").on("change.rp_autosave", onChange);
+      } else {
+        sel.addEventListener("change", onChange);
+      }
+    });
+
+    [voorbereidSel, uitgevoerdSel].forEach((sel) => {
       if (!sel) return;
       sel.addEventListener("change", onChange);
     });
@@ -300,12 +316,23 @@
         const tr = btn.closest("tr");
         if (!tr) return;
 
-        // leeggemaakt = autosave delete
         tr.querySelector('input[name="row_datum"]').value = "";
+
         const afd = tr.querySelector('select[name="row_afdeling"]');
-        if (afd) { afd.value = ""; try { window.jQuery(afd).trigger("change"); } catch(e) {} }
+        if (afd) {
+          afd.value = "";
+          try { window.jQuery(afd).trigger("change"); } catch (e) {}
+        }
+
         tr.querySelector('input[name="row_arts"]').value = "";
         tr.querySelector('input[name="row_tijd"]').value = "";
+
+        const voorbereid = tr.querySelector('select[name="row_voorbereid_door"]');
+        if (voorbereid) voorbereid.value = "";
+
+        const uitgevoerd = tr.querySelector('select[name="row_uitgevoerd_door"]');
+        if (uitgevoerd) uitgevoerd.value = "";
+
         tr.querySelector('input[name="row_bijzonderheden"]').value = "";
 
         scheduleAutosave();
@@ -338,6 +365,8 @@
     fd.append("status", (document.getElementById("modalStatus")?.value || "prep").trim());
     fd.append("arts", (document.getElementById("modalArts")?.value || "").trim());
     fd.append("tijd", (document.getElementById("modalTijd")?.value || "").trim());
+    fd.append("voorbereid_door", (document.getElementById("modalVoorbereidDoor")?.value || "").trim());
+    fd.append("uitgevoerd_door", (document.getElementById("modalUitgevoerdDoor")?.value || "").trim());
     fd.append("bijzonderheden", (document.getElementById("modalBijzonderheden")?.value || "").trim());
 
     const resp = await postForm(window.location.href, fd);
@@ -369,6 +398,17 @@
     return html;
   }
 
+  function buildUserOptionsHtml(users, selectedId) {
+    const sel = String(selectedId || "");
+    let html = `<option value=""></option>`;
+    (users || []).forEach((u) => {
+      const id = String(u.id);
+      const isSel = (id === sel) ? " selected" : "";
+      html += `<option value="${escapeHtml(id)}"${isSel}>${escapeHtml(u.label)}</option>`;
+    });
+    return html;
+  }
+
   function upsertRowInTable(rowData) {
     const tbody = document.getElementById("reviewPlannerTbody");
     if (!tbody) return;
@@ -382,7 +422,6 @@
       tr.className = "rp-row";
       tr.setAttribute("data-id", String(rowData.id));
       tr.innerHTML = `
-
         <td>
           <input type="hidden" name="row_id" value="${escapeHtml(rowData.id)}">
           <input type="text" name="row_datum" value=""
@@ -403,12 +442,20 @@
 
         <td>
           <input type="text" name="row_arts" value=""
-                 class="admin-input rp-arts js-arts" placeholder="Vrije tekst..." autocomplete="off">
+                 class="admin-input rp-arts js-arts" placeholder="Naam van arts..." autocomplete="off">
         </td>
 
         <td>
           <input type="text" name="row_tijd" value=""
                  class="admin-input rp-time js-time" placeholder="uu:mm" inputmode="numeric" autocomplete="off">
+        </td>
+
+        <td>
+          <select name="row_voorbereid_door" class="admin-input"></select>
+        </td>
+
+        <td>
+          <select name="row_uitgevoerd_door" class="admin-input"></select>
         </td>
 
         <td class="wrap">
@@ -444,6 +491,13 @@
 
     tr.querySelector('input[name="row_arts"]').value = rowData.arts || "";
     tr.querySelector('input[name="row_tijd"]').value = rowData.tijd || "";
+
+    const voorbereidSel = tr.querySelector('select[name="row_voorbereid_door"]');
+    if (voorbereidSel) voorbereidSel.innerHTML = buildUserOptionsHtml(usersCache, rowData.voorbereid_door_id);
+
+    const uitgevoerdSel = tr.querySelector('select[name="row_uitgevoerd_door"]');
+    if (uitgevoerdSel) uitgevoerdSel.innerHTML = buildUserOptionsHtml(usersCache, rowData.uitgevoerd_door_id);
+
     tr.querySelector('input[name="row_bijzonderheden"]').value = rowData.bijzonderheden || "";
 
     bindRow(tr);
@@ -464,17 +518,25 @@
     applyDateMask(document.getElementById("modalDatum"));
     applyTimeMask(document.getElementById("modalTijd"));
 
-    // MODAL select2 fix: dropdownParent = modal-content
     const modalAfd = document.getElementById("modalAfdeling");
-    initSelect2(modalAfd, {
-      dropdownParent: window.jQuery("#addModal .modal-content"),
-    });
+    initSelect2(modalAfd, { dropdownParent: window.jQuery("#addModal .modal-content") });
+    try { window.jQuery(modalAfd).val("").trigger("change"); } catch (e) {}
 
-    try { window.jQuery(modalAfd).val("").trigger("change"); } catch(e) {}
-
-    // status pill in modal
     const st = document.getElementById("modalStatus");
-    if (st) { st.value = "prep"; applyStatusPill(st); st.addEventListener("change", () => applyStatusPill(st)); }
+    if (st) {
+      st.value = "prep";
+      applyStatusPill(st);
+      st.addEventListener("change", () => applyStatusPill(st));
+    }
+
+    const vd = document.getElementById("modalVoorbereidDoor");
+    if (vd) vd.value = "";
+
+    const ud = document.getElementById("modalUitgevoerdDoor");
+    if (ud) ud.value = "";
+
+    const bz = document.getElementById("modalBijzonderheden");
+    if (bz) bz.value = "";
   }
 
   function closeModal() {
@@ -527,14 +589,15 @@
   // Init
   // --------------------------
   let afdelingenCache = [];
+  let usersCache = [];
 
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("reviewPlannerForm");
     if (!form) return;
 
     afdelingenCache = loadJsonScript("afdelingenJson") || [];
+    usersCache = loadJsonScript("eligibleUsersJson") || [];
 
-    // bind existing rows
     document.querySelectorAll("tr.rp-row").forEach((tr) => bindRow(tr));
     setupRemoveButtons();
     ensureEmptyRow();
@@ -543,7 +606,6 @@
 
     setupModalActions();
 
-    // als status verandert: pill updaten + autosave
     document.addEventListener("change", (e) => {
       if (e.target && e.target.matches('select[name="row_status"]')) {
         applyStatusPill(e.target);
