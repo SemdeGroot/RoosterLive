@@ -8,18 +8,34 @@ table.whoiswho-table {
   --c6: 220px;  /* Contact (Mail + Tel) */
 }
 
-.who-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    margin: 0 auto;
+.who-avatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  background: var(--panel);
+
+  /* Zorg dat icon-badge pseudo-elementen netjes in deze cirkel centreren */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.who-avatar.has-avatar {
-    border: 1px solid var(--border, #dbdbdb);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+/* Alleen relevant voor echte foto's */
+img.who-avatar{
+  object-fit: cover;
+  display: block; /* voorkom dat img ineens flex-container wordt */
+}
+
+/* Extra zekerheid: als icon-badge via ::before/::after tekent */
+.who-avatar.icon-badge::before,
+.who-avatar.icon-badge::after{
+  position: absolute;
+  inset: 0;
+  margin: auto;
 }
 
 /* Contact kolom styling */

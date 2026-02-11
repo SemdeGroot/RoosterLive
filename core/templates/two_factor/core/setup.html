@@ -3,7 +3,11 @@
 
 {% block login_header_image %}
   <div class="twofa-image-wrap">
-    <img src="{% static 'img/2factor.svg' %}" alt="2FA" class="twofa-image" style="margin-top: -10px; margin-bottom: -10px;">
+        <span
+          class="birthday-icon icon-badge i-aqua"
+          style="--icon: url('{% static 'img/lucide/twofactor-lucide.svg' %}'); margin-top: -10px; margin-bottom: -10px;"
+          aria-hidden="true">
+        </span>
   </div>
 {% endblock %}
 

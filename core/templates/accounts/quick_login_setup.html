@@ -3,7 +3,11 @@
 
 {% block login_header_image %}
   <div class="twofa-image-wrap">
-    <img src="{% static 'img/biometric.svg' %}" alt="Snel inloggen" class="twofa-image" style="width: 80px">
+    <span
+      class="birthday-icon icon-badge i-fuchsia"
+      style="--icon: url('{% static 'img/lucide/passkey-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
   </div>
 {% endblock %}
 

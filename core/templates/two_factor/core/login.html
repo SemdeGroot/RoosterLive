@@ -5,7 +5,11 @@
   {% load static %}
   {% if form.otp_token or form.token %}
     <div class="twofa-image-wrap">
-      <img src="{% static 'img/2factor.svg' %}" alt="2FA" class="twofa-image">
+        <span
+          class="birthday-icon icon-badge i-aqua"
+          style="--icon: url('{% static 'img/lucide/twofactor-lucide.svg' %}');"
+          aria-hidden="true">
+        </span>
     </div>
   {% else %}
     <div class="logo-wrap-login default-logo">

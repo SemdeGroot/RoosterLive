@@ -19,12 +19,8 @@
   border-radius: 999px;
   object-fit: cover;
   background: var(--panel);
-  border: none; /* default: geen border */
-  margin-bottom: 12px;
-}
-
-.avatar-preview.has-avatar{
   border: 1px solid var(--border);
+  margin-bottom: 12px;
 }
 
 .notif-block {
@@ -272,4 +268,24 @@
   .notif-actions button{
     width: 100% !important;
   }
+}
+
+/* Empty avatar: centreer en vergroot het lucide-user icoon */
+.avatar-preview--empty{
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-preview--empty.icon-badge::before,
+.avatar-preview--empty.icon-badge::after{
+  width: 72px;
+  height: 72px;
+
+  /* als het icoon absoluut gepositioneerd is: centreer het altijd */
+  position: absolute;
+  inset: 0;
+  margin: auto;
 }

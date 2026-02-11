@@ -17,11 +17,11 @@
   {% for category in categories %}
     <div class="agenda-section">
       <div class="birthday-header agenda-section-header">
-        <img
-          src="{% static 'img/lucide/' %}{{ category.image }}"
-          alt="{{ category.name }}"
-          class="birthday-icon"
-        >
+      <span
+        class="birthday-icon icon-badge {{ category.badge_class }}"
+        style="--icon: url('{% static 'img/lucide/' %}{{ category.image }}');"
+        aria-hidden="true">
+      </span>
         <div class="birthday-header-text">
           <h2>{{ category.name }}</h2>
           <p>Klik op de items om te openen.</p>

@@ -32,11 +32,20 @@
 
         <div class="avatar-row">
           <div class="avatar-preview-wrap">
-            <img
-              id="avatarPreview"
-              class="avatar-preview {% if profile.avatar %}has-avatar{% endif %}"
-              src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}{% static 'img/user.svg' %}{% endif %}"
-              alt="Profielfoto preview">
+            {% if profile.avatar %}
+              <img
+                id="avatarPreview"
+                class="avatar-preview has-avatar"
+                src="{{ profile.avatar.url }}"
+                alt="Profielfoto preview">
+            {% else %}
+              <span
+                id="avatarPreview"
+                class="avatar-preview avatar-preview--empty icon-badge i-slate"
+                style="--icon: url('{% static 'img/lucide/user-lucide.svg' %}');"
+                aria-hidden="true">
+              </span>
+            {% endif %}
           </div>
 
           <div class="avatar-actions">

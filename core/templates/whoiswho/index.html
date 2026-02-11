@@ -59,9 +59,15 @@
                             {% for p in profiles %}
                             <tr class="who-row">
                                 <td style="text-align: center;">
-                                    <img class="who-avatar {% if p.avatar %}has-avatar{% endif %}" 
-                                         src="{% if p.avatar %}{{ p.avatar.url }}{% else %}{% static 'img/lucide/user-lucide.svg' %}{% endif %}" 
-                                         alt="">
+                                {% if p.avatar %}
+                                    <img class="who-avatar has-avatar" src="{{ p.avatar.url }}" alt="">
+                                {% else %}
+                                    <span
+                                    class="who-avatar icon-badge i-slate"
+                                    style="--icon: url('{% static 'img/lucide/user-lucide.svg' %}');"
+                                    aria-hidden="true">
+                                    </span>
+                                {% endif %}
                                 </td>
                                 <td style="font-weight: 600;">{{ p.user|dutch_name }}</td>
                                 <td>{{ p.function.title|default:"—" }}</td>

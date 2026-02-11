@@ -366,9 +366,27 @@ def policies(request):
 
     # === GET / render context ===
     category_configs = [
-        {"key": "baxter", "name": "Baxterproductie", "perm": "can_view_baxter", "image": "baxterproductie-lucide.svg"},
-        {"key": "instelling", "name": "Instellingsapotheek", "perm": "can_view_instellings_apo", "image": "instellingsapo-lucide.svg"},
-        {"key": "openbare", "name": "Openbare Apo", "perm": "can_view_openbare_apo", "image": "openbareapo-lucide.svg"},
+        {
+            "key": "baxter",
+            "name": "Baxterproductie",
+            "perm": "can_view_baxter",
+            "image": "baxterproductie-lucide.svg",
+            "badge_class": "i-orange",
+        },
+        {
+            "key": "instelling",
+            "name": "Instellingsapotheek",
+            "perm": "can_view_instellings_apo",
+            "image": "instellingsapo-lucide.svg",
+            "badge_class": "i-green",
+        },
+        {
+            "key": "openbare",
+            "name": "Openbare Apo",
+            "perm": "can_view_openbare_apo",
+            "image": "openbareapo-lucide.svg",
+            "badge_class": "i-aqua",
+        },
     ]
 
     categories = []
@@ -406,6 +424,7 @@ def policies(request):
                 "name": cfg["name"],
                 "category": cat_key,
                 "image": cfg["image"],
+                "badge_class": cfg.get("badge_class", "i-indigo"),
                 "items": items,
                 "rows": rows,
                 "form": form,
