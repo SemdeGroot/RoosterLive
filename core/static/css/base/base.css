@@ -481,6 +481,27 @@ th,td{
   .tiles{ grid-template-columns: 1fr; }
 }
 
+/* Chevron */
+
+.tile-chevron{
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;          /* pushes it to far right in your flex row */
+  opacity: 0.8;
+  background: var(--muted);
+
+  -webkit-mask-image: url("/static/img/lucide/chevron-right-lucide.svg");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/static/img/lucide/chevron-right-lucide.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
 /* =========================
    ICON BADGE (Lucide via CSS mask)
    ========================= */
@@ -507,8 +528,16 @@ th,td{
   height: var(--glyph-size);
 
   background: rgb(var(--icon-color-rgb));
-  -webkit-mask: var(--icon) center / contain no-repeat;
-  mask: var(--icon) center / contain no-repeat;
+
+  -webkit-mask-image: var(--icon);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+
+  mask-image: var(--icon);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
 }
 
 /* Kleur-helpers */

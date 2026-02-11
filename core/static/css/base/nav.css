@@ -150,18 +150,18 @@
 /* icon */
 .nav-icon{
   grid-column:1;
-  width:28px; height:28px;
+  width:28px;
+  height:28px;
   flex-shrink:0;
-  background-image: var(--icon);
-  background-position:center;
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-color:transparent;
-  border:none;
-  border-radius:0;
-  box-shadow:none;
-  transition:transform .2s ease;
+
+  /* icon rendering is handled by .icon-badge::before (mask) */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform .2s ease;
 }
+
 @media (min-width:900px){
   .nav-icon{ width:30px; height:30px; }
 }
