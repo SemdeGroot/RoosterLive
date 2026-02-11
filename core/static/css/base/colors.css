@@ -104,8 +104,8 @@
     --loc-blue-bg:  rgba(60, 120, 220, 0.07);
 
     /* Lucide icon alpha */
-    --icon-badge-alpha: 0.16;
-    --icon-badge-border-alpha: 0.28;
+    --icon-badge-alpha: 0.22;
+    --icon-badge-border-alpha: 0.7;
 
     --muted-rgb: 47 59 70;   
 }
