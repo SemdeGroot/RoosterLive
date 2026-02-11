@@ -40,16 +40,16 @@
     --c-blue:    59 130 246;  /* helder klassiek blauw */
     --c-sky:     14 165 233;  /* licht hemelblauw / fris */
     --c-cyan:     6 182 212;  /* aqua / blauwgroen */
-    --c-slate:  100 116 139;  /* neutraal koel grijs / “calm” */
+    --c-slate:  116 132 150;  /* iets lichter voor dark mode */
 
     /* Groen spectrum */
     --c-teal:    20 184 166;  /* blauwgroen / medisch */
     --c-emerald: 16 185 129;  /* rijk smaragdgroen */
     --c-green:   34 197  94;  /* standaard groen / success */
-    --c-lime:   132 204  22;  /* fel geelgroen / alert */
+    --c-lime:   122 190  20;  /* iets donkerder voor light mode */
 
     /* Warm / aandacht */
-    --c-amber:  245 158  11;  /* goud / waarschuwing */
+    --c-amber:  234 149  11;  /* iets donkerder voor light mode */
     --c-orange: 249 115  22;  /* oranje / actie */
     --c-yellow: 234 179   8;  /* helder geel / highlight */
 
@@ -65,7 +65,7 @@
     --c-purple: 168  85 247;  /* rijk paars / premium */
 
     /* Aarde / contrast (werkt goed op dark) */
-    --c-stone:  120 113 108;  /* warm grijs / subtiel */
+    --c-stone:  132 125 120;  /* iets lichter voor dark mode */
     --c-brown:  124  45  18;  /* donker bruin / “serious” accent */
 
     /* Extra “status / info” */
@@ -104,7 +104,7 @@
     --loc-blue-bg:  rgba(60, 120, 220, 0.07);
 
     /* Lucide icon alpha */
-    --icon-badge-alpha: 0.12;
+    --icon-badge-alpha: 0.1;
     --icon-badge-border-alpha: 0.7;
 
     --muted-rgb: 47 59 70;   

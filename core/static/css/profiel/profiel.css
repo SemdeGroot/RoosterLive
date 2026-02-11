@@ -289,3 +289,12 @@
   inset: 0;
   margin: auto;
 }
+
+.inline-link{
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.inline-link:hover{
+  opacity: .9;
+}

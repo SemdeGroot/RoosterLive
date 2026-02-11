@@ -232,7 +232,7 @@ def avatar_remove(request):
     profile.save(update_fields=["avatar", "avatar_hash", "avatar_updated_at"])
 
     return JsonResponse({
-        "avatar_url": settings.STATIC_URL + "img/user.svg",
+        "avatar_url": settings.STATIC_URL + "img/lucide/user-lucide.svg",
         "flash": {"level": "success", "text": "Profielfoto verwijderd."},
     })
 
