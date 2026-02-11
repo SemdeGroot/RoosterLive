@@ -63,7 +63,11 @@
   <div class="card">
     <div class="card-inner">
       <div class="birthday-header agenda-section-header">
-        <img src="{% static 'img/user.svg' %}" alt="" class="birthday-icon">
+        <span
+          class="birthday-icon icon-badge i-violet"
+          style="--icon: url('{% static 'img/lucide/admin-user-lucide.svg' %}');"
+          aria-hidden="true">
+        </span>
         <div class="birthday-header-text">
           <h2>Gebruikers beheren</h2>
           <p>Voeg hier gebruikers toe of bewerk de gegevens.</p>

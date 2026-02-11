@@ -17,8 +17,11 @@
     <div class="card-inner">
 
       <div class="birthday-header agenda-section-header">
-        <!-- hergebruik een bestaand icoon om 404 te voorkomen -->
-        <img src="{% static 'img/taken.svg' %}" alt="" class="birthday-icon">
+        <span
+          class="birthday-icon icon-badge i-pink"
+          style="--icon: url('{% static 'img/lucide/admin-functies-lucide.svg' %}');"
+          aria-hidden="true">
+        </span>
         <div class="birthday-header-text">
           <h2>Functies beheren</h2>
           <p>Beheer functietitels en de volgorde (ranking: lager nummer = hoger).</p>

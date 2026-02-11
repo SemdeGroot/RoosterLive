@@ -18,7 +18,11 @@
     <div class="card-inner">
 
       <div class="birthday-header agenda-section-header">
-        <img src="{% static 'img/taken.svg' %}" alt="" class="birthday-icon">
+        <span
+          class="birthday-icon icon-badge i-amber"
+          style="--icon: url('{% static 'img/lucide/admin_taken-lucide.svg' %}');"
+          aria-hidden="true">
+        </span>
         <div class="birthday-header-text">
           <h2>Taken beheren</h2>
           <p>Beheer locaties, dagdelen en taken (taken zijn gekoppeld aan een locatie).</p>

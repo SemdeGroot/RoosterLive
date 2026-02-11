@@ -515,18 +515,24 @@ th,td{
 .i-blue    { --icon-color-rgb: var(--c-blue); }
 .i-indigo  { --icon-color-rgb: var(--c-indigo); }
 .i-violet  { --icon-color-rgb: var(--c-violet); }
+.i-purple  { --icon-color-rgb: var(--c-purple); }
 .i-pink    { --icon-color-rgb: var(--c-pink); }
 .i-red     { --icon-color-rgb: var(--c-red); }
 .i-orange  { --icon-color-rgb: var(--c-orange); }
 .i-amber   { --icon-color-rgb: var(--c-amber); }
+.i-yellow  { --icon-color-rgb: var(--c-yellow); }
 .i-green   { --icon-color-rgb: var(--c-green); }
 .i-emerald { --icon-color-rgb: var(--c-emerald); }
 .i-teal    { --icon-color-rgb: var(--c-teal); }
 .i-cyan    { --icon-color-rgb: var(--c-cyan); }
+.i-aqua    { --icon-color-rgb: var(--c-aqua); }
 .i-sky     { --icon-color-rgb: var(--c-sky); }
 .i-lime    { --icon-color-rgb: var(--c-lime); }
 .i-rose    { --icon-color-rgb: var(--c-rose); }
 .i-fuchsia { --icon-color-rgb: var(--c-fuchsia); }
+.i-slate   { --icon-color-rgb: var(--c-slate); }
+.i-stone   { --icon-color-rgb: var(--c-stone); }
+.i-brown   { --icon-color-rgb: var(--c-brown); }
 
 /* Tile icon sizing (template: class="tile-icon icon-badge ...") */
 .tile-icon{

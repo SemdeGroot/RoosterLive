@@ -18,7 +18,11 @@
     <div class="card">
         <div class="card-inner">
             <div class="birthday-header agenda-section-header">
-                <img src="{% static 'img/wieiswie.svg' %}" alt="" class="birthday-icon">
+            <span
+            class="birthday-icon icon-badge i-teal"
+            style="--icon: url('{% static 'img/lucide/team-lucide.svg' %}');"
+            aria-hidden="true">
+            </span>
                 <div class="birthday-header-text">
                     <h2>Team</h2>
                     <p>Overzicht van alle collega's en hun contactgegevens.</p>
@@ -56,7 +60,7 @@
                             <tr class="who-row">
                                 <td style="text-align: center;">
                                     <img class="who-avatar {% if p.avatar %}has-avatar{% endif %}" 
-                                         src="{% if p.avatar %}{{ p.avatar.url }}{% else %}{% static 'img/user.svg' %}{% endif %}" 
+                                         src="{% if p.avatar %}{{ p.avatar.url }}{% else %}{% static 'img/lucide/user-lucide.svg' %}{% endif %}" 
                                          alt="">
                                 </td>
                                 <td style="font-weight: 600;">{{ p.user|dutch_name }}</td>

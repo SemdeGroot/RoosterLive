@@ -63,7 +63,11 @@
 
           <div class="analysis-box">
             <div class="analysis-header-row">
-              <img src="{% static 'img/stop.svg' %}" class="icon-md" alt="STOPP">
+            <span
+              class="birthday-icon icon-badge i-red"
+              style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
+              aria-hidden="true">
+            </span>
               <h4 class="analysis-title">Mogelijke STOPP Criteria</h4>
             </div>
 
@@ -92,7 +96,11 @@
 
           <div class="analysis-box">
             <div class="analysis-header-row">
-              <img src="{% static 'img/anticholinerg.svg' %}" class="icon-md" alt="ACB">
+            <span
+              class="birthday-icon icon-badge i-rose"
+              style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
+              aria-hidden="true">
+            </span>
               <h4 class="analysis-title">Anticholinerge Belasting</h4>
             </div>
 
@@ -130,7 +138,11 @@
           {% if analysis.analyses.dubbelmedicatie %}
             <div class="analysis-box">
               <div class="analysis-header-row">
-                <img src="{% static 'img/warning.svg' %}" class="icon-md" alt="Warn">
+              <span
+                class="birthday-icon icon-badge i-pink"
+                style="--icon: url('{% static 'img/lucide/dubbelmedicatie-lucide.svg' %}');"
+                aria-hidden="true">
+              </span>
                 <h4 class="analysis-title">Dubbelmedicatie</h4>
               </div>
 

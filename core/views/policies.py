@@ -366,9 +366,9 @@ def policies(request):
 
     # === GET / render context ===
     category_configs = [
-        {"key": "baxter", "name": "Baxterproductie", "perm": "can_view_baxter", "image": "factory.svg"},
-        {"key": "instelling", "name": "Instellingsapotheek", "perm": "can_view_instellings_apo", "image": "instellingsapotheek.svg"},
-        {"key": "openbare", "name": "Openbare Apo", "perm": "can_view_openbare_apo", "image": "openbareapo.svg"},
+        {"key": "baxter", "name": "Baxterproductie", "perm": "can_view_baxter", "image": "baxterproductie-lucide.svg"},
+        {"key": "instelling", "name": "Instellingsapotheek", "perm": "can_view_instellings_apo", "image": "instellingsapo-lucide.svg"},
+        {"key": "openbare", "name": "Openbare Apo", "perm": "can_view_openbare_apo", "image": "openbareapo-lucide.svg"},
     ]
 
     categories = []

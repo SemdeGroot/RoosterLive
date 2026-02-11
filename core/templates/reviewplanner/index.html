@@ -17,19 +17,23 @@
 <div class="card card-inner">
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
-      <img src="{% static 'img/reviewplanner.svg' %}" alt="" class="birthday-icon">
+    <span
+      class="birthday-icon icon-badge i-sky"
+      style="--icon: url('{% static 'img/lucide/reviewplanner-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
       <div class="birthday-header-text">
         <h2>Review planner</h2>
         <p>Plan medicatiereviews en houd status bij. Wijzigingen worden automatisch opgeslagen.</p>
       </div>
 
-      <a href="{% url 'medicatiebeoordeling_tiles' %}" class="btn">Terug</a>
+      <a href="{% url 'instellings_tiles' %}" class="btn">Terug</a>
 
       {% if can_edit %}
         <button type="button" class="btn btn-save" id="openAddModalBtn">Review toevoegen</button>
       {% endif %}
       {% if can_edit %}
-        <a href="{% url 'reviewplanner_export_overview' %}" class="btn">Export overzicht</a>
+        <a href="{% url 'reviewplanner_export_overview' %}" class="btn">Exporteer overzicht</a>
       {% endif %}
     </div>
 

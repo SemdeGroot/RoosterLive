@@ -20,7 +20,11 @@
   <div class="agenda-section">
     
     <div class="birthday-header agenda-section-header">
-      <img src="{% static 'img/standaardvragen_config.svg' %}" alt="" class="birthday-icon">
+    <span
+      class="birthday-icon icon-badge i-purple"
+      style="--icon: url('{% static 'img/lucide/standaardvragen-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
       <div class="birthday-header-text">
         <h2>Standaardvragen Configurator</h2>
         <p>Beheer hier de logica, teksten en triggers van de vragen die standaard ingevuld worden in de medicatiereview generator.</p>

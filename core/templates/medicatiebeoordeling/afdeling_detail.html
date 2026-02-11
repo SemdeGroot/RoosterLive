@@ -19,7 +19,11 @@
 <div class="card birthdays-card">
   <div class="agenda-section">
     <div class="birthday-header agenda-section-header">
-      <img src="{% static 'img/afdeling.svg' %}" alt="Afdeling icoon" class="birthday-icon">
+    <span
+      class="birthday-icon icon-badge i-indigo"
+      style="--icon: url('{% static 'img/lucide/reviewafdeling-lucide.svg' %}');"
+      aria-hidden="true">
+    </span>
 
       <div class="birthday-header-text">
         <h2>{{ afdeling.afdeling }}</h2>

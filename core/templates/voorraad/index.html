@@ -13,7 +13,11 @@
 {% block content %}
 <div class="card" style="padding: 16px;">
         <div class="birthday-header agenda-section-header">
-        <img src="{% static 'img/voorraad.svg' %}" alt="" class="birthday-icon">
+        <span
+          class="birthday-icon icon-badge i-blue"
+          style="--icon: url('{% static 'img/lucide/voorraad-lucide.svg' %}');"
+          aria-hidden="true">
+        </span>
         <div class="birthday-header-text">
         <h2>Baxtervoorraad geneesmiddelen</h2>
         <p>Bekijk hier de voorraad geneesmiddelen voor de baxterproductie en de bijbehorende locaties.</p>
