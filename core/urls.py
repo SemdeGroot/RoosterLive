@@ -9,7 +9,7 @@ from core.views.voorraad import medications_view
 from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf, email_nazendingen_pdf
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
-from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen, dagdeel_update
+from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_orgs, group_delete, user_update, user_delete, org_delete, org_update, admin_afdelingen, delete_afdeling, afdeling_update, admin_taken,  location_update, task_update, delete_location, delete_task, admin_functies, functie_update, delete_functie, admin_bezorgen, dagdeel_update, user_resend_invite
 from core.views.profiel import profiel_index, avatar_upload, avatar_remove, profiel_update_settings
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
@@ -170,6 +170,7 @@ urlpatterns = [
     path("beheer/group/<int:group_id>/delete/", group_delete, name="group_delete"),
     path("beheer/user/<int:user_id>/update/", user_update, name="user_update"),
     path("beheer/user/<int:user_id>/delete/", user_delete, name="user_delete"),
+    path("beheer/users/<int:user_id>/resend-invite/", user_resend_invite, name="user_resend_invite"),
     path("beheer/afdeling/<int:pk>/delete/", delete_afdeling, name="delete_afdeling"),
     path("beheer/afdeling/<int:pk>/update/", afdeling_update, name="afdeling_update"),
     path("beheer/org/<int:org_id>/delete/", org_delete, name="org_delete"),

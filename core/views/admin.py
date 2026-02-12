@@ -438,6 +438,28 @@ def user_delete(request, user_id: int):
 
 @login_required
 @require_POST
+def user_resend_invite(request, user_id: int):
+    if not can(request.user, "can_manage_users"):
+        messages.error(request, "Geen rechten om uitnodigingen opnieuw te versturen.")
+        return redirect("admin_users")
+
+    u = get_object_or_404(User, pk=user_id)
+
+    # Alleen voor accounts die nog niet geactiveerd zijn
+    if u.has_usable_password():
+        messages.error(request, "Deze gebruiker heeft al een wachtwoord ingesteld.")
+        return redirect("admin_users")
+
+    if not u.email:
+        messages.error(request, "Deze gebruiker heeft geen e-mailadres.")
+        return redirect("admin_users")
+
+    transaction.on_commit(lambda: send_invite_email_task.delay(u.id))
+    messages.success(request, f"Uitnodiging opnieuw verzonden naar {u.email}.")
+    return redirect("admin_users")
+
+@login_required
+@require_POST
 def org_delete(request, org_id: int):
     if not can(request.user, "can_manage_orgs"):
         messages.error(request, "Geen rechten om organisaties te verwijderen.")

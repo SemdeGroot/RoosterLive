@@ -170,7 +170,17 @@
               <tr class="user-row" id="user-row-{{ u.id }}">
                 <td class="center-col"
                     title="{% if u.has_usable_password %}Account actief{% else %}Nog niet geactiveerd{% endif %}">
-                  {% if u.has_usable_password %}✅{% else %}⛔{% endif %}
+                  {% if u.has_usable_password %}
+                    <span class="status-icon status-ok"
+                          style="--icon: url('{% static 'img/lucide/beschikbaarheid-lucide.svg' %}');"
+                          aria-label="Account actief"
+                          title="Account actief"></span>
+                  {% else %}
+                    <span class="status-icon status-bad"
+                          style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
+                          aria-label="Nog niet geactiveerd"
+                          title="Nog niet geactiveerd"></span>
+                  {% endif %}
                 </td>
 
                 <td title="{{ u.username }}">{{ u.first_name|default:u.username }}</td>
@@ -236,6 +246,24 @@
                         </svg>
                       </button>
                     </form>
+                    {% if not u.has_usable_password %}
+                    <form method="post"
+                          action="{% url 'user_resend_invite' u.id %}"
+                          onsubmit="return confirm('Uitnodiging opnieuw sturen?\n\nLet op: een eerder verstuurde link kan mogelijk nog werken zolang die niet verlopen is.');">
+                      {% csrf_token %}
+                      <button class="icon-btn"
+                              type="submit"
+                              aria-label="Uitnodiging opnieuw sturen"
+                              title="Stuurt een nieuwe uitnodiging. Een eerder verstuurde link kan mogelijk nog werken zolang die niet verlopen is.">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                            stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                          <path d="M22 7l-10 6L2 7"></path>
+                        </svg>
+                      </button>
+                    </form>
+                  {% endif %}
                   </div>
                   {% else %}
                     <span style="color:var(--muted); font-size: 0.9em; font-style:italic;">Geen rechten</span>
