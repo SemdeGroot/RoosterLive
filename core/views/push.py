@@ -29,16 +29,6 @@ def push_subscribe(request):
                       or "")[:300]
 
         with transaction.atomic():
-            replaced = 0
-            # Verwijder oudere rows van ditzelfde device voor deze user (maar laat huidig endpoint staan)
-            if device_hash:
-                qs = PushSubscription.objects.filter(
-                    user=request.user,
-                    device_hash=device_hash
-                ).exclude(endpoint=endpoint)
-                replaced = qs.count()
-                if replaced:
-                    qs.delete()
 
             # Upsert op endpoint (zoals je al deed)
             obj, created = PushSubscription.objects.update_or_create(
@@ -52,7 +42,7 @@ def push_subscribe(request):
                 },
             )
 
-        return JsonResponse({"ok": True, "created": created, "replaced": replaced})
+        return JsonResponse({"ok": True, "created": created})
     except Exception as e:
         return HttpResponseBadRequest(str(e))
 

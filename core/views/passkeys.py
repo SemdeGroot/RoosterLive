@@ -234,6 +234,10 @@ def passkey_register(request: HttpRequest):
     sign_count = verification.sign_count
     backed_up = getattr(verification, "credential_backed_up", False)
 
+    ua = (request.META.get("HTTP_USER_AGENT") or "").strip()
+    if len(ua) > 255:
+        ua = ua[:255]
+
     WebAuthnPasskey.objects.update_or_create(
         credential_id=credential_id_b64u,
         defaults={
@@ -242,7 +246,8 @@ def passkey_register(request: HttpRequest):
             "sign_count": sign_count,
             "backed_up": bool(backed_up),
             "last_used_at": timezone.now(),
-            "device_hash": "",  # legacy veld, niet meer gebruiken
+            "device_hash": "",
+            "user_agent": ua,
         },
     )
 
@@ -374,9 +379,14 @@ def passkey_authenticate(request: HttpRequest):
     # VerifiedAuthentication dataclass → direct attribuut gebruiken
     new_sign_count = verification.new_sign_count
 
+    ua = (request.META.get("HTTP_USER_AGENT") or "").strip()
+    if len(ua) > 255:
+        ua = ua[:255]
+
     passkey.sign_count = new_sign_count
     passkey.last_used_at = timezone.now()
-    passkey.save(update_fields=["sign_count", "last_used_at"])
+    passkey.user_agent = ua
+    passkey.save(update_fields=["sign_count", "last_used_at", "user_agent"])
 
     # HIER: user volledig inloggen en 2FA overslaan
     login(request, user)

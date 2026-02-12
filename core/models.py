@@ -10,6 +10,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 import secrets
 from core.utils.medication import get_jansen_group_choices
+import re
 
 class SoftDeleteQuerySet(models.QuerySet):
     def active(self):
@@ -563,6 +564,8 @@ class WebAuthnPasskey(models.Model):
         blank=True,
         help_text="Bijvoorbeeld 'iPhone van Sem' of 'Werktelefoon'.",
     )
+    # Laatste bekende UA van het device/browser dat deze passkey gebruikte
+    user_agent = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     last_used_at = models.DateTimeField(null=True, blank=True)
@@ -574,6 +577,68 @@ class WebAuthnPasskey(models.Model):
     def __str__(self):
         base = self.nickname or f"Passkey {self.pk}"
         return f"{base} – {self.user}"
+        
+    @property
+    def user_agent_label(self) -> str:
+        ua = (self.user_agent or "").strip()
+        if not ua:
+            return "Onbekend apparaat"
+
+        ual = ua.lower()
+
+        # Device/OS
+        device = "Onbekend"
+        os_version = ""
+
+        if "iphone" in ual:
+            device = "iPhone"
+            m = re.search(r"iphone os (\d+)[._](\d+)", ual)
+            if m:
+                os_version = f"iOS {m.group(1)}.{m.group(2)}"
+            else:
+                m = re.search(r"iphone os (\d+)", ual)
+                if m:
+                    os_version = f"iOS {m.group(1)}"
+
+        elif "ipad" in ual:
+            device = "iPad"
+            m = re.search(r"cpu os (\d+)[._](\d+)", ual)
+            if m:
+                os_version = f"iPadOS {m.group(1)}.{m.group(2)}"
+
+        elif "android" in ual:
+            device = "Android"
+            m = re.search(r"android (\d+)(?:\.(\d+))?", ual)
+            if m:
+                os_version = f"Android {m.group(1)}" + (f".{m.group(2)}" if m.group(2) else "")
+
+        elif "windows nt" in ual:
+            device = "Windows"
+
+        elif "macintosh" in ual or ("mac os x" in ual and "like mac os x" not in ual):
+            device = "Mac"
+
+        elif "linux" in ual:
+            device = "Linux"
+
+        # Browser
+        browser = "Browser"
+        if "crios" in ual:
+            browser = "Chrome"
+        elif "fxios" in ual:
+            browser = "Firefox"
+        elif "edgios" in ual or "edga" in ual or "edg/" in ual:
+            browser = "Edge"
+        elif "chrome" in ual and "safari" in ual:
+            browser = "Chrome"
+        elif "firefox" in ual:
+            browser = "Firefox"
+        elif "safari" in ual and "chrome" not in ual and "crios" not in ual:
+            browser = "Safari"
+
+        if os_version:
+            return f"{browser} op {device} ({os_version})"
+        return f"{browser} op {device}"
 
 class NativeBiometricDevice(models.Model):
     """
