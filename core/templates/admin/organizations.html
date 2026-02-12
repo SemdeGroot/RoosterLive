@@ -103,6 +103,7 @@
                             action="{% url 'org_delete' org.id %}"
                             onsubmit="return confirmOrgDelete('{{ org.name|escapejs }}');">
                         {% csrf_token %}
+                        {% include "admin/_totp_field.html" with totp_field_id="totp_delete_org_"|add:org.id|stringformat:"s" %}
                         <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                           <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                                stroke="currentColor" stroke-width="2"
@@ -156,7 +157,7 @@
                                    value="{{ org.phone }}" style="margin-top:6px;">
                           </div>
                         </div>
-
+                        {% include "admin/_totp_field.html" with totp_field_id="totp_update_org_"|add:org.id|stringformat:"s" %}
                         <div class="actions-wrap horizontal" style="margin-top:12px;">
                           <button class="btn btn-save" type="submit">Opslaan</button>
                           <button type="button" class="btn btn-danger" onclick="toggleOrgEdit('{{ org.id }}')">Annuleren</button>

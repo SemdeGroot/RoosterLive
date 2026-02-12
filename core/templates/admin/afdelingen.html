@@ -132,6 +132,7 @@
                             action="{% url 'delete_afdeling' afd.id %}"
                             onsubmit="return confirmAfdelingDelete('{{ afd.afdeling|escapejs }}');">
                         {% csrf_token %}
+                        {% include "admin/_totp_field.html" with totp_field_id="totp_delete_afdeling_"|add:afd.id|stringformat:"s" %}
                         <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                           <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                                stroke="currentColor" stroke-width="2"
@@ -200,7 +201,7 @@
                                        value="{{ afd.email2|default:'' }}" style="margin-top:6px;">
                             </div>
                         </div>
-
+                        {% include "admin/_totp_field.html" with totp_field_id="totp_update_afdeling_"|add:afd.id|stringformat:"s" %}
                         <div class="actions-wrap horizontal" style="margin-top:12px;">
                           <button class="btn btn-save" type="submit">Opslaan</button>
                           <button type="button" class="btn btn-danger" onclick="toggleAfdelingEdit('{{ afd.id }}')">Annuleren</button>

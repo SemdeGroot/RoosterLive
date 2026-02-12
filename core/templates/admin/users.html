@@ -235,6 +235,7 @@
                           action="{% url 'user_delete' u.id %}"
                           onsubmit="return confirmDelete('{{ u.first_name|default:u.username }}');">
                       {% csrf_token %}
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_delete_user_"|add:u.id|stringformat:"s" %}
                       <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                              stroke="currentColor" stroke-width="2"
@@ -251,6 +252,7 @@
                           action="{% url 'user_resend_invite' u.id %}"
                           onsubmit="return confirm('Uitnodiging opnieuw sturen?\n\nLet op: een eerder verstuurde link kan mogelijk nog werken zolang die niet verlopen is.');">
                       {% csrf_token %}
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_resend_invite_"|add:u.id|stringformat:"s" %}
                       <button class="icon-btn"
                               type="submit"
                               aria-label="Uitnodiging opnieuw sturen"
@@ -431,7 +433,7 @@
                           </div>
                         </div>
                       </div>
-
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_update_user_"|add:u.id|stringformat:"s" %}
                       <div class="actions-wrap horizontal" style="margin-top:12px;">
                         <button class="btn btn-save" type="submit">Opslaan</button>
                         <button type="button" class="btn btn-danger" onclick="toggleEdit('{{ u.id }}')">Annuleren</button>

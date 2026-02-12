@@ -345,6 +345,177 @@
   setTimeout(hideSplashOnce, 8000);
 })();
 </script>
+<div id="totpModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content"
+       style="background-color:var(--panel); margin:10% auto; padding:20px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:520px; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+      <h2 style="margin:0; font-size:1.2rem;">Bevestigen</h2>
+      <button type="button"
+              data-totp-cancel
+              style="cursor:pointer; font-size:26px; font-weight:bold; color:var(--muted); line-height:1; background:transparent; border:0; padding:0;"
+              aria-label="Sluiten">
+        &times;
+      </button>
+    </div>
+
+    <p id="totpModalText" style="margin:0 0 12px 0; color:var(--muted); line-height:1.45;">
+      Weet je zeker dat je deze actie wilt uitvoeren?
+    </p>
+
+    <div class="form" style="padding:0;">
+      <label for="totpModalInput" style="display:block; font-weight:600;">2FA-code</label>
+      <input
+        id="totpModalInput"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        pattern="\d{6}"
+        class="admin-input"
+        style="margin-top:6px; width:100%;"
+        placeholder="123456"
+      >
+      <small style="color:var(--muted); display:block; margin-top:6px; line-height:1.4;">
+        Vul je 6-cijferige code in om door te gaan.
+      </small>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
+      <button type="button" class="btn btn-danger" data-totp-cancel>Annuleren</button>
+      <button type="button" class="btn btn-save" data-totp-confirm>Bevestigen</button>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const modal = document.getElementById("totpModal");
+    if (!modal) return;
+
+    const modalText = document.getElementById("totpModalText");
+    const modalInput = document.getElementById("totpModalInput");
+    const btnConfirm = modal.querySelector("[data-totp-confirm]");
+    const btnCancelEls = modal.querySelectorAll("[data-totp-cancel]");
+
+    let pendingForm = null;
+    let isSubmittingProgrammatically = false;
+
+    function isValidTotp(v) {
+      return /^\d{6}$/.test(String(v || "").trim());
+    }
+
+    function getTotpField(form) {
+      // Gebruik de naam; dan hoef je geen extra class overal toe te voegen.
+      return form.querySelector('input[name="totp_token"]');
+    }
+
+    function disableInlineOnsubmit(form) {
+      // Inline onsubmit (confirm(...)) kan de programmatic submit blokkeren.
+      if (form.hasAttribute("onsubmit")) {
+        form.dataset.prevOnsubmit = form.getAttribute("onsubmit") || "";
+        form.removeAttribute("onsubmit");
+      }
+    }
+
+    function restoreInlineOnsubmit(form) {
+      if (!form) return;
+      if (Object.prototype.hasOwnProperty.call(form.dataset, "prevOnsubmit")) {
+        const prev = form.dataset.prevOnsubmit;
+        if (prev) form.setAttribute("onsubmit", prev);
+        delete form.dataset.prevOnsubmit;
+      }
+    }
+
+    function openModal(form) {
+      pendingForm = form;
+
+      const msg =
+        form.getAttribute("data-confirm") ||
+        "Weet je zeker dat je deze actie wilt uitvoeren?";
+      modalText.textContent = msg;
+
+      modalInput.value = "";
+      modal.style.display = "block";
+      setTimeout(() => modalInput.focus(), 0);
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+      pendingForm = null;
+      modalInput.value = "";
+    }
+
+    // Capture phase: pakt submit vóór inline onsubmit="return confirm(...)"
+    document.addEventListener(
+      "submit",
+      function (e) {
+        if (isSubmittingProgrammatically) return;
+
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const totpField = getTotpField(form);
+        if (!totpField) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        disableInlineOnsubmit(form);
+        openModal(form);
+      },
+      true
+    );
+
+    btnConfirm.addEventListener("click", function () {
+      if (!pendingForm) return;
+
+      const code = modalInput.value.trim();
+      if (!isValidTotp(code)) {
+        modalInput.focus();
+        return;
+      }
+
+      const totpField = getTotpField(pendingForm);
+      if (!totpField) {
+        restoreInlineOnsubmit(pendingForm);
+        closeModal();
+        return;
+      }
+
+      totpField.value = code;
+
+      // Zeker weten submitten: submit() omzeilt submit-events + inline onsubmit.
+      isSubmittingProgrammatically = true;
+      const formToSubmit = pendingForm;
+
+      closeModal();
+      formToSubmit.submit();
+
+      isSubmittingProgrammatically = false;
+    });
+
+    btnCancelEls.forEach((el) =>
+      el.addEventListener("click", function () {
+        restoreInlineOnsubmit(pendingForm);
+        closeModal();
+      })
+    );
+
+    document.addEventListener("keydown", function (e) {
+      if (modal.style.display !== "block") return;
+
+      if (e.key === "Escape") {
+        restoreInlineOnsubmit(pendingForm);
+        closeModal();
+      }
+
+      if (e.key === "Enter") {
+        btnConfirm.click();
+      }
+    });
+  })();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

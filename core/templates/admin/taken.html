@@ -113,6 +113,7 @@
                           action="{% url 'delete_location' loc.id %}"
                           onsubmit="return confirmLocationDelete('{{ loc.name|escapejs }}');">
                       {% csrf_token %}
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_delete_location_"|add:loc.id|stringformat:"s" %}
                       <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                              stroke="currentColor" stroke-width="2"
@@ -158,7 +159,7 @@
                         </select>
                       </div>
                       </div>
-
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_update_location_"|add:loc.id|stringformat:"s" %}
                       <div class="actions-wrap horizontal" style="margin-top:12px;">
                         <button class="btn btn-save" type="submit">Opslaan</button>
                         <button type="button" class="btn btn-danger" onclick="toggleLocationEdit('{{ loc.id }}')">
@@ -255,7 +256,7 @@
                         <small class="admin-help">100 = geen toeslag, 120 = 20% toeslag.</small>
                       </div>
                     </div>
-
+                    {% include "admin/_totp_field.html" with totp_field_id="totp_update_dagdeel_"|add:d.code|stringformat:"s" %}
                     <div class="actions-wrap horizontal" style="margin-top:12px;">
                       <button class="btn btn-save" type="submit">Opslaan</button>
                       <button type="button" class="btn btn-danger" onclick="toggleDagdeelEdit('{{ d.code }}')">
@@ -401,6 +402,7 @@
                           action="{% url 'delete_task' t.id %}"
                           onsubmit="return confirmTaskDelete('{{ t.name|escapejs }}');">
                       {% csrf_token %}
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_delete_task_"|add:t.id|stringformat:"s" %}
                       <button class="icon-btn danger" type="submit" aria-label="Verwijderen">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                              stroke="currentColor" stroke-width="2"
@@ -490,7 +492,7 @@
                           <input class="admin-input" type="number" min="0" step="1" name="min_sat_evening" value="{{ t.min_sat_evening }}">
                         </div>
                       </div>
-
+                      {% include "admin/_totp_field.html" with totp_field_id="totp_update_task_"|add:t.id|stringformat:"s" %}
                       <div class="actions-wrap horizontal" style="margin-top:12px;">
                         <button class="btn btn-save" type="submit">Opslaan</button>
                         <button type="button" class="btn btn-danger" onclick="toggleTaskEdit('{{ t.id }}')">

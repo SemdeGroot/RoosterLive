@@ -1,5 +1,6 @@
 # core/views/admin.py
 from django.contrib import messages
+from core.decorators import require_totp
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.http import HttpResponseForbidden
@@ -307,6 +308,7 @@ def admin_afdelingen(request):
 
 @login_required
 @require_POST
+@require_totp
 def afdeling_update(request, pk):
     if not can(request.user, "can_manage_afdelingen"):
         messages.error(request, "Geen rechten om te wijzigen.")
@@ -333,6 +335,7 @@ def afdeling_update(request, pk):
 
 @login_required
 @require_POST
+@require_totp
 def group_delete(request, group_id: int):
     if not can(request.user, "can_manage_groups"):
         messages.error(request, "Geen rechten om groepen te verwijderen.")
@@ -352,6 +355,7 @@ def group_delete(request, group_id: int):
 
 @login_required
 @require_POST
+@require_totp
 def user_update(request, user_id: int):
     if not can(request.user, "can_manage_users"):
         messages.error(request, "Geen rechten om gebruikers te wijzigen.")
@@ -425,6 +429,7 @@ def user_update(request, user_id: int):
 
 @login_required
 @require_POST
+@require_totp
 def user_delete(request, user_id: int):
     if not can(request.user, "can_manage_users"):
         messages.error(request, "Geen rechten om gebruikers te verwijderen.")
@@ -438,6 +443,7 @@ def user_delete(request, user_id: int):
 
 @login_required
 @require_POST
+@require_totp
 def user_resend_invite(request, user_id: int):
     if not can(request.user, "can_manage_users"):
         messages.error(request, "Geen rechten om uitnodigingen opnieuw te versturen.")
@@ -460,6 +466,7 @@ def user_resend_invite(request, user_id: int):
 
 @login_required
 @require_POST
+@require_totp
 def org_delete(request, org_id: int):
     if not can(request.user, "can_manage_orgs"):
         messages.error(request, "Geen rechten om organisaties te verwijderen.")
@@ -477,6 +484,7 @@ def org_delete(request, org_id: int):
 
 @login_required
 @require_POST
+@require_totp
 def org_update(request, org_id: int):
     if not can(request.user, "can_manage_orgs"):
         messages.error(request, "Geen rechten om organisaties te wijzigen.")
@@ -492,6 +500,8 @@ def org_update(request, org_id: int):
     return redirect("admin_orgs")
 
 @login_required
+@require_POST
+@require_totp
 def delete_afdeling(request, pk):
     if not can(request.user, "can_manage_afdelingen"):
         messages.error(request, "Geen rechten om afdelingen te verwijderen.")
@@ -564,6 +574,7 @@ def admin_taken(request):
 
 @login_required
 @require_POST
+@require_totp
 def location_update(request, pk):
     if not can(request.user, "can_manage_tasks"):
         messages.error(request, "Geen rechten om te wijzigen.")
@@ -606,6 +617,7 @@ STAFFING_FIELDS = [
 
 @login_required
 @require_POST
+@require_totp
 def task_update(request, pk):
     if not can(request.user, "can_manage_tasks"):
         messages.error(request, "Geen rechten om te wijzigen.")
@@ -673,6 +685,7 @@ def task_update(request, pk):
 
 @login_required
 @require_POST
+@require_totp
 def dagdeel_update(request, code: str):
     if not can(request.user, "can_manage_tasks"):
         messages.error(request, "Geen rechten om shifts te wijzigen.")
@@ -710,6 +723,7 @@ def dagdeel_update(request, code: str):
 
 @login_required
 @require_POST
+@require_totp
 def delete_location(request, pk):
     if not can(request.user, "can_manage_tasks"):
         messages.error(request, "Geen rechten om locaties te verwijderen.")
@@ -725,6 +739,7 @@ def delete_location(request, pk):
 
 @login_required
 @require_POST
+@require_totp
 def delete_task(request, pk):
     if not can(request.user, "can_manage_tasks"):
         messages.error(request, "Geen rechten om taken te verwijderen.")
@@ -775,6 +790,7 @@ def admin_functies(request):
 
 @login_required
 @require_POST
+@require_totp
 def functie_update(request, pk):
     if not can(request.user, "can_manage_functies"):
         messages.error(request, "Geen rechten om te wijzigen.")
@@ -817,6 +833,7 @@ def functie_update(request, pk):
 
 @login_required
 @require_POST
+@require_totp
 def delete_functie(request, pk):
     if not can(request.user, "can_manage_functies"):
         messages.error(request, "Geen rechten om functies te verwijderen.")
