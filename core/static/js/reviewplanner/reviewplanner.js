@@ -15,7 +15,12 @@
   }
 
   function csrfToken() {
-    return getCookie("csrftoken");
+    const c = getCookie("csrftoken");
+    if (c) return c;
+
+    const form = document.getElementById("reviewPlannerForm");
+    const inp = form ? form.querySelector('input[name="csrfmiddlewaretoken"]') : null;
+    return inp ? inp.value : null;
   }
 
   function postForm(url, formData) {
@@ -71,14 +76,15 @@
   }
 
   function validateNotPast(dmy) {
-    const d = parseDMY(dmy);
-    if (!d) return { ok: true };
-    const today = todayFromForm();
-    if (today && d < today) return { ok: false, error: "Datum mag niet in het verleden liggen." };
-    const cutoff = cutoffFromForm();
-    if (cutoff && d < cutoff) return { ok: false, error: "Datum mag niet verder dan 8 weken terug liggen." };
-    return { ok: true };
+  const d = parseDMY(dmy);
+  if (!d) return { ok: true };
+
+  const cutoff = cutoffFromForm();
+  if (cutoff && d < cutoff) {
+    return { ok: false, error: "Datum mag niet verder dan 8 weken terug liggen." };
   }
+  return { ok: true };
+}
 
   // --------------------------
   // iMask
@@ -203,35 +209,74 @@
 
     return fd;
   }
+  async function autosaveNow() {
+  const form = document.getElementById("reviewPlannerForm");
+  if (!form) return { ok: false, error: "Form ontbreekt." };
+
+  const canEdit = form.getAttribute("data-can-edit") === "1";
+  if (!canEdit) return { ok: false, error: "Geen rechten." };
+
+  const snapshot = buildSnapshot();
+  if (snapshot === lastSnapshot) {
+    return { ok: true, skipped: true };
+  }
+
+  const resp = await postForm(window.location.href, buildAutosaveFormData());
+
+  const ct = (resp.headers.get("content-type") || "").toLowerCase();
+  const data = ct.includes("application/json") ? await resp.json().catch(() => null) : null;
+
+  if (!resp.ok || !data || !data.ok) {
+    const detail = (data && data.error) ? data.error : `HTTP ${resp.status}`;
+    return { ok: false, error: detail };
+  }
+
+  lastSnapshot = snapshot;
+  return { ok: true };
+}
+
+  function setAutosaveState(state /* "neutral" | "ok" | "bad" */) {
+    const el = document.getElementById("autosaveStatus");
+    if (!el) return;
+
+    el.classList.toggle("neutral", state === "neutral");
+    el.classList.toggle("autosave-ok", state === "ok");
+    el.classList.toggle("autosave-bad", state === "bad");
+  }
+
+
+  function setAutosaveStatus(text, state) {
+    const el = document.getElementById("autosaveStatus");
+    if (!el) return;
+    el.textContent = text;
+    setAutosaveState(state);
+  }
+
 
   function scheduleAutosave() {
-    const form = document.getElementById("reviewPlannerForm");
-    if (!form) return;
+  const form = document.getElementById("reviewPlannerForm");
+  if (!form) return;
 
-    const canEdit = form.getAttribute("data-can-edit") === "1";
-    if (!canEdit) return;
+  const canEdit = form.getAttribute("data-can-edit") === "1";
+  if (!canEdit) return;
 
-    if (autosaveTimer) clearTimeout(autosaveTimer);
+  if (autosaveTimer) clearTimeout(autosaveTimer);
 
-    autosaveTimer = setTimeout(async () => {
-      const snapshot = buildSnapshot();
-      if (snapshot === lastSnapshot) return;
+  setAutosaveStatus("Opslaan...", "neutral");
 
-      try {
-        const resp = await postForm(window.location.href, buildAutosaveFormData());
-        const data = await resp.json().catch(() => null);
-
-        if (!resp.ok || !data || !data.ok) {
-          console.warn("Autosave fout:", (data && data.error) ? data.error : "onbekend");
-          return;
-        }
-
-        lastSnapshot = snapshot;
-      } catch (e) {
-        console.warn("Autosave netwerkfout");
+  autosaveTimer = setTimeout(async () => {
+    try {
+      const res = await autosaveNow();
+      if (!res.ok) {
+        setAutosaveStatus(res.error || "Auto-save fout", "bad");
+        return;
       }
-    }, AUTOSAVE_DEBOUNCE_MS);
-  }
+      setAutosaveStatus("Opgeslagen", "ok");
+    } catch (e) {
+      setAutosaveStatus("Netwerkfout", "bad");
+    }
+  }, AUTOSAVE_DEBOUNCE_MS);
+}
 
   // --------------------------
   // Table helpers
@@ -335,10 +380,19 @@
 
         tr.querySelector('input[name="row_bijzonderheden"]').value = "";
 
-        scheduleAutosave();
+      setAutosaveStatus("Opslaan...", "neutral");
 
+      autosaveNow().then((res) => {
+        if (!res.ok) {
+          setAutosaveStatus(res.error || "Auto-save fout", "bad");
+          return;
+        }
+        setAutosaveStatus("Opgeslagen", "ok");
         tr.remove();
         ensureEmptyRow();
+      }).catch(() => {
+        setAutosaveStatus("Netwerkfout", "bad");
+      });
       });
     });
   }
@@ -603,6 +657,7 @@
     ensureEmptyRow();
 
     lastSnapshot = buildSnapshot();
+    setAutosaveStatus("—", "neutral");
 
     setupModalActions();
 
@@ -612,5 +667,6 @@
         scheduleAutosave();
       }
     });
+
   });
 })();

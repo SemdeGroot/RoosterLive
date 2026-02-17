@@ -145,10 +145,9 @@ def reviewplanner(request):
             if not d:
                 return JsonResponse({"ok": False, "error": "Datum is verplicht (dd-mm-jjjj)."}, status=400)
 
-            if d < today:
-                return JsonResponse({"ok": False, "error": "Datum mag niet in het verleden liggen."}, status=400)
             if d < cutoff:
                 return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 8 weken terug liggen."}, status=400)
+
 
             t = _parse_hhmm(tijd_s)
             if tijd_s and not t:
@@ -251,10 +250,9 @@ def reviewplanner(request):
                         if datum_s and not d:
                             return JsonResponse({"ok": False, "error": "Ongeldige datum."}, status=400)
 
-                        if d and d < today:
-                            return JsonResponse({"ok": False, "error": "Datum mag niet in het verleden liggen."}, status=400)
                         if d and d < cutoff:
                             return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 8 weken terug liggen."}, status=400)
+
 
                         t = _parse_hhmm(tijd_s)
                         if tijd_s and not t:

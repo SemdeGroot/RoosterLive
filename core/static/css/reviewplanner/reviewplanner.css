@@ -60,3 +60,33 @@ table.reviewplanner-table{
 .is-invalid{
   border-color: var(--danger) !important;
 }
+
+.rp-autosave-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.rp-autosave-status.autosave-ok {
+  color: var(--ok, #16a34a);
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.10);
+}
+
+.rp-autosave-status.autosave-bad {
+  color: var(--danger, #ef4444);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.10);
+}
+
+.rp-autosave-status.neutral {
+  color: var(--muted);
+  border-color: var(--border);
+  background: var(--panel);
+}

@@ -29,6 +29,8 @@
 
       <a href="{% url 'instellings_tiles' %}" class="btn">Terug</a>
 
+      <span id="autosaveStatus" class="rp-autosave-status"></span>
+
       {% if can_edit %}
         <button type="button" class="btn btn-save" id="openAddModalBtn">Review toevoegen</button>
       {% endif %}
@@ -214,7 +216,7 @@
         <label class="section-label">Datum</label>
         <input type="text" class="admin-input js-date" id="modalDatum" placeholder="dd-mm-jjjj" autocomplete="off" inputmode="numeric">
         <div class="muted" style="margin-top:6px; font-size:.9rem;">
-          Geen data in het verleden toegestaan.
+          Datum mag niet verder dan 8 weken terug liggen.
         </div>
       </div>
 
