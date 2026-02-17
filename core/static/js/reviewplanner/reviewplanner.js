@@ -81,7 +81,7 @@
 
   const cutoff = cutoffFromForm();
   if (cutoff && d < cutoff) {
-    return { ok: false, error: "Datum mag niet verder dan 8 weken terug liggen." };
+    return { ok: false, error: "Datum mag niet verder dan 4 weken terug liggen." };
   }
   return { ok: true };
 }

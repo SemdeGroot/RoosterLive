@@ -105,7 +105,7 @@ def reviewplanner(request):
     can_edit = can(request.user, "can_edit_reviewplanner")
 
     today = timezone.localdate()
-    cutoff = today - relativedelta(weeks=8)
+    cutoff = today - relativedelta(weeks=4)
 
     rows = list(
         ReviewPlanner.objects.filter(datum__gte=cutoff)
@@ -146,7 +146,7 @@ def reviewplanner(request):
                 return JsonResponse({"ok": False, "error": "Datum is verplicht (dd-mm-jjjj)."}, status=400)
 
             if d < cutoff:
-                return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 8 weken terug liggen."}, status=400)
+                return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 4 weken terug liggen."}, status=400)
 
 
             t = _parse_hhmm(tijd_s)
@@ -251,7 +251,7 @@ def reviewplanner(request):
                             return JsonResponse({"ok": False, "error": "Ongeldige datum."}, status=400)
 
                         if d and d < cutoff:
-                            return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 8 weken terug liggen."}, status=400)
+                            return JsonResponse({"ok": False, "error": "Datum mag niet verder dan 4 weken terug liggen."}, status=400)
 
 
                         t = _parse_hhmm(tijd_s)
