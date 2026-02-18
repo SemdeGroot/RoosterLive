@@ -11,7 +11,7 @@ def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, 
       <p style="margin:0 0 18px 0;">Beste {name},</p>
 
       <p style="margin:0 0 12px 0;">
-        Hierbij ontvangt u het actuele overzicht van de geneesmiddelen in onze Baxtervoorraad.
+        Hierbij ontvangt u het actuele overzicht van de geneesmiddelen in onze Baxtervoorraad. Download het bestand en open het in uw browser om het overzicht te bekijken.
       </p>
 
       <p style="margin:0 0 12px 0;">
@@ -33,7 +33,7 @@ def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, 
 
     text_content = (
         f"Beste {name},\n\n"
-        "Hierbij ontvangt u het actuele overzicht van de Baxtervoorraad.\n\n"
+        "Hierbij ontvangt u het actuele overzicht van de Baxtervoorraad. Download het bestand en open het in uw browser om het overzicht te bekijken.\n\n"
         f"Heeft u vragen? Neem contact op via: {contact_email}.\n\n"
         "Met vriendelijke groet,\n"
         "Het Team van Apotheek Jansen"
