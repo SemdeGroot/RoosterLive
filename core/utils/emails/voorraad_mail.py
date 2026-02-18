@@ -22,7 +22,7 @@ def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, 
 
       <p style="margin:0 0 12px 0;">
         Met vriendelijke groet,<br>
-        Het Bestellingen Team van Apotheek Jansen
+        Het Team van Apotheek Jansen
       </p>
     """
 
@@ -36,7 +36,7 @@ def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, 
         "Hierbij ontvangt u het actuele overzicht van de Baxtervoorraad.\n\n"
         f"Heeft u vragen? Neem contact op via: {contact_email}.\n\n"
         "Met vriendelijke groet,\n"
-        "Het Bestellingen Team van Apotheek Jansen"
+        "Het Team van Apotheek Jansen"
     )
 
     msg = EmailMultiAlternatives(

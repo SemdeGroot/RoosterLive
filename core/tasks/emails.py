@@ -92,6 +92,7 @@ def send_nazendingen_pdf_task(self, organization_ids):
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_voorraad_html_task(self, organization_ids):
     import os
+    import base64
     from django.conf import settings
     from django.utils import timezone
     from django.template.loader import render_to_string
@@ -105,12 +106,28 @@ def send_voorraad_html_task(self, organization_ids):
     contact_email = "baxterezorg@apotheekjansen.com"
     items = VoorraadItem.objects.all().order_by("naam", "zi_nummer")
 
+    site = getattr(settings, "SITE_DOMAIN", "http://localhost:8000").rstrip("/")
+    if not site.startswith("http"):
+        site = f"https://{site}"
+
+    logo_fs_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "app_icon-1024x1024.png")
+    logo_data_uri = None
+    try:
+        with open(logo_fs_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("ascii")
+        logo_data_uri = f"data:image/png;base64,{b64}"
+    except Exception:
+        logo_data_uri = None
+
     context = {
         "items": items,
         "generated_at": timezone.localtime(timezone.now()),
         "contact_email": contact_email,
-        "logo_url": getattr(settings, "SITE_DOMAIN", "http://localhost:8000").rstrip("/") + "/static/img/app_icon-1024x1024.png",
+        # Fallback als data-uri om een of andere reden faalt
+        "logo_url": f"{site}/static/img/app_icon-1024x1024.png",
+        "logo_data_uri": logo_data_uri,
     }
+
 
     html = render_to_string("voorraad/export/voorraad_lijst.html", context)
 

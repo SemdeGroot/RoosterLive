@@ -80,9 +80,11 @@
 
   <div class="pdf-header">
     <div>
-      {% if logo_url %}
+        {% if logo_data_uri %}
+        <img class="pdf-logo" src="{{ logo_data_uri }}" alt="Logo">
+        {% elif logo_url %}
         <img class="pdf-logo" src="{{ logo_url }}" alt="Logo">
-      {% endif %}
+        {% endif %}
     </div>
 
     <div>
