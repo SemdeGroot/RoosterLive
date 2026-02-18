@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Overzicht Baxtervoorraad</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; color:#111; }
+    .muted { color:#666; }
+
+    .pdf-header{
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .pdf-logo{
+      width: 92px;
+      height: auto;
+      max-height: 120px;
+      object-fit: contain;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .pdf-title{
+      margin: 0;
+      font-size: 18pt;
+      color:#111;
+      line-height: 1.1;
+    }
+
+    .pdf-submeta{
+      margin-top: 6px;
+      margin-bottom: 6px;
+      font-size: 10.5pt;
+      color:#111;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px 18px;
+      max-width: 980px;
+    }
+
+    .prepared-by{
+      margin-top: 4px;
+      font-size: 10pt;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin: 14px 0 10px;
+    }
+
+    .search-input{
+      flex:1;
+      padding:10px 12px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus{ border-color:#072a72; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11pt; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+    thead th { background:#fafafa; border-bottom: 1px solid #ccc; text-align:left; font-weight:700; user-select:none; cursor:pointer; }
+    thead th[data-nosort="1"]{ cursor:default; }
+
+    .sort-indicator{ margin-left:8px; font-size: 12px; color:#555; }
+    .row-hidden{ display:none; }
+
+  </style>
+</head>
+<body>
+
+  <div class="pdf-header">
+    <div>
+      {% if logo_url %}
+        <img class="pdf-logo" src="{{ logo_url }}" alt="Logo">
+      {% endif %}
+    </div>
+
+    <div>
+      <h1 class="pdf-title">Overzicht Baxtervoorraad</h1>
+
+      <div class="pdf-submeta">
+        <div><strong>Datum:</strong> {{ generated_at|date:"d-m-Y" }}</div>
+      </div>
+
+        {% if contact_email %}
+        <div class="prepared-by">
+            <a
+            href="mailto:{{ contact_email }}"
+            class="muted"
+            style="text-decoration:none;"
+            >
+            {{ contact_email }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="voorraadSearch" class="search-input" type="text" placeholder="Typ om te zoeken (ZI-nummer of naam)...">
+  </div>
+
+  <table id="voorraadTable">
+    <thead>
+      <tr>
+        <th data-col="0">
+          ZI-nummer
+          <span class="sort-indicator" data-ind="0">↑↓</span>
+        </th>
+        <th data-col="1">
+          Naam
+          <span class="sort-indicator" data-ind="1">↑↓</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+        <tr>
+          <td>{{ it.zi_nummer }}</td>
+          <td><strong>{{ it.naam }}</strong></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted" style="text-align:center; padding:20px;">Geen voorraad-items gevonden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<script>
+(function(){
+  const search = document.getElementById('voorraadSearch');
+  const table = document.getElementById('voorraadTable');
+  if (!table) return;
+
+  const tbody = table.querySelector('tbody');
+  let sortState = { col: null, dir: null }; // dir: 'asc' | 'desc'
+
+  function setIndicators(activeCol, dir){
+    document.querySelectorAll('.sort-indicator').forEach(el => {
+      el.textContent = '↑↓';
+    });
+    if (activeCol === null) return;
+    const ind = document.querySelector(`.sort-indicator[data-ind="${activeCol}"]`);
+    if (ind) ind.textContent = (dir === 'asc') ? '↑' : '↓';
+  }
+
+  function getCellText(tr, idx){
+    const td = tr.children[idx];
+    return td ? (td.textContent || '').trim() : '';
+  }
+
+  function sortRows(colIdx){
+    const rows = Array.from(tbody.querySelectorAll('tr'))
+      .filter(tr => tr.children.length >= 2);
+
+    const nextDir = (sortState.col === colIdx && sortState.dir === 'asc') ? 'desc' : 'asc';
+    sortState = { col: colIdx, dir: nextDir };
+
+    rows.sort((a,b) => {
+      const av = getCellText(a, colIdx);
+      const bv = getCellText(b, colIdx);
+
+      // ZI-nummer: numeriek vergelijken
+      if (colIdx === 0) {
+        const an = parseInt(av, 10);
+        const bn = parseInt(bv, 10);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) {
+          return (nextDir === 'asc') ? (an - bn) : (bn - an);
+        }
+      }
+
+      const cmp = av.localeCompare(bv, 'nl', { sensitivity: 'base' });
+      return (nextDir === 'asc') ? cmp : -cmp;
+    });
+
+    // Re-append in nieuwe volgorde
+    rows.forEach(tr => tbody.appendChild(tr));
+    setIndicators(colIdx, nextDir);
+  }
+
+  // Click-sort on headers
+  table.querySelectorAll('thead th').forEach(th => {
+    if (th.getAttribute('data-nosort') === '1') return;
+    th.addEventListener('click', () => {
+      const col = parseInt(th.getAttribute('data-col'), 10);
+      if (!Number.isNaN(col)) sortRows(col);
+    });
+  });
+
+  // Live search
+  if (search) {
+    search.addEventListener('input', () => {
+      const q = (search.value || '').toLowerCase();
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(tr => {
+        const txt = (tr.textContent || '').toLowerCase();
+        tr.style.display = txt.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Default indicators: not sorted
+  setIndicators(null, null);
+})();
+</script>
+
+</body>
+</html>

@@ -1,5 +1,4 @@
 (function(){
-  // --- 1. Dropzone Logica (Behouden)
   function wireUpload(inputId, dropId, metaId, nameId, uploadBtnId, clearBtnId){
     const dz = document.getElementById(dropId);
     const input = document.getElementById(inputId);
@@ -28,7 +27,6 @@
     });
   }
 
-  // --- 2. Live Zoeken gekoppeld aan table.js
   function initMedSearch() {
     const searchInput = document.getElementById('medSearch');
     const table = document.getElementById('medTable');
@@ -41,17 +39,63 @@
 
       rows.forEach(tr => {
         const text = tr.innerText.toLowerCase();
-        // We gebruiken display none om rijen echt uit te sluiten voor de table.js logic
         tr.style.display = text.includes(needle) ? '' : 'none';
       });
 
-      // Vertel table.js dat de resultaten zijn veranderd
       wrapper.dispatchEvent(new CustomEvent('crud:reset'));
     });
   }
 
+  function initEmailSelect2() {
+    const el = document.getElementById('id_recipients');
+    if (!el || !window.$) return;
+
+    const $select = $('#id_recipients');
+    if ($select.hasClass('select2-hidden-accessible')) return;
+
+    $select.select2({
+      width: '100%',
+      placeholder: "Zoek en selecteer apotheken...",
+      allowClear: false,
+      dropdownParent: $('#emailModal'),
+      closeOnSelect: false,
+    });
+  }
+
+  window.toggleEmailModal = function() {
+    const modal = document.getElementById('emailModal');
+    if (!modal) return;
+
+    if (modal.style.display === 'block') {
+      modal.style.display = 'none';
+      return;
+    }
+
+    modal.style.display = 'block';
+    initEmailSelect2();
+  };
+
+  window.selectAllApotheken = function() {
+    if (!window.$) return;
+    $('#id_recipients > option').prop('selected', true);
+    $('#id_recipients').trigger('change');
+  };
+
+  window.deselectAllApotheken = function() {
+    if (!window.$) return;
+    $('#id_recipients').val(null).trigger('change');
+  };
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('emailModal');
+    if (modal && event.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     wireUpload('medFile','medDrop','medMeta','medName','medUpload','medClear');
     initMedSearch();
+    initEmailSelect2();
   });
 })();

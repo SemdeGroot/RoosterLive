@@ -90,6 +90,67 @@ def send_nazendingen_pdf_task(self, organization_ids):
     chord(group(mail_sigs))(cleanup_storage_file_task.s(pdf_path).set(queue="default"))
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
+def send_voorraad_html_task(self, organization_ids):
+    import os
+    from django.conf import settings
+    from django.utils import timezone
+    from django.template.loader import render_to_string
+    from django.core.files.base import ContentFile
+    from django.core.files.storage import default_storage
+    from celery import chord, group
+
+    from core.models import VoorraadItem, Organization
+    from core.tasks.email_dispatcher import email_dispatcher_task, cleanup_storage_file_task
+
+    contact_email = "baxterezorg@apotheekjansen.com"
+    items = VoorraadItem.objects.all().order_by("naam", "zi_nummer")
+
+    context = {
+        "items": items,
+        "generated_at": timezone.localtime(timezone.now()),
+        "contact_email": contact_email,
+        "logo_url": getattr(settings, "SITE_DOMAIN", "http://localhost:8000").rstrip("/") + "/static/img/app_icon-1024x1024.png",
+    }
+
+    html = render_to_string("voorraad/export/voorraad_lijst.html", context)
+
+    filename = f"Baxtervoorraad_ApoJansen_{timezone.now().strftime('%d-%m-%Y')}.html"
+    ts = timezone.now().strftime("%Y%m%d_%H%M%S")
+    html_path = f"tmp/voorraad/{ts}_{filename}"
+    html_path = default_storage.save(html_path, ContentFile(html.encode("utf-8")))
+
+    logo_path = os.path.join(settings.BASE_DIR, "core", "static", "img", "app_icon_trans-512x512.png")
+
+    orgs = Organization.objects.filter(id__in=organization_ids)
+
+    mail_sigs = []
+    for org in orgs:
+        primary = org.email or org.email2
+        if not primary:
+            continue
+
+        sig = email_dispatcher_task.s({
+            "type": "voorraad_single",
+            "payload": {
+                "to_email": primary,
+                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "name": org.name,
+                "html_path": html_path,
+                "filename": filename,
+                "logo_path": logo_path,
+                "contact_email": contact_email,
+            }
+        }).set(queue="mail")
+
+        mail_sigs.append(sig)
+
+    if not mail_sigs:
+        cleanup_storage_file_task.apply_async(args=[[], html_path], queue="default")
+        return
+
+    chord(group(mail_sigs))(cleanup_storage_file_task.s(html_path).set(queue="default"))
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def send_laatste_pot_email_task(self, item_naam: str):
     from django.contrib.auth import get_user_model
     from core.views._helpers import can

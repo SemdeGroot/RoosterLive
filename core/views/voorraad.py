@@ -1,3 +1,5 @@
+# core/views/voorraad.py
+
 import csv
 import io
 import re
@@ -5,15 +7,18 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils import timezone
 
 from ..forms import AvailabilityUploadForm
-from ..models import VoorraadItem
+from ..models import VoorraadItem, Organization
 from ._helpers import can
+from core.tasks import send_voorraad_html_task
 
 
 ZI_RE = re.compile(r"^\d{8}$")
@@ -41,12 +46,11 @@ def _read_csv_rows(uploaded_file):
     except UnicodeDecodeError:
         text = content.decode("latin-1")
 
-    # Dialect sniffen (vergelijkbaar met pandas sep=None)
     sample = text[:4096]
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters=";,|\t,")
     except csv.Error:
-        dialect = csv.excel  # fallback
+        dialect = csv.excel
 
     f = io.StringIO(text)
     reader = csv.reader(f, dialect)
@@ -58,7 +62,6 @@ def _read_csv_rows(uploaded_file):
 
 
 def _read_xlsx_rows(uploaded_file):
-    # data_only=True: als er formules zijn, probeert openpyxl de opgeslagen waarde te geven
     wb = load_workbook(uploaded_file, read_only=True, data_only=True)
     ws = wb.active
 
@@ -73,9 +76,8 @@ def medications_view(request):
     # 1. Check Rechten
     if not can(request.user, "can_view_av_medications"):
         return HttpResponseForbidden("Geen toegang.")
-    
-    can_edit = can(request, "can_upload_voorraad")
 
+    can_edit = can(request, "can_upload_voorraad")
     form = AvailabilityUploadForm()
 
     # === UPLOAD VERWERKING ===
@@ -99,7 +101,6 @@ def medications_view(request):
                     else:
                         raw_rows = _read_xlsx_rows(f)
 
-                    # Lege rijen weg
                     cleaned_rows = []
                     for r in raw_rows:
                         if not r:
@@ -110,12 +111,21 @@ def medications_view(request):
 
                     if not cleaned_rows:
                         messages.error(request, "Het bestand bevat geen geldige regels.")
-                        ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                        ctx = {
+                            "can_edit": can_edit,
+                            "form": form,
+                            "title": "Voorraad",
+                            "has_data": False,
+                            "rows": [],
+                            "columns": [],
+                            "apotheken": Organization.objects.filter(
+                                org_type=Organization.ORG_TYPE_APOTHEEK
+                            ).order_by("name"),
+                        }
                         return render(request, "voorraad/index.html", ctx)
 
                     # --- B. HEADER + MIN 2 KOLOMMEN ---
                     header = [h.strip() for h in cleaned_rows[0]]
-                    # drop trailing lege headers
                     while header and header[-1] == "":
                         header.pop()
 
@@ -124,10 +134,8 @@ def medications_view(request):
 
                     data_rows = cleaned_rows[1:]
 
-                    # Rijen waar (ZI en Naam) beide leeg zijn verwijderen
                     filtered = []
                     for r in data_rows:
-                        # pad rij tot header-lengte zodat zip veilig is
                         if len(r) < len(header):
                             r = r + [""] * (len(header) - len(r))
 
@@ -139,24 +147,42 @@ def medications_view(request):
 
                     if not filtered:
                         messages.error(request, "Het bestand bevat geen geldige regels.")
-                        ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                        ctx = {
+                            "can_edit": can_edit,
+                            "form": form,
+                            "title": "Voorraad",
+                            "has_data": False,
+                            "rows": [],
+                            "columns": [],
+                            "apotheken": Organization.objects.filter(
+                                org_type=Organization.ORG_TYPE_APOTHEEK
+                            ).order_by("name"),
+                        }
                         return render(request, "voorraad/index.html", ctx)
 
                     # --- C. VALIDATIE ---
                     zis = [r[0].strip() for r in filtered]
 
-                    # 1. ZI moet 8 cijfers zijn
                     for i, zi in enumerate(zis):
                         if not ZI_RE.match(zi):
-                            foute_rij = i + 2  # header = rij 1
+                            foute_rij = i + 2
                             messages.error(
                                 request,
                                 f"Fout op rij {foute_rij}: '{zi}' is geen geldig ZI-nummer (moet 8 cijfers zijn)."
                             )
-                            ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                            ctx = {
+                                "can_edit": can_edit,
+                                "form": form,
+                                "title": "Voorraad",
+                                "has_data": False,
+                                "rows": [],
+                                "columns": [],
+                                "apotheken": Organization.objects.filter(
+                                    org_type=Organization.ORG_TYPE_APOTHEEK
+                                ).order_by("name"),
+                            }
                             return render(request, "voorraad/index.html", ctx)
 
-                    # 2. Geen dubbele ZI-nummers in bestand
                     seen = set()
                     duplicate = None
                     for zi in zis:
@@ -166,14 +192,29 @@ def medications_view(request):
                         seen.add(zi)
 
                     if duplicate:
-                        messages.error(request, f"Validatiefout: ZI-nummer '{duplicate}' komt meerdere keren voor in het bestand.")
-                        ctx = {"form": form, "title": "Voorraad", "has_data": False}
+                        messages.error(
+                            request,
+                            f"Validatiefout: ZI-nummer '{duplicate}' komt meerdere keren voor in het bestand."
+                        )
+                        ctx = {
+                            "can_edit": can_edit,
+                            "form": form,
+                            "title": "Voorraad",
+                            "has_data": False,
+                            "rows": [],
+                            "columns": [],
+                            "apotheken": Organization.objects.filter(
+                                org_type=Organization.ORG_TYPE_APOTHEEK
+                            ).order_by("name"),
+                        }
                         return render(request, "voorraad/index.html", ctx)
 
-                    # 3. Check medicijnnaam (optioneel, warning)
                     namen = [r[1] for r in filtered]
                     if not any("paracetamol" in (n or "").lower() for n in namen):
-                        messages.warning(request, "Let op: Geen 'Paracetamol' gevonden. Weet je zeker dat de kolommen goed staan?")
+                        messages.warning(
+                            request,
+                            "Let op: Geen 'Paracetamol' gevonden. Weet je zeker dat de kolommen goed staan?"
+                        )
 
                     # --- D. SYNC LOGICA (VEILIG OPSLAAN) ---
                     file_zi_set = set()
@@ -203,11 +244,13 @@ def medications_view(request):
                                 item.metadata = metadata
                                 to_update.append(item)
                         else:
-                            to_create.append(VoorraadItem(
-                                zi_nummer=zi,
-                                naam=naam,
-                                metadata=metadata
-                            ))
+                            to_create.append(
+                                VoorraadItem(
+                                    zi_nummer=zi,
+                                    naam=naam,
+                                    metadata=metadata,
+                                )
+                            )
 
                     with transaction.atomic():
                         if to_create:
@@ -217,11 +260,7 @@ def medications_view(request):
                             VoorraadItem.objects.bulk_update(to_update, ["naam", "metadata"])
 
                         items_to_delete = VoorraadItem.objects.exclude(zi_nummer__in=file_zi_set)
-
-                        # ✅ Alleen VoorraadItem tellen (geen cascades)
                         deleted_items_count = items_to_delete.count()
-
-                        # Daarna pas verwijderen (cascades kunnen gebeuren, maar tellen we niet mee)
                         items_to_delete.delete()
 
                     messages.success(
@@ -250,6 +289,10 @@ def medications_view(request):
                 row_data.extend(item.metadata.values())
             rows.append(row_data)
 
+    apotheken = Organization.objects.filter(
+        org_type=Organization.ORG_TYPE_APOTHEEK
+    ).order_by("name")
+
     ctx = {
         "can_edit": can_edit,
         "form": form,
@@ -257,5 +300,50 @@ def medications_view(request):
         "rows": rows,
         "title": "Voorraad",
         "has_data": len(rows) > 0,
+        "apotheken": apotheken,
     }
     return render(request, "voorraad/index.html", ctx)
+
+
+@login_required
+def export_voorraad_html(request):
+    if not can(request.user, "can_view_av_medications"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    contact_email = "baxterezorg@apotheekjansen.com"
+    items = VoorraadItem.objects.all().order_by("naam", "zi_nummer")
+
+    context = {
+        "items": items,
+        "generated_at": timezone.localtime(timezone.now()),
+        "contact_email": contact_email,
+        "logo_url": request.build_absolute_uri("/static/img/app_icon-1024x1024.png"),
+    }
+
+    html = render_to_string("voorraad/export/voorraad_lijst.html", context, request=request)
+    filename = f"Baxtervoorraad_ApoJansen_{timezone.now().strftime('%d-%m-%Y')}.html"
+
+    resp = HttpResponse(html, content_type="text/html; charset=utf-8")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
+
+
+@login_required
+def email_voorraad_html(request):
+    if not can(request.user, "can_upload_voorraad"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    if request.method == "POST":
+        org_ids = request.POST.getlist("recipients")
+        org_ids = [int(i) for i in org_ids if i.isdigit()]
+
+        if org_ids:
+            send_voorraad_html_task.delay(org_ids)
+            messages.success(
+                request,
+                f"De voorraad wordt op de achtergrond verstuurd naar {len(org_ids)} ontvangers."
+            )
+        else:
+            messages.warning(request, "Geen ontvangers geselecteerd.")
+
+    return redirect("medications")

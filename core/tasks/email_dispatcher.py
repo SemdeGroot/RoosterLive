@@ -203,6 +203,37 @@ def email_dispatcher_task(self, job: dict):
 
         return
     
+    if job_type == "voorraad_single":
+        from core.utils.emails.voorraad_mail import send_single_voorraad_email
+
+        with default_storage.open(p["html_path"], "rb") as f:
+            html_bytes = f.read()
+
+        try:
+            send_single_voorraad_email(
+                to_email=p["to_email"],
+                name=p["name"],
+                html_bytes=html_bytes,
+                filename=p["filename"],
+                logo_path=p["logo_path"],
+                contact_email=p["contact_email"],
+            )
+        except Exception:
+            fallback = p.get("fallback_email")
+            if fallback and fallback != p["to_email"]:
+                send_single_voorraad_email(
+                    to_email=fallback,
+                    name=p["name"],
+                    html_bytes=html_bytes,
+                    filename=p["filename"],
+                    logo_path=p["logo_path"],
+                    contact_email=p["contact_email"],
+                )
+            else:
+                raise
+        return
+
+    
     if job_type == "omzettingslijst_single":
         from core.utils.emails.omzettingslijst_email import send_single_omzettingslijst_email
 

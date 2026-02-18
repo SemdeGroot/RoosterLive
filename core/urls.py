@@ -5,7 +5,7 @@ from django.conf import settings
 
 from core.views.home import home
 from core.views.roster import rooster
-from core.views.voorraad import medications_view
+from core.views.voorraad import medications_view, email_voorraad_html, export_voorraad_html
 from core.views.nazendingen import nazendingen_view, medications_search_api, export_nazendingen_pdf, email_nazendingen_pdf
 from core.views.news import news, news_media
 from core.views.policies import policies, policies_media
@@ -115,6 +115,8 @@ urlpatterns = [
     path("baxter/laatste-potten/", laatstepotten, name="laatstepotten"),
 
     path("baxter/voorraad/", medications_view, name="medications"),
+    path("baxter/voorraad/export-html/", export_voorraad_html, name="voorraad_export_html"),
+    path("baxter/voorraad/email-html/", email_voorraad_html, name="voorraad_email_html"),
     path("baxter/nazendingen/", nazendingen_view, name="nazendingen"),
     path('baxter/nazendingen/export-pdf', export_nazendingen_pdf, name='nazendingen_export_pdf'),
     path('baxter/nazendingen/email-pdf', email_nazendingen_pdf, name='nazendingen_email_pdf'),
@@ -146,7 +148,7 @@ urlpatterns = [
     path("instellingsapotheek/review-planner/", reviewplanner, name="reviewplanner"),
     path("instellingsapotheek/review-planner/export-overview/", reviewplanner_export_overview, name="reviewplanner_export_overview"),
     path("portavita-check/", portavita_check, name="portavita-check"),
-    path("houdbaarheid-check/", houdbaarheidcheck, name="houdbaarheidcheck"),
+    path("houdbaarheidscheck/", houdbaarheidcheck, name="houdbaarheidcheck"),
     # Profiel
     path("profiel/", profiel_index, name="profiel"),
     path("profiel/avatar/upload/", avatar_upload, name="profiel_avatar_upload"),
