@@ -38,6 +38,7 @@ TILE_GROUPS = {
         {"name": "Openbare Apotheek", "img": "openbareapo-lucide.svg", "badge_class": C["aqua"], "url_name": "openbare_tiles", "perm": "can_view_openbare_apo", "desc": "Tools voor de openbare apotheek."},
         {"name": "Instellingsapotheek", "img": "instellingsapo-lucide.svg", "badge_class": C["green"], "url_name": "instellings_tiles", "perm": "can_view_instellings_apo", "desc": "Medicatiebeoordelingen uitvoeren, plannen en meer."},
         {"name": "Bezorgers", "img": "bezorgers-lucide.svg", "badge_class": C["lime"], "url_name": "bezorgers_tiles", "perm": "can_view_bezorgers", "desc": "Bakken bezorgen en status volgen."},
+        {"name": "Statistieken", "img": "statistieken-lucide.svg", "badge_class": C["blue"], "url_name": "statistieken_tiles", "perm": "can_view_statistieken", "desc": "Inzicht in statistieken."},
         {"name": "Profiel", "img": "profiel-lucide.svg", "badge_class": C["pink"], "url_name": "profiel", "perm": "can_access_profiel", "desc": "Instellingen en gegevens beheren."},
         {"name": "Beheer", "img": "admin-lucide.svg", "badge_class": C["purple"], "url_name": "beheer_tiles", "perm": "can_access_admin", "desc": "Beheer gebruikers, groepen en klanten."},
     ],
@@ -85,6 +86,10 @@ TILE_GROUPS = {
     "bezorgers": [
         {"name": "Bakken bezorgen", "img": "bakkenbezorgen-lucide.svg", "badge_class": C["orange"], "url_name": "bakkenbezorgen", "perm": "can_view_bakkenbezorgen", "desc": "Bezorg bakken."},
         {"name": "Afleverstatus", "img": "afleverstatus-lucide.svg", "badge_class": C["green"], "url_name": "afleverstatus", "perm": "can_view_afleverstatus", "desc": "Bekijk de status per aflevering."},
+    ],
+
+    "statistieken": [
+        {"name": "Machine statistieken", "img": "machine_statistieken.svg", "badge_class": C["orange"], "url_name": "machine_statistieken", "perm": "can_view_machine_statistieken", "desc": "Machinestatistieken en trends."},
     ],
 
     "medicatiebeoordeling": [

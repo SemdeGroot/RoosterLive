@@ -11,6 +11,7 @@ SAFE_PATH_PREFIXES = (
     "/service_worker.",          # alle versies: v19, v20, etc
     "/__reload__/",
     "/manifest.json",
+    "api/baxter/machine-statistieken/",
 )
 
 class Enforce2FAMiddleware(MiddlewareMixin):

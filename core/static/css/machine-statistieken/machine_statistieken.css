@@ -1,0 +1,467 @@
+/* static/css/machine-statistieken/machine_statistieken.css */
+
+/* -------------------------------------------------------
+   SPACING TOKEN
+   Één waarde voor alle gaps binnen het vandaag-grid.
+   Zo zijn alle marges tussen kaarten identiek.
+------------------------------------------------------- */
+:root {
+  --ms-gap: 12px;
+}
+
+/* -------------------------------------------------------
+   DASHBOARD LAYOUT
+------------------------------------------------------- */
+
+.ms-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-gap);
+}
+
+.ms-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ms-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ms-view-select,
+.ms-range-select {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.ms-view-select:focus,
+.ms-range-select:focus {
+  outline: none;
+  border-color: #072a72;
+}
+
+.ms-fullscreen-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ms-fullscreen-btn:hover {
+  background: var(--button-hover);
+  border-color: #072a72;
+}
+
+/* Vandaag-view: zorg voor verticale gap tussen rij 1 en rij 2 */
+#ms-view-vandaag.ms-view.active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-gap);
+}
+
+/* -------------------------------------------------------
+   VIEW PANELS
+------------------------------------------------------- */
+
+.ms-view {
+  display: none;
+}
+
+.ms-view.active {
+  display: block;
+}
+
+/* -------------------------------------------------------
+   VANDAAG — RIJ 1
+------------------------------------------------------- */
+
+.ms-today-top {
+  display: grid;
+  grid-template-columns: 60% 1fr;
+  gap: var(--ms-gap);
+  align-items: stretch;
+}
+
+.ms-donut-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.ms-donut-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.ms-donut-header h3 {
+  margin: 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ms-donut-wrap {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  flex-shrink: 0;
+}
+
+.ms-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ms-donut-total {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.ms-donut-pct {
+  font-size: 0.9em;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.ms-donut-target-label {
+  font-size: 0.78em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.ms-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.82em;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ms-status-badge.on-track {
+  background: rgba(22, 163, 74, 0.18);
+  color: #16a34a;
+  border: 1px solid rgba(22, 163, 74, 0.4);
+}
+
+.ms-status-badge.behind {
+  background: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.ms-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* hbar-kaart vult dezelfde hoogte als de donut-kaart */
+.ms-hbar-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-hbar-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ms-hbar-chart-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 180px;
+}
+
+/* -------------------------------------------------------
+   VANDAAG — RIJ 2
+------------------------------------------------------- */
+
+.ms-today-bottom {
+  display: grid;
+  grid-template-columns: 60% 1fr;
+  gap: var(--ms-gap);
+  align-items: stretch;    /* beide kaarten even hoog */
+}
+
+/* Generieke kaart */
+.ms-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.ms-card h3 {
+  margin: 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* 12px ruimte onder de titel, boven de line chart */
+.ms-line-card h3 {
+  margin-bottom: 12px;
+}
+
+/* Line-chart card: flex zodat .ms-line-wrap de resterende hoogte vult */
+.ms-line-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-line-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 200px;
+  margin-top: 0; /* h3 margin-bottom regelt de 12px al */
+}
+
+/* Weekvoortgang-kaart: 12px ruimte onder de titel, boven het weekoverzicht */
+.ms-week-card h3 {
+  margin-bottom: 12px;
+}
+
+/* Weekvoortgang-kaart: flex-column zodat de dag-chart de resterende
+   hoogte van de kaart opvult, ongeacht hoeveel dagen er zijn (5 of 6). */
+.ms-week-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-week-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;         /* iets compacter: meer ruimte voor de chart */
+  margin-top: 0;    /* voorkomt dubbele top spacing */
+  flex: 1;
+}
+
+.ms-week-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ms-week-label {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+.ms-week-value {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ms-progress-bar-wrap {
+  height: 10px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ms-progress-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+  background: #072a72;
+}
+
+.ms-progress-bar-fill.over-target {
+  background: #16a34a;
+}
+
+.ms-progress-pct {
+  font-size: 0.8em;
+  color: var(--muted);
+  text-align: right;
+  margin-top: -4px;
+  flex-shrink: 0;
+}
+
+/* Dag-chart wrapper: flex: 1 zodat de chart de overgebleven
+   kaarthoogte vult — altijd zeven rijen (Ma–Zo), hoogte stabiel. */
+.ms-week-dagen-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 200px;
+  padding-top: 10px;
+  padding-bottom: 4px;  
+}
+
+/* -------------------------------------------------------
+   DAGEN / WEKEN SCHERMEN
+------------------------------------------------------- */
+
+.ms-hist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ms-hist-grid .ms-card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* -------------------------------------------------------
+   FULLSCREEN MODE
+------------------------------------------------------- */
+
+#ms-fullscreen-overlay {
+  display: none;
+}
+
+body.ms-fullscreen #ms-fullscreen-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+body.ms-fullscreen .ms-donut-wrap {
+  width: 320px;
+  height: 320px;
+}
+
+body.ms-fullscreen .ms-donut-total {
+  font-size: 2.4rem;
+}
+
+.ms-fullscreen-exit-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.ms-fullscreen-exit-bar.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* -------------------------------------------------------
+   LAST UPDATED
+------------------------------------------------------- */
+
+.ms-last-updated {
+  font-size: 0.78em;
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE — tablet (≤ 1100px)
+------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .ms-today-top,
+  .ms-today-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-today-bottom {
+    align-items: start;
+  }
+
+  .ms-donut-wrap {
+    width: 220px;
+    height: 220px;
+  }
+
+  .ms-donut-total {
+    font-size: 1.6rem;
+  }
+
+  .ms-week-dagen-wrap {
+    min-height: 160px;
+  }
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE — mobiel (≤ 700px)
+------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .ms-today-top,
+  .ms-today-bottom,
+  .ms-hist-grid {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .ms-donut-wrap {
+    width: 200px;
+    height: 200px;
+  }
+
+  .ms-donut-total {
+    font-size: 1.4rem;
+  }
+
+  .ms-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ms-card,
+  .ms-donut-card,
+  .ms-hbar-card {
+    padding: 14px;
+  }
+
+  .ms-fullscreen-btn {
+    display: none !important;
+  }
+}

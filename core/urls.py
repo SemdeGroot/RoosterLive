@@ -32,6 +32,8 @@ from core.views.diensten_webcal import diensten_webcal_view
 from core.views.onboarding_forms import onboarding_formulieren
 from core.views.checklist import checklist
 from core.views.baxter import baxter_tiles
+from core.views.statistieken import statistieken_tiles
+from core.views.machine_statistieken import machine_statistieken_ingest,machine_statistieken_view, machine_statistieken_api_vandaag,machine_statistieken_api_geschiedenis
 from core.views.omzettingslijst import omzettingslijst, api_omzettingslijsten, export_omzettingslijst_pdf, email_omzettingslijst_pdf, export_omzettingslijst_label_pdf
 from core.views.no_delivery import no_delivery, api_no_delivery_lists, export_no_delivery_pdf, email_no_delivery_pdf, export_no_delivery_label_pdf
 from core.views.stshalfjes import stshalfjes, export_stshalfjes_pdf, email_stshalfjes_pdf
@@ -52,6 +54,7 @@ urlpatterns = [
     path("personeel/", personeel_tiles, name="personeel_tiles"),
     path("onboarding/", onboarding_tiles, name="onboarding_tiles"),
     path("baxter/", baxter_tiles, name="baxter_tiles"),
+    path("statistieken/", statistieken_tiles, name="statistieken_tiles"),
     path("openbare-apotheek/", openbare_tiles, name="openbare_tiles"),
     path("instellingsapotheek/", instellings_tiles, name="instellings_tiles"),
     path("kiosk-login/", kiosk_login_view, name="kiosk_login"),
@@ -99,6 +102,10 @@ urlpatterns = [
     path("onboarding/formulieren/", onboarding_formulieren, name="onboarding_formulieren"),
     path("onboarding/checklist/", checklist, name="checklist"),
 
+    path("baxter/machine-statistieken/",                       machine_statistieken_view,             name="machine_statistieken"),
+    path("api/baxter/machine-statistieken/ingest/",           machine_statistieken_ingest,            name="machine_statistieken_ingest"),
+    path("baxter/machine-statistieken/api/vandaag/",          machine_statistieken_api_vandaag,       name="machine_statistieken_api_vandaag"),
+    path("baxter/machine-statistieken/api/geschiedenis/",     machine_statistieken_api_geschiedenis,  name="machine_statistieken_api_geschiedenis"),
     path("baxter/omzettingslijst/", omzettingslijst, name="baxter_omzettingslijst"),
     path("api/omzettingslijsten/", api_omzettingslijsten, name="api_omzettingslijsten"),
     path("baxter/omzettingslijst/export-pdf/", export_omzettingslijst_pdf, name="export_omzettingslijst_pdf"),

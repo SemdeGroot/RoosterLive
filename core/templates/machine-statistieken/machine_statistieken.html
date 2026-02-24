@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Machine Statistieken{% endblock %}
+{% block header_title %}Machine Statistieken{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/machine-statistieken/machine_statistieken.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="card card-inner">
+  <div class="agenda-section">
+    <div class="birthday-header agenda-section-header">
+      <span
+        class="birthday-icon icon-badge i-blue"
+        style="--icon: url('{% static 'img/lucide/machine_statistieken.svg' %}');"
+        aria-hidden="true">
+      </span>
+      <div class="birthday-header-text">
+        <h2>Machine Statistieken</h2>
+        <p>Realtime overzicht van Baxter productie per machine.</p>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'baxter_tiles' %}" class="btn">
+          Terug naar Baxterproductie
+        </a>
+      </div>
+    </div>
+
+    <div class="card-inner" style="padding-top: 0;">
+
+      <!-- Toolbar -->
+      <div class="ms-toolbar">
+        <div class="ms-controls">
+          <select id="ms-view-select" class="ms-view-select">
+            <option value="vandaag">Vandaag</option>
+            <option value="dagen">Dagen</option>
+            <option value="weken">Weken</option>
+          </select>
+        </div>
+
+        <div class="ms-controls">
+          <span id="ms-last-updated" class="ms-last-updated"></span>
+          <button id="ms-fullscreen-btn" class="ms-fullscreen-btn" title="Volledig scherm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+              <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+            </svg>
+            Volledig scherm
+          </button>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="ms-dashboard" class="ms-dashboard" style="margin-top: 16px;">
+
+        <!-- =============================================
+             VANDAAG VIEW
+             ============================================= -->
+        <div id="ms-view-vandaag" class="ms-view active">
+
+          <!-- Rij 1: Donut (60%) + Zakjes per machine (40%) -->
+          <div class="ms-today-top">
+
+            <div class="ms-donut-card">
+              <div class="ms-donut-header">
+                <h3>Dagproductie</h3>
+                <span id="ms-status-badge" class="ms-status-badge behind">
+                  <span class="ms-status-dot"></span> Laden...
+                </span>
+              </div>
+
+              <div class="ms-donut-wrap">
+                <canvas id="ms-donut-chart"></canvas>
+                <div class="ms-donut-center">
+                  <div id="ms-donut-total" class="ms-donut-total">—</div>
+                  <div id="ms-donut-pct" class="ms-donut-pct">—</div>
+                  <div id="ms-donut-target-label" class="ms-donut-target-label">van 80.000</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ms-hbar-card">
+              <h3>Zakjes per machine</h3>
+              <div class="ms-hbar-chart-wrap">
+                <canvas id="ms-hbar-chart"></canvas>
+              </div>
+            </div>
+
+          </div>
+          <!-- einde rij 1 -->
+
+          <!-- Rij 2: Lijndiagram (60%) + Weekvoortgang (40%)
+               align-items: stretch zorgt dat beide kaarten even hoog zijn.
+               ms-line-card en ms-week-card zijn flex-columns zodat
+               de charts de beschikbare ruimte vullen. -->
+          <div class="ms-today-bottom">
+
+            <!-- Lijndiagram: ms-line-wrap vult de resterende kaarthoogte -->
+            <div class="ms-card ms-line-card">
+              <h3>Voortgang versus dagschema</h3>
+              <div class="ms-line-wrap">
+                <canvas id="ms-line-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Weekvoortgang: ms-week-progress is flex-column met flex:1
+                 zodat ms-week-dagen-wrap de resterende hoogte vult.
+                 Altijd 7 rijen (Ma–Zo) → stabiele hoogte bij 5 of 6 werkdagen. -->
+            <div class="ms-card ms-week-card">
+              <h3>Weekvoortgang</h3>
+
+              <div class="ms-week-progress">
+                <div class="ms-week-stat">
+                  <span class="ms-week-label">Totaal deze week</span>
+                  <span id="ms-week-val" class="ms-week-value">—</span>
+                </div>
+
+                <div class="ms-progress-bar-wrap">
+                  <div id="ms-week-fill" class="ms-progress-bar-fill" style="width: 0%;"></div>
+                </div>
+
+                <div class="ms-progress-pct">
+                  <span id="ms-week-pct">—</span>&nbsp;van&nbsp;<span id="ms-week-val-target">—</span>
+                </div>
+
+                <!-- Dag-chart vult de rest van de kaarthoogte -->
+                <div class="ms-week-dagen-wrap">
+                  <canvas id="ms-week-dagen-chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- einde rij 2 -->
+
+        </div>
+        <!-- EINDE VANDAAG VIEW -->
+
+
+        <!-- =============================================
+             DAGEN VIEW
+             ============================================= -->
+        <div id="ms-view-dagen" class="ms-view">
+
+          <div class="ms-toolbar" style="margin-bottom: 16px;">
+            <span style="font-size: 0.9em; color: var(--muted);">Periode:</span>
+            <select id="ms-dagen-select" class="ms-range-select">
+              <option value="dagen7">Laatste 7 dagen</option>
+              <option value="dagen30">Laatste 30 dagen</option>
+            </select>
+          </div>
+
+          <div class="ms-hist-grid">
+
+            <div class="ms-card full-width">
+              <h3>Totale dagproductie</h3>
+              <div style="position: relative; height: 260px;">
+                <canvas id="ms-dagen-line"></canvas>
+              </div>
+            </div>
+
+            <div class="ms-card">
+              <h3>Productie per machine (gestapeld)</h3>
+              <div style="position: relative; height: 280px;">
+                <canvas id="ms-dagen-stacked"></canvas>
+              </div>
+            </div>
+
+            <div class="ms-card">
+              <h3>Totaal per machine in periode</h3>
+              <div style="position: relative; height: 280px;">
+                <canvas id="ms-dagen-machine-bars"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <!-- EINDE DAGEN VIEW -->
+
+
+        <!-- =============================================
+             WEKEN VIEW
+             ============================================= -->
+        <div id="ms-view-weken" class="ms-view">
+
+          <div class="ms-toolbar" style="margin-bottom: 16px;">
+            <span style="font-size: 0.9em; color: var(--muted);">Periode:</span>
+            <select id="ms-weken-select" class="ms-range-select">
+              <option value="weken4">Laatste 4 weken</option>
+              <option value="weken26">Laatste 26 weken</option>
+              <option value="weken52">Laatste 52 weken</option>
+            </select>
+          </div>
+
+          <div class="ms-hist-grid">
+
+            <div class="ms-card full-width">
+              <h3>Totale weekproductie</h3>
+              <div style="position: relative; height: 260px;">
+                <canvas id="ms-weken-line"></canvas>
+              </div>
+            </div>
+
+            <div class="ms-card">
+              <h3>Productie per machine per week (gestapeld)</h3>
+              <div style="position: relative; height: 280px;">
+                <canvas id="ms-weken-stacked"></canvas>
+              </div>
+            </div>
+
+            <div class="ms-card">
+              <h3>Totaal per machine in periode</h3>
+              <div style="position: relative; height: 280px;">
+                <canvas id="ms-weken-machine-bars"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <!-- EINDE WEKEN VIEW -->
+
+      </div>
+      <!-- EINDE ms-dashboard -->
+
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen overlay -->
+<div id="ms-fullscreen-overlay"></div>
+
+<div id="ms-fullscreen-exit-bar" class="ms-fullscreen-exit-bar">
+  <button id="ms-fullscreen-exit" class="ms-fullscreen-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+      <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+    </svg>
+    Volledig scherm verlaten
+  </button>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/machine-statistieken/machine_statistieken.js' %}"></script>
+{% endblock %}

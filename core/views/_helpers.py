@@ -108,6 +108,9 @@ PERM_LABELS = {
     "can_view_bezorgers": "Mag Bezorgers pagina openen",
     "can_view_bakkenbezorgen": "Mag bakken bezorgen",
     "can_view_afleverstatus": "Mag afleverstatus bekijken",
+    # Statistieken
+    "can_view_statistieken": "Mag Statistieken pagina openen",
+    "can_view_machine_statistieken": "Mag Machine Statistieken bekijken",
     # KompasGPT
     "can_view_kompasgpt": "Mag KompasGPT gebruiken",
 }
@@ -135,6 +138,7 @@ PERM_SECTIONS = [
     ("Openbare Apotheek", ["can_view_openbare_apo", "can_view_kompasgpt", "can_edit_houdbaarheidcheck"]),
     ("Instellingsapotheek", ["can_view_instellings_apo", "can_view_medicatiebeoordeling", "can_perform_medicatiebeoordeling", "can_view_reviewplanner", "can_edit_reviewplanner", "can_view_portavita", "can_edit_portavita"]),
     ("Bezorgers",        ["can_view_bezorgers", "can_view_bakkenbezorgen", "can_view_afleverstatus"]),
+    ("Statistieken",        ["can_view_statistieken", "can_view_machine_statistieken"]),
     ("Profiel",        ["can_access_profiel"]),
     ("Beheer",        ["can_access_admin", "can_manage_users", "can_manage_groups", "can_manage_afdelingen", "can_manage_orgs", "can_manage_tasks", "can_manage_functies", "can_manage_bezorgen"]),
 ]

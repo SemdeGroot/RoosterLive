@@ -160,6 +160,9 @@ class Roster(models.Model):
             ("can_view_bezorgers",    "Mag Bezorgers openen"),
             ("can_view_bakkenbezorgen",    "Mag bakken bezorgen"),
             ("can_view_afleverstatus",    "Mag afleverstatus bekijken"),
+            # Statistieken
+            ("can_view_statistieken",    "Mag Statistieken openen"),
+            ("can_view_machine_statistieken",    "Mag Machine Statistieken bekijken"),
             # KompasGPT
             ("can_view_kompasgpt",    "Mag KompasGPT gebruiken"),
 
@@ -1775,3 +1778,22 @@ class ReviewPlanner(models.Model):
     def __str__(self):
         afd = self.afdeling.afdeling if self.afdeling_id else "—"
         return f"{self.datum or '—'} | {afd} | {self.get_status_display()}"
+    
+class BaxterProductie(models.Model):
+    machine_id    = models.CharField(max_length=10, verbose_name="Machine")
+    date          = models.DateField(verbose_name="Datum")
+    time          = models.TimeField(verbose_name="Tijdstip laatste melding")
+    aantal_zakjes = models.PositiveIntegerField(verbose_name="Aantal zakjes")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # One record per machine per day, enforced at DB level
+        unique_together     = [("machine_id", "date")]
+        ordering            = ["-date", "machine_id"]
+        verbose_name        = "Baxter productie"
+        verbose_name_plural = "Baxter productie"
+
+    def __str__(self):
+        return f"{self.machine_id} | {self.date} | {self.aantal_zakjes} zakjes"
