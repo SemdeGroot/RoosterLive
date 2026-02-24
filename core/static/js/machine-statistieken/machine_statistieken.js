@@ -632,7 +632,7 @@ function renderTodayLine(totaalNu) {
       labels,
       datasets: [
         {
-          label:            "Target",
+          label:            "Doel",
           data:             targetData,
           borderColor:      tekstKleur(),
           borderDash:       [7, 4],
@@ -655,7 +655,7 @@ function renderTodayLine(totaalNu) {
           pointHoverRadius:     5,
         },
         {
-          label:            "Prognose",
+          label:            "Voorspelling",
           data:             interpolatieData,
           borderColor:      accentRgba(0.85),
           borderDash:       [5, 5],

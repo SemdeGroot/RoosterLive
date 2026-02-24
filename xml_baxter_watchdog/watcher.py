@@ -109,6 +109,15 @@ class XMLHandler(FileSystemEventHandler):
 
 
 def main() -> int:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--backfill", action="store_true", help="Eenmalig backfill uitvoeren")
+    args = parser.parse_args()
+
+    if args.backfill:
+        from xml_baxter_watchdog.backfill import run_backfill
+        return run_backfill()
+    
     log = setup_logging()
 
     if not os.path.isdir(WATCH_FOLDER):
