@@ -58,3 +58,5 @@ Thumbs.db
 repomix.config.json
 repomix.instructions.json
 repomix-output.xml
+
+watchdog/env_config.py

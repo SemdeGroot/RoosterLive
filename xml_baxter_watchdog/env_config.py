@@ -5,4 +5,4 @@
 WATCH_FOLDER = r"C:\machines\output"    # Absoluut pad naar de folder met XML bestanden
 
 API_URL   = "https://app.apotheekjansen.com/api/baxter/machine-statistieken/ingest/"
-API_TOKEN = "638e293ba1e5046aafcf75472d45d75ee4ac955b3ec3838529ad5cae0c91d705"
+API_TOKEN = "197c572f397c3ee1e1b11808c2e7a0c82829f73983d8f13d64047eca5b5586df"

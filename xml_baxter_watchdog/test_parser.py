@@ -3,8 +3,7 @@ import os
 import tempfile
 import xml.etree.ElementTree as ET
 
-sys.path.insert(0, os.path.dirname(__file__))
-from xml_parser import parse_filename, parse_xml
+from xml_baxter_watchdog.xml_parser import parse_filename, parse_xml
 
 
 # ------------------------------------------------------------------

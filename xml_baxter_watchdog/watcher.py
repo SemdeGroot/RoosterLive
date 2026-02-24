@@ -5,13 +5,33 @@ from logging.handlers import RotatingFileHandler
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-from xml_parser import verwerk_bestand
-from api_client import stuur_naar_api
-from config import WATCH_FOLDER
+from xml_baxter_watchdog.xml_parser import verwerk_bestand
+from xml_baxter_watchdog.api_client import stuur_naar_api
+from xml_baxter_watchdog.config import WATCH_FOLDER
 
+# Helpers
+
+def wacht_tot_bestand_stabiel(filepath: str, timeout_s: int = 10, interval_s: float = 0.25) -> None:
+    end = time.time() + timeout_s
+    last_size = -1
+
+    while time.time() < end:
+        try:
+            size = os.path.getsize(filepath)
+        except OSError:
+            time.sleep(interval_s)
+            continue
+
+        if size == last_size and size > 0:
+            return
+
+        last_size = size
+        time.sleep(interval_s)
+
+    raise TimeoutError(f"Bestand niet stabiel binnen {timeout_s}s: {filepath}")
 
 # ------------------------------------------------------------------
-#  Logging — max 3MB totaal (3 x 1MB), daarna overschreven
+#  Logging — max 3MB totaal daarna overschreven
 #  Bij 144 files/dag (elke 10 min) blijft dit altijd klein
 # ------------------------------------------------------------------
 
@@ -48,20 +68,25 @@ class XMLHandler(FileSystemEventHandler):
             return
 
         # Soms schrijft het systeem het bestand nog, even wachten
-        time.sleep(1)
+        wacht_tot_bestand_stabiel(filepath)
 
         try:
             payload = verwerk_bestand(filepath)
-            stuur_naar_api(payload)
-            log.info(
-                f"{payload['machine_id']} | {payload['date']} {payload['time']} "
-                f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
-            )
+            ok = stuur_naar_api(payload)
+
+            if ok:
+                log.info(
+                    f"{payload['machine_id']} | {payload['date']} {payload['time']} "
+                    f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
+                )
+            else:
+                log.error(
+                    f"{payload['machine_id']} | {payload['date']} {payload['time']} "
+                    f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
+                )
 
         except ValueError as e:
             log.error(f"{filepath} | [ERROR] Parse fout: {e}")
-        except (ConnectionError, TimeoutError, RuntimeError) as e:
-            log.error(f"{filepath} | [ERROR] API fout: {e}")
         except Exception as e:
             log.exception(f"{filepath} | [ERROR] Onverwacht: {e}")
 

@@ -1,6 +1,5 @@
 import requests
-from config import API_URL, API_TOKEN
-
+from xml_baxter_watchdog.config import API_URL, API_TOKEN
 
 def stuur_naar_api(payload: dict) -> bool:
     """
