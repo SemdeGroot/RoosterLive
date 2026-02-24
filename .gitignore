@@ -59,4 +59,4 @@ repomix.config.json
 repomix.instructions.json
 repomix-output.xml
 
-watchdog/env_config.py
+xml_baxter_watchdog/env_config.py

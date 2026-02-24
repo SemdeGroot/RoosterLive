@@ -1,15 +1,53 @@
+import os
 import time
 import logging
-import os
-from logging.handlers import RotatingFileHandler
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from xml_baxter_watchdog.xml_parser import verwerk_bestand
 from xml_baxter_watchdog.api_client import stuur_naar_api
-from xml_baxter_watchdog.config import WATCH_FOLDER
+from xml_baxter_watchdog.env_config import WATCH_FOLDER
 
-# Helpers
+
+LOG_FILE = "watcher.log"
+LOG_MAX_BYTES = 3_000_000
+
+
+def truncate_log_if_needed(path: str, max_bytes: int) -> None:
+    try:
+        if os.path.exists(path) and os.path.getsize(path) > max_bytes:
+            with open(path, "w", encoding="utf-8"):
+                pass
+    except OSError:
+        pass
+
+
+def setup_logging() -> logging.Logger:
+    truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+
+    logger = logging.getLogger("xml_baxter_watchdog")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    if not logger.handlers:
+        fmt = logging.Formatter(
+            fmt="%(asctime)s  %(levelname)-8s  %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+
+        fh = logging.FileHandler(LOG_FILE, encoding="utf-8")
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(fmt)
+
+        sh = logging.StreamHandler()
+        sh.setLevel(logging.INFO)
+        sh.setFormatter(fmt)
+
+        logger.addHandler(fh)
+        logger.addHandler(sh)
+
+    return logger
+
 
 def wacht_tot_bestand_stabiel(filepath: str, timeout_s: int = 10, interval_s: float = 0.25) -> None:
     end = time.time() + timeout_s
@@ -30,77 +68,54 @@ def wacht_tot_bestand_stabiel(filepath: str, timeout_s: int = 10, interval_s: fl
 
     raise TimeoutError(f"Bestand niet stabiel binnen {timeout_s}s: {filepath}")
 
-# ------------------------------------------------------------------
-#  Logging — max 3MB totaal daarna overschreven
-#  Bij 144 files/dag (elke 10 min) blijft dit altijd klein
-# ------------------------------------------------------------------
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        RotatingFileHandler(
-            "watcher.log",
-            maxBytes=3_000_000,   # 3MB, paar dagen aan logs
-            backupCount=0,        # watcher.log + watcher.log.1 + watcher.log.2
-            encoding="utf-8",
-        ),
-        logging.StreamHandler(),  # ook naar console / NSSM output
-    ]
-)
-log = logging.getLogger(__name__)
-
-
-# ------------------------------------------------------------------
-#  Event handler
-# ------------------------------------------------------------------
 
 class XMLHandler(FileSystemEventHandler):
+    def __init__(self, log: logging.Logger) -> None:
+        self.log = log
 
     def on_created(self, event):
         if event.is_directory:
             return
 
         filepath = event.src_path
-
         if not filepath.lower().endswith(".xml"):
             return
 
-        # Soms schrijft het systeem het bestand nog, even wachten
         wacht_tot_bestand_stabiel(filepath)
 
         try:
             payload = verwerk_bestand(filepath)
             ok = stuur_naar_api(payload)
 
+            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+
             if ok:
-                log.info(
+                self.log.info(
                     f"{payload['machine_id']} | {payload['date']} {payload['time']} "
                     f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
                 )
             else:
-                log.error(
+                self.log.error(
                     f"{payload['machine_id']} | {payload['date']} {payload['time']} "
                     f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
                 )
 
         except ValueError as e:
-            log.error(f"{filepath} | [ERROR] Parse fout: {e}")
+            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+            self.log.error(f"{filepath} | [ERROR] Parse fout: {e}")
         except Exception as e:
-            log.exception(f"{filepath} | [ERROR] Onverwacht: {e}")
+            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+            self.log.exception(f"{filepath} | [ERROR] Onverwacht: {e}")
 
 
-# ------------------------------------------------------------------
-#  Main
-# ------------------------------------------------------------------
+def main() -> int:
+    log = setup_logging()
 
-if __name__ == "__main__":
     if not os.path.isdir(WATCH_FOLDER):
         log.error(f"Watch folder bestaat niet: {WATCH_FOLDER}")
-        raise SystemExit(1)
+        return 1
 
-    handler = XMLHandler()
+    handler = XMLHandler(log)
     observer = Observer()
     observer.schedule(handler, path=WATCH_FOLDER, recursive=False)
     observer.start()
@@ -115,3 +130,8 @@ if __name__ == "__main__":
 
     observer.join()
     log.info("Gestopt.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
