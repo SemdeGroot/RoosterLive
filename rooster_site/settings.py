@@ -194,6 +194,11 @@ if not DEBUG:
             "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
             "options": {"queue": "default"},
         },
+        "cleanup_baxter_snapshots_daily_0100": {
+            "task": "core.tasks.beat.cleanup.cleanup_baxter_snapshots_task",
+            "schedule": crontab(minute=0, hour=1),
+            "options": {"queue": "default"},
+        },
         "weekly_fill_availability_monday_0003": {
             "task": "core.tasks.beat.fill.weekly_fill_availability_task",
             "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
@@ -411,3 +416,6 @@ AWS_REKOGNITION_SECRET_ACCESS_KEY = os.getenv("AWS_REKOGNITION_SECRET_ACCESS_KEY
 
 # Native biometric
 NATIVE_BIOMETRIC_PEPPER = os.getenv("NATIVE_BIOMETRIC_PEPPER")
+
+# BAXTER WATCHDOG API KEY
+BAXTER_WATCHDOG_API_KEY = os.getenv("BAXTER_WATCHDOG_API_KEY")

@@ -1,5 +1,6 @@
 import json
-from datetime import date, time, timedelta
+from collections import defaultdict
+from datetime import date, time, timedelta, datetime as dt
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -8,7 +9,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from ..models import BaxterProductie
+from ..models import BaxterProductie, BaxterProductieSnapshot
 from core.views._helpers import can
 
 
@@ -27,7 +28,7 @@ def _week_start(d: date) -> date:
 
 
 def _iso_week(d: date) -> str:
-    return f"W{d.isocalendar()[1]}"
+    return f"W{d.isocalendar()[1]:02d}"
 
 
 # -------------------------------------------------------
@@ -67,6 +68,14 @@ def machine_statistieken_ingest(request):
         },
     )
 
+    # Sla meetpunt op als snapshot voor de intradag-grafiek.
+    # Naive datetime: watchdog levert lokale tijd, geen UTC-conversie.
+    BaxterProductieSnapshot.objects.create(
+        machine_id=machine_id,
+        timestamp=dt.combine(record_date, record_time),
+        aantal_zakjes=aantal,
+    )
+
     return JsonResponse({
         "status":  "created" if created else "updated",
         "machine": machine_id,
@@ -99,15 +108,10 @@ def machine_statistieken_api_vandaag(request):
     vandaag = date.today()
     maandag = _week_start(vandaag)
 
-    # Vandaag
-    records  = BaxterProductie.objects.filter(date=vandaag)
-    machines = {r.machine_id: r.aantal_zakjes for r in records}
-
-    # max(updated_at) van vandaag's records: geeft aan wanneer de machine-data
-    # voor het laatst is ontvangen, ongeacht het poll-interval van de frontend.
+    records     = BaxterProductie.objects.filter(date=vandaag)
+    machines    = {r.machine_id: r.aantal_zakjes for r in records}
     last_update = max((r.updated_at for r in records), default=None)
 
-    # Huidige kalenderweek (ma t/m vandaag) voor weekvoortgang
     week_records = (
         BaxterProductie.objects
         .filter(date__gte=maandag, date__lte=vandaag)
@@ -115,7 +119,6 @@ def machine_statistieken_api_vandaag(request):
     )
     week_totaal = sum(r.aantal_zakjes for r in week_records)
 
-    # Groepeer weekdata per dag voor de dagbalken in weekvoortgang
     per_dag: dict[str, dict] = {}
     for r in week_records:
         key = str(r.date)
@@ -127,12 +130,29 @@ def machine_statistieken_api_vandaag(request):
         for dag, mach in sorted(per_dag.items())
     ]
 
+    # Groepeer snapshots per kwartier; sommeer alle machines per tijdslot.
+    snapshot_qs = (
+        BaxterProductieSnapshot.objects
+        .filter(timestamp__date=vandaag)
+        .order_by("timestamp")
+    )
+    per_tijdstip: dict[str, int] = defaultdict(int)
+    for s in snapshot_qs:
+        minuten    = (s.timestamp.minute // 15) * 15
+        tijdslabel = s.timestamp.strftime(f"%H:{minuten:02d}")
+        per_tijdstip[tijdslabel] += s.aantal_zakjes
+
+    intradag = [
+        {"tijd": t, "totaal": v}
+        for t, v in sorted(per_tijdstip.items())
+    ]
+
     return JsonResponse({
         "datum":               str(vandaag),
         "machines":            machines,
         "week_totaal":         week_totaal,
         "week_dagen":          week_dagen,
-        # ISO 8601 string; null als er vandaag nog geen records zijn
+        "intradag":            intradag,
         "last_machine_update": last_update.isoformat() if last_update else None,
     })
 
@@ -192,16 +212,23 @@ def _week_bereik(vandaag: date, weken: int) -> list:
         .order_by("date", "machine_id")
     )
 
-    per_week: dict[str, dict] = {}
+    per_week: dict[str, dict]  = {}
+    per_week_jaar: dict[str, int] = {}
+
     for r in records:
-        week_key = _iso_week(r.date)
+        iso        = r.date.isocalendar()
+        week_key   = f"W{iso[1]:02d}"
+        iso_jaar   = iso[0]  # ISO-jaar kan afwijken van kalenderjaar (week 1 grens)
+
         per_week.setdefault(week_key, {})
-        # Meerdere records per machine per week worden opgeteld
         per_week[week_key][r.machine_id] = (
             per_week[week_key].get(r.machine_id, 0) + r.aantal_zakjes
         )
+        # Eerste datum in de week bepaalt het jaar-label
+        if week_key not in per_week_jaar:
+            per_week_jaar[week_key] = iso_jaar
 
     return [
-        {"week": week, "machines": machines}
+        {"week": week, "jaar": per_week_jaar[week], "machines": machines}
         for week, machines in sorted(per_week.items())
     ]

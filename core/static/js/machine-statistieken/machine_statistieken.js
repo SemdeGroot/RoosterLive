@@ -28,7 +28,7 @@ const MS_CONFIG = {
   pollInterval: 60_000,
 };
 
-const MS_USE_DEMO = true;
+const MS_USE_DEMO = false;
 
 /* -------------------------------------------------------
    KLEUR-HELPERS
@@ -50,7 +50,7 @@ function panelKleur() { return cssVar("--panel"); }
 
 const ACCENT_HEX       = "#072a72";
 const STATUS_GROEN_HEX = "#16a34a";
-const STATUS_ROOD_HEX  = "#f59e0b"; // oranje
+const STATUS_ROOD_HEX  = "#f59e0b";
 
 function accentRgba(alpha = 1)      { return hexRgba(ACCENT_HEX, alpha); }
 function statusGroenRgba(alpha = 1) { return hexRgba(STATUS_GROEN_HEX, alpha); }
@@ -102,6 +102,62 @@ function destroyAllCharts() {
 }
 
 /* -------------------------------------------------------
+   WEEK JAAR PLUGIN
+   Tekent het ISO-jaar gecentreerd onder het volledige pixel-bereik
+   van dat jaar op de x-as. Bij 12 weken van 2026 staat "2026"
+   gecentreerd onder al die 12 tiks.
+   Verwacht chart.data._jaarData: Array<{ jaar: number|null }>
+   parallel aan de labels-array.
+------------------------------------------------------- */
+
+const weekJaarPlugin = {
+  id: "weekJaarLabel",
+  afterDraw(chart) {
+    const jaarData = chart.data._jaarData;
+    if (!jaarData?.length) return;
+    const { ctx: c2d, scales: { x }, chartArea } = chart;
+    if (!x) return;
+
+    // Groepeer aaneengesloten indices per jaar
+    const jaarBereiken = [];
+    let huidigJaar = null;
+    let startIndex = 0;
+
+    jaarData.forEach((item, i) => {
+      if (item.jaar !== huidigJaar) {
+        if (huidigJaar !== null) {
+          jaarBereiken.push({ jaar: huidigJaar, van: startIndex, tot: i - 1 });
+        }
+        huidigJaar = item.jaar;
+        startIndex = i;
+      }
+    });
+    // Laatste lopende jaar afsluiten
+    if (huidigJaar !== null) {
+      jaarBereiken.push({ jaar: huidigJaar, van: startIndex, tot: jaarData.length - 1 });
+    }
+
+    c2d.save();
+    c2d.font         = `11px ${Chart.defaults.font.family || "inherit"}`;
+    c2d.fillStyle    = mutedKleur();
+    c2d.textBaseline = "top";
+    c2d.textAlign    = "center";
+
+    jaarBereiken.forEach(({ jaar, van, tot }) => {
+      if (!jaar) return;
+      const xVan = x.getPixelForValue(van);
+      const xTot = x.getPixelForValue(tot);
+      // Middelpunt van het pixel-bereik van dit jaar
+      const xMid = (xVan + xTot) / 2;
+      // 4px onder de onderkant van het chartgebied, onder de week-ticks
+      c2d.fillText(String(jaar), xMid, chartArea.bottom + 46);
+    });
+
+    c2d.restore();
+  },
+};
+
+/* -------------------------------------------------------
    DEMO DATA
 ------------------------------------------------------- */
 
@@ -140,26 +196,35 @@ function buildDemoData() {
     return Array.from({ length: n }, (_, i) => {
       const d = new Date(nu);
       d.setDate(d.getDate() - (n - 1 - i) * 7);
-      return { week: `W${getWeekNumber(d)}`, machines: randomWeek() };
+      const iso = getIsoYearWeek(d);
+      return { week: `W${String(iso.week).padStart(2, "0")}`, jaar: iso.jaar, machines: randomWeek() };
     });
   }
 
-    const weekDagenDates = volledigeWeekDagen(nu);
-
-    // Alleen Ma–Vr opnemen in week_dagen, zodat Za/Zo als "geen data" verschijnen
-    const weekDagenData = weekDagenDates
-    .filter(d => {
-        const day = d.getDay();            // 0=Zo, 6=Za
-        return day !== 0 && day !== 6;     // skip weekend
-    })
+  const weekDagenDates = volledigeWeekDagen(nu);
+  const weekDagenData  = weekDagenDates
+    .filter(d => { const day = d.getDay(); return day !== 0 && day !== 6; })
     .map(d => ({
-        datum:    datumString(d),
-        machines: datumString(d) === vandaag ? vandaagMachines : randomDag(),
+      datum:    datumString(d),
+      machines: datumString(d) === vandaag ? vandaagMachines : randomDag(),
     }));
 
-    const weekTotaal = weekDagenData.reduce(
+  const weekTotaal = weekDagenData.reduce(
     (s, d) => s + Object.values(d.machines).reduce((a, v) => a + v, 0), 0
-    );
+  );
+
+  // Gesimuleerde intradag meetpunten: elk uur vanaf 08:00 t/m nu
+  const dagTotaal = Object.values(vandaagMachines).reduce((s, v) => s + v, 0);
+  const startMin  = 8 * 60;
+  const eindMin   = nu.getHours() * 60 + nu.getMinutes();
+  const intradag  = [];
+  for (let m = startMin; m <= eindMin; m += 60) {
+    const h = String(Math.floor(m / 60)).padStart(2, "0");
+    intradag.push({
+      tijd:   `${h}:00`,
+      totaal: Math.round(dagTotaal * ((m - startMin) / Math.max(eindMin - startMin, 1))),
+    });
+  }
 
   return {
     vandaag: {
@@ -167,6 +232,7 @@ function buildDemoData() {
       machines:            vandaagMachines,
       week_totaal:         weekTotaal,
       week_dagen:          weekDagenData,
+      intradag,
       last_machine_update: new Date(nu.getTime() - 4 * 60 * 1000).toISOString(),
     },
     dagen7:  dagenReeks(7),
@@ -204,7 +270,7 @@ const state = {
   wekenBereik:  "weken4",
   data:         null,
   charts:       {},
-  historyCache: {},   // bereik -> data[]
+  historyCache: {},
 };
 
 /* -------------------------------------------------------
@@ -216,6 +282,17 @@ document.addEventListener("DOMContentLoaded", () => {
   bindControls();
   bindFullscreenAutoHide();
   bindThemeObserver();
+
+  // Herstel laatst actieve view na refresh
+  const opgeslagenView = sessionStorage.getItem("ms-actieve-view");
+  if (opgeslagenView) {
+    state.huidigView = opgeslagenView;
+    toonView(opgeslagenView);
+    document.getElementById("ms-view-select").value = opgeslagenView;
+    const fsBtn = document.getElementById("ms-fullscreen-btn");
+    if (fsBtn) fsBtn.style.display = opgeslagenView === "vandaag" ? "flex" : "none";
+  }
+
   laadEnRender();
   startPoll();
 });
@@ -223,6 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function bindControls() {
   document.getElementById("ms-view-select")?.addEventListener("change", async function () {
     state.huidigView = this.value;
+    sessionStorage.setItem("ms-actieve-view", this.value);
     toonView(state.huidigView);
 
     const fsBtn = document.getElementById("ms-fullscreen-btn");
@@ -288,12 +366,10 @@ function toonView(naam) {
 
 async function ensureHistoryLoaded(bereik) {
   if (MS_USE_DEMO) return;
-
   if (state.historyCache[bereik]) {
     state.data[bereik] = state.historyCache[bereik];
     return;
   }
-
   const data = await fetchGeschiedenis(bereik);
   state.historyCache[bereik] = data;
   state.data[bereik] = data;
@@ -312,8 +388,6 @@ async function laadEnRender() {
     } else {
       if (!state.data) state.data = {};
       state.data.vandaag = await fetchVandaag();
-
-      // refresh alleen de actuele selectie, zodat de demo/DB “laatste datums” logisch blijft
       if (state.huidigView === "dagen") await refreshHistory(state.dagenBereik);
       if (state.huidigView === "weken") await refreshHistory(state.wekenBereik);
     }
@@ -369,7 +443,7 @@ function renderVandaag() {
   renderDonut(totaal);
   renderStatusBadge(totaal);
   renderHorizontalBars(d.machines || {});
-  renderTodayLine(totaal);
+  renderTodayLine(totaal, d.intradag || []);
   renderWeekProgress(d.week_totaal || 0, weekDagen);
 }
 
@@ -584,30 +658,60 @@ function renderHorizontalBars(machines) {
 
 /* -------------------------------------------------------
    TODAY LINE CHART
+   Gebruikt echte intradag-snapshots als die er zijn;
+   valt terug op lineaire benadering bij demo of lege dag.
 ------------------------------------------------------- */
 
-function renderTodayLine(totaalNu) {
+function renderTodayLine(totaalNu, intradag) {
   const ctx = document.getElementById("ms-line-chart");
   if (!ctx) return;
 
-  const nu         = new Date();
-  const nuMin      = nu.getHours() * 60 + nu.getMinutes();
-  const labels     = MS_CONFIG.dagTargets.map(t => t.tijd);
-  const targetData = MS_CONFIG.dagTargets.map(t => t.zakjes);
+  const nu    = new Date();
+  const nuMin = nu.getHours() * 60 + nu.getMinutes();
 
-  const actualData = MS_CONFIG.dagTargets.map(t => {
-    const tMin = tijdNaarMinuten(t.tijd);
-    if (tMin > nuMin) return null;
-    if (nuMin === 0)  return 0;
-    return Math.round(totaalNu * (tMin / nuMin));
+  const heeftEchteMeetpunten = intradag.length > 1;
+
+  let actualLabels, actualData;
+  if (heeftEchteMeetpunten) {
+    actualLabels = intradag.map(p => p.tijd);
+    actualData   = intradag.map(p => p.totaal);
+  } else {
+    actualLabels = MS_CONFIG.dagTargets.map(t => t.tijd);
+    actualData   = MS_CONFIG.dagTargets.map(t => {
+      const tMin = tijdNaarMinuten(t.tijd);
+      if (tMin > nuMin) return null;
+      if (nuMin === 0)  return 0;
+      return Math.round(totaalNu * (tMin / nuMin));
+    });
+  }
+
+  const targetLabels = MS_CONFIG.dagTargets.map(t => t.tijd);
+  const targetData   = MS_CONFIG.dagTargets.map(t => t.zakjes);
+
+  // Gecombineerde x-as: unie van doel-tijden en meetpunt-tijden
+  const alleLabels = [...new Set([...targetLabels, ...actualLabels])].sort();
+
+  const doelData = alleLabels.map(l => {
+    const idx = targetLabels.indexOf(l);
+    return idx !== -1 ? targetData[idx] : null;
+  });
+
+  const werkelijkData = alleLabels.map(l => {
+    const idx = actualLabels.indexOf(l);
+    return idx !== -1 ? actualData[idx] : null;
   });
 
   const tempo = nuMin > 0 ? totaalNu / nuMin : 0;
-  const interpolatieData = MS_CONFIG.dagTargets.map(t => {
-    const tMin = tijdNaarMinuten(t.tijd);
-    if (tMin <= nuMin) return Math.round(totaalNu * (tMin / (nuMin || 1)));
-    return Math.round(totaalNu + tempo * (tMin - nuMin));
-  });
+  const dagEindMin = tijdNaarMinuten(MS_CONFIG.dagTargets.at(-1).tijd); // 17:30
+  const interpolatieData = nuMin >= dagEindMin
+      ? alleLabels.map(() => null)
+      : alleLabels.map(l => {
+          const tMin = tijdNaarMinuten(l);
+          if (isNaN(tMin)) return null;
+          if (tMin <= nuMin) return Math.round(totaalNu * (tMin / (nuMin || 1)));
+          if (tMin > dagEindMin) return null;
+          return Math.round(totaalNu + tempo * (tMin - nuMin));
+      });
 
   const tooltipOpties = {
     backgroundColor: panelKleur(),
@@ -619,9 +723,10 @@ function renderTodayLine(totaalNu) {
   };
 
   if (state.charts.todayLine) {
-    state.charts.todayLine.data.datasets[0].data = targetData;
-    state.charts.todayLine.data.datasets[1].data = actualData;
-    state.charts.todayLine.data.datasets[2].data = interpolatieData;
+    state.charts.todayLine.data.labels              = alleLabels;
+    state.charts.todayLine.data.datasets[0].data    = doelData;
+    state.charts.todayLine.data.datasets[1].data    = werkelijkData;
+    state.charts.todayLine.data.datasets[2].data    = interpolatieData;
     state.charts.todayLine.update("none");
     return;
   }
@@ -629,29 +734,30 @@ function renderTodayLine(totaalNu) {
   state.charts.todayLine = new Chart(ctx, {
     type: "line",
     data: {
-      labels,
+      labels: alleLabels,
       datasets: [
         {
           label:            "Doel",
-          data:             targetData,
+          data:             doelData,
           borderColor:      tekstKleur(),
           borderDash:       [7, 4],
           borderWidth:      1.5,
           pointRadius:      0,
           fill:             false,
           tension:          0,
+          spanGaps:         true,
           pointHoverRadius: 0,
         },
         {
           label:                "Werkelijk",
-          data:                 actualData,
+          data:                 werkelijkData,
           borderColor:          ACCENT_HEX,
           borderWidth:          2.5,
           pointRadius:          3,
           pointBackgroundColor: ACCENT_HEX,
           fill:                 false,
           tension:              0,
-          spanGaps:             false,
+          spanGaps:             true,
           pointHoverRadius:     5,
         },
         {
@@ -673,7 +779,15 @@ function renderTodayLine(totaalNu) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: { color: mutedKleur(), font: { size: 11 }, boxWidth: 20 },
+            labels: {
+              color: mutedKleur(),
+              font: { size: 11 },
+              boxWidth: 20,
+              filter: item => {
+                  const huidigMin = new Date().getHours() * 60 + new Date().getMinutes();
+                  return !(item.text === "Voorspelling" && huidigMin >= dagEindMin);
+              },
+            },
         },
         tooltip: tooltipOpties,
       },
@@ -717,7 +831,7 @@ function renderWeekProgress(weekTotaal, weekDagen) {
 }
 
 function renderWeekDagenChart(weekDagen) {
-  const ctx    = document.getElementById("ms-week-dagen-chart");
+  const ctx = document.getElementById("ms-week-dagen-chart");
   if (!ctx) return;
 
   const dagNamen = ["Ma","Di","Wo","Do","Vr","Za","Zo"];
@@ -736,19 +850,18 @@ function renderWeekDagenChart(weekDagen) {
 
   const labels       = volledigeWeek.map(d => d.naam);
   const data         = volledigeWeek.map(d => d.totaal ?? 0);
-    const kleuren = volledigeWeek.map(d =>
+  const kleuren      = volledigeWeek.map(d =>
     d.totaal === null ? c("--muted-rgb", 0.12)
-        : d.totaal >= target ? STATUS_GROEN_HEX : STATUS_ROOD_HEX
-    );
-
-    const hoverKleuren = volledigeWeek.map(d =>
+      : d.totaal >= target ? STATUS_GROEN_HEX : STATUS_ROOD_HEX
+  );
+  const hoverKleuren = volledigeWeek.map(d =>
     d.totaal === null ? c("--muted-rgb", 0.20)
-        : d.totaal >= target ? statusGroenRgba(0.65) : hexRgba(STATUS_ROOD_HEX, 0.65)
-    );
+      : d.totaal >= target ? statusGroenRgba(0.65) : hexRgba(STATUS_ROOD_HEX, 0.65)
+  );
 
   const maxData = Math.max(...data, 0);
-    const basis   = Math.max(target, maxData);
-    const MAX_X   = Math.ceil(basis * 1.10 / 1000) * 1000; // 10% marge, netjes afgerond
+  const basis   = Math.max(target, maxData);
+  const MAX_X   = Math.ceil(basis * 1.10 / 1000) * 1000;
 
   const targetLijnPlugin = {
     id: "weekDagTargetLijn",
@@ -808,18 +921,16 @@ function renderWeekDagenChart(weekDagen) {
     type: "bar",
     data: {
       labels,
-        datasets: [{
+      datasets: [{
         data:                 data,
         backgroundColor:      kleuren,
         hoverBackgroundColor: hoverKleuren,
         borderRadius:         3,
         borderSkipped:        false,
-
-        /* Meer verticale ruimte tussen Ma–Zo */
-        maxBarThickness:    18,   // limiet omhoog
-        categoryPercentage: 0.9,  // benut meer van de "row"
-        barPercentage:      1.0,  // bar vult de categorie
-        }],
+        maxBarThickness:      18,
+        categoryPercentage:   0.9,
+        barPercentage:        1.0,
+      }],
     },
     plugins: [targetLijnPlugin],
     options: {
@@ -963,11 +1074,13 @@ function renderWekenLine(data) {
   const ctx = document.getElementById("ms-weken-line");
   if (!ctx) return;
 
-  const labels  = data.map(d => d.week);
-  const totalen = data.map(d => Object.values(d.machines).reduce((s, v) => s + v, 0));
+  const labels   = data.map(d => d.week);
+  const totalen  = data.map(d => Object.values(d.machines).reduce((s, v) => s + v, 0));
+  const jaarData = data.map(d => ({ jaar: d.jaar ?? null }));
 
   if (state.charts.wekenLine) {
     state.charts.wekenLine.data.labels           = labels;
+    state.charts.wekenLine.data._jaarData        = jaarData;
     state.charts.wekenLine.data.datasets[0].data = totalen;
     state.charts.wekenLine.data.datasets[1].data = data.map(() => MS_CONFIG.weekTarget);
     state.charts.wekenLine.update("none");
@@ -976,8 +1089,10 @@ function renderWekenLine(data) {
 
   state.charts.wekenLine = new Chart(ctx, {
     type: "line",
+    plugins: [weekJaarPlugin],
     data: {
       labels,
+      _jaarData: jaarData,
       datasets: [
         {
           label:                "Zakjes",
@@ -993,7 +1108,7 @@ function renderWekenLine(data) {
         targetLijnDataset(data, MS_CONFIG.weekTarget, "Weekdoelstelling"),
       ],
     },
-    options: histLineOpties(),
+    options: histLineOpties({ bottomPadding: 40 }),
   });
 }
 
@@ -1003,18 +1118,25 @@ function renderWekenStacked(data) {
 
   const { labels, datasets } = buildStackedDatasets(data, "week");
   const targetDs             = targetLijnDataset(data, MS_CONFIG.weekTarget, "Weekdoelstelling");
+  const jaarData             = data.map(d => ({ jaar: d.jaar ?? null }));
 
   if (state.charts.wekenStacked) {
-    state.charts.wekenStacked.data.labels   = labels;
-    state.charts.wekenStacked.data.datasets = [...datasets, targetDs];
+    state.charts.wekenStacked.data.labels    = labels;
+    state.charts.wekenStacked.data._jaarData = jaarData;
+    state.charts.wekenStacked.data.datasets  = [...datasets, targetDs];
     state.charts.wekenStacked.update("none");
     return;
   }
 
   state.charts.wekenStacked = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [...datasets, targetDs] },
-    options: stackedOpties(),
+    plugins: [weekJaarPlugin],
+    data: {
+      labels,
+      _jaarData: jaarData,
+      datasets: [...datasets, targetDs],
+    },
+    options: stackedOpties({ bottomPadding: 40 }),
   });
 }
 
@@ -1055,10 +1177,11 @@ function renderWekenMachineBars(data) {
    CHART OPTIES HELPERS
 ------------------------------------------------------- */
 
-function histLineOpties() {
+function histLineOpties({ bottomPadding = 0 } = {}) {
   return {
     responsive:          true,
     maintainAspectRatio: false,
+    layout: { padding: { bottom: bottomPadding } },
     plugins: {
       legend: { labels: { color: mutedKleur(), font: { size: 11 }, boxWidth: 20 } },
       tooltip: {
@@ -1086,10 +1209,11 @@ function histLineOpties() {
   };
 }
 
-function stackedOpties() {
+function stackedOpties({ bottomPadding = 0 } = {}) {
   return {
     responsive:          true,
     maintainAspectRatio: false,
+    layout: { padding: { bottom: bottomPadding } },
     plugins: {
       legend: {
         labels: {
@@ -1229,11 +1353,9 @@ function toggleFullscreen() {
     document.getElementById("ms-fullscreen-exit-bar")?.classList.remove("visible");
   }
 
-  // Rebuild charts zodat Chart.js altijd de nieuwe container-maten pakt
   destroyAllCharts();
   renderAlles();
 
-  // Extra safety resize na layout settle
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       Object.values(state.charts).forEach(ch => ch?.resize?.());
@@ -1260,26 +1382,11 @@ function berekenVerwacht(nu) {
   return points[points.length - 1].zakjes;
 }
 
-function huidigeWeekDagen(nu) {
-  const dag     = nu.getDay();
-  const maandag = new Date(nu);
-  maandag.setDate(nu.getDate() + (dag === 0 ? -6 : 1 - dag));
-  maandag.setHours(0, 0, 0, 0);
-  const dagen = [];
-  for (let i = 0; i <= 6; i++) {
-    const d = new Date(maandag);
-    d.setDate(maandag.getDate() + i);
-    if (d <= nu) dagen.push(d);
-  }
-  return dagen;
-}
-
 function volledigeWeekDagen(nu) {
   const dag     = nu.getDay();
   const maandag = new Date(nu);
   maandag.setDate(nu.getDate() + (dag === 0 ? -6 : 1 - dag));
   maandag.setHours(0, 0, 0, 0);
-
   const dagen = [];
   for (let i = 0; i <= 6; i++) {
     const d = new Date(maandag);
@@ -1287,6 +1394,15 @@ function volledigeWeekDagen(nu) {
     dagen.push(d);
   }
   return dagen;
+}
+
+// Geeft het ISO-jaar en weeknummer voor een datum
+function getIsoYearWeek(d) {
+  const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  utc.setUTCDate(utc.getUTCDate() + 4 - (utc.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const week      = Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
+  return { jaar: utc.getUTCFullYear(), week };
 }
 
 function datumString(d)     { return d.toISOString().slice(0, 10); }
@@ -1309,13 +1425,6 @@ function formatKort(n) {
 
 function sortMachineId(a, b) {
   return (parseInt(a.replace(/\D/g, ""), 10) || 0) - (parseInt(b.replace(/\D/g, ""), 10) || 0);
-}
-
-function getWeekNumber(d) {
-  const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  utc.setUTCDate(utc.getUTCDate() + 4 - (utc.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
-  return Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
 }
 
 function setEl(id, tekst) {

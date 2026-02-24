@@ -12,6 +12,9 @@ from xml_baxter_watchdog.env_config import WATCH_FOLDER
 LOG_FILE = "watcher.log"
 LOG_MAX_BYTES = 3_000_000
 
+MAX_PARSE_ATTEMPTS = 5
+RETRY_INTERVAL_S = 1.0
+
 
 def truncate_log_if_needed(path: str, max_bytes: int) -> None:
     try:
@@ -73,39 +76,62 @@ class XMLHandler(FileSystemEventHandler):
     def __init__(self, log: logging.Logger) -> None:
         self.log = log
 
+    def on_moved(self, event):
+        # Covers machines that write to a temp file and rename into the watch folder.
+        if not event.is_directory and event.dest_path.lower().endswith(".xml"):
+            self._verwerk(event.dest_path)
+
     def on_created(self, event):
-        if event.is_directory:
+        if event.is_directory or not event.src_path.lower().endswith(".xml"):
+            return
+        self._verwerk(event.src_path)
+
+    def _verwerk(self, filepath: str) -> None:
+        try:
+            wacht_tot_bestand_stabiel(filepath)
+        except TimeoutError as e:
+            self.log.error(f"{filepath} | [ERROR] {e}")
             return
 
-        filepath = event.src_path
-        if not filepath.lower().endswith(".xml"):
-            return
+        last_error: Exception | None = None
 
-        wacht_tot_bestand_stabiel(filepath)
+        for attempt in range(1, MAX_PARSE_ATTEMPTS + 1):
+            try:
+                payload = verwerk_bestand(filepath)
+                break
+            except ValueError as e:
+                last_error = e
+                if attempt < MAX_PARSE_ATTEMPTS:
+                    self.log.warning(
+                        f"{filepath} | Poging {attempt}/{MAX_PARSE_ATTEMPTS} mislukt: {e} — opnieuw over {RETRY_INTERVAL_S}s"
+                    )
+                    time.sleep(RETRY_INTERVAL_S)
+        else:
+            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+            self.log.error(
+                f"{filepath} | [ERROR] Parse fout na {MAX_PARSE_ATTEMPTS} pogingen: {last_error}"
+            )
+            return
 
         try:
-            payload = verwerk_bestand(filepath)
             ok = stuur_naar_api(payload)
-
-            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
-
-            if ok:
-                self.log.info(
-                    f"{payload['machine_id']} | {payload['date']} {payload['time']} "
-                    f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
-                )
-            else:
-                self.log.error(
-                    f"{payload['machine_id']} | {payload['date']} {payload['time']} "
-                    f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
-                )
-
-        except ValueError as e:
-            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
-            self.log.error(f"{filepath} | [ERROR] Parse fout: {e}")
         except Exception as e:
             truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
-            self.log.exception(f"{filepath} | [ERROR] Onverwacht: {e}")
+            self.log.exception(f"{filepath} | [ERROR] Onverwacht bij API-aanroep: {e}")
+            return
+
+        truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+
+        if ok:
+            self.log.info(
+                f"{payload['machine_id']} | {payload['date']} {payload['time']} "
+                f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
+            )
+        else:
+            self.log.error(
+                f"{payload['machine_id']} | {payload['date']} {payload['time']} "
+                f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
+            )
 
 
 def main() -> int:
@@ -117,7 +143,7 @@ def main() -> int:
     if args.backfill:
         from xml_baxter_watchdog.backfill import run_backfill
         return run_backfill()
-    
+
     log = setup_logging()
 
     if not os.path.isdir(WATCH_FOLDER):

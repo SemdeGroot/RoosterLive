@@ -32,7 +32,12 @@ def parse_filename(filename: str) -> dict:
 
 
 def parse_xml(filepath: str) -> int:
-    tree = ET.parse(filepath)
+    try:
+        tree = ET.parse(filepath)
+    except ET.ParseError as e:
+        # File may still be partially written; caller can retry.
+        raise ValueError(f"Ongeldige XML in {filepath}: {e}") from e
+
     root = tree.getroot()
 
     alle_zak_ids = root.findall(".//zak_id")

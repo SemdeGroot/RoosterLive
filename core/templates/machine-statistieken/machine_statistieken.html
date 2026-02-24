@@ -94,13 +94,9 @@
           </div>
           <!-- einde rij 1 -->
 
-          <!-- Rij 2: Lijndiagram (60%) + Weekvoortgang (40%)
-               align-items: stretch zorgt dat beide kaarten even hoog zijn.
-               ms-line-card en ms-week-card zijn flex-columns zodat
-               de charts de beschikbare ruimte vullen. -->
+          <!-- Rij 2: Lijndiagram (60%) + Weekvoortgang (40%) -->
           <div class="ms-today-bottom">
 
-            <!-- Lijndiagram: ms-line-wrap vult de resterende kaarthoogte -->
             <div class="ms-card ms-line-card">
               <h3>Voortgang versus dagschema</h3>
               <div class="ms-line-wrap">
@@ -108,9 +104,6 @@
               </div>
             </div>
 
-            <!-- Weekvoortgang: ms-week-progress is flex-column met flex:1
-                 zodat ms-week-dagen-wrap de resterende hoogte vult.
-                 Altijd 7 rijen (Ma–Zo) → stabiele hoogte bij 5 of 6 werkdagen. -->
             <div class="ms-card ms-week-card">
               <h3>Weekvoortgang</h3>
 
@@ -128,7 +121,6 @@
                   <span id="ms-week-pct">—</span>&nbsp;van&nbsp;<span id="ms-week-val-target">—</span>
                 </div>
 
-                <!-- Dag-chart vult de rest van de kaarthoogte -->
                 <div class="ms-week-dagen-wrap">
                   <canvas id="ms-week-dagen-chart"></canvas>
                 </div>
@@ -199,16 +191,18 @@
 
           <div class="ms-hist-grid">
 
+            <!-- Totale weekproductie: extra hoogte zodat jaar-label zichtbaar is -->
             <div class="ms-card full-width">
               <h3>Totale weekproductie</h3>
-              <div style="position: relative; height: 260px;">
+              <div style="position: relative; height: 300px;">
                 <canvas id="ms-weken-line"></canvas>
               </div>
             </div>
 
+            <!-- Gestapeld per machine: zelfde extra hoogte -->
             <div class="ms-card">
               <h3>Productie per machine per week (gestapeld)</h3>
-              <div style="position: relative; height: 280px;">
+              <div style="position: relative; height: 320px;">
                 <canvas id="ms-weken-stacked"></canvas>
               </div>
             </div>

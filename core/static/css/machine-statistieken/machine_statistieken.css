@@ -2,8 +2,6 @@
 
 /* -------------------------------------------------------
    SPACING TOKEN
-   Één waarde voor alle gaps binnen het vandaag-grid.
-   Zo zijn alle marges tussen kaarten identiek.
 ------------------------------------------------------- */
 :root {
   --ms-gap: 12px;
@@ -70,7 +68,6 @@
   border-color: #072a72;
 }
 
-/* Vandaag-view: zorg voor verticale gap tussen rij 1 en rij 2 */
 #ms-view-vandaag.ms-view.active {
   display: flex;
   flex-direction: column;
@@ -193,7 +190,6 @@
   flex-shrink: 0;
 }
 
-/* hbar-kaart vult dezelfde hoogte als de donut-kaart */
 .ms-hbar-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -224,10 +220,9 @@
   display: grid;
   grid-template-columns: 60% 1fr;
   gap: var(--ms-gap);
-  align-items: stretch;    /* beide kaarten even hoog */
+  align-items: stretch;
 }
 
-/* Generieke kaart */
 .ms-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -242,12 +237,10 @@
   color: var(--text);
 }
 
-/* 12px ruimte onder de titel, boven de line chart */
 .ms-line-card h3 {
   margin-bottom: 12px;
 }
 
-/* Line-chart card: flex zodat .ms-line-wrap de resterende hoogte vult */
 .ms-line-card {
   display: flex;
   flex-direction: column;
@@ -257,16 +250,13 @@
   flex: 1;
   position: relative;
   min-height: 200px;
-  margin-top: 0; /* h3 margin-bottom regelt de 12px al */
+  margin-top: 0;
 }
 
-/* Weekvoortgang-kaart: 12px ruimte onder de titel, boven het weekoverzicht */
 .ms-week-card h3 {
   margin-bottom: 12px;
 }
 
-/* Weekvoortgang-kaart: flex-column zodat de dag-chart de resterende
-   hoogte van de kaart opvult, ongeacht hoeveel dagen er zijn (5 of 6). */
 .ms-week-card {
   display: flex;
   flex-direction: column;
@@ -275,8 +265,8 @@
 .ms-week-progress {
   display: flex;
   flex-direction: column;
-  gap: 8px;         /* iets compacter: meer ruimte voor de chart */
-  margin-top: 0;    /* voorkomt dubbele top spacing */
+  gap: 8px;
+  margin-top: 0;
   flex: 1;
 }
 
@@ -325,14 +315,12 @@
   flex-shrink: 0;
 }
 
-/* Dag-chart wrapper: flex: 1 zodat de chart de overgebleven
-   kaarthoogte vult — altijd zeven rijen (Ma–Zo), hoogte stabiel. */
 .ms-week-dagen-wrap {
   flex: 1;
   position: relative;
   min-height: 200px;
   padding-top: 10px;
-  padding-bottom: 4px;  
+  padding-bottom: 4px;
 }
 
 /* -------------------------------------------------------
@@ -347,6 +335,14 @@
 
 .ms-hist-grid .ms-card.full-width {
   grid-column: 1 / -1;
+}
+
+/* Extra ruimte onderaan weken-charts zodat het jaar-label niet wordt
+   afgesneden door de kaartrand. */
+.ms-weken-chart-wrap {
+  position: relative;
+  /* Hoogte wordt inline gezet; padding-bottom geeft ruimte aan jaar-label */
+  padding-bottom: 8px;
 }
 
 /* -------------------------------------------------------
