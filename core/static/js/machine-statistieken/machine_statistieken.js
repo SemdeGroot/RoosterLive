@@ -825,9 +825,6 @@ function renderTodayLine(totaalNu, intradag) {
   const ctx = document.getElementById("ms-line-chart");
   if (!ctx) return;
 
-  const nu = new Date();
-  const nuMin = nuMinutenAmsterdam();
-
   const dagTargetMins = MS_CONFIG.dagTargets.map(t => tijdNaarMinuten(t.tijd));
   const dagStartMin   = dagTargetMins[0] ?? 0;
   const dagEindMin    = dagTargetMins.at(-1) ?? 0;
@@ -835,20 +832,17 @@ function renderTodayLine(totaalNu, intradag) {
   const cumulatief = buildCumulatief(intradag);
   const heeftMeetpunten = cumulatief.length >= 2;
 
-  // Werkelijke punten: alleen echte snapshots
   const actualPoints = heeftMeetpunten
     ? cumulatief.map(p => ({ x: p.xMin, y: p.totaal }))
     : [];
 
-  // Laatste echte meetpunt (voor xMax)
   const lastActual = actualPoints.length
     ? actualPoints[actualPoints.length - 1]
     : null;
 
-  // X-as max: standaard tot dagEind; als laatste meetpunt of "nu" later is, uitbreiden tot heel uur
-  const overtimeAnchor = Math.max(nuMin, lastActual?.x ?? 0);
-  const xMaxMin = overtimeAnchor > dagEindMin
-    ? Math.ceil(overtimeAnchor / 60) * 60
+  const lastDataMin = lastActual?.x ?? dagStartMin;
+  const xMaxMin = lastDataMin > dagEindMin
+    ? Math.ceil(lastDataMin / 60) * 60
     : dagEindMin;
 
   // Doelpunten (dagschema)
