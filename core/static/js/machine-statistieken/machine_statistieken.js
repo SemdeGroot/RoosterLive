@@ -31,6 +31,22 @@ const MS_CONFIG = {
 const MS_USE_DEMO = true;
 
 /* -------------------------------------------------------
+   Overige HELPERS
+------------------------------------------------------- */
+
+function nuMinutenAmsterdam() {
+  const parts = new Intl.DateTimeFormat("nl-NL", {
+    timeZone: "Europe/Amsterdam",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  }).formatToParts(new Date());
+  const h = parseInt(parts.find(p => p.type === "hour").value);
+  const m = parseInt(parts.find(p => p.type === "minute").value);
+  return h * 60 + m;
+}
+
+/* -------------------------------------------------------
    KLEUR-HELPERS
 ------------------------------------------------------- */
 
@@ -259,6 +275,7 @@ const vandaagMachines = {
 /* -------------------------------------------------------
    LIVE DATA
 ------------------------------------------------------- */
+
 async function fetchJsonWithTimeout(url, { timeoutMs = 2500, retries = 1 } = {}) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const ctrl = new AbortController();
@@ -535,7 +552,7 @@ Chart.Tooltip.positioners.buitenRing = function (elements, eventPos) {
 
 function renderDonut(totaal) {
   const target     = MS_CONFIG.dagTarget;
-  const verwacht   = berekenVerwacht(new Date());
+  const verwacht = berekenVerwacht();
   const isOpSchema = totaal >= verwacht;
 
   let segmenten, kleuren, hoverOffsets, tooltipLabels;
@@ -644,7 +661,7 @@ function renderDonut(totaal) {
 ------------------------------------------------------- */
 
 function renderStatusBadge(totaal) {
-  const verwacht = berekenVerwacht(new Date());
+  const verwacht = berekenVerwacht();
   const badge    = document.getElementById("ms-status-badge");
   if (!badge) return;
   if (totaal >= verwacht) {
@@ -809,7 +826,7 @@ function renderTodayLine(totaalNu, intradag) {
   if (!ctx) return;
 
   const nu = new Date();
-  const nuMin = nu.getHours() * 60 + nu.getMinutes();
+  const nuMin = nuMinutenAmsterdam();
 
   const dagTargetMins = MS_CONFIG.dagTargets.map(t => tijdNaarMinuten(t.tijd));
   const dagStartMin   = dagTargetMins[0] ?? 0;
@@ -1550,8 +1567,8 @@ function toggleFullscreen() {
    UTILITIES
 ------------------------------------------------------- */
 
-function berekenVerwacht(nu) {
-  const nuMin  = nu.getHours() * 60 + nu.getMinutes();
+function berekenVerwacht() {
+  const nuMin  = nuMinutenAmsterdam();
   const points = MS_CONFIG.dagTargets;
   for (let i = 0; i < points.length - 1; i++) {
     const t1 = tijdNaarMinuten(points[i].tijd);
