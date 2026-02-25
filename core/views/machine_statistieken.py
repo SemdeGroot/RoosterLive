@@ -1,6 +1,7 @@
 import json
 from collections import defaultdict
 from datetime import date, time, timedelta, datetime as dt
+from django.utils import timezone
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -105,7 +106,7 @@ def machine_statistieken_api_vandaag(request):
     if not can(request.user, "can_view_machine_statistieken"):
         return JsonResponse({"error": "Forbidden"}, status=403)
 
-    vandaag = date.today()
+    vandaag = timezone.localdate()
     maandag = _week_start(vandaag)
 
     records     = BaxterProductie.objects.filter(date=vandaag)
@@ -130,22 +131,24 @@ def machine_statistieken_api_vandaag(request):
         for dag, mach in sorted(per_dag.items())
     ]
 
-    # Groepeer snapshots per kwartier; sommeer alle machines per tijdslot.
+    # Timestamps zijn naive lokale tijd opgeslagen - filter op naive daggrens
+    # zodat Django geen UTC-vergelijking doet die een uur verschuift.
+    dag_start = dt.combine(vandaag, time.min)
+    dag_eind  = dt.combine(vandaag, time.max)
+
     snapshot_qs = (
         BaxterProductieSnapshot.objects
-        .filter(timestamp__date=vandaag)
+        .filter(timestamp__gte=dag_start, timestamp__lte=dag_eind)
         .order_by("timestamp")
     )
-    per_tijdstip: dict[str, int] = defaultdict(int)
-    for s in snapshot_qs:
-        minuten    = (s.timestamp.minute // 15) * 15
-        tijdslabel = s.timestamp.strftime(f"%H:{minuten:02d}")
-        per_tijdstip[tijdslabel] += s.aantal_zakjes
 
-    intradag = [
-        {"tijd": t, "totaal": v}
-        for t, v in sorted(per_tijdstip.items())
-    ]
+    intradag = []
+    for s in snapshot_qs:
+        intradag.append({
+            "tijd":       s.timestamp.strftime("%H:%M"),
+            "machine_id": s.machine_id,
+            "zakjes":     s.aantal_zakjes,
+        })
 
     return JsonResponse({
         "datum":               str(vandaag),

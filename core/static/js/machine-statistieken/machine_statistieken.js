@@ -9,20 +9,20 @@ const MS_CONFIG = {
   weekTarget: 400_000,
 
   dagTargets: [
-    { tijd: "08:00", zakjes: 0      },
-    { tijd: "09:00", zakjes: 9_000  },
-    { tijd: "09:50", zakjes: 17_000 },
-    { tijd: "10:10", zakjes: 17_000 },
-    { tijd: "11:00", zakjes: 25_000 },
-    { tijd: "12:00", zakjes: 34_500 },
-    { tijd: "12:30", zakjes: 39_000 },
-    { tijd: "13:00", zakjes: 39_000 },
-    { tijd: "14:00", zakjes: 49_000 },
-    { tijd: "14:50", zakjes: 56_500 },
-    { tijd: "15:10", zakjes: 56_500 },
-    { tijd: "16:00", zakjes: 65_000 },
-    { tijd: "17:00", zakjes: 75_000 },
-    { tijd: "17:30", zakjes: 80_000 },
+    { tijd: "08:30", zakjes: 0      }, // Start werkdag
+    { tijd: "09:00", zakjes: 5_000  }, // Opstarten
+    { tijd: "09:50", zakjes: 13_300 }, // Start 1e pauze
+    { tijd: "10:10", zakjes: 13_300 }, // Einde 1e pauze (geen stijging)
+    { tijd: "11:00", zakjes: 21_600 }, 
+    { tijd: "12:00", zakjes: 31_600 }, 
+    { tijd: "12:30", zakjes: 36_600 }, // Start lunchpauze
+    { tijd: "13:00", zakjes: 36_600 }, // Einde lunchpauze (geen stijging)
+    { tijd: "14:00", zakjes: 46_600 }, 
+    { tijd: "14:50", zakjes: 55_000 }, // Start 2e pauze
+    { tijd: "15:10", zakjes: 55_000 }, // Einde 2e pauze (geen stijging)
+    { tijd: "16:00", zakjes: 63_300 }, 
+    { tijd: "17:00", zakjes: 73_300 }, 
+    { tijd: "17:30", zakjes: 80_000 }, // Eindtarget behaald
   ],
 
   pollInterval: 60_000,
@@ -67,8 +67,8 @@ function hexRgba(hex, alpha) {
 ------------------------------------------------------- */
 
 const MACHINE_KLEUR_PALET = [
-  "--c-sky", "--c-emerald", "--c-rose", "--c-amber", "--c-indigo",
-  "--c-teal", "--c-orange", "--c-violet", "--c-cyan", "--c-purple", "--c-lime",
+  "--c-indigo", "--c-emerald", "--c-rose", "--c-amber", "--c-teal",
+  "--c-violet", "--c-orange", "--c-sky", "--c-cyan", "--c-lime", "--c-purple",
 ];
 
 function machineIdHash(id) {
@@ -166,11 +166,11 @@ function buildDemoData() {
   const vandaag = datumString(nu);
   const actieveMachines = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11"];
 
-  const vandaagMachines = {
-    M1: 3_800, M2: 3_400, M3: 3_600, M4: 3_100,
-    M5: 3_500, M6: 3_200, M7: 3_400, M8: 3_000,
-    M9: 3_300, M10: 3_100, M11: 2_900,
-  };
+const vandaagMachines = {
+  M1: 820,  M2: 780,  M3: 810,  M4: 760,
+  M5: 800,  M6: 770,  M7: 790,  M8: 740,
+  M9: 780,  M10: 760, M11: 790,
+};
 
   function randomDag() {
     const obj = {};
@@ -215,14 +215,27 @@ function buildDemoData() {
 
   // Gesimuleerde intradag meetpunten: elk uur vanaf 08:00 t/m nu
   const dagTotaal = Object.values(vandaagMachines).reduce((s, v) => s + v, 0);
-  const startMin  = 8 * 60;
-  const eindMin   = nu.getHours() * 60 + nu.getMinutes();
-  const intradag  = [];
-  for (let m = startMin; m <= eindMin; m += 60) {
-    const h = String(Math.floor(m / 60)).padStart(2, "0");
-    intradag.push({
-      tijd:   `${h}:00`,
-      totaal: Math.round(dagTotaal * ((m - startMin) / Math.max(eindMin - startMin, 1))),
+  const werkdagStartMin = tijdNaarMinuten(MS_CONFIG.dagTargets[0].tijd); // 08:30
+  const eindMin         = nu.getHours() * 60 + nu.getMinutes();
+  const intradag        = [];
+
+  // Simuleer meetpunten per half uur per machine, elk op iets ander tijdstip
+  for (let m = werkdagStartMin; m <= eindMin; m += 30) {
+    const gewerkt   = m - werkdagStartMin;
+    const dagDuur   = Math.max(eindMin - werkdagStartMin, 1);
+    const voortgang = gewerkt / dagDuur;
+
+    actieveMachines.forEach((machine_id, machineIdx) => {
+      const offsetMin = machineIdx * 2;
+      const totalMin  = m + offsetMin;
+      if (totalMin > eindMin) return;
+      const hh = String(Math.floor(totalMin / 60)).padStart(2, "0");
+      const mm = String(totalMin % 60).padStart(2, "0");
+      intradag.push({
+        tijd:       `${hh}:${mm}`,
+        machine_id,
+        zakjes:     Math.round(vandaagMachines[machine_id] * voortgang),
+      });
     });
   }
 
@@ -656,151 +669,243 @@ function renderHorizontalBars(machines) {
   });
 }
 
+function minutenNaarTijd(min) {
+  const m = Math.max(0, Math.round(min));
+  const hh = String(Math.floor(m / 60)).padStart(2, "0");
+  const mm = String(m % 60).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function buildDagTickValues({ xMaxMin, dagTargetMins, extraHourStep = 60 }) {
+  const ticks = [...dagTargetMins];
+  const dagEindMin = dagTargetMins.at(-1) ?? 0;
+
+  if (xMaxMin <= dagEindMin) return ticks;
+
+  // Na eindtarget: elk uur een tick toevoegen (bijv. 18:30, 19:30, ...)
+  let t = dagEindMin + extraHourStep;
+  while (t <= xMaxMin) {
+    ticks.push(t);
+    t += extraHourStep;
+  }
+  return ticks;
+}
+
 /* -------------------------------------------------------
    TODAY LINE CHART
    Gebruikt echte intradag-snapshots als die er zijn;
    valt terug op lineaire benadering bij demo of lege dag.
 ------------------------------------------------------- */
 
+
+// Bouw cumulatieve reeks uit ruwe snapshots.
+// Elke snapshot is een dagteller per machine; per tijdstip pakken we
+// de meest recente waarde per machine en tellen die op.
+function buildCumulatief(intradag) {
+  // xMin -> { machine_id -> zakjes }
+  const tijdstipMap = new Map();
+
+  for (const punt of intradag) {
+    const xMin = tijdNaarMinuten(punt.tijd);
+    if (!Number.isFinite(xMin)) continue;
+
+    if (!tijdstipMap.has(xMin)) tijdstipMap.set(xMin, {});
+    tijdstipMap.get(xMin)[punt.machine_id] = punt.zakjes;
+  }
+
+  const tijden = [...tijdstipMap.keys()].sort((a, b) => a - b);
+  const machineState = {};
+  const resultaat = [];
+
+  for (const xMin of tijden) {
+    const updates = tijdstipMap.get(xMin);
+    Object.assign(machineState, updates);
+    const totaal = Object.values(machineState).reduce((s, v) => s + v, 0);
+    resultaat.push({ xMin, totaal });
+  }
+
+  return resultaat;
+}
+
 function renderTodayLine(totaalNu, intradag) {
   const ctx = document.getElementById("ms-line-chart");
   if (!ctx) return;
 
-  const nu    = new Date();
+  const nu = new Date();
   const nuMin = nu.getHours() * 60 + nu.getMinutes();
 
-  const heeftEchteMeetpunten = intradag.length > 1;
+  const dagTargetMins = MS_CONFIG.dagTargets.map(t => tijdNaarMinuten(t.tijd));
+  const dagStartMin   = dagTargetMins[0] ?? 0;
+  const dagEindMin    = dagTargetMins.at(-1) ?? 0;
 
-  let actualLabels, actualData;
-  if (heeftEchteMeetpunten) {
-    actualLabels = intradag.map(p => p.tijd);
-    actualData   = intradag.map(p => p.totaal);
+  const cumulatief = buildCumulatief(intradag);
+  const heeftMeetpunten = cumulatief.length >= 2;
+
+  // Werkelijk als (x,y)
+  let actualPoints;
+  if (heeftMeetpunten) {
+    actualPoints = cumulatief.map(p => ({ x: p.xMin, y: p.totaal }));
   } else {
-    actualLabels = MS_CONFIG.dagTargets.map(t => t.tijd);
-    actualData   = MS_CONFIG.dagTargets.map(t => {
-      const tMin = tijdNaarMinuten(t.tijd);
-      if (tMin > nuMin) return null;
-      if (nuMin === 0)  return 0;
-      return Math.round(totaalNu * (tMin / nuMin));
-    });
+    // Fallback: lineair tot nu (demo/lege dag)
+    actualPoints = MS_CONFIG.dagTargets
+      .map(t => {
+        const x = tijdNaarMinuten(t.tijd);
+        if (x > nuMin) return null;
+        const y = nuMin === 0 ? 0 : Math.round(totaalNu * (x / nuMin));
+        return { x, y };
+      })
+      .filter(Boolean);
   }
 
-  const targetLabels = MS_CONFIG.dagTargets.map(t => t.tijd);
-  const targetData   = MS_CONFIG.dagTargets.map(t => t.zakjes);
+  const lastActual = actualPoints.length
+    ? actualPoints[actualPoints.length - 1]
+    : { x: nuMin, y: totaalNu };
 
-  // Gecombineerde x-as: unie van doel-tijden en meetpunt-tijden
-  const alleLabels = [...new Set([...targetLabels, ...actualLabels])].sort();
+  // X-as: standaard exact de werkdag (08:30–17:30).
+  // Alleen als er na 17:30 data/nu is: uitbreiden tot het volgende hele uur.
+  const overtimeAnchor = Math.max(nuMin, lastActual.x);
+  const xMaxMin = overtimeAnchor > dagEindMin
+    ? Math.ceil(overtimeAnchor / 60) * 60
+    : dagEindMin;
 
-  const doelData = alleLabels.map(l => {
-    const idx = targetLabels.indexOf(l);
-    return idx !== -1 ? targetData[idx] : null;
-  });
+  // Doelpunten op vaste targets
+  const doelPoints = MS_CONFIG.dagTargets.map(t => ({
+    x: tijdNaarMinuten(t.tijd),
+    y: t.zakjes,
+  }));
 
-  const werkelijkData = alleLabels.map(l => {
-    const idx = actualLabels.indexOf(l);
-    return idx !== -1 ? actualData[idx] : null;
-  });
+  // Voorspelling: vanaf laatste echte meetpunt (geen gat)
+  const predStartX = lastActual.x;
+  const predStartY = lastActual.y;
+  const showPrediction = predStartX < dagEindMin;
 
-  const tempo = nuMin > 0 ? totaalNu / nuMin : 0;
-  const dagEindMin = tijdNaarMinuten(MS_CONFIG.dagTargets.at(-1).tijd); // 17:30
-  const interpolatieData = nuMin >= dagEindMin
-      ? alleLabels.map(() => null)
-      : alleLabels.map(l => {
-          const tMin = tijdNaarMinuten(l);
-          if (isNaN(tMin)) return null;
-          if (tMin <= nuMin) return Math.round(totaalNu * (tMin / (nuMin || 1)));
-          if (tMin > dagEindMin) return null;
-          return Math.round(totaalNu + tempo * (tMin - nuMin));
-      });
+  // Tempo: gemiddelde sinds start tot laatste meetpunt
+  const gewerktMin = Math.max(1, predStartX - dagStartMin);
+  const tempo = predStartY / gewerktMin;
+
+  // Laat Chart.js ticks kiezen; we maken prediction-punten op uur-grenzen,
+  // plus altijd een anker op het laatste meetpunt.
+  const voorspellingPoints = (() => {
+    if (!showPrediction) return [];
+    const pts = [{ x: predStartX, y: predStartY }];
+
+    const firstHour = Math.ceil(predStartX / 60) * 60;
+    for (let x = firstHour; x <= dagEindMin; x += 60) {
+      pts.push({ x, y: Math.round(predStartY + tempo * (x - predStartX)) });
+    }
+    // Zorg dat 17:30 er altijd in zit (ook als dat geen uur-grens is)
+    if (pts[pts.length - 1].x !== dagEindMin) {
+      pts.push({ x: dagEindMin, y: Math.round(predStartY + tempo * (dagEindMin - predStartX)) });
+    }
+    return pts;
+  })();
 
   const tooltipOpties = {
     backgroundColor: panelKleur(),
-    titleColor:      mutedKleur(),
-    bodyColor:       mutedKleur(),
-    borderColor:     gridKleur(),
-    borderWidth:     1,
-    callbacks: { label: ctx => ` ${formatNummer(ctx.parsed.y)} zakjes` },
+    titleColor: mutedKleur(),
+    bodyColor: mutedKleur(),
+    borderColor: gridKleur(),
+    borderWidth: 1,
+    callbacks: {
+      title(items) {
+        if (!items?.length) return "";
+        return minutenNaarTijd(items[0].parsed.x);
+      },
+      label: ctx => ` ${formatNummer(ctx.parsed.y)} zakjes`,
+    },
   };
 
   if (state.charts.todayLine) {
-    state.charts.todayLine.data.labels              = alleLabels;
-    state.charts.todayLine.data.datasets[0].data    = doelData;
-    state.charts.todayLine.data.datasets[1].data    = werkelijkData;
-    state.charts.todayLine.data.datasets[2].data    = interpolatieData;
-    state.charts.todayLine.update("none");
+    const ch = state.charts.todayLine;
+
+    ch.data.datasets[0].data = doelPoints;
+    ch.data.datasets[1].data = actualPoints;
+    ch.data.datasets[2].data = voorspellingPoints;
+
+    ch.options.scales.x.min = dagStartMin;
+    ch.options.scales.x.max = xMaxMin;
+
+    ch.update("none");
     return;
   }
 
   state.charts.todayLine = new Chart(ctx, {
     type: "line",
     data: {
-      labels: alleLabels,
       datasets: [
         {
-          label:            "Doel",
-          data:             doelData,
-          borderColor:      tekstKleur(),
-          borderDash:       [7, 4],
-          borderWidth:      1.5,
-          pointRadius:      0,
-          fill:             false,
-          tension:          0,
-          spanGaps:         true,
-          pointHoverRadius: 0,
+          label: "Doel",
+          data: doelPoints,
+          borderColor: tekstKleur(),
+          borderDash: [7, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0,
         },
         {
-          label:                "Werkelijk",
-          data:                 werkelijkData,
-          borderColor:          ACCENT_HEX,
-          borderWidth:          2.5,
-          pointRadius:          3,
-          pointBackgroundColor: ACCENT_HEX,
-          fill:                 false,
-          tension:              0,
-          spanGaps:             true,
-          pointHoverRadius:     5,
+          label: "Werkelijk",
+          data: actualPoints,
+          borderColor: ACCENT_HEX,
+          borderWidth: 2,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          pointHitRadius: 10,
+          pointBorderWidth: 0,
+          tension: 0,
         },
         {
-          label:            "Voorspelling",
-          data:             interpolatieData,
-          borderColor:      accentRgba(0.85),
-          borderDash:       [5, 5],
-          borderWidth:      2,
-          pointRadius:      0,
-          fill:             false,
-          tension:          0,
-          spanGaps:         false,
-          pointHoverRadius: 0,
+          label: "Voorspelling",
+          data: voorspellingPoints,
+          borderColor: accentRgba(0.85),
+          borderDash: [5, 5],
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0,
         },
       ],
     },
     options: {
-      responsive:          true,
+      responsive: true,
       maintainAspectRatio: false,
+      parsing: false,
+      animation: false,
       plugins: {
         legend: {
-            labels: {
-              color: mutedKleur(),
-              font: { size: 11 },
-              boxWidth: 20,
-              filter: item => {
-                  const huidigMin = new Date().getHours() * 60 + new Date().getMinutes();
-                  return !(item.text === "Voorspelling" && huidigMin >= dagEindMin);
-              },
-            },
+          labels: {
+            color: mutedKleur(),
+            font: { size: 11 },
+            boxWidth: 20,
+            filter: item => !(item.text === "Voorspelling" && !showPrediction),
+          },
         },
         tooltip: tooltipOpties,
+        decimation: {
+          enabled: true,
+          algorithm: "lttb",
+          samples: 140,
+        },
       },
       scales: {
         y: {
           beginAtZero: true,
-          grid:   { color: gridKleur() },
-          ticks:  { color: mutedKleur(), callback: v => formatKort(v) },
+          grid: { color: gridKleur() },
+          ticks: { color: mutedKleur(), callback: v => formatKort(v) },
           border: { display: false },
         },
         x: {
-          grid:   { display: false },
-          ticks:  { color: mutedKleur(), maxRotation: 45 },
+          type: "linear",
+          min: dagStartMin,
+          max: xMaxMin,
+          grid: { display: false },
+
+          // Laat Chart.js de ticks bepalen (geen afterBuildTicks, geen geforceerde values)
+          ticks: {
+            autoSkip: true,
+            color: mutedKleur(),
+            callback: v => minutenNaarTijd(v),
+            maxRotation: 0,
+          },
+
           border: { display: false },
         },
       },
