@@ -28,7 +28,7 @@ const MS_CONFIG = {
   pollInterval: 60_000,
 };
 
-const MS_USE_DEMO = false;
+const MS_USE_DEMO = true;
 
 /* -------------------------------------------------------
    KLEUR-HELPERS
@@ -167,9 +167,9 @@ function buildDemoData() {
   const actieveMachines = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11"];
 
 const vandaagMachines = {
-  M1: 820,  M2: 780,  M3: 810,  M4: 760,
-  M5: 800,  M6: 770,  M7: 790,  M8: 740,
-  M9: 780,  M10: 760, M11: 790,
+  M1: 8820,  M2: 8780,  M3: 8810,  M4: 8760,
+  M5: 8800,  M6: 8770,  M7: 8790,  M8: 8740,
+  M9: 8780,  M10: 8760, M11: 8790,
 };
 
   function randomDag() {
@@ -246,7 +246,7 @@ const vandaagMachines = {
       week_totaal:         weekTotaal,
       week_dagen:          weekDagenData,
       intradag,
-      last_machine_update: new Date(nu.getTime() - 4 * 60 * 1000).toISOString(),
+      last_snapshot_time: new Date(nu.getTime() - 4 * 60 * 1000).toISOString(),
     },
     dagen7:  dagenReeks(7),
     dagen30: dagenReeks(30),
@@ -259,17 +259,35 @@ const vandaagMachines = {
 /* -------------------------------------------------------
    LIVE DATA
 ------------------------------------------------------- */
+async function fetchJsonWithTimeout(url, { timeoutMs = 2500, retries = 1 } = {}) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      const isLast = attempt >= retries;
+      if (isLast) throw e;
+      // retry
+    } finally {
+      clearTimeout(t);
+    }
+  }
+}
 
 async function fetchVandaag() {
-  const res = await fetch("/baxter/machine-statistieken/api/vandaag/");
-  if (!res.ok) throw new Error(`API vandaag failed: ${res.status}`);
-  return res.json();
+  return fetchJsonWithTimeout("/baxter/machine-statistieken/api/vandaag/", {
+    timeoutMs: 2500,
+    retries: 1,
+  });
 }
 
 async function fetchGeschiedenis(bereik) {
-  const res = await fetch(`/baxter/machine-statistieken/api/geschiedenis/?bereik=${encodeURIComponent(bereik)}`);
-  if (!res.ok) throw new Error(`API geschiedenis failed: ${res.status}`);
-  const json = await res.json();
+  const url = `/baxter/machine-statistieken/api/geschiedenis/?bereik=${encodeURIComponent(bereik)}`;
+  const json = await fetchJsonWithTimeout(url, { timeoutMs: 2500, retries: 1 });
   return json.data || [];
 }
 
@@ -379,13 +397,22 @@ function toonView(naam) {
 
 async function ensureHistoryLoaded(bereik) {
   if (MS_USE_DEMO) return;
+  if (!state.data) state.data = {};
+
+  // Als er al cache is, meteen gebruiken
   if (state.historyCache[bereik]) {
     state.data[bereik] = state.historyCache[bereik];
-    return;
   }
-  const data = await fetchGeschiedenis(bereik);
-  state.historyCache[bereik] = data;
-  state.data[bereik] = data;
+
+  // Probeer te refreshen; bij failure blijft de oude data staan
+  try {
+    const data = await fetchGeschiedenis(bereik);
+    state.historyCache[bereik] = data;
+    state.data[bereik] = data;
+  } catch (e) {
+    console.error(e);
+    if (state.historyCache[bereik]) state.data[bereik] = state.historyCache[bereik];
+  }
 }
 
 async function ensureHistoryLoadedForCurrentSelection() {
@@ -395,29 +422,48 @@ async function ensureHistoryLoadedForCurrentSelection() {
 }
 
 async function laadEnRender() {
-  try {
-    if (MS_USE_DEMO) {
-      state.data = buildDemoData();
-    } else {
-      if (!state.data) state.data = {};
-      state.data.vandaag = await fetchVandaag();
-      if (state.huidigView === "dagen") await refreshHistory(state.dagenBereik);
-      if (state.huidigView === "weken") await refreshHistory(state.wekenBereik);
-    }
-
+  if (MS_USE_DEMO) {
+    state.data = buildDemoData();
     renderAlles();
     syncDropdowns();
     updateLastUpdated();
+    return;
+  }
+
+  if (!state.data) state.data = {};
+
+  // Vandaag: fail-safe
+  try {
+    state.data.vandaag = await fetchVandaag();
   } catch (e) {
     console.error(e);
+    // laat oude state.data.vandaag staan
   }
+
+  // Alleen actieve view history refreshen (fail-safe)
+  if (state.huidigView === "dagen") {
+    await refreshHistory(state.dagenBereik);
+  } else if (state.huidigView === "weken") {
+    await refreshHistory(state.wekenBereik);
+  }
+
+  renderAlles();
+  syncDropdowns();
+  updateLastUpdated();
 }
 
 async function refreshHistory(bereik) {
   if (MS_USE_DEMO) return;
-  const data = await fetchGeschiedenis(bereik);
-  state.historyCache[bereik] = data;
-  state.data[bereik] = data;
+  if (!state.data) state.data = {};
+
+  try {
+    const data = await fetchGeschiedenis(bereik);
+    state.historyCache[bereik] = data;
+    state.data[bereik] = data;
+  } catch (e) {
+    console.error(e);
+    if (state.historyCache[bereik]) state.data[bereik] = state.historyCache[bereik];
+  }
 }
 
 function startPoll() {
@@ -425,12 +471,23 @@ function startPoll() {
 }
 
 function updateLastUpdated() {
-  const el  = document.getElementById("ms-last-updated");
+  const el = document.getElementById("ms-last-updated");
   if (!el) return;
-  const raw = state.data?.vandaag?.last_machine_update;
-  if (!raw) { el.textContent = "Laatst bijgewerkt: onbekend"; return; }
-  const dt = new Date(raw);
-  el.textContent = `Laatst bijgewerkt: ${dt.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
+
+  const raw = state.data?.vandaag?.last_snapshot_time;
+  if (!raw) {
+    el.textContent = "Laatst bijgewerkt: onbekend";
+    return;
+  }
+
+  const d = new Date(raw);
+  el.textContent =
+    "Laatst bijgewerkt: " +
+    d.toLocaleTimeString("nl-NL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Amsterdam",
+    });
 }
 
 /* -------------------------------------------------------
@@ -485,12 +542,20 @@ function renderDonut(totaal) {
 
   if (totaal >= target) {
     const overschot = totaal - target;
-    segmenten     = [target, overschot, 1];
-    kleuren       = [ACCENT_HEX, STATUS_GROEN_HEX, accentRgba(0.06)];
-    hoverOffsets  = [6, 6, 0];
+
+    const overFill = Math.min(overschot, target);
+    const rest     = Math.max(0, target - overFill);
+
+    segmenten = [overFill, rest, 1];
+    kleuren   = [STATUS_GROEN_HEX, ACCENT_HEX, accentRgba(0.06)];
+
+    // beide segmenten hoverbaar
+    hoverOffsets = [6, 6, 0];
+
+    // index 0 = groen, index 1 = blauw
     tooltipLabels = [
-      `Geproduceerd: ${formatNummer(totaal)} zakjes`,
       `Boven target: +${formatNummer(overschot)} zakjes`,
+      `Geproduceerd: ${formatNummer(totaal)} zakjes`,
       null,
     ];
   } else if (isOpSchema) {
@@ -702,15 +767,25 @@ function buildDagTickValues({ xMaxMin, dagTargetMins, extraHourStep = 60 }) {
 // Elke snapshot is een dagteller per machine; per tijdstip pakken we
 // de meest recente waarde per machine en tellen die op.
 function buildCumulatief(intradag) {
-  // xMin -> { machine_id -> zakjes }
+  // xMin -> { machine_id -> { tsMs, zakjes } }
   const tijdstipMap = new Map();
 
   for (const punt of intradag) {
-    const xMin = tijdNaarMinuten(punt.tijd);
-    if (!Number.isFinite(xMin)) continue;
+    const xMin = Number.isFinite(tijdNaarMinuten(punt.tijd))
+      ? tijdNaarMinuten(punt.tijd)
+      : null;
+    if (xMin == null) continue;
+
+    const tsMs = punt.timestamp ? Date.parse(punt.timestamp) : NaN;
 
     if (!tijdstipMap.has(xMin)) tijdstipMap.set(xMin, {});
-    tijdstipMap.get(xMin)[punt.machine_id] = punt.zakjes;
+    const bucket = tijdstipMap.get(xMin);
+
+    const prev = bucket[punt.machine_id];
+    // Als timestamp ontbreekt, val terug op "laatste wins".
+    if (!prev || (!Number.isNaN(tsMs) && (Number.isNaN(prev.tsMs) || tsMs >= prev.tsMs))) {
+      bucket[punt.machine_id] = { tsMs, zakjes: punt.zakjes };
+    }
   }
 
   const tijden = [...tijdstipMap.keys()].sort((a, b) => a - b);
@@ -719,7 +794,9 @@ function buildCumulatief(intradag) {
 
   for (const xMin of tijden) {
     const updates = tijdstipMap.get(xMin);
-    Object.assign(machineState, updates);
+    for (const [machineId, obj] of Object.entries(updates)) {
+      machineState[machineId] = obj.zakjes;
+    }
     const totaal = Object.values(machineState).reduce((s, v) => s + v, 0);
     resultaat.push({ xMin, totaal });
   }
@@ -741,65 +818,60 @@ function renderTodayLine(totaalNu, intradag) {
   const cumulatief = buildCumulatief(intradag);
   const heeftMeetpunten = cumulatief.length >= 2;
 
-  // Werkelijk als (x,y)
-  let actualPoints;
-  if (heeftMeetpunten) {
-    actualPoints = cumulatief.map(p => ({ x: p.xMin, y: p.totaal }));
-  } else {
-    // Fallback: lineair tot nu (demo/lege dag)
-    actualPoints = MS_CONFIG.dagTargets
-      .map(t => {
-        const x = tijdNaarMinuten(t.tijd);
-        if (x > nuMin) return null;
-        const y = nuMin === 0 ? 0 : Math.round(totaalNu * (x / nuMin));
-        return { x, y };
-      })
-      .filter(Boolean);
-  }
+  // Werkelijke punten: alleen echte snapshots
+  const actualPoints = heeftMeetpunten
+    ? cumulatief.map(p => ({ x: p.xMin, y: p.totaal }))
+    : [];
 
+  // Laatste echte meetpunt (voor xMax)
   const lastActual = actualPoints.length
     ? actualPoints[actualPoints.length - 1]
-    : { x: nuMin, y: totaalNu };
+    : null;
 
-  // X-as: standaard exact de werkdag (08:30–17:30).
-  // Alleen als er na 17:30 data/nu is: uitbreiden tot het volgende hele uur.
-  const overtimeAnchor = Math.max(nuMin, lastActual.x);
+  // X-as max: standaard tot dagEind; als laatste meetpunt of "nu" later is, uitbreiden tot heel uur
+  const overtimeAnchor = Math.max(nuMin, lastActual?.x ?? 0);
   const xMaxMin = overtimeAnchor > dagEindMin
     ? Math.ceil(overtimeAnchor / 60) * 60
     : dagEindMin;
 
-  // Doelpunten op vaste targets
+  // Doelpunten (dagschema)
   const doelPoints = MS_CONFIG.dagTargets.map(t => ({
     x: tijdNaarMinuten(t.tijd),
     y: t.zakjes,
   }));
 
-  // Voorspelling: vanaf laatste echte meetpunt (geen gat)
-  const predStartX = lastActual.x;
-  const predStartY = lastActual.y;
-  const showPrediction = predStartX < dagEindMin;
-
-  const eersteActual = actualPoints[0];
-  const gewerktMin = Math.max(1, predStartX - eersteActual.x);
-  const tempoNoemer = Math.max(1, predStartY - eersteActual.y);
-  const tempo = tempoNoemer / gewerktMin;
-
-  // Laat Chart.js ticks kiezen; we maken prediction-punten op uur-grenzen,
-  // plus altijd een anker op het laatste meetpunt.
+  // Extrapolatie: helling uitsluitend uit echte meetpunten
+  // We gebruiken slope tussen eerste en laatste meetpunt.
   const voorspellingPoints = (() => {
-    if (!showPrediction) return [];
-    const pts = [{ x: predStartX, y: predStartY }];
+    if (actualPoints.length < 2) return [];
+    const first = actualPoints[0];
+    const last  = actualPoints[actualPoints.length - 1];
 
-    const firstHour = Math.ceil(predStartX / 60) * 60;
+    const dx = Math.max(1, last.x - first.x);
+    const dy = last.y - first.y;
+    const slopePerMin = dy / dx;
+
+    // Extrapoleer vanaf last.x/last.y naar dagEindMin (als last al voorbij dagEind zit: geen voorspelling)
+    if (last.x >= dagEindMin) return [];
+
+    const pts = [{ x: last.x, y: last.y }];
+
+    // Punten op uurgrenzen (net als jij deed), plus altijd dagEindMin
+    const firstHour = Math.ceil(last.x / 60) * 60;
     for (let x = firstHour; x <= dagEindMin; x += 60) {
-      pts.push({ x, y: Math.round(predStartY + tempo * (x - predStartX)) });
+      const y = Math.round(last.y + slopePerMin * (x - last.x));
+      pts.push({ x, y: Math.max(0, y) });
     }
-    // Zorg dat 17:30 er altijd in zit (ook als dat geen uur-grens is)
+
     if (pts[pts.length - 1].x !== dagEindMin) {
-      pts.push({ x: dagEindMin, y: Math.round(predStartY + tempo * (dagEindMin - predStartX)) });
+      const yEnd = Math.round(last.y + slopePerMin * (dagEindMin - last.x));
+      pts.push({ x: dagEindMin, y: Math.max(0, yEnd) });
     }
+
     return pts;
   })();
+
+  const showPrediction = voorspellingPoints.length > 0;
 
   const tooltipOpties = {
     backgroundColor: panelKleur(),
@@ -822,6 +894,9 @@ function renderTodayLine(totaalNu, intradag) {
     ch.data.datasets[0].data = doelPoints;
     ch.data.datasets[1].data = actualPoints;
     ch.data.datasets[2].data = voorspellingPoints;
+
+    ch.options.plugins.legend.labels.filter = item =>
+      !(item.text === "Voorspelling" && !showPrediction);
 
     ch.options.scales.x.min = dagStartMin;
     ch.options.scales.x.max = xMaxMin;
@@ -848,9 +923,9 @@ function renderTodayLine(totaalNu, intradag) {
           data: actualPoints,
           borderColor: ACCENT_HEX,
           borderWidth: 2,
-          pointRadius: 2,
+          pointRadius: 0,
           pointHoverRadius: 4,
-          pointHitRadius: 10,
+          pointHitRadius: 12,
           pointBorderWidth: 0,
           tension: 0,
         },
@@ -898,15 +973,12 @@ function renderTodayLine(totaalNu, intradag) {
           min: dagStartMin,
           max: xMaxMin,
           grid: { display: false },
-
-          // Laat Chart.js de ticks bepalen (geen afterBuildTicks, geen geforceerde values)
           ticks: {
             autoSkip: true,
             color: mutedKleur(),
             callback: v => minutenNaarTijd(v),
             maxRotation: 0,
           },
-
           border: { display: false },
         },
       },
@@ -1355,42 +1427,47 @@ function stackedOpties({ bottomPadding = 0 } = {}) {
   };
 }
 
-function machineBarOpties(machineIds = []) {
-  return {
-    responsive:          true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend:  { display: false },
-      tooltip: {
-        callbacks: {
-          label:      ctx => ` ${formatNummer(ctx.parsed.y)} zakjes`,
-          labelColor: ctx => ({
-            borderColor:     machineKleur(machineIds[ctx.dataIndex]),
-            backgroundColor: machineKleur(machineIds[ctx.dataIndex]),
-          }),
+  function machineBarOpties(machineIds = []) {
+    return {
+      responsive:          true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend:  { display: false },
+        tooltip: {
+          callbacks: {
+            label:      ctx => ` ${formatNummer(ctx.parsed.y)} zakjes`,
+            labelColor: ctx => ({
+              borderColor:     machineKleur(machineIds[ctx.dataIndex]),
+              backgroundColor: machineKleur(machineIds[ctx.dataIndex]),
+            }),
+          },
+          backgroundColor: panelKleur(),
+          titleColor:      mutedKleur(),
+          bodyColor:       mutedKleur(),
+          borderColor:     gridKleur(),
+          borderWidth:     1,
         },
-        backgroundColor: panelKleur(),
-        titleColor:      mutedKleur(),
-        bodyColor:       mutedKleur(),
-        borderColor:     gridKleur(),
-        borderWidth:     1,
       },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid:   { color: gridKleur() },
-        ticks:  { color: mutedKleur(), callback: v => formatKort(v) },
-        border: { display: false },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid:   { color: gridKleur() },
+          ticks:  { color: mutedKleur(), callback: v => formatKort(v) },
+          border: { display: false },
+        },
+        x: {
+          grid:   { display: false },
+          ticks:  {
+            color: mutedKleur(),
+            autoSkip: false,
+            maxRotation: 90,
+            minRotation: 0,
+          },
+          border: { display: false },
+        },
       },
-      x: {
-        grid:   { display: false },
-        ticks:  { color: mutedKleur() },
-        border: { display: false },
-      },
-    },
-  };
-}
+    };
+  }
 
 function targetLijnDataset(data, targetWaarde, label) {
   return {

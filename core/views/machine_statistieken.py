@@ -29,6 +29,11 @@ def _check_api_key(request) -> bool:
 def _week_start(d: date) -> date:
     return d - timedelta(days=d.weekday())
 
+def _iso_week_bounds(iso_year: int, iso_week: int) -> tuple[date, date]:
+    # ISO week: maandag..zondag
+    monday = date.fromisocalendar(iso_year, iso_week, 1)
+    sunday = date.fromisocalendar(iso_year, iso_week, 7)
+    return monday, sunday
 
 # -------------------------------------------------------
 # INGEST (watchdog → database)
@@ -73,7 +78,7 @@ def machine_statistieken_ingest(request):
         dt.combine(record_date, record_time), AMSTERDAM
     )
 
-    BaxterProductieSnapshotPunt.objects.get_or_create(
+    BaxterProductieSnapshotPunt.objects.update_or_create(
         machine_id=machine_id,
         timestamp=aware_timestamp,
         defaults={"aantal_zakjes": aantal},
@@ -111,10 +116,11 @@ def machine_statistieken_api_vandaag(request):
     vandaag = timezone.localdate()
     maandag = _week_start(vandaag)
 
-    records     = BaxterProductie.objects.filter(date=vandaag)
-    machines    = {r.machine_id: r.aantal_zakjes for r in records}
-    last_update = max((r.updated_at for r in records), default=None)
+    # Dagrecords (per machine per dag)
+    records = BaxterProductie.objects.filter(date=vandaag)
+    machines = {r.machine_id: r.aantal_zakjes for r in records}
 
+    # Week totalen
     week_records = (
         BaxterProductie.objects
         .filter(date__gte=maandag, date__lte=vandaag)
@@ -133,7 +139,7 @@ def machine_statistieken_api_vandaag(request):
         for dag, mach in sorted(per_dag.items())
     ]
 
-    # Daggrens in Amsterdam-tijd; Django vergelijkt internaal in UTC.
+    # Snapshot window: vandaag in Amsterdam tijd, maar DB is UTC aware
     dag_start = timezone.make_aware(dt.combine(vandaag, time.min), AMSTERDAM)
     dag_eind  = timezone.make_aware(dt.combine(vandaag, time.max), AMSTERDAM)
 
@@ -143,25 +149,31 @@ def machine_statistieken_api_vandaag(request):
         .order_by("timestamp")
     )
 
+    # Laatste snapshot = "laatst bijgewerkt" (zakjes/file tijd)
+    last_snapshot = snapshot_qs.last()
+    last_snapshot_local_iso = (
+        last_snapshot.timestamp.astimezone(AMSTERDAM).isoformat()
+        if last_snapshot else None
+    )
+
     intradag = []
     for s in snapshot_qs:
-        # Converteer UTC timestamp terug naar lokale tijd voor weergave.
-        lokale_tijd = s.timestamp.astimezone(AMSTERDAM)
+        lokale_ts = s.timestamp.astimezone(AMSTERDAM)
         intradag.append({
-            "tijd":       lokale_tijd.strftime("%H:%M"),
+            "tijd":       lokale_ts.strftime("%H:%M"),  # blijft handig voor labels
+            "timestamp":  lokale_ts.isoformat(),        # robuust voor parsing/ordering
             "machine_id": s.machine_id,
             "zakjes":     s.aantal_zakjes,
         })
 
     return JsonResponse({
-        "datum":               str(vandaag),
-        "machines":            machines,
-        "week_totaal":         week_totaal,
-        "week_dagen":          week_dagen,
-        "intradag":            intradag,
-        "last_machine_update": last_update.isoformat() if last_update else None,
+        "datum":              str(vandaag),
+        "machines":           machines,
+        "week_totaal":        week_totaal,
+        "week_dagen":         week_dagen,
+        "intradag":           intradag,
+        "last_snapshot_time": last_snapshot_local_iso,
     })
-
 
 # -------------------------------------------------------
 # API: GESCHIEDENIS
@@ -191,49 +203,72 @@ def machine_statistieken_api_geschiedenis(request):
 
 
 def _dag_bereik(vandaag: date, dagen: int) -> list:
-    vanaf   = vandaag - timedelta(days=dagen - 1)
+    # Laatste N "datums met data" (ongeacht weekdag).
+    # Vandaag telt mee als er records voor vandaag bestaan.
+    # We tonen geen lege dagen (geen records).
+
+    lookback_days = 365 if dagen <= 30 else 730
+    vanaf = vandaag - timedelta(days=lookback_days)
+
     records = (
         BaxterProductie.objects
         .filter(date__gte=vanaf, date__lte=vandaag)
         .order_by("date", "machine_id")
     )
 
-    per_datum: dict[str, dict] = {}
+    per_datum: dict[date, dict] = {}
     for r in records:
-        key = str(r.date)
-        per_datum.setdefault(key, {})
-        per_datum[key][r.machine_id] = r.aantal_zakjes
+        per_datum.setdefault(r.date, {})
+        per_datum[r.date][r.machine_id] = r.aantal_zakjes
 
-    return [
-        {"datum": datum, "machines": machines}
-        for datum, machines in sorted(per_datum.items())
-    ]
+    # Neem de laatste N datums die bestaan in het model (dus met data)
+    datums = sorted(per_datum.keys(), reverse=True)[:dagen]
+    datums.sort()  # output chronologisch
 
+    return [{"datum": str(d), "machines": per_datum[d]} for d in datums]
 
 def _week_bereik(vandaag: date, weken: int) -> list:
-    vanaf   = vandaag - timedelta(weeks=weken)
+    # Toon altijd: week n, n-1, ... (exact 'weken' weken).
+    # Week n mag lopend zijn; alle voorgaande weken zijn volledige ISO-weken (Ma..Zo).
+    # We query-en bewust t/m zondag van de huidige week zodat het fetch-window elke week Ma..Zo kan afdekken.
+
+    current_ma = _week_start(vandaag)
+    current_zo = current_ma + timedelta(days=6)
+
+    fetch_start = current_ma - timedelta(weeks=weken + 4)
+    fetch_end = current_zo  # niet vandaag, maar zondag van huidige week
+
     records = (
         BaxterProductie.objects
-        .filter(date__gte=vanaf, date__lte=vandaag)
+        .filter(date__gte=fetch_start, date__lte=fetch_end)
         .order_by("date", "machine_id")
     )
 
-    per_week: dict[str, dict] = {}
-    per_week_jaar: dict[str, int] = {}
+    per_week: dict[tuple[int, int], dict[str, int]] = {}
 
     for r in records:
-        iso      = r.date.isocalendar()
-        week_key = f"W{iso[1]:02d}"
-        iso_jaar = iso[0]
+        iso_year, iso_week, _ = r.date.isocalendar()
+        key = (iso_year, iso_week)
+        per_week.setdefault(key, {})
+        per_week[key][r.machine_id] = per_week[key].get(r.machine_id, 0) + r.aantal_zakjes
 
-        per_week.setdefault(week_key, {})
-        per_week[week_key][r.machine_id] = (
-            per_week[week_key].get(r.machine_id, 0) + r.aantal_zakjes
-        )
-        if week_key not in per_week_jaar:
-            per_week_jaar[week_key] = iso_jaar
+    # Bouw expliciet de wekenlijst: n, n-1, ..., n-(weken-1)
+    week_keys: list[tuple[int, int]] = []
+    cursor_ma = current_ma
+    for _ in range(weken):
+        iso_year, iso_week, _ = cursor_ma.isocalendar()
+        week_keys.append((iso_year, iso_week))
+        cursor_ma -= timedelta(weeks=1)
 
-    return [
-        {"week": week, "jaar": per_week_jaar[week], "machines": machines}
-        for week, machines in sorted(per_week.items())
-    ]
+    # Output chronologisch (oud -> nieuw) voor de grafieken
+    week_keys.reverse()
+
+    out = []
+    for (jaar, week) in week_keys:
+        out.append({
+            "week": f"W{week:02d}",
+            "jaar": jaar,
+            "machines": per_week.get((jaar, week), {}),
+        })
+
+    return out

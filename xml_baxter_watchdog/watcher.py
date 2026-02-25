@@ -90,14 +90,14 @@ class XMLHandler(FileSystemEventHandler):
 
     def _verwerk(self, filepath: str) -> None:
         vandaag = date.today()
-        # Garbage collect: set leegmaken bij nieuwe dag zodat RAM beperkt blijft.
         if vandaag != self._verwerkt_datum:
             self._verwerkt.clear()
             self._verwerkt_datum = vandaag
 
-        if filepath in self._verwerkt:
+        key = os.path.basename(filepath).lower()
+        if key in self._verwerkt:
             return
-        self._verwerkt.add(filepath)
+        self._verwerkt.add(key)
 
         try:
             wacht_tot_bestand_stabiel(filepath)
@@ -144,7 +144,6 @@ class XMLHandler(FileSystemEventHandler):
                 f"{payload['machine_id']} | {payload['date']} {payload['time']} "
                 f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
             )
-
 
 def main() -> int:
     import argparse
