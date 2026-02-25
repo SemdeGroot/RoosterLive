@@ -157,9 +157,9 @@ def main() -> int:
 
     log = setup_logging()
 
-    if not os.path.isdir(WATCH_FOLDER):
-        log.error(f"Watch folder bestaat niet: {WATCH_FOLDER}")
-        return 1
+    while not os.path.isdir(WATCH_FOLDER):
+        log.warning("Netwerkmap niet bereikbaar, wacht 10s...")
+        time.sleep(10)
 
     handler = XMLHandler(log)
     observer = Observer()
@@ -170,7 +170,17 @@ def main() -> int:
 
     try:
         while True:
-            time.sleep(1)
+            time.sleep(5)
+            if not observer.is_alive():
+                log.warning("Observer gestopt, netwerkmap controleren...")
+                # Wacht tot map weer bereikbaar is
+                while not os.path.isdir(WATCH_FOLDER):
+                    log.warning("Netwerkmap niet bereikbaar, wacht 10s...")
+                    time.sleep(10)
+                observer = Observer()
+                observer.schedule(handler, path=WATCH_FOLDER, recursive=False)
+                observer.start()
+                log.info(f"Observer herstart | watching: {WATCH_FOLDER}")
     except KeyboardInterrupt:
         observer.stop()
 
