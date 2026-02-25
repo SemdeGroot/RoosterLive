@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from datetime import date
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -75,9 +76,10 @@ def wacht_tot_bestand_stabiel(filepath: str, timeout_s: int = 10, interval_s: fl
 class XMLHandler(FileSystemEventHandler):
     def __init__(self, log: logging.Logger) -> None:
         self.log = log
+        self._verwerkt: set[str] = set()
+        self._verwerkt_datum: date = date.today()
 
     def on_moved(self, event):
-        # Covers machines that write to a temp file and rename into the watch folder.
         if not event.is_directory and event.dest_path.lower().endswith(".xml"):
             self._verwerk(event.dest_path)
 
@@ -87,6 +89,16 @@ class XMLHandler(FileSystemEventHandler):
         self._verwerk(event.src_path)
 
     def _verwerk(self, filepath: str) -> None:
+        vandaag = date.today()
+        # Garbage collect: set leegmaken bij nieuwe dag zodat RAM beperkt blijft.
+        if vandaag != self._verwerkt_datum:
+            self._verwerkt.clear()
+            self._verwerkt_datum = vandaag
+
+        if filepath in self._verwerkt:
+            return
+        self._verwerkt.add(filepath)
+
         try:
             wacht_tot_bestand_stabiel(filepath)
         except TimeoutError as e:

@@ -779,9 +779,10 @@ function renderTodayLine(totaalNu, intradag) {
   const predStartY = lastActual.y;
   const showPrediction = predStartX < dagEindMin;
 
-  // Tempo: gemiddelde sinds start tot laatste meetpunt
-  const gewerktMin = Math.max(1, predStartX - dagStartMin);
-  const tempo = predStartY / gewerktMin;
+  const eersteActual = actualPoints[0];
+  const gewerktMin = Math.max(1, predStartX - eersteActual.x);
+  const tempoNoemer = Math.max(1, predStartY - eersteActual.y);
+  const tempo = tempoNoemer / gewerktMin;
 
   // Laat Chart.js ticks kiezen; we maken prediction-punten op uur-grenzen,
   // plus altijd een anker op het laatste meetpunt.

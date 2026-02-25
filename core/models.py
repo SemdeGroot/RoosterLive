@@ -1798,24 +1798,17 @@ class BaxterProductie(models.Model):
     def __str__(self):
         return f"{self.machine_id} | {self.date} | {self.aantal_zakjes} zakjes"
 
-class BaxterProductieSnapshot(models.Model):
+class BaxterProductieSnapshotPunt(models.Model):
     """
     Bewaart elk individueel meetpunt van de watchdog voor de huidige dag.
-    Snapshots van eerdere dagen worden bij de volgende ingest verwijderd —
     voor historische dagen is alleen het dagtotaal (BaxterProductie) relevant.
     """
-    machine_id    = models.CharField(max_length=10, verbose_name="Machine")
-    timestamp     = models.DateTimeField(verbose_name="Tijdstip meting")
-    aantal_zakjes = models.PositiveIntegerField(verbose_name="Aantal zakjes")
+    machine_id    = models.CharField(max_length=10)
+    timestamp     = models.DateTimeField()  # aware UTC, representeert lokale Amsterdam-tijd
+    aantal_zakjes = models.IntegerField()
 
     class Meta:
-        ordering            = ["timestamp", "machine_id"]
-        verbose_name        = "Baxter productie snapshot"
-        verbose_name_plural = "Baxter productie snapshots"
-        indexes             = [
-            # Snel filteren op datum voor de vandaag-API
-            models.Index(fields=["timestamp"], name="baxter_snapshot_ts_idx"),
+        unique_together = ("machine_id", "timestamp")
+        indexes = [
+            models.Index(fields=["timestamp"]),
         ]
-
-    def __str__(self):
-        return f"{self.machine_id} | {self.timestamp:%Y-%m-%d %H:%M} | {self.aantal_zakjes} zakjes"

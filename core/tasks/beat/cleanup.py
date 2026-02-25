@@ -12,10 +12,10 @@ from core.utils.beat.cleanup import cleanup_uren_retention
 
 @shared_task(ignore_result=True)
 def cleanup_baxter_snapshots_task() -> int:
-    from core.models import BaxterProductieSnapshot
+    from core.models import BaxterProductieSnapshotPunt
 
     today = timezone.localdate()
-    deleted, _ = BaxterProductieSnapshot.objects.filter(timestamp__date__lt=today).delete()
+    deleted, _ = BaxterProductieSnapshotPunt.objects.filter(timestamp__date__lt=today).delete()
     return deleted
 
 @shared_task(ignore_result=True)

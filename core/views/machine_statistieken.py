@@ -1,17 +1,19 @@
 import json
-from collections import defaultdict
+import zoneinfo
 from datetime import date, time, timedelta, datetime as dt
-from django.utils import timezone
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from ..models import BaxterProductie, BaxterProductieSnapshot
+from ..models import BaxterProductie, BaxterProductieSnapshotPunt
 from core.views._helpers import can
+
+AMSTERDAM = zoneinfo.ZoneInfo("Europe/Amsterdam")
 
 
 # -------------------------------------------------------
@@ -26,10 +28,6 @@ def _check_api_key(request) -> bool:
 
 def _week_start(d: date) -> date:
     return d - timedelta(days=d.weekday())
-
-
-def _iso_week(d: date) -> str:
-    return f"W{d.isocalendar()[1]:02d}"
 
 
 # -------------------------------------------------------
@@ -69,12 +67,16 @@ def machine_statistieken_ingest(request):
         },
     )
 
-    # Sla meetpunt op als snapshot voor de intradag-grafiek.
-    # Naive datetime: watchdog levert lokale tijd, geen UTC-conversie.
-    BaxterProductieSnapshot.objects.create(
+    # Watchdog levert lokale Amsterdam-tijd als naive string.
+    # make_aware zorgt dat Django dit correct als UTC opslaat (USE_TZ=True).
+    aware_timestamp = timezone.make_aware(
+        dt.combine(record_date, record_time), AMSTERDAM
+    )
+
+    BaxterProductieSnapshotPunt.objects.get_or_create(
         machine_id=machine_id,
-        timestamp=dt.combine(record_date, record_time),
-        aantal_zakjes=aantal,
+        timestamp=aware_timestamp,
+        defaults={"aantal_zakjes": aantal},
     )
 
     return JsonResponse({
@@ -131,21 +133,22 @@ def machine_statistieken_api_vandaag(request):
         for dag, mach in sorted(per_dag.items())
     ]
 
-    # Timestamps zijn naive lokale tijd opgeslagen - filter op naive daggrens
-    # zodat Django geen UTC-vergelijking doet die een uur verschuift.
-    dag_start = dt.combine(vandaag, time.min)
-    dag_eind  = dt.combine(vandaag, time.max)
+    # Daggrens in Amsterdam-tijd; Django vergelijkt internaal in UTC.
+    dag_start = timezone.make_aware(dt.combine(vandaag, time.min), AMSTERDAM)
+    dag_eind  = timezone.make_aware(dt.combine(vandaag, time.max), AMSTERDAM)
 
     snapshot_qs = (
-        BaxterProductieSnapshot.objects
+        BaxterProductieSnapshotPunt.objects
         .filter(timestamp__gte=dag_start, timestamp__lte=dag_eind)
         .order_by("timestamp")
     )
 
     intradag = []
     for s in snapshot_qs:
+        # Converteer UTC timestamp terug naar lokale tijd voor weergave.
+        lokale_tijd = s.timestamp.astimezone(AMSTERDAM)
         intradag.append({
-            "tijd":       s.timestamp.strftime("%H:%M"),
+            "tijd":       lokale_tijd.strftime("%H:%M"),
             "machine_id": s.machine_id,
             "zakjes":     s.aantal_zakjes,
         })
@@ -170,7 +173,7 @@ def machine_statistieken_api_geschiedenis(request):
         return JsonResponse({"error": "Forbidden"}, status=403)
 
     bereik  = request.GET.get("bereik", "dagen7")
-    vandaag = date.today()
+    vandaag = timezone.localdate()
 
     bereik_map = {
         "dagen7":  lambda: _dag_bereik(vandaag, 7),
@@ -215,19 +218,18 @@ def _week_bereik(vandaag: date, weken: int) -> list:
         .order_by("date", "machine_id")
     )
 
-    per_week: dict[str, dict]  = {}
+    per_week: dict[str, dict] = {}
     per_week_jaar: dict[str, int] = {}
 
     for r in records:
-        iso        = r.date.isocalendar()
-        week_key   = f"W{iso[1]:02d}"
-        iso_jaar   = iso[0]  # ISO-jaar kan afwijken van kalenderjaar (week 1 grens)
+        iso      = r.date.isocalendar()
+        week_key = f"W{iso[1]:02d}"
+        iso_jaar = iso[0]
 
         per_week.setdefault(week_key, {})
         per_week[week_key][r.machine_id] = (
             per_week[week_key].get(r.machine_id, 0) + r.aantal_zakjes
         )
-        # Eerste datum in de week bepaalt het jaar-label
         if week_key not in per_week_jaar:
             per_week_jaar[week_key] = iso_jaar
 
