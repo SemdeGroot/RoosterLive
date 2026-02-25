@@ -29,12 +29,6 @@ def _check_api_key(request) -> bool:
 def _week_start(d: date) -> date:
     return d - timedelta(days=d.weekday())
 
-def _iso_week_bounds(iso_year: int, iso_week: int) -> tuple[date, date]:
-    # ISO week: maandag..zondag
-    monday = date.fromisocalendar(iso_year, iso_week, 1)
-    sunday = date.fromisocalendar(iso_year, iso_week, 7)
-    return monday, sunday
-
 # -------------------------------------------------------
 # INGEST (watchdog → database)
 # -------------------------------------------------------
@@ -72,15 +66,13 @@ def machine_statistieken_ingest(request):
         },
     )
 
-    # Watchdog levert lokale Amsterdam-tijd als naive string.
-    # make_aware zorgt dat Django dit correct als UTC opslaat (USE_TZ=True).
-    aware_timestamp = timezone.make_aware(
-        dt.combine(record_date, record_time), AMSTERDAM
-    )
+    # Use actual API receipt time, not the filename timestamp.
+    # The filename time reflects when the machine started the roll, not when it finished.
+    ingest_timestamp = timezone.now().replace(second=0, microsecond=0)
 
     BaxterProductieSnapshotPunt.objects.update_or_create(
         machine_id=machine_id,
-        timestamp=aware_timestamp,
+        timestamp=ingest_timestamp,
         defaults={"aantal_zakjes": aantal},
     )
 
