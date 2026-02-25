@@ -28,7 +28,7 @@ const MS_CONFIG = {
   pollInterval: 60_000,
 };
 
-const MS_USE_DEMO = true;
+const MS_USE_DEMO = false;
 
 /* -------------------------------------------------------
    Overige HELPERS
