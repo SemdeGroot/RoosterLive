@@ -70,7 +70,7 @@ TILE_GROUPS = {
     "openbare": [
         {"name": "Medicatiebeoordeling", "img": "medicatiebeoordeling-lucide.svg", "badge_class": C["indigo"], "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling", "desc": "Start of beheer reviews."},
         {"name": "Review planner", "img": "reviewplanner-lucide.svg", "badge_class": C["sky"], "url_name": "reviewplanner", "perm": "can_view_reviewplanner", "desc": "Plan en registreer uitgevoerde reviews."},
-        {"name": "KompasGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Stel vragen over medicatie, groepen en indicaties."},
+        {"name": "ApotheekGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Stel vragen over medicatie, groepen en indicaties."},
         {"name": "Houdbaarheidscheck", "img": "houdbaarheidcheck-lucide.svg", "badge_class": C["orange"], "url_name": "houdbaarheidcheck", "perm": "can_edit_houdbaarheidcheck", "desc": "Zoek snel de houdbaarheid van geneesmiddelen op."},
         {"name": "Werkafspraken", "img": "werkafspraken-lucide.svg", "badge_class": C["stone"], "url_name": "policies", "perm": "can_view_policies", "desc": "Afspraken en beleid."},
     ],
@@ -78,7 +78,7 @@ TILE_GROUPS = {
     "instellings": [
         {"name": "Medicatiebeoordeling", "img": "medicatiebeoordeling-lucide.svg", "badge_class": C["violet"], "url_name": "medicatiebeoordeling_tiles", "perm": "can_view_medicatiebeoordeling", "desc": "Start of beheer reviews."},
         {"name": "Review planner", "img": "reviewplanner-lucide.svg", "badge_class": C["sky"], "url_name": "reviewplanner", "perm": "can_view_reviewplanner", "desc": "Plan en registreer uitgevoerde reviews."},
-        {"name": "KompasGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Stel vragen over medicatie, groepen en indicaties."},
+        {"name": "ApotheekGPT", "img": "kompasgpt-lucide.svg", "badge_class": C["fuchsia"], "url_name": "kompasgpt", "perm": "can_view_kompasgpt", "desc": "Stel vragen over medicatie, groepen en indicaties."},
         {"name": "Portavita check", "img": "portavitacheck-lucide.svg", "badge_class": C["rose"], "url_name": "portavita-check", "perm": "can_view_portavita", "desc": "Controleer Portavita."},
         {"name": "Werkafspraken", "img": "werkafspraken-lucide.svg", "badge_class": C["stone"], "url_name": "policies", "perm": "can_view_policies", "desc": "Afspraken en beleid."},
     ],

@@ -12,4 +12,5 @@ from .beat.push import *  # noqa
 from .beat.fill import *  # noqa
 from .beat.birthday import *  # noqa
 from .beat.dienstenoverzicht import *  # noqa
-from .beat.scraper import *  # noqa
+from .beat.kompas_scraper import *  # noqa
+from .beat.nhg_scraper import *  # noqa

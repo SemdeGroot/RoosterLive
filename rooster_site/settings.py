@@ -235,6 +235,12 @@ if not DEBUG:
             "options": {"queue": "scrape"},
             "args": (False,),  # test_mode=False -> volledige run
         },
+        "nhg_scrape_daily_batch": {
+            "task": "tasks.run_nhg_scraper",
+            "schedule": crontab(minute=30, hour=3),
+            "options": {"queue": "scrape"},
+            "args": (False,),  # test_mode=False -> volledige run
+        },
     }
 
 # === Auth / Passwords ===

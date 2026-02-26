@@ -192,7 +192,7 @@ urlpatterns = [
     path("beheer/functies/<int:pk>/delete/", delete_functie, name="delete_functie"),
     path("beheer/dagdelen/<str:code>/update/", dagdeel_update, name="dagdeel_update"),
     # KompasGPT
-    path("kompasgpt/", kompasgpt, name="kompasgpt"),
+    path("apotheekgpt/", kompasgpt, name="kompasgpt"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),

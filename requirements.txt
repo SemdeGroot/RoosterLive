@@ -68,6 +68,7 @@ hyperframe==6.1.0
 idna==3.10
 jmespath==1.0.1
 kombu==5.5.4
+lxml==6.0.2
 msgpack==1.1.2
 multidict==6.7.0
 openpyxl==3.1.5

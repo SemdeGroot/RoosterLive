@@ -1696,17 +1696,18 @@ class UrenDag(models.Model):
     def __str__(self):
         return f"{self.user_id} {self.date} {self.start_time}-{self.end_time} (break={self.break_hours})"
     
-# KompasGPT
+# ApotheekGPT
 class ScrapedPage(models.Model):
     CATEGORY_CHOICES = [
         ('preparaat', 'Preparaat'),
         ('groep', 'Groep'),
         ('indicatie', 'Indicatie'),
+        ('nhg_standaard', 'NHG-Standaard'),
+        ('nhg_behandelrichtlijn', 'NHG-Behandelrichtlijn'),
     ]
-    
     url = models.URLField(unique=True)
     title = models.CharField(max_length=512)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=32, choices=CATEGORY_CHOICES)
     content_hash = models.CharField(max_length=64)  # SHA-256
     last_scraped = models.DateTimeField(auto_now=True)
     gcs_path = models.CharField(max_length=1024, blank=True)
