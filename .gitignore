@@ -60,3 +60,7 @@ repomix.instructions.json
 repomix-output.xml
 
 xml_baxter_watchdog/env_config.py
+
+CLAUDE.md
+.claudeignore
+.claude/

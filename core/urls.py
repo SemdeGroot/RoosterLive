@@ -13,7 +13,7 @@ from core.views.admin import admin_dashboard, admin_users, admin_groups, admin_o
 from core.views.profiel import profiel_index, avatar_upload, avatar_remove, profiel_update_settings
 from core.views.twofa import logout_view, kiosk_login_view
 from core.views.mijnbeschikbaarheid import mijnbeschikbaarheid_view
-from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api, publish_shifts_api
+from core.views.personeelsdashboard import personeelsdashboard_view, save_concept_shifts_api, delete_shift_api, publish_shifts_api, assign_slot_api, copy_prev_week_api
 from core.views import push as push_views
 from core.views.push_native import native_push_subscribe, native_push_unsubscribe
 from core.views.account import CustomPasswordConfirmView, CustomPasswordResetView
@@ -93,6 +93,8 @@ urlpatterns = [
     path("personeel/teamdashboard/api/save-concept/", save_concept_shifts_api, name="pd_save_concept"),
     path("personeel/teamdashboard/api/delete-shift/", delete_shift_api, name="pd_delete_shift"),
     path("personeel/teamdashboard/api/publish/", publish_shifts_api, name="pd_publish_shifts"),
+    path("personeel/teamdashboard/api/assign-slot/", assign_slot_api, name="pd_assign_slot"),
+    path("personeel/teamdashboard/api/copy-prev-week/", copy_prev_week_api, name="pd_copy_prev_week"),
     path("personeel/diensten/", mijndiensten_view, name="mijndiensten"),
     path("diensten/webcal/<uuid:token>.ics", diensten_webcal_view, name="diensten_webcal"),
     path("personeel/uren-doorgeven/", urendoorgeven_view, name="urendoorgeven"),

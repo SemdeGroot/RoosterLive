@@ -7,71 +7,57 @@
 {% block head %}
   <link rel="stylesheet" href="{% static 'css/personeelsdashboard/personeelsdashboard.css' %}">
   <link rel="stylesheet" href="{% static 'css/base/table.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/admin_panel.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base/select2_dropdown.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% endblock %}
 
 {% block content %}
+<div class="admin-wrap pd-wrap">
 
-<div class="admin-wrap personeelsdashboard-wrap">
-
-  <!-- Top card: controls -->
+  <!-- Top card -->
   <div class="card">
     <div class="card-inner">
-        <div class="birthday-header agenda-section-header">
-      <span
-        class="birthday-icon icon-badge i-slate"
-        style="--icon: url('{% static 'img/lucide/teamdashboard-lucide.svg' %}');"
-        aria-hidden="true">
-      </span>
-        <div class="birthday-header-text">
-        <h2>Diensten beheren</h2>
-        <p>Beheer diensten per week en dag. Kies links diensten en wijs rechts taken toe. Sla per dag op en publiceer pas als het weekrooster compleet is, dan wordt het zichtbaar voor medewerkers.</p>
-        </div>
-        <a href="{% url 'personeel_tiles' %}" class="btn btn-save">
-          Terug naar Personeel
-        </a>
-      </div>
-      <hr class="crud-divider">
-      <div class="pd-controlbar">
 
-        <div class="pd-daypicker">
-          <label for="dayPicker" class="section-label">Selecteer dag:</label>
-          <select id="dayPicker" class="admin-select pd-select" aria-label="Selecteer dag">
-            {% for opt in day_options %}
-              <option value="{{ opt.idx }}" {% if opt.idx == selected_day_idx %}selected{% endif %}>
-                {{ opt.weekday_label }} ({{ opt.date|date:"d-m" }})
-              </option>
-            {% endfor %}
-          </select>
+      <div class="birthday-header agenda-section-header">
+        <span class="birthday-icon icon-badge i-slate"
+              style="--icon: url('{% static 'img/lucide/teamdashboard-lucide.svg' %}');"
+              aria-hidden="true"></span>
+        <div class="birthday-header-text">
+          <h2>Diensten beheren</h2>
+          <p>Plan de week in per taak of per medewerker door op de cellen te klikken. Wijzigingen worden automatisch als concept opgeslagen en zijn zichtbaar na publicatie.</p>
         </div>
+        <a href="{% url 'personeel_tiles' %}" class="btn btn-save">Terug naar Personeel</a>
+      </div>
+
+      <hr class="crud-divider">
+
+      <!-- Control bar: week picker + donuts + publish -->
+      <div class="pd-controlbar">
 
         <div class="pd-weekcenter">
           <div class="week-wrap">
             <div class="week-controls">
-              <button id="prevWeekBtn"
-                      class="btn btn-icon"
+              <button id="prevWeekBtn" class="btn btn-icon"
                       {% if not has_prev %}disabled aria-disabled="true"{% endif %}
                       data-target="{{ prev_monday|date:'Y-m-d' }}"
                       aria-label="Vorige week">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-arrow-left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
                   <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
                 </svg>
               </button>
 
               <div class="week-picker">
-                <button id="weekPickerBtn"
-                        class="btn week-picker-btn"
-                        aria-haspopup="listbox"
-                        aria-expanded="false"
-                        aria-controls="weekMenu">
+                <button id="weekPickerBtn" class="btn week-picker-btn"
+                        aria-haspopup="listbox" aria-expanded="false" aria-controls="weekMenu">
                   <span class="wp-label">{{ header_title }}</span>
                   <span class="wp-caret" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                         class="lucide lucide-chevron-down">
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="6 9 12 15 18 9"/>
                     </svg>
                   </span>
@@ -90,254 +76,124 @@
                 </div>
               </div>
 
-              <button id="nextWeekBtn"
-                      class="btn btn-icon"
+              <button id="nextWeekBtn" class="btn btn-icon"
                       {% if not has_next %}disabled aria-disabled="true"{% endif %}
                       data-target="{{ next_monday|date:'Y-m-d' }}"
                       aria-label="Volgende week">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-arrow-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                 </svg>
               </button>
             </div>
-
             <div class="availability-daterange">
               {{ monday|date:"d-m-Y" }} – {{ week_end|date:"d-m-Y" }}
             </div>
           </div>
         </div>
-        <div class="pd-right-spacer">
+
+        <!-- Donuts row -->
+        <div class="pd-donuts-row" id="pdDonutsRow" aria-label="Planningsstatus per dag">
+          <!-- JS fills this with 6 small + 1 big donut canvas -->
+        </div>
+
+        <!-- Publish button -->
+        <div class="pd-publish-area">
           <button class="btn btn-save" id="pdPublishWeekBtn" type="button">
             Publiceer weekrooster
           </button>
+          <div class="pd-unpublished-badge" id="pdUnpublishedBadge">
+            <span id="pdUnpublishedCount">0</span> ongepubliceerde wijzigingen
+          </div>
         </div>
+
       </div>
-<!-- Legenda -->
-<div class="pd-legend" aria-label="Legenda">
-  <div class="pd-legend-col pd-legend-left">
-    <div class="pd-legend-row">
-      <span class="pd-legend-swatch pd-legend-swatch--available" aria-hidden="true"></span>
-      <span class="pd-legend-text">Beschikbaar (door medewerker opgegeven)</span>
-    </div>
 
-    <div class="pd-legend-row">
-      <span class="pd-legend-swatch pd-legend-swatch--delete" aria-hidden="true"></span>
-      <span class="pd-legend-text">Verwijderen (conceptwijziging; definitief na publiceren)</span>
-    </div>
-  </div>
-
-  <div class="pd-legend-col pd-legend-right">
-    <div class="pd-legend-row">
-      <span class="pd-legend-swatch pd-legend-swatch--concept" aria-hidden="true"></span>
-      <span class="pd-legend-text">Concept (ingepland; definitief na publiceren)</span>
-    </div>
-
-    <div class="pd-legend-row">
-      <span class="pd-legend-swatch pd-legend-swatch--published" aria-hidden="true"></span>
-      <span class="pd-legend-text">Gepubliceerd (definitief en zichtbaar voor medewerkers)</span>
-    </div>
-  </div>
-</div>
-    <p class="pd-hint-muted">
-  * Vaste medewerkers zijn <strong>dikgedrukt</strong>.
-</p>
+      <p class="pd-hint-muted">* Vaste medewerkers zijn <strong>dikgedrukt</strong>.</p>
+      <!-- Location legend — JS fills this from PD.locations -->
+      <div id="pdLegend" class="pd-legend"></div>
     </div>
   </div>
 
   {{ pd_data|json_script:"pd-data" }}
 
-  <div class="pd-main-grid">
+  <!-- Main planning card -->
+  <div class="card" style="margin-top:14px;">
+    <div class="card-inner">
 
-    <!-- Links: grid -->
-    <div class="card">
-      <div class="card-inner">
-
-        <div class="pd-left-header">
-          <div>
-            <h3 style="margin:0;">Overzicht – {{ selected_day_ctx.weekday_label }}</h3>
-            <p class="pd-subtitle" style="margin:4px 0 0 0;">
-              Sorteer door op de dagdelen te klikken.
-            </p>
-          </div>
-        </div>
-
-        <hr class="crud-divider">
-
-        <div class="search-bar">
-          <input type="text"
-                 id="userSearch"
-                 placeholder="Zoek op functie of naam…"
-                 class="admin-input">
-        </div>
-
-        <div class="matrix-wrap">
-          <table class="matrix" id="matrixTable" aria-label="Beschikbaarheid per medewerker en dagdeel">
-            <colgroup>
-              <col class="col-group" />
-              <col class="col-name" />
-              <col class="col-slot" />
-              <col class="col-slot" />
-              <col class="col-slot" />
-            </colgroup>
-
-            <thead>
-              <tr>
-                <th class="no-vlines">Functie*</th>
-                <th class="no-vlines">Voornaam</th>
-
-                <th class="slot-head">
-                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|morning">
-                    <span class="slot-label">Ochtend</span>
-                    <span class="slot-count">({{ selected_day_ctx.morning_count }})</span>
-                  </button>
-                </th>
-
-                <th class="slot-head">
-                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|afternoon">
-                    <span class="slot-label">Middag</span>
-                    <span class="slot-count">({{ selected_day_ctx.afternoon_count }})</span>
-                  </button>
-                </th>
-
-                <th class="slot-head">
-                  <button type="button" class="btn slot-badge" data-slot="{{ selected_day_ctx.iso }}|evening">
-                    <span class="slot-label">Vooravond</span>
-                    <span class="slot-count">({{ selected_day_ctx.evening_count }})</span>
-                  </button>
-                </th>
-              </tr>
-            </thead>
-
-            <tbody id="matrixBody">
-              {% for r in rows %}
-                  <tr class="matrix-row"
-                      data-user-id="{{ r.user_id }}"
-                      data-firstname="{{ r.firstname }}"
-                      data-function="{{ r.function }}"
-                      data-function-rank="{{ r.function_rank }}"
-                      data-dienstverband="{{ r.dienstverband }}"
-                      {{ r.data_attrs|safe }}>
-                  <td class="cell-wrap no-vlines {% if r.is_vast %}is-vast{% endif %}">
-                    {{ r.function }}
-                  </td>
-
-                  <td class="cell-wrap no-vlines {% if r.is_vast %}is-vast{% endif %}">
-                    {{ r.firstname }}
-                  </td>
-
-                  <td class="slot-cell">
-                    <div
-                      class="avail-rect {% if r.cell.morning %}available{% endif %}"
-                      aria-label="Ochtend"
-                      role="button"
-                      tabindex="{% if r.cell.morning %}0{% else %}-1{% endif %}"
-                      data-user-id="{{ r.user_id }}"
-                      data-function="{{ r.function }}"
-                      data-function-rank="{{ r.function_rank }}"
-                      data-firstname="{{ r.firstname }}"
-                      data-date="{{ selected_day_ctx.iso }}"
-                      data-period="morning"></div>
-                  </td>
-
-                  <td class="slot-cell">
-                    <div
-                      class="avail-rect {% if r.cell.afternoon %}available{% endif %}"
-                      aria-label="Middag"
-                      role="button"
-                      tabindex="{% if r.cell.afternoon %}0{% else %}-1{% endif %}"
-                      data-user-id="{{ r.user_id }}"
-                      data-function="{{ r.function }}"
-                      data-function-rank="{{ r.function_rank }}"
-                      data-firstname="{{ r.firstname }}"
-                      data-date="{{ selected_day_ctx.iso }}"
-                      data-period="afternoon"></div>
-                  </td>
-
-                  <td class="slot-cell">
-                    <div
-                      class="avail-rect {% if r.cell.evening %}available{% endif %}"
-                      aria-label="Vooravond"
-                      role="button"
-                      tabindex="{% if r.cell.evening %}0{% else %}-1{% endif %}"
-                      data-user-id="{{ r.user_id }}"
-                      data-function="{{ r.function }}"
-                      data-function-rank="{{ r.function_rank }}"
-                      data-firstname="{{ r.firstname }}"
-                      data-date="{{ selected_day_ctx.iso }}"
-                      data-period="evening"></div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Rechts: actiepaneel -->
-    <div class="card">
-      <div class="card-inner pd-actionpanel">
-        <div class="pd-ap-head">
-          <div>
-            <h3 style="margin:0;">Actiepaneel</h3>
-            <p class="pd-subtitle" style="margin:4px 0 5px 0;">
-              Selecteer links diensten en wijs hier locatie/taak toe.
-            </p>
-          </div>
-
-          <div class="pd-ap-summary">
-            <div class="pd-pill" style="margin-top: 8px;">
-              <span class="pd-pill-label">Geselecteerd</span>
-              <span class="pd-pill-value" id="pdSelectedCount">0</span>
-            </div>
-          </div>
-        </div>
-
-        <hr class="crud-divider">
-
-        <section class="pd-ap-section">
-          <div class="pd-sec-head">
-            <h4 class="pd-sec-title">Toe te wijzen diensten</h4>
-            <span class="pd-sec-meta" id="pdSelectionMeta">0</span>
-          </div>
-
-          <div class="pd-list" id="pdSelectionList">
-            <div class="pd-empty" id="pdSelectionEmpty">
-              Selecteer links één of meerdere diensten (oranje of groen).
-            </div>
-          </div>
-        </section>
-
-        <section class="pd-ap-section">
-          <div class="pd-sec-head">
-            <h4 class="pd-sec-title">Locaties</h4>
-            <span class="pd-sec-meta">X/Y = ingepland/minimale bezetting</span>
-          </div>
-
-          <div id="pdLocationPills" class="pd-pill-row" role="tablist" aria-label="Locaties"></div>
-          <div id="pdLocationPanels" style="margin-top:10px;"></div>
-        </section>
-
-        <div class="pd-ap-actions">
-          <button class="btn btn-save" id="pdSaveConceptBtn" disabled>
-            Concept opslaan
+      <!-- Tab bar: Vul shifts left, segmented control centered -->
+      <div class="pd-tab-bar">
+        <div>
+          <button class="btn" id="pdCopyPrevWeekBtn" type="button">
+            Vul shifts
           </button>
         </div>
-
+        <div class="pd-seg-ctrl" role="tablist" aria-label="Planning weergave">
+          <button class="pd-seg-btn is-active" id="segTabTask" role="tab"
+                  aria-selected="true" aria-controls="tabTask" type="button">
+            Planning per taak
+          </button>
+          <button class="pd-seg-btn" id="segTabUser" role="tab"
+                  aria-selected="false" aria-controls="tabUser" type="button">
+            Planning per medewerker
+          </button>
+        </div>
+        <div></div>
       </div>
-    </div>
 
+      <!-- Tab: per taak -->
+      <div id="tabTask" role="tabpanel" aria-labelledby="segTabTask">
+        <div class="search-bar">
+          <input type="text" id="taskSearch" class="admin-input" placeholder="Zoek op taak, medewerker, locatie…">
+        </div>
+        <div class="table-scroll pd-grid-scroll" id="taskTableWrap">
+          <!-- JS renders the planning grid here -->
+        </div>
+      </div>
+
+      <!-- Tab: per werknemer -->
+      <div id="tabUser" role="tabpanel" aria-labelledby="segTabUser" hidden>
+        <div class="search-bar">
+          <input type="text" id="userSearch" class="admin-input" placeholder="Zoek op medewerker, taak, functie, locatie…">
+        </div>
+        <div class="table-scroll pd-grid-scroll" id="userTableWrap">
+          <!-- JS renders the planning grid here -->
+        </div>
+      </div>
+
+    </div>
   </div>
 
+</div>
+
+<!-- Slot modal — display controlled via .is-open CSS class, not hidden attribute -->
+<div class="pd-modal-backdrop" id="pdModalBackdrop" aria-hidden="true"></div>
+<div class="pd-modal" id="pdModal" role="dialog" aria-modal="true" aria-labelledby="pdModalTitle">
+  <div class="pd-modal-header">
+    <div>
+      <div class="pd-modal-title" id="pdModalTitle">Slot</div>
+      <div class="pd-modal-meta" id="pdModalMeta"></div>
+    </div>
+    <button class="pd-modal-close" id="pdModalClose" aria-label="Sluiten" type="button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="pd-modal-body">
+    <div class="pd-modal-min" id="pdModalMin"></div>
+    <div style="margin-top:10px;">
+      <select id="pdModalSelect" style="width:100%;"></select>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="{% static 'js/personeelsdashboard/personeelsdashboard.js' %}" defer></script>
-  <script src="{% static 'js/personeelsdashboard/actiepaneel.js' %}" defer></script>
 {% endblock %}

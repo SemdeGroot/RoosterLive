@@ -1,834 +1,585 @@
-:root{
-  --pd-active-border: #2563eb; /* blauw */
-  --pd-orange: #f59e0b;
-
-  /* Alpha varianten in hex (geen rgba) */
-  --pd-orange-soft: #f59e0b2e;   /* ~18% */
-  --pd-blue-soft:   #2563eb33;   /* ~20% */
-  --pd-blue-soft-2: #2563eb4d;   /* ~30% */
-
-  --pd-green: #22c55e;
-  --pd-green-soft-1: #22c55e40;  /* ~25% */
-  --pd-green-soft-2: #22c55e73;  /* ~45% */
-  --pd-green-ring:   #22c55e2e;  /* ~18% */
-
-  --pd-card-blue:  #3b82f610;    /* subtle */
-  --pd-card-green: #22c55e0d;    /* subtle */
+:root {
+  --pd-green:        #22c55e;
+  --pd-green-soft:   #22c55e1a;
+  --pd-red:          #ef4444;
+  --pd-red-soft:     #ef44441a;
+  --pd-orange:       #f59e0b;
+  --pd-orange-soft:  #f59e0b2e;
 }
 
-/* --- Bestaande basis (gelaten waar mogelijk) --- */
-.form h3 { text-align: center; }
 *:focus-visible { outline: none !important; }
 
 /* =========================================================
    Layout
    ========================================================= */
-.personeelsdashboard-wrap { width: 100%; }
-
-.pd-main-grid{
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-@media (max-width: 980px){
-  .pd-main-grid{ grid-template-columns: 1fr; }
-}
-
-.pd-controlbar{
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 10px;
-  align-items: center;
-}
+.pd-wrap { width: 100%; }
 
 /* =========================================================
-   Legenda (Top card)
+   Controlbar — 3-column grid on desktop, stacked on mobile
    ========================================================= */
-.pd-legend{
+.pd-controlbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
   margin-top: 4px;
-  padding-top: 4px;
-
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  align-items: start;
 }
 
-.pd-legend-col{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pd-legend-right{
-  justify-self: end;           /* rechts uitlijnen in de card */
-  text-align: left;            /* tekst blijft netjes rechts van swatch */
-}
-
-.pd-legend-row{
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.pd-legend-text{
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 0.9rem;
-  line-height: 1.2;
-}
-
-/* De “slot” mini-rectangles */
-.pd-legend-swatch{
-  width: 34px;
-  height: 18px;
-  border-radius: 7px;
-  border: 2px solid #ffffff24;
-  box-sizing: border-box;
-}
-
-/* Oranje beschikbaar */
-.pd-legend-swatch--available{
-  background: var(--pd-orange);
-  border-color: var(--pd-orange);
-  box-shadow: 0 0 0 4px var(--pd-orange-soft);
-}
-
-/* Oranje delete (streepjes + kruis) */
-.pd-legend-swatch--delete{
-  position: relative;
-  overflow: hidden;
-  background:
-    repeating-linear-gradient(
-      45deg,
-      #f59e0b22,
-      #f59e0b22 6px,
-      #f59e0b55 6px,
-      #f59e0b55 12px
-    );
-  border: 2px solid var(--pd-orange);
-}
-
-.pd-legend-swatch--delete::before,
-.pd-legend-swatch--delete::after{
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 160%;
-  height: 2px;
-  background: var(--pd-orange);
-  border-radius: 2px;
-  transform-origin: center;
-}
-
-.pd-legend-swatch--delete::before{
-  transform: translate(-50%, -50%) rotate(20deg);
-}
-.pd-legend-swatch--delete::after{
-  transform: translate(-50%, -50%) rotate(-20deg);
-}
-
-/* Groen concept (streepjes) */
-.pd-legend-swatch--concept{
-  background:
-    repeating-linear-gradient(
-      45deg,
-      var(--pd-green-soft-1),
-      var(--pd-green-soft-1) 6px,
-      var(--pd-green-soft-2) 6px,
-      var(--pd-green-soft-2) 12px
-    );
-  border-color: var(--pd-green);
-  box-shadow: 0 0 0 4px var(--pd-green-ring);
-}
-
-/* Groen gepubliceerd (vol) */
-.pd-legend-swatch--published{
-  background: #22c55ee6;
-  border-color: #22c55eff;
-  box-shadow: 0 0 0 4px var(--pd-green-ring);
-}
-
-/* Mobile: legenda onder elkaar */
-@media (max-width: 980px){
-  .pd-legend{
+@media (max-width: 900px) {
+  .pd-controlbar {
     grid-template-columns: 1fr;
+    gap: 12px;
+    justify-items: center;
   }
-  .pd-legend-right{
-    justify-self: start;
-  }
+  .pd-weekcenter  { justify-self: center; }
+  .pd-publish-area { justify-self: center; align-items: center; }
 }
 
+.pd-weekcenter { justify-self: start; }
 
-.pd-daypicker{
-  justify-self: start;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.pd-select{
-  width: 100%;
-  background: var(--button-color) !important;
-}
-
-.pd-weekcenter{
-  justify-self: center;
-  text-align: center;
-}
-
-.pd-right-spacer{
-  justify-self: end;
-}
-
-.availability-daterange{
+.availability-daterange {
   margin-top: 8px;
   color: var(--muted);
   font-weight: 600;
+  font-size: 0.9rem;
   text-align: center;
 }
 
-.pd-subtitle{
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.search-bar{ margin: 0 0 12px 0; }
-
 /* =========================================================
-   Matrix
+   Donuts row
    ========================================================= */
-.matrix-wrap{
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-table.matrix{
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  background: var(--panel, var(--bg));
-  border: 1px solid var(--border);
-}
-
-table.matrix thead th,
-table.matrix tbody td{
-  background: transparent;
-}
-
-table.matrix th,
-table.matrix td{
-  padding: 10px 10px;
-  vertical-align: middle;
-  text-align: center;
-  border-bottom: 1px solid var(--border);
-}
-
-table.matrix thead th{
-  font-weight: 800;
-  border-bottom: 1px solid var(--border);
-}
-
-.col-group { width: 46%; }
-.col-name  { width: 30%; }
-.col-slot  { width: 8%; }
-
-.cell-wrap{
-  text-align: left;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  line-height: 1.2;
-  font-weight: 600;
-}
-
-.no-vlines{
-  border-left: none !important;
-  border-right: none !important;
-}
-
-.slot-head,
-.slot-cell{
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-}
-
-table.matrix td.slot-cell{ padding: 6px; }
-table.matrix th.slot-head{ padding: 8px 6px; }
-
-/* =========================================================
-   Sort badges
-   ========================================================= */
-.slot-badge{
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-
-  padding: 8px 10px;
-  border-radius: 12px;
-
-  transition: background .2s ease, border-color .2s ease;
-  user-select: none;
-  white-space: nowrap;
-  font-weight: 700;
-}
-
-.slot-badge .slot-count{
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.slot-badge.active{
-  border-color: var(--accent);
-  background: var(--button-hover);
-}
-
-/* =========================================================
-   Availability rectangles
-   ========================================================= */
-.avail-rect{
-  width: 100%;
-  height: 26px;
-  border-radius: 7px;
-  margin: 0;
-  box-sizing: border-box;
-  background: transparent;
-  border: 2px solid #ffffff24; /* i.p.v. rgba(255,255,255,0.14) */
-  position: relative;
-}
-
-.avail-rect.available{
-  background: var(--pd-orange);
-  border-color: var(--pd-orange);
-  box-shadow: 0 0 0 4px var(--pd-orange-soft);
-  cursor: pointer;
-}
-
-/* Belangrijk: geselecteerd moet altijd een blauwe solide border hebben,
-   ongeacht of het slot accepted/concept/delete is */
-.avail-rect.is-selected{
-  border: 2px solid var(--pd-active-border) !important;
-  box-shadow:
-    0 0 0 4px var(--pd-blue-soft-2),
-    0 0 0 2px var(--pd-blue-soft) inset;
-}
-
-/* Concept (draft upsert) */
-.avail-rect.is-concept{
-  background:
-    repeating-linear-gradient(
-      45deg,
-      var(--pd-green-soft-1),
-      var(--pd-green-soft-1) 6px,
-      var(--pd-green-soft-2) 6px,
-      var(--pd-green-soft-2) 12px
-    );
-  border-color: var(--pd-green) !important;
-  box-shadow: 0 0 0 4px var(--pd-green-ring);
-  cursor: pointer;
-}
-
-/* Accepted (published) */
-.avail-rect.is-accepted{
-  background: #22c55ee6; /* ~90% */
-  border-color: #22c55eff !important;
-  box-shadow: 0 0 0 4px var(--pd-green-ring);
-  cursor: pointer;
-}
-
-/* Optional: bestaande highlight voor has-shift */
-.avail-rect.has-shift{
-  outline: 2px solid var(--pd-active-border);
-  outline-offset: 2px;
-}
-
-.avail-rect.is-delete-draft{
-  background:
-    repeating-linear-gradient(
-      45deg,
-      #f59e0b22,
-      #f59e0b22 6px,
-      #f59e0b55 6px,
-      #f59e0b55 12px
-    );
-  border: 2px solid var(--pd-orange) !important;
-  position: relative;
-  overflow: hidden; /* kruis blijft binnen de rect */
-  cursor: pointer;
-}
-
-/* hoek-tot-hoek kruis */
-.avail-rect.is-delete-draft::before,
-.avail-rect.is-delete-draft::after{
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 160%;              /* langer dan slot, zodat hij de hoeken raakt */
-  height: 2px;
-  background: var(--pd-orange);
-  border-radius: 2px;
-  transform-origin: center;
-  pointer-events: none;
-}
-
-/* rechtsboven -> linksonder ( / of \ afhankelijk van richting ) */
-.avail-rect.is-delete-draft::before{
-  transform: translate(-50%, -50%) rotate(15deg);
-}
-
-/* rechtsonder -> linksboven */
-.avail-rect.is-delete-draft::after{
-  transform: translate(-50%, -50%) rotate(-15deg);
-}
-
-.avail-rect.is-selected{
-  border: 2px solid var(--pd-active-border) !important;
-  box-shadow:
-    0 0 0 4px var(--pd-blue-soft-2),
-    0 0 0 2px var(--pd-blue-soft) inset;
-}
-
-/* =========================================================
-   Action panel
-   ========================================================= */
-.pd-actionpanel{
-  display: flex;
-  flex-direction: column;
-}
-
-.pd-ap-head{ margin-bottom: 12px; }
-.pd-actionpanel > .crud-divider{ margin: 0 0 14px 0; }
-.pd-actionpanel .pd-ap-section{ margin-top: 14px; }
-.pd-actionpanel .pd-ap-section:first-of-type{ margin-top: 0; }
-
-.pd-ap-head{
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.pd-ap-summary{
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.pd-pill{
-  background: #ffffff0f;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 10px;
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-}
-
-button.pd-pill{
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-}
-
-.pd-pill.is-active{
-  border-color: var(--accent);
-  background: var(--button-hover);
-}
-
-.pd-pill-label{
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 0.85rem;
-}
-
-.pd-pill-value{
-  font-weight: 900;
-}
-
-.pd-pill-row{
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pd-selection-period-row{
-  margin-top: 8px;
-}
-
-/* ---------------------------------------------------------
-   Location + period layout
---------------------------------------------------------- */
-.pd-loc-panel{
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 10px;
-  background: #ffffff05;
-}
-
-.pd-loc-top{
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.pd-loc-title{
-  font-weight: 900;
-  flex: 1 1 auto;
-  min-width: 0;
-
-  white-space: nowrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-
-  overflow: visible;
-  text-overflow: clip;
-}
-
-.pd-loc-period-pills{
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.pd-period-panel{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pd-period-head{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pd-period-title{
-  font-weight: 900;
-  font-style: italic;
-  text-align: left;
-}
-
-.pd-period-count{
-  font-weight: 900;
-}
-
-.pd-task-block{
-  border: none !important;
-  background: transparent !important;
-  padding: 10px;
-}
-
-.pd-task-block-head{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.pd-task-block-name{
-  font-weight: 900;
-  color: var(--muted);
-}
-
-.pd-task-block-count{
-  font-weight: 900;
-  color: var(--muted);
-}
-
-.pd-ap-section{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pd-sec-head{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pd-sec-title{
-  margin: 0;
-  font-size: 1rem;
-}
-
-.pd-sec-meta{
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.pd-list{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pd-empty{
-  padding: 12px;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-  color: var(--muted);
-  font-weight: 700;
-  background: #ffffff08;
-}
-
-/* =========================================================
-   Shift cards (compact layout)
-   ========================================================= */
-.pd-item{
-  border: 1px solid var(--border);
-  background: #ffffff08;
-  border-radius: 14px;
-  padding: 10px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 8px;
-}
-
-.pd-item--assigned{
-  background: var(--pd-card-blue);
-}
-
-.pd-item--existing{
-  background: var(--pd-card-green);
-}
-
-.pd-item-main{
-  min-width: 0;
-}
-
-.pd-item-actions{
+.pd-donuts-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
-  width: 100%;
-}
-
-.pd-item-actions select{
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.pd-item-actions .icon-btn,
-.pd-item-actions .pd-icon-btn{
-  flex: 0 0 auto;
-}
-
-.pd-item-actions .icon-btn{
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  border-radius: 10px;
-}
-
-.pd-mini-select{
   min-width: 0;
+  overflow-x: auto;
 }
 
-.pd-icon-btn{
-  padding: 8px 10px;
-  border-radius: 12px;
-}
-
-/* Nieuw: pill links, tekst rechts (2 regels).
-   Dit vervangt de oude "pill bovenaan" layout. */
-.pd-shift-card{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.pd-shift-pill-wrap{
-  flex: 0 0 auto;
-  display: flex;
-  align-items: stretch;
-}
-
-.pd-shift-text{
-  flex: 1 1 auto;
-  min-width: 0;
+.pd-donut-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
-.pd-shift-line1{
-  font-weight: 900;
-  line-height: 1.15;
-  word-break: break-word;
-}
+.pd-donut-item canvas { display: block; }
 
-.pd-shift-line2{
+.pd-donut-label {
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--muted);
-  font-weight: 800;
-  font-size: 0.9rem;
-  line-height: 1.15;
-}
-
-/* Status pills (hex only) */
-.pd-status-pill{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 6px 10px;        /* iets hoger zodat hij 2 regels mooi ondersteunt */
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 0.78rem;
-  text-transform: lowercase;
-  border: 1px solid transparent;
   white-space: nowrap;
+  text-align: center;
 }
 
-/* beschikbaar */
-.pd-status-pill--available{
-  background: var(--pd-orange);
-  border-color: var(--pd-orange);
-  color: #111827;
+.pd-donut-item.is-week canvas { cursor: default; }
+
+.pd-donut-sep {
+  width: 1px;
+  height: 50px;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
-/* concept */
-.pd-status-pill--concept{
-  background: #86efac;
-  border-color: #86efac;
-  color: #052e16;
-}
-
-/* actief */
-.pd-status-pill--active{
-  background: #16a34a;
-  border-color: #16a34a;
-  color: var(--text-button);
-}
-
-/* verwijderen */
-.pd-status-pill--delete{
-  background: var(--pd-orange);
-  border-color: var(--pd-orange);
-  color: var(--text-button);
-}
-
-/* in bewerking: transparant */
-.pd-status-pill--editing{
-  background: transparent;
-  border-color: var(--pd-active-border);
-  color: var(--pd-active-border);
-}
-
-.pd-task-items{
+/* =========================================================
+   Publish area
+   ========================================================= */
+.pd-publish-area {
+  justify-self: end;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 6px;
 }
 
-/* staging */
-.pd-staging{
-  margin-bottom: 10px;
-  border: none !important;
-  border-radius: 14px;
-  padding: 10px;
-  background: transparent !important;
+.pd-unpublished-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: right;
 }
 
-.pd-staging-head{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.pd-staging-title-strong{
+.pd-unpublished-badge #pdUnpublishedCount {
   font-weight: 900;
+  color: var(--text);
 }
 
-.pd-staging-count{
-  font-weight: 900;
-}
-
-.pd-ap-actions{
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-@media (max-width: 720px){
-  .pd-controlbar{
-    grid-template-columns: 1fr;
-    justify-items: stretch;
-    gap: 12px;
-  }
-
-  .pd-weekcenter{
-    justify-self: start;
-    text-align: left;
-  }
-
-  .availability-daterange{
-    text-align: left;
-  }
-
-  .pd-right-spacer{ display: none; }
-}
-
-.is-vast{
-  font-weight: 900 !important;
-}
-
-.pd-hint-muted{
-  margin: 10px 0 0 0;
+.pd-hint-muted {
+  margin: 10px 0 0;
   font-size: 0.9rem;
   opacity: .75;
 }
 
-/* status kleuren op basis van target gehaald */
-.pd-status-ok{
-  background: var(--pd-green-soft-1) !important;
-  border-color: var(--pd-green) !important;
-  box-shadow: 0 0 0 4px var(--pd-green-ring);
+/* =========================================================
+   Location legend
+   ========================================================= */
+.pd-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
 }
 
-.pd-status-warn{
-  background: var(--pd-orange-soft) !important;
-  border-color: var(--pd-orange) !important;
-  box-shadow: 0 0 0 4px var(--pd-orange-soft);
+.pd-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
-/* zorg dat tekst leesbaar blijft */
-.pd-status-ok .pd-pill-label,
-.pd-status-warn .pd-pill-label{
+/* Swatch uses same tint + solid border as table row — set via inline style in JS */
+.pd-legend-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   Tab bar — Vul shifts left, segmented control centered
+   ========================================================= */
+.pd-tab-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pd-seg-ctrl {
+  display: inline-flex;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.pd-seg-btn {
+  padding: 7px 18px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
   color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
 }
+
+.pd-seg-btn.is-active {
+  background: var(--button-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* =========================================================
+   Planning grid table
+   ========================================================= */
+.pd-grid-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* max-width keeps scroll wrapper from bleeding through card padding */
+  max-width: 100%;
+}
+
+table.pd-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 1600px;
+  font-size: 0.82rem;
+}
+
+table.pd-grid th,
+table.pd-grid td {
+  border: 1px solid var(--border);
+  padding: 0;
+  vertical-align: top;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Sticky row-header column */
+table.pd-grid .pd-col-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--panel, var(--bg));
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}
+
+table.pd-grid thead .pd-col-sticky {
+  z-index: 4;
+  background: var(--panel, var(--bg));
+}
+
+/* All header cells */
+table.pd-grid thead th {
+  background: var(--panel, var(--bg));
+  font-weight: 800;
+  padding: 6px 6px;
+  font-size: 0.78rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+table.pd-grid thead th.pd-col-sticky { z-index: 5; }
+
+/* Empty placeholder cells in row 2 (for fixed columns) */
+table.pd-grid thead th.pd-th-empty {
+  border-bottom-color: transparent;
+  padding: 0;
+}
+
+/* Sort indicators (matches table.css crud-table pattern) */
+table.pd-grid thead th.is-sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px;
+}
+
+table.pd-grid thead th.is-sortable::after {
+  content: "⇅";
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .35;
+  font-size: .85em;
+}
+
+table.pd-grid thead th.is-sorted-asc::after  { content: "↑"; opacity: .9; }
+table.pd-grid thead th.is-sorted-desc::after { content: "↓"; opacity: .9; }
+
+/* Day header row */
+.pd-th-day {
+  border-bottom: 2px solid var(--border) !important;
+  font-size: 0.8rem !important;
+  padding: 6px 4px !important;
+}
+
+.pd-th-day-xy {
+  display: block;
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Period sub-header row */
+.pd-th-period {
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 4px 2px !important;
+}
+
+.pd-th-period-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-th-period-xy {
+  display: block;
+  font-weight: 800;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+/* Task rows — location tints the sticky cell (same alpha as legend swatches) */
+tr.pd-task-row td.pd-col-sticky {
+  padding: 6px 8px;
+}
+
+/* Tint layered over solid panel — keeps sticky cell opaque when horizontal scroll occurs */
+tr.pd-task-row[data-loc-color="green"] td.pd-col-sticky { background: linear-gradient(#22c55e25, #22c55e25), var(--panel, var(--bg)); }
+tr.pd-task-row[data-loc-color="red"]   td.pd-col-sticky { background: linear-gradient(#ef444425, #ef444425), var(--panel, var(--bg)); }
+tr.pd-task-row[data-loc-color="blue"]  td.pd-col-sticky { background: linear-gradient(#3b82f625, #3b82f625), var(--panel, var(--bg)); }
+
+.pd-task-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.pd-row-xy {
+  display: block;
+  font-weight: 800;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* User row */
+tr.pd-user-row td.pd-col-sticky {
+  padding: 6px 8px;
+}
+
+.pd-user-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.pd-user-name.is-vast { font-weight: 900; }
+
+/* Non-sticky fixed columns (Functie, Diensten) */
+table.pd-grid td.pd-col-meta {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* =========================================================
+   Slot cells
+   ========================================================= */
+td.pd-slot-cell {
+  padding: 3px;
+  cursor: pointer;
+  vertical-align: top;
+  transition: background .1s;
+}
+
+td.pd-slot-cell:hover { background: var(--button-hover); }
+
+td.pd-slot-cell.is-ok    { background: var(--pd-green-soft); }
+td.pd-slot-cell.is-warn  { background: var(--pd-red-soft); }
+td.pd-slot-cell.is-ok:hover   { background: #22c55e2e; }
+td.pd-slot-cell.is-warn:hover { background: #ef44442e; }
+
+/* User chips inside slot cells (task view) */
+.pd-chip {
+  display: block;
+  padding: 2px 5px;
+  margin: 1px 0;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.3;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: left;
+}
+
+.pd-chip.is-vast { font-weight: 900; }
+
+.pd-chip.is-concept {
+  border-color: var(--pd-green);
+  background: var(--pd-green-soft);
+}
+
+.pd-chip.is-delete {
+  border-color: var(--pd-orange);
+  background: var(--pd-orange-soft);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Task chip in user view */
+.pd-task-chip {
+  display: block;
+  padding: 3px 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 5px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: left;
+}
+
+.pd-task-chip.is-concept {
+  border-color: var(--pd-green);
+  background: var(--pd-green-soft);
+}
+
+.pd-task-chip.is-delete {
+  border-color: var(--pd-orange);
+  background: var(--pd-orange-soft);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* =========================================================
+   Modal
+   ========================================================= */
+.pd-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 200;
+}
+
+.pd-modal-backdrop.is-open { display: block; }
+
+.pd-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  width: min(860px, 96vw);
+  max-height: 90vh;
+  /* overflow visible so select2 dropdown (appended to body) can overlay freely */
+  overflow: visible;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  flex-direction: column;
+}
+
+.pd-modal.is-open { display: flex; }
+
+.pd-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  background: var(--panel);
+}
+
+.pd-modal-title {
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.pd-modal-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.pd-modal-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--button-color);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pd-modal-body {
+  padding: 14px 16px 18px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+}
+
+.pd-modal-min {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* Inline sort row rendered inside select2 dropdown */
+.pd-inline-sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pd-inline-sort:hover { background: var(--button-hover); color: var(--text); }
+
+/* Ensure select2 dropdown renders above modal when appended to body */
+.select2-dropdown { z-index: 9000 !important; }
+
+/* =========================================================
+   Week picker
+   ========================================================= */
+.week-wrap { display: flex; flex-direction: column; align-items: center; }
+.week-controls { display: flex; align-items: center; gap: 8px; }
+
+.week-picker { position: relative; }
+
+.week-picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.wp-caret { display: flex; align-items: center; opacity: .7; }
+
+.week-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  padding: 4px;
+  transform: translateX(-50%);
+}
+
+.week-option {
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.week-option:hover,
+.week-option:focus { background: var(--button-hover); outline: none; }
+
+/* Active week: ring only, no text color change */
+.week-option.is-active {
+  background: var(--button-hover);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.week-option strong { font-weight: 800; }
+.week-option small { font-size: 0.82rem; color: var(--muted); }

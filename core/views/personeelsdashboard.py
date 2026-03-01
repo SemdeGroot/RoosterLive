@@ -22,12 +22,8 @@ from core.views.mijnbeschikbaarheid import _monday_of_iso_week, _clamp_week
 PERIOD_TO_DAGDEEL_CODE = {
     "morning": Dagdeel.CODE_MORNING,
     "afternoon": Dagdeel.CODE_AFTERNOON,
-    "evening": Dagdeel.CODE_PRE_EVENING,  # dashboard avond = vooravond availability
+    "evening": Dagdeel.CODE_PRE_EVENING,
 }
-
-def _user_group(u):
-    g = u.groups.first() if hasattr(u, "groups") else None
-    return g.name if g else "Onbekend"
 
 def _user_function_title(u):
     prof = getattr(u, "profile", None)
@@ -37,7 +33,7 @@ def _user_function_title(u):
 def _user_function_rank(u):
     prof = getattr(u, "profile", None)
     fn = getattr(prof, "function", None) if prof else None
-    return int(fn.ranking) if fn else 9999  # onbekend onderaan
+    return int(fn.ranking) if fn else 9999
 
 def _user_dienstverband(u):
     prof = getattr(u, "profile", None)
@@ -50,16 +46,18 @@ def _user_firstname_cap(u):
     un = (getattr(u, "username", "") or "").strip()
     return un[:1].upper() + un[1:].lower() if un else "Onbekend"
 
+def _user_lastname_cap(u):
+    ln = (u.last_name or "").strip()
+    return ln[:1].upper() + ln[1:].lower() if ln else ""
+
 _DAY_PREFIX = {0: "mon", 1: "tue", 2: "wed", 3: "thu", 4: "fri", 5: "sat"}
 
 def _task_min_for(task, dt, period: str) -> int:
-    """
-    Return minimale bezetting voor task op datum dt voor period.
-    """
     prefix = _DAY_PREFIX.get(dt.weekday())
     if not prefix:
         return 0
     return int(getattr(task, f"min_{prefix}_{period}", 0) or 0)
+
 
 @login_required
 @never_cache
@@ -74,7 +72,6 @@ def personeelsdashboard_view(request):
     min_monday = _monday_of_iso_week(today)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    # Weekselectie (ongewijzigd) ...
     qs_week = request.GET.get("week")
     qs_monday = request.GET.get("monday")
 
@@ -98,13 +95,6 @@ def personeelsdashboard_view(request):
     days = [monday + timedelta(days=i) for i in range(6)]
     week_end = monday + timedelta(days=5)
 
-    try:
-        selected_day_idx = int(request.GET.get("day", "0"))
-    except Exception:
-        selected_day_idx = 0
-    selected_day_idx = max(0, min(5, selected_day_idx))
-    selected_day = monday + timedelta(days=selected_day_idx)
-
     prev_raw = monday - timedelta(weeks=1)
     next_raw = monday + timedelta(weeks=1)
     has_prev = prev_raw >= min_monday
@@ -112,6 +102,7 @@ def personeelsdashboard_view(request):
     prev_monday = prev_raw if has_prev else min_monday
     next_monday = next_raw if has_next else max_monday
 
+    # --- Availability for entire week ---
     av_qs = (
         Availability.objects
         .filter(date__in=days)
@@ -119,88 +110,133 @@ def personeelsdashboard_view(request):
         .prefetch_related("dagdelen", "user__groups")
     )
 
+    avail_map = defaultdict(lambda: defaultdict(lambda: {"morning": False, "afternoon": False, "evening": False}))
+    users_with_avail = {}
+    for av in av_qs:
+        codes = set(av.dagdelen.values_list("code", flat=True))
+        avail_map[av.user_id][av.date]["morning"] = Dagdeel.CODE_MORNING in codes
+        avail_map[av.user_id][av.date]["afternoon"] = Dagdeel.CODE_AFTERNOON in codes
+        avail_map[av.user_id][av.date]["evening"] = Dagdeel.CODE_PRE_EVENING in codes
+        users_with_avail[av.user_id] = av.user
 
-    users = sorted(
-        {av.user for av in av_qs},
+    # Detect duplicate firstnames for display name logic
+    firstnames = defaultdict(list)
+    for uid, u in users_with_avail.items():
+        firstnames[_user_firstname_cap(u)].append(uid)
+    duplicate_firstnames = {fn for fn, uids in firstnames.items() if len(uids) > 1}
+
+    def _display_name(u):
+        fn = _user_firstname_cap(u)
+        if fn not in duplicate_firstnames:
+            return fn
+        ln = _user_lastname_cap(u)
+        if not ln:
+            return fn
+        group_others = [users_with_avail[uid] for uid in firstnames[fn] if uid != u.id]
+        other_lns = [_user_lastname_cap(gu).lower() for gu in group_others if _user_lastname_cap(gu)]
+        ln_lower = ln.lower()
+        # Find shortest prefix of ln that is not a prefix of any other in the group
+        n = len(ln)
+        for i in range(1, len(ln) + 1):
+            if not any(o.startswith(ln_lower[:i]) for o in other_lns):
+                n = i
+                break
+        abbrev = ln[:n]
+        return f"{fn} {abbrev}." if n < len(ln) else f"{fn} {abbrev}"
+
+    users_sorted = sorted(
+        users_with_avail.values(),
         key=lambda u: (
             _user_function_rank(u),
             _user_function_title(u).lower(),
-            _user_firstname_cap(u).lower()
+            _user_firstname_cap(u).lower(),
         )
     )
-    matrix = defaultdict(lambda: {d: {"morning": False, "afternoon": False, "evening": False} for d in days})
 
-    for av in av_qs:
-        codes = set(av.dagdelen.values_list("code", flat=True))  # {"morning","pre_evening",...}
-
-        matrix[av.user][av.date]["morning"] = (Dagdeel.CODE_MORNING in codes)
-        matrix[av.user][av.date]["afternoon"] = (Dagdeel.CODE_AFTERNOON in codes)
-
-        # jouw dashboard gebruikt nog period="evening", maar availability gebruikt pre_evening
-        matrix[av.user][av.date]["evening"] = (Dagdeel.CODE_PRE_EVENING in codes)
-
-
-    counts = {d: {"morning": 0, "afternoon": 0, "evening": 0} for d in days}
-    for u in users:
+    users_payload = []
+    for u in users_sorted:
+        avail_by_date = {}
         for d in days:
-            if matrix[u][d]["morning"]:
-                counts[d]["morning"] += 1
-            if matrix[u][d]["afternoon"]:
-                counts[d]["afternoon"] += 1
-            if matrix[u][d]["evening"]:
-                counts[d]["evening"] += 1
-
-    day_options = []
-    for idx, d in enumerate(days):
-        day_options.append({
-            "idx": idx,
-            "date": d,
-            "iso": d.isoformat(),
-            "weekday_label": date_format(d, "l").capitalize(),
-        })
-
-    selected_day_ctx = {
-        "date": selected_day,
-        "iso": selected_day.isoformat(),
-        "weekday_label": date_format(selected_day, "l").capitalize(),
-        "morning_count": counts[selected_day]["morning"],
-        "afternoon_count": counts[selected_day]["afternoon"],
-        "evening_count": counts[selected_day]["evening"],
-    }
-
-    rows = []
-    selected_iso = selected_day.strftime("%Y-%m-%d")
-    for u in users:
-        is_morning = matrix[u][selected_day]["morning"]
-        is_afternoon = matrix[u][selected_day]["afternoon"]
-        is_evening = matrix[u][selected_day]["evening"]
-        if not (is_morning or is_afternoon or is_evening):
-            continue
-        func_title = _user_function_title(u)
-        func_rank = _user_function_rank(u)
-        dienstverband = _user_dienstverband(u) or "oproep"
-        is_vast = (dienstverband == "vast")
-
-        data_attrs_parts = [
-        f'data-avail-morning="{"1" if is_morning else "0"}"',
-        f'data-avail-afternoon="{"1" if is_afternoon else "0"}"',
-        f'data-avail-evening="{"1" if is_evening else "0"}"',
-        f'data-function="{func_title}"',
-        f'data-function-rank="{func_rank}"',
-        f'data-dienstverband="{dienstverband}"',
-        ]
-
-        rows.append({
-            "user_id": u.id,
-            "function": func_title,
-            "function_rank": func_rank,
-            "dienstverband": dienstverband,
-            "is_vast": is_vast,
+            avail_by_date[d.isoformat()] = avail_map[u.id][d]
+        users_payload.append({
+            "id": u.id,
+            "displayName": _display_name(u),
             "firstname": _user_firstname_cap(u),
-            "cell": {"date": selected_day, "morning": is_morning, "afternoon": is_afternoon, "evening": is_evening},
-            "data_attrs": " ".join(data_attrs_parts),
+            "function": _user_function_title(u),
+            "function_rank": _user_function_rank(u),
+            "dienstverband": _user_dienstverband(u) or "oproep",
+            "availability": avail_by_date,
         })
 
+    # --- Locations + Tasks with per-day min values ---
+    locations = (
+        Location.objects.all()
+        .order_by("name")
+        .prefetch_related(Prefetch("tasks", queryset=Task.objects.order_by("name")))
+    )
+
+    locations_payload = []
+    for loc in locations:
+        tasks_payload = []
+        for t in loc.tasks.all():
+            min_by_date = {}
+            for d in days:
+                min_by_date[d.isoformat()] = {
+                    "morning": _task_min_for(t, d, "morning"),
+                    "afternoon": _task_min_for(t, d, "afternoon"),
+                    "evening": _task_min_for(t, d, "evening"),
+                }
+            tasks_payload.append({
+                "id": t.id,
+                "name": t.name,
+                "location_id": loc.id,
+                "min": min_by_date,
+            })
+        if tasks_payload:
+            locations_payload.append({
+                "id": loc.id,
+                "name": loc.name,
+                "color": loc.color,
+                "tasks": tasks_payload,
+            })
+
+    # --- Published shifts for the whole week ---
+    published_qs = (
+        Shift.objects
+        .filter(date__in=days)
+        .values("user_id", "date", "period", "task_id")
+    )
+    published_payload = [
+        {
+            "user_id": s["user_id"],
+            "date": s["date"].isoformat(),
+            "period": s["period"],
+            "task_id": s["task_id"],
+        }
+        for s in published_qs
+    ]
+
+    # --- Draft shifts for the whole week ---
+    drafts_qs = (
+        ShiftDraft.objects
+        .filter(date__in=days)
+        .values("id", "user_id", "date", "period", "task_id", "action")
+    )
+    draft_payload = [
+        {
+            "id": d["id"],
+            "user_id": d["user_id"],
+            "date": d["date"].isoformat(),
+            "period": d["period"],
+            "task_id": d["task_id"],
+            "action": d["action"],
+        }
+        for d in drafts_qs
+    ]
+
+    unpublished_count = ShiftDraft.objects.filter(date__in=days).count()
+
+    # --- Week picker options ---
     week_options = []
     cur = min_monday
     while cur <= max_monday:
@@ -215,126 +251,153 @@ def personeelsdashboard_view(request):
 
     iso_year, iso_week, _ = monday.isocalendar()
     header_title = f"Week {iso_week} – {iso_year}"
-    default_sort_slot = f"{selected_day.isoformat()}|morning"
 
-    locations = (
-        Location.objects
-        .all()
-        .order_by("name")
-        .prefetch_related(Prefetch("tasks", queryset=Task.objects.order_by("name")))
-    )
-
-    locations_payload = []
-    for loc in locations:
-        tasks_payload = []
-        loc_min = {"morning": 0, "afternoon": 0, "evening": 0}
-
-        for t in loc.tasks.all():
-            tmin = {
-                "morning": _task_min_for(t, selected_day, "morning"),
-                "afternoon": _task_min_for(t, selected_day, "afternoon"),
-                "evening": _task_min_for(t, selected_day, "evening"),
-            }
-            loc_min["morning"] += tmin["morning"]
-            loc_min["afternoon"] += tmin["afternoon"]
-            loc_min["evening"] += tmin["evening"]
-
-            tasks_payload.append({"id": t.id, "name": t.name, "min": tmin})
-
-        locations_payload.append({"id": loc.id, "name": loc.name, "min": loc_min, "tasks": tasks_payload})
-
-    # Published shifts voor geselecteerde dag (bron voor users)
-    published_qs = (
-        Shift.objects
-        .filter(date=selected_day)
-        .select_related("user", "user__profile", "user__profile__function", "task", "task__location")
-        .prefetch_related("user__groups")
-        .order_by("period", "user__first_name", "user__username")
-    )
-
-    published_payload = []
-    for s in published_qs:
-        published_payload.append({
-            "id": s.id,
-            "user_id": s.user_id,
-            "function": _user_function_title(s.user),
-            "function_rank": _user_function_rank(s.user),
-            "dienstverband": _user_dienstverband(s.user) or "oproep",
-            "firstname": _user_firstname_cap(s.user),
-            "date": s.date.isoformat(),
-            "period": s.period,
-            "task_id": s.task_id,
-            "task_name": s.task.name,
-            "location_id": s.task.location_id,
-            "location_name": s.task.location.name,
+    days_payload = []
+    for d in days:
+        days_payload.append({
+            "iso": d.isoformat(),
+            "label": date_format(d, "l").capitalize(),
+            "short": date_format(d, "D").capitalize()[:2],
+            "daymonth": d.strftime("%d-%m"),
         })
-
-
-    # Draft shifts voor geselecteerde dag (wat admin nog niet gepubliceerd heeft)
-    drafts_qs = (
-        ShiftDraft.objects
-        .filter(date=selected_day)
-        .select_related("user", "user__profile", "user__profile__function", "task", "task__location")
-        .prefetch_related("user__groups")
-        .order_by("period", "user__first_name", "user__username")
-    )
-
-    draft_payload = []
-    for d in drafts_qs:
-        task = d.task
-        draft_payload.append({
-            "id": d.id,
-            "user_id": d.user_id,
-            "function": _user_function_title(d.user),
-            "function_rank": _user_function_rank(d.user),
-            "dienstverband": _user_dienstverband(d.user) or "oproep",
-            "firstname": _user_firstname_cap(d.user),
-            "date": d.date.isoformat(),
-            "period": d.period,
-            "action": d.action,
-            "task_id": task.id if task else None,
-            "task_name": task.name if task else None,
-            "location_id": task.location_id if task else None,
-            "location_name": task.location.name if task else None,
-        })
-
 
     pd_data = {
-        "selectedDate": selected_day.isoformat(),
         "weekStart": monday.isoformat(),
         "weekEnd": week_end.isoformat(),
-
+        "unpublishedCount": unpublished_count,
+        "days": days_payload,
         "locations": locations_payload,
-
+        "users": users_payload,
         "publishedShifts": published_payload,
         "draftShifts": draft_payload,
-
         "saveConceptUrl": reverse("pd_save_concept"),
+        "assignSlotUrl": reverse("pd_assign_slot"),
         "deleteShiftUrl": reverse("pd_delete_shift"),
         "publishUrl": reverse("pd_publish_shifts"),
+        "copyPrevWeekUrl": reverse("pd_copy_prev_week"),
     }
 
     return render(request, "personeelsdashboard/index.html", {
         "monday": monday,
         "week_end": week_end,
-
-        "day_options": day_options,
-        "selected_day_idx": selected_day_idx,
-        "selected_day_ctx": selected_day_ctx,
-
-        "rows": rows,
-
         "week_options": week_options,
         "has_prev": has_prev,
         "has_next": has_next,
         "prev_monday": prev_monday,
         "next_monday": next_monday,
-
         "header_title": header_title,
-        "default_sort_slot": default_sort_slot,
-
         "pd_data": pd_data,
     })
+
+
+@login_required
+@require_POST
+def assign_slot_api(request):
+    """
+    Assign a set of users to a (task, date, period) slot.
+    Body: { "task_id": 1, "date": "YYYY-MM-DD", "period": "morning",
+            "user_ids": [1,2,3], "week_start": "...", "week_end": "..." }
+    Computes the diff and creates/removes drafts atomically.
+    """
+    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+        return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige JSON."}, status=400)
+
+    try:
+        task_id = int(payload["task_id"])
+        dt = date.fromisoformat(payload["date"])
+        period = str(payload["period"])
+        user_ids = [int(uid) for uid in payload.get("user_ids", [])]
+        week_start = date.fromisoformat(payload.get("week_start", dt.isoformat()))
+        date.fromisoformat(payload.get("week_end", dt.isoformat()))  # validated but unused
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige parameters."}, status=400)
+
+    if period not in ("morning", "afternoon", "evening"):
+        return JsonResponse({"ok": False, "error": "Ongeldige period."}, status=400)
+
+    target_set = set(user_ids)
+
+    # Determine all existing drafts for this date+period (any task)
+    all_drafts_for_slot = {
+        d.user_id: d for d in ShiftDraft.objects.filter(date=dt, period=period)
+    }
+
+    # Published shifts for this exact task+date+period
+    published_for_task = {
+        s.user_id for s in Shift.objects.filter(date=dt, period=period, task_id=task_id)
+    }
+
+    # Current effective set assigned to this task
+    current_set = set()
+    for uid, draft in all_drafts_for_slot.items():
+        if draft.action == "upsert" and draft.task_id == task_id:
+            current_set.add(uid)
+    # Published shifts only count if no draft overrides them
+    for uid in published_for_task:
+        if uid not in all_drafts_for_slot:
+            current_set.add(uid)
+
+    to_add = target_set - current_set
+    to_remove = current_set - target_set
+
+    with transaction.atomic():
+        for uid in to_add:
+            ShiftDraft.objects.update_or_create(
+                user_id=uid, date=dt, period=period,
+                defaults={"task_id": task_id, "action": "upsert"}
+            )
+        for uid in to_remove:
+            if uid in all_drafts_for_slot:
+                draft = all_drafts_for_slot[uid]
+                if draft.action == "upsert":
+                    draft.delete()
+            elif uid in published_for_task:
+                ShiftDraft.objects.update_or_create(
+                    user_id=uid, date=dt, period=period,
+                    defaults={"action": "delete", "task": None}
+                )
+
+    week_days = [week_start + timedelta(days=i) for i in range(6)]
+    updated_drafts = list(
+        ShiftDraft.objects.filter(date__in=week_days)
+        .values("id", "user_id", "date", "period", "task_id", "action")
+    )
+    updated_published = list(
+        Shift.objects.filter(date__in=week_days)
+        .values("user_id", "date", "period", "task_id")
+    )
+    unpublished_count = ShiftDraft.objects.filter(date__in=week_days).count()
+
+    return JsonResponse({
+        "ok": True,
+        "unpublishedCount": unpublished_count,
+        "draftShifts": [
+            {
+                "id": d["id"],
+                "user_id": d["user_id"],
+                "date": d["date"].isoformat(),
+                "period": d["period"],
+                "task_id": d["task_id"],
+                "action": d["action"],
+            }
+            for d in updated_drafts
+        ],
+        "publishedShifts": [
+            {
+                "user_id": s["user_id"],
+                "date": s["date"].isoformat(),
+                "period": s["period"],
+                "task_id": s["task_id"],
+            }
+            for s in updated_published
+        ],
+    })
+
 
 @login_required
 @require_POST
@@ -348,10 +411,12 @@ def save_concept_shifts_api(request):
         return JsonResponse({"ok": False, "error": "Ongeldige JSON."}, status=400)
 
     items = payload.get("items") or []
+    week_start_s = payload.get("week_start")
+    week_end_s = payload.get("week_end")
+
     if not isinstance(items, list):
         return JsonResponse({"ok": False, "error": "items moet een lijst zijn."}, status=400)
 
-    saved = []
     for it in items:
         try:
             user_id = int(it["user_id"])
@@ -360,49 +425,62 @@ def save_concept_shifts_api(request):
             task_id = int(it["task_id"])
         except Exception:
             continue
-
         if period not in ("morning", "afternoon", "evening"):
             continue
-
-        obj, _ = ShiftDraft.objects.update_or_create(
+        ShiftDraft.objects.update_or_create(
             user_id=user_id,
             date=dt,
             period=period,
-            defaults={
-                "task_id": task_id,
-                "action": "upsert",
-            }
+            defaults={"task_id": task_id, "action": "upsert"}
         )
 
-        obj = (
-            ShiftDraft.objects
-            .select_related("task", "task__location", "user")
-            .get(id=obj.id)
-        )
+    # Return updated week state if week bounds provided
+    if week_start_s and week_end_s:
+        try:
+            week_start = date.fromisoformat(week_start_s)
+            week_days = [week_start + timedelta(days=i) for i in range(6)]
+            updated_drafts = list(
+                ShiftDraft.objects.filter(date__in=week_days)
+                .values("id", "user_id", "date", "period", "task_id", "action")
+            )
+            updated_published = list(
+                Shift.objects.filter(date__in=week_days)
+                .values("user_id", "date", "period", "task_id")
+            )
+            unpublished_count = ShiftDraft.objects.filter(date__in=week_days).count()
+            return JsonResponse({
+                "ok": True,
+                "unpublishedCount": unpublished_count,
+                "draftShifts": [
+                    {
+                        "id": d["id"],
+                        "user_id": d["user_id"],
+                        "date": d["date"].isoformat(),
+                        "period": d["period"],
+                        "task_id": d["task_id"],
+                        "action": d["action"],
+                    }
+                    for d in updated_drafts
+                ],
+                "publishedShifts": [
+                    {
+                        "user_id": s["user_id"],
+                        "date": s["date"].isoformat(),
+                        "period": s["period"],
+                        "task_id": s["task_id"],
+                    }
+                    for s in updated_published
+                ],
+            })
+        except Exception:
+            pass
 
-        saved.append({
-            "draft_id": obj.id,
-            "user_id": obj.user_id,
-            "date": obj.date.isoformat(),
-            "period": obj.period,
-            "action": obj.action,
-            "task_id": obj.task_id,
-            "task_name": obj.task.name if obj.task else None,
-            "location_id": obj.task.location_id if obj.task else None,
-            "location_name": obj.task.location.name if obj.task else None,
-        })
+    return JsonResponse({"ok": True})
 
-    return JsonResponse({"ok": True, "saved": saved})
 
 @login_required
 @require_POST
 def delete_shift_api(request):
-    """
-    Body: { "user_id": 1, "date": "YYYY-MM-DD", "period": "morning" }
-    Behaviour:
-      - als er al een draft bestaat (upsert of delete) -> draft verwijderen (undo)
-      - anders -> draft delete maken (pending delete van published)
-    """
     if not can(request.user, "can_view_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
@@ -415,6 +493,8 @@ def delete_shift_api(request):
         user_id = int(payload.get("user_id"))
         d = date.fromisoformat(payload.get("date"))
         period = str(payload.get("period") or "")
+        week_start_s = payload.get("week_start")
+        week_end_s = payload.get("week_end")
     except Exception:
         return JsonResponse({"ok": False, "error": "user_id/date/period ongeldig."}, status=400)
 
@@ -422,24 +502,63 @@ def delete_shift_api(request):
         return JsonResponse({"ok": False, "error": "Ongeldige period."}, status=400)
 
     draft = ShiftDraft.objects.filter(user_id=user_id, date=d, period=period).first()
-
     if draft:
-        # undo draft
         draft.delete()
-        return JsonResponse({"ok": True, "mode": "undone"})
+        mode = "undone"
     else:
-        # Alleen delete markeren als er echt een published shift bestaat.
         exists = Shift.objects.filter(user_id=user_id, date=d, period=period).exists()
         if not exists:
-            return JsonResponse({"ok": True, "mode": "noop"})
+            mode = "noop"
+        else:
+            ShiftDraft.objects.update_or_create(
+                user_id=user_id, date=d, period=period,
+                defaults={"action": "delete", "task": None}
+            )
+            mode = "marked_delete"
 
-        obj, _ = ShiftDraft.objects.update_or_create(
-            user_id=user_id,
-            date=d,
-            period=period,
-            defaults={"action": "delete", "task": None}
-        )
-        return JsonResponse({"ok": True, "mode": "marked_delete", "draft_id": obj.id})
+    if week_start_s and week_end_s:
+        try:
+            week_start = date.fromisoformat(week_start_s)
+            week_days = [week_start + timedelta(days=i) for i in range(6)]
+            updated_drafts = list(
+                ShiftDraft.objects.filter(date__in=week_days)
+                .values("id", "user_id", "date", "period", "task_id", "action")
+            )
+            updated_published = list(
+                Shift.objects.filter(date__in=week_days)
+                .values("user_id", "date", "period", "task_id")
+            )
+            unpublished_count = ShiftDraft.objects.filter(date__in=week_days).count()
+            return JsonResponse({
+                "ok": True,
+                "mode": mode,
+                "unpublishedCount": unpublished_count,
+                "draftShifts": [
+                    {
+                        "id": dr["id"],
+                        "user_id": dr["user_id"],
+                        "date": dr["date"].isoformat(),
+                        "period": dr["period"],
+                        "task_id": dr["task_id"],
+                        "action": dr["action"],
+                    }
+                    for dr in updated_drafts
+                ],
+                "publishedShifts": [
+                    {
+                        "user_id": s["user_id"],
+                        "date": s["date"].isoformat(),
+                        "period": s["period"],
+                        "task_id": s["task_id"],
+                    }
+                    for s in updated_published
+                ],
+            })
+        except Exception:
+            pass
+
+    return JsonResponse({"ok": True, "mode": mode})
+
 
 @login_required
 @require_POST
@@ -496,7 +615,6 @@ def publish_shifts_api(request):
                 per_user_counts[dr.user_id]["changed"] += 1
             else:
                 per_user_counts[dr.user_id]["added"] += 1
-
             Shift.objects.update_or_create(
                 user_id=dr.user_id,
                 date=dr.date,
@@ -512,7 +630,6 @@ def publish_shifts_api(request):
             cache.delete_many(keys)
 
             from core.tasks.push import send_user_shifts_changed_push_task
-            # of: from core.tasks.push import send_user_shifts_changed_push_task
 
             iso_year = week_start.isocalendar().year
             iso_week = week_start.isocalendar().week
@@ -521,7 +638,6 @@ def publish_shifts_api(request):
                 total = int(c["added"]) + int(c["changed"]) + int(c["removed"])
                 if total <= 0:
                     continue
-
                 send_user_shifts_changed_push_task.delay(
                     int(uid),
                     int(iso_year),
@@ -541,3 +657,126 @@ def publish_shifts_api(request):
         f"({week_start:%d-%m} t/m {week_end:%d-%m})."
     )
     return JsonResponse({"ok": True, "changed_count": int(changed_count)})
+
+
+@login_required
+@require_POST
+def copy_prev_week_api(request):
+    """
+    Copy published shifts from the previous week for vast users who have availability.
+    Only creates drafts for slots that are not already planned (draft or published).
+    Body: { "week_start": "YYYY-MM-DD", "week_end": "YYYY-MM-DD" }
+    """
+    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+        return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+        week_start = date.fromisoformat(payload["week_start"])
+        week_end = date.fromisoformat(payload["week_end"])
+    except Exception:
+        return JsonResponse({"ok": False, "error": "Ongeldige parameters."}, status=400)
+
+    prev_start = week_start - timedelta(weeks=1)
+    prev_days = [prev_start + timedelta(days=i) for i in range(6)]
+    curr_days = [week_start + timedelta(days=i) for i in range(6)]
+
+    # Published shifts from prev week
+    prev_shifts = list(
+        Shift.objects
+        .filter(date__in=prev_days, task_id__isnull=False)
+        .select_related("user", "user__profile")
+    )
+
+    # Limit to vast users only
+    vast_shifts = [s for s in prev_shifts if _user_dienstverband(s.user) == "vast"]
+    if not vast_shifts:
+        return JsonResponse({"ok": True, "copied": 0, "empty": True})
+
+    vast_user_ids = {s.user_id for s in vast_shifts}
+
+    # Availability for current week for these users
+    av_qs = (
+        Availability.objects
+        .filter(date__in=curr_days, user_id__in=vast_user_ids)
+        .prefetch_related("dagdelen")
+    )
+    avail_map = defaultdict(lambda: defaultdict(lambda: {
+        "morning": False, "afternoon": False, "evening": False,
+    }))
+    for av in av_qs:
+        codes = set(av.dagdelen.values_list("code", flat=True))
+        avail_map[av.user_id][av.date]["morning"]   = Dagdeel.CODE_MORNING in codes
+        avail_map[av.user_id][av.date]["afternoon"] = Dagdeel.CODE_AFTERNOON in codes
+        avail_map[av.user_id][av.date]["evening"]   = Dagdeel.CODE_PRE_EVENING in codes
+
+    # Map prev week date → current week date (same weekday offset)
+    prev_to_curr = dict(zip(prev_days, curr_days))
+
+    # Existing coverage for current week (drafts + published) — skip if already planned
+    existing_drafts = set(
+        ShiftDraft.objects.filter(date__in=curr_days, user_id__in=vast_user_ids)
+        .values_list("user_id", "date", "period")
+    )
+    existing_published = set(
+        Shift.objects.filter(date__in=curr_days, user_id__in=vast_user_ids)
+        .values_list("user_id", "date", "period")
+    )
+    existing = existing_drafts | existing_published
+
+    copied = 0
+    with transaction.atomic():
+        for s in vast_shifts:
+            curr_date = prev_to_curr.get(s.date)
+            if curr_date is None:
+                continue
+            if not avail_map[s.user_id][curr_date].get(s.period, False):
+                continue
+            if (s.user_id, curr_date, s.period) in existing:
+                continue
+            ShiftDraft.objects.create(
+                user_id=s.user_id,
+                date=curr_date,
+                period=s.period,
+                task_id=s.task_id,
+                action="upsert",
+            )
+            copied += 1
+
+    week_days = [week_start + timedelta(days=i) for i in range(6)]
+    updated_drafts = list(
+        ShiftDraft.objects.filter(date__in=week_days)
+        .values("id", "user_id", "date", "period", "task_id", "action")
+    )
+    updated_published = list(
+        Shift.objects.filter(date__in=week_days)
+        .values("user_id", "date", "period", "task_id")
+    )
+    unpublished_count = ShiftDraft.objects.filter(date__in=week_days).count()
+
+    return JsonResponse({
+        "ok": True,
+        "copied": copied,
+        "empty": False,
+        "unpublishedCount": unpublished_count,
+        "draftShifts": [
+            {
+                "id": d["id"],
+                "user_id": d["user_id"],
+                "date": d["date"].isoformat(),
+                "period": d["period"],
+                "task_id": d["task_id"],
+                "action": d["action"],
+            }
+            for d in updated_drafts
+        ],
+        "publishedShifts": [
+            {
+                "user_id": s["user_id"],
+                "date": s["date"].isoformat(),
+                "period": s["period"],
+                "task_id": s["task_id"],
+            }
+            for s in updated_published
+        ],
+    })
