@@ -2,19 +2,18 @@ import os
 import time
 import logging
 from datetime import date
-from watchdog.observers import Observer
+
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 
-from xml_baxter_watchdog.xml_parser import verwerk_bestand
+from xml_baxter_watchdog.xml_parser import verwerk_bestand, parse_filename
 from xml_baxter_watchdog.api_client import stuur_naar_api
 from xml_baxter_watchdog.env_config import WATCH_FOLDER
 
 
-LOG_FILE = "watcher.log"
+LOG_FILE      = "watcher.log"
 LOG_MAX_BYTES = 3_000_000
-
-MAX_PARSE_ATTEMPTS = 5
-RETRY_INTERVAL_S = 1.0
+POLL_INTERVAL = 60  # seconden
 
 
 def truncate_log_if_needed(path: str, max_bytes: int) -> None:
@@ -38,112 +37,99 @@ def setup_logging() -> logging.Logger:
             fmt="%(asctime)s  %(levelname)-8s  %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-
         fh = logging.FileHandler(LOG_FILE, encoding="utf-8")
-        fh.setLevel(logging.INFO)
         fh.setFormatter(fmt)
-
         sh = logging.StreamHandler()
-        sh.setLevel(logging.INFO)
         sh.setFormatter(fmt)
-
         logger.addHandler(fh)
         logger.addHandler(sh)
 
     return logger
 
 
-def wacht_tot_bestand_stabiel(filepath: str, timeout_s: int = 10, interval_s: float = 0.25) -> None:
-    end = time.time() + timeout_s
-    last_size = -1
+def _nieuwste_dag_in_folder(log: logging.Logger) -> date | None:
+    """Geeft de nieuwste datum terug die voorkomt in de bestandsnamen, of None als er niets geldig is."""
+    try:
+        bestanden = [f for f in os.listdir(WATCH_FOLDER) if f.lower().endswith(".xml")]
+    except OSError:
+        return None
 
-    while time.time() < end:
+    nieuwste: date | None = None
+    for filename in bestanden:
         try:
-            size = os.path.getsize(filepath)
-        except OSError:
-            time.sleep(interval_s)
+            meta = parse_filename(filename)
+        except ValueError:
             continue
-
-        if size == last_size and size > 0:
-            return
-
-        last_size = size
-        time.sleep(interval_s)
-
-    raise TimeoutError(f"Bestand niet stabiel binnen {timeout_s}s: {filepath}")
+        d = date.fromisoformat(meta["date"])
+        if nieuwste is None or d > nieuwste:
+            nieuwste = d
+    return nieuwste
 
 
 class XMLHandler(FileSystemEventHandler):
     def __init__(self, log: logging.Logger) -> None:
         self.log = log
-        self._verwerkt: set[str] = set()
-        self._verwerkt_datum: date = date.today()
+        # Initialiseer op de nieuwste dag die al in de folder zit, zodat
+        # bestanden van die dag bij herstart niet opnieuw verstuurd worden.
+        gevonden = _nieuwste_dag_in_folder(log)
+        self._huidige_dag: date = gevonden if gevonden is not None else date.today()
+        self._verstuurd: set[tuple[str, str, str]] = set()
+        self.log.info(f"Handler gestart | actieve dag: {self._huidige_dag}")
+
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.lower().endswith(".xml"):
+            self._verwerk(event.src_path)
 
     def on_moved(self, event):
+        # Sommige systemen schrijven eerst naar een temp-bestand en hernoemen daarna.
         if not event.is_directory and event.dest_path.lower().endswith(".xml"):
             self._verwerk(event.dest_path)
 
-    def on_created(self, event):
-        if event.is_directory or not event.src_path.lower().endswith(".xml"):
-            return
-        self._verwerk(event.src_path)
-
     def _verwerk(self, filepath: str) -> None:
-        vandaag = date.today()
-        if vandaag != self._verwerkt_datum:
-            self._verwerkt.clear()
-            self._verwerkt_datum = vandaag
-
-        key = os.path.basename(filepath).lower()
-        if key in self._verwerkt:
-            return
-        self._verwerkt.add(key)
+        filename = os.path.basename(filepath)
 
         try:
-            wacht_tot_bestand_stabiel(filepath)
-        except TimeoutError as e:
-            self.log.error(f"{filepath} | [ERROR] {e}")
+            meta = parse_filename(filename)
+        except ValueError:
             return
 
-        last_error: Exception | None = None
+        bestand_dag = date.fromisoformat(meta["date"])
 
-        for attempt in range(1, MAX_PARSE_ATTEMPTS + 1):
-            try:
-                payload = verwerk_bestand(filepath)
-                break
-            except ValueError as e:
-                last_error = e
-                if attempt < MAX_PARSE_ATTEMPTS:
-                    self.log.warning(
-                        f"{filepath} | Poging {attempt}/{MAX_PARSE_ATTEMPTS} mislukt: {e} — opnieuw over {RETRY_INTERVAL_S}s"
-                    )
-                    time.sleep(RETRY_INTERVAL_S)
-        else:
-            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
-            self.log.error(
-                f"{filepath} | [ERROR] Parse fout na {MAX_PARSE_ATTEMPTS} pogingen: {last_error}"
-            )
+        # Reset bij nieuwe dag op basis van bestandsnaam, niet op systeemtijd.
+        if bestand_dag > self._huidige_dag:
+            self.log.info(f"Nieuwe dag gedetecteerd ({bestand_dag}), verstuurd-set gereset.")
+            self._verstuurd.clear()
+            self._huidige_dag = bestand_dag
+
+        # Bestanden van een oudere dag dan de actieve dag negeren.
+        if bestand_dag < self._huidige_dag:
+            return
+
+        key = (meta["machine_id"], meta["date"], meta["time"])
+        if key in self._verstuurd:
             return
 
         try:
-            ok = stuur_naar_api(payload)
-        except Exception as e:
-            truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
-            self.log.exception(f"{filepath} | [ERROR] Onverwacht bij API-aanroep: {e}")
+            payload = verwerk_bestand(filepath)
+        except ValueError as e:
+            self.log.warning(f"{filename} | Parse fout: {e}")
             return
 
         truncate_log_if_needed(LOG_FILE, LOG_MAX_BYTES)
+        ok = stuur_naar_api(payload)
 
         if ok:
+            self._verstuurd.add(key)
             self.log.info(
                 f"{payload['machine_id']} | {payload['date']} {payload['time']} "
-                f"| {payload['aantal_zakjes']} zakjes | [SUCCES] verstuurd"
+                f"| {payload['aantal_zakjes']} zakjes | [SUCCES]"
             )
         else:
             self.log.error(
                 f"{payload['machine_id']} | {payload['date']} {payload['time']} "
                 f"| {payload['aantal_zakjes']} zakjes | [ERROR] API versturen mislukt"
             )
+
 
 def main() -> int:
     import argparse
@@ -162,25 +148,23 @@ def main() -> int:
         time.sleep(10)
 
     handler = XMLHandler(log)
-    observer = Observer()
+    observer = PollingObserver(timeout=POLL_INTERVAL)
     observer.schedule(handler, path=WATCH_FOLDER, recursive=False)
     observer.start()
-
-    log.info(f"Gestart | watching: {WATCH_FOLDER}")
+    log.info(f"Gestart | PollingObserver elke {POLL_INTERVAL}s | watching: {WATCH_FOLDER}")
 
     try:
         while True:
             time.sleep(5)
             if not observer.is_alive():
-                log.warning("Observer gestopt, netwerkmap controleren...")
-                # Wacht tot map weer bereikbaar is
+                log.warning("Observer gestopt, herstarten...")
                 while not os.path.isdir(WATCH_FOLDER):
                     log.warning("Netwerkmap niet bereikbaar, wacht 10s...")
                     time.sleep(10)
-                observer = Observer()
+                observer = PollingObserver(timeout=POLL_INTERVAL)
                 observer.schedule(handler, path=WATCH_FOLDER, recursive=False)
                 observer.start()
-                log.info(f"Observer herstart | watching: {WATCH_FOLDER}")
+                log.info("Observer herstart.")
     except KeyboardInterrupt:
         observer.stop()
 

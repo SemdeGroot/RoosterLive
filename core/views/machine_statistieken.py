@@ -57,7 +57,7 @@ def machine_statistieken_ingest(request):
     except (ValueError, TypeError) as e:
         return JsonResponse({"error": f"Invalid field value: {e}"}, status=400)
 
-    obj, created = BaxterProductie.objects.update_or_create(
+    obj, created = BaxterProductie.objects.get_or_create(
         machine_id=machine_id,
         date=record_date,
         defaults={
@@ -66,15 +66,24 @@ def machine_statistieken_ingest(request):
         },
     )
 
+    if not created and (obj.time != record_time or obj.aantal_zakjes != aantal):
+        obj.time          = record_time
+        obj.aantal_zakjes = aantal
+        obj.save(update_fields=["time", "aantal_zakjes", "updated_at"])
+
     # Use actual API receipt time, not the filename timestamp.
     # The filename time reflects when the machine started the roll, not when it finished.
     ingest_timestamp = timezone.now().replace(second=0, microsecond=0)
 
-    BaxterProductieSnapshotPunt.objects.update_or_create(
+    snap, snap_created = BaxterProductieSnapshotPunt.objects.get_or_create(
         machine_id=machine_id,
         timestamp=ingest_timestamp,
         defaults={"aantal_zakjes": aantal},
     )
+
+    if not snap_created and snap.aantal_zakjes != aantal:
+        snap.aantal_zakjes = aantal
+        snap.save(update_fields=["aantal_zakjes"])
 
     return JsonResponse({
         "status":  "created" if created else "updated",
@@ -82,7 +91,6 @@ def machine_statistieken_ingest(request):
         "date":    str(record_date),
         "zakjes":  aantal,
     }, status=201 if created else 200)
-
 
 # -------------------------------------------------------
 # PAGINAWEERGAVE
