@@ -38,6 +38,15 @@
       typeof window.navigator.credentials.get === "function"
     );
   }
+    // ---------- DEVICE DETECTION ----------
+
+  function isDesktop() {
+    const ua = navigator.userAgent || "";
+    // iPadOS 13+ reports a Mac UA — detect via touch points
+    const isIPad = /macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+    const isMobileUA = /android|iphone|ipad|ipod|webos|blackberry|windows phone/i.test(ua);
+    return !isMobileUA && !isIPad;
+  }
 
   // ---------- BROWSER / CAPABILITIES ----------
 
@@ -254,7 +263,13 @@
       if (last && !usernameInput.value) usernameInput.value = last;
     } catch {}
 
-    // init: password verborgen
+    // Desktop: skip passkey entirely, show password on render
+    if (isDesktop()) {
+      showPasswordAndFocus();
+      return;
+    }
+
+    // init: password verborgen (mobile only from here)
     if (passwordBlock) passwordBlock.style.display = "none";
 
     // geen webauthn -> password
