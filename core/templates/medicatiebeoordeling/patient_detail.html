@@ -53,54 +53,71 @@
       </div>
     </div>
 
-    {# -------- Analyses card (ongewijzigd) -------- #}
+{# -------- Analyses card -------- #}
     <div class="review-card">
       <div class="card-header">
         <h3 class="sub-title">Analyses</h3>
       </div>
       <div class="card-body">
-        <div class="analysis-container">
+        {% load markdown_links %}
 
-          <div class="analysis-box">
-            <div class="analysis-header-row">
-            <span
-              class="birthday-icon icon-badge i-red"
-              style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
-              aria-hidden="true">
-            </span>
-              <h4 class="analysis-title">Mogelijke STOPP Criteria</h4>
-            </div>
+        {# STOPP header #}
+        <div class="analysis-header-row" style="margin-bottom:16px;">
+          <span
+            class="birthday-icon icon-badge i-red"
+            style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
+            aria-hidden="true">
+          </span>
+          <h4 class="analysis-title">STOP-NL V2 Criteria</h4>
+        </div>
 
-            <div class="criteria-content {% if analysis.analyses.stopp %}stopp-box{% else %}safe-box{% endif %}">
-              {% if analysis.analyses.stopp %}
-                <strong style="display:block; margin-bottom:8px; color:#e0c070;">
-                  {{ analysis.analyses.stopp|length }} criteria gevonden:
+        {# STOPP criteria: 2-koloms grid, elke categorie is een cel #}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; margin-bottom:24px;">
+
+          {% if stopp_by_category %}
+            {% for category, items in stopp_by_category.items %}
+              <div class="criteria-content stopp-box">
+                <strong style="display:block; margin-bottom:4px; color:var(--text);">
+                  {{ category }}
                 </strong>
+                <p style="margin:0 0 10px 0; font-size:0.9em; opacity:0.7;">
+                  {{ items.0.description }}
+                </p>
                 <ul style="padding-left:20px; margin:0;">
-                  {% for item in analysis.analyses.stopp %}
-                    <li style="margin-bottom:8px;">
-                      {{ item.description }}
-                      <div style="font-size:0.85em; opacity:0.7; margin-top:2px;">
-                        <em>Door: {{ item.triggering_medicines }}</em>
-                      </div>
+                  {% for item in items %}
+                    <li style="margin-bottom:10px;">
+                      <span style="font-size:0.8em; opacity:0.5; font-weight:600;">{{ item.id }}</span>
+                      <span style="font-size:0.85em; opacity:0.7;">
+                        Middel: <em>{{ item.triggering_medicines }}</em>
+                      </span>
+                      {% if item.argument %}
+                        <div style="font-size:0.82em; opacity:0.55; margin-top:2px;">
+                          {{ item.argument|render_links }}
+                        </div>
+                      {% endif %}
                     </li>
                   {% endfor %}
                 </ul>
-              {% else %}
-                <div style="display:flex; align-items:center; gap:8px; color:#9cdca3;">
-                  Geen STOPP-criteria gevonden.
-                </div>
-              {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="criteria-content safe-box" style="grid-column:1/-1;">
+              <span style="color:var(--text);">Geen STOPP-criteria gevonden.</span>
             </div>
-          </div>
+          {% endif %}
+
+        </div>
+
+        {# ACB + dubbelmedicatie: altijd naast elkaar als laatste rij #}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
 
           <div class="analysis-box">
             <div class="analysis-header-row">
-            <span
-              class="birthday-icon icon-badge i-rose"
-              style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
-              aria-hidden="true">
-            </span>
+              <span
+                class="birthday-icon icon-badge i-rose"
+                style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
+                aria-hidden="true">
+              </span>
               <h4 class="analysis-title">Anticholinerge Belasting</h4>
             </div>
 
@@ -116,7 +133,7 @@
                     Score: {{ score }}
                   </strong>
                   <span style="opacity:0.8;">|</span>
-                  <span {% if score == 0 %}style="color: #9cdca3;"{% endif %}>
+                  <span {% if score == 0 %}style="color: var(--text);"{% endif %}>
                     {{ analysis.analyses.acb.interpretatie }}
                   </span>
                 </div>
@@ -135,19 +152,19 @@
             {% endwith %}
           </div>
 
-          {% if analysis.analyses.dubbelmedicatie %}
-            <div class="analysis-box">
-              <div class="analysis-header-row">
+          <div class="analysis-box">
+            <div class="analysis-header-row">
               <span
                 class="birthday-icon icon-badge i-pink"
                 style="--icon: url('{% static 'img/lucide/dubbelmedicatie-lucide.svg' %}');"
                 aria-hidden="true">
               </span>
-                <h4 class="analysis-title">Dubbelmedicatie</h4>
-              </div>
+              <h4 class="analysis-title">Dubbelmedicatie</h4>
+            </div>
 
+            {% if analysis.analyses.dubbelmedicatie %}
               <div class="criteria-content dubbel-box">
-                <strong style="display:block; margin-bottom:8px; color:#ffb0b0;">
+                <strong style="display:block; margin-bottom:8px; color:var(--text);">
                   Mogelijke dubbelmedicatie:
                 </strong>
                 <ul style="padding-left:20px; margin:0;">
@@ -159,8 +176,13 @@
                   {% endfor %}
                 </ul>
               </div>
-            </div>
-          {% endif %}
+            {% else %}
+              <div class="criteria-content safe-box">
+                <span style="color:var(--text);">Geen dubbelmedicatie gevonden.</span>
+              </div>
+            {% endif %}
+          </div>
+
         </div>
       </div>
     </div>
@@ -210,11 +232,15 @@
                       {% for gm in group_data.meds %}
                         <tr>
                           <td class="wrap">
-                            {% if override_name_lookup and override_name_lookup|get_item:gm.clean %}
-                              <strong style="color:var(--text);">{{ override_name_lookup|get_item:gm.clean }}</strong>
-                            {% else %}
-                              <strong style="color:var(--text);">{{ gm.clean }}</strong>
-                            {% endif %}
+                          {% with med_clean=gm.clean|default:"" gebruik=gm.gebruik|default:"" %}
+                            {% with okey=med_clean|add:"||"|add:gebruik %}
+                              {% if override_name_lookup and override_name_lookup|get_item:okey %}
+                                <strong style="color:var(--text);">{{ override_name_lookup|get_item:okey }}</strong>
+                              {% else %}
+                                <strong style="color:var(--text);">{{ gm.clean }}</strong>
+                              {% endif %}
+                            {% endwith %}
+                          {% endwith %}
                           </td>
 
                           <td>{{ gm.gebruik }}</td>
@@ -253,7 +279,11 @@
                                         class="admin-input"
                                         type="text"
                                         name="override_name__{{ group_id }}__{{ forloop.counter0 }}"
-                                        value="{% if override_name_lookup and override_name_lookup|get_item:gm.clean %}{{ override_name_lookup|get_item:gm.clean }}{% else %}{{ gm.clean }}{% endif %}"
+                                        {% with med_clean=gm.clean|default:"" gebruik=gm.gebruik|default:"" %}
+                                          {% with okey=med_clean|add:"||"|add:gebruik %}
+                                            value="{% if override_name_lookup and override_name_lookup|get_item:okey %}{{ override_name_lookup|get_item:okey }}{% else %}{{ gm.clean }}{% endif %}"
+                                          {% endwith %}
+                                        {% endwith %}
                                         placeholder="Pas de naam aan (optioneel)"
                                     >
                                     </div>
@@ -261,11 +291,8 @@
                                     <div>
                                     <label>Jansen categorie (override)</label>
 
-                                    <input
-                                        type="hidden"
-                                        name="override_med_clean__{{ group_id }}__{{ forloop.counter0 }}"
-                                        value="{{ gm.clean }}"
-                                    >
+                                    <input type="hidden" name="override_med_clean__{{ group_id }}__{{ forloop.counter0 }}" value="{{ gm.clean }}">
+                                    <input type="hidden" name="override_gebruik__{{ group_id }}__{{ forloop.counter0 }}" value="{{ gm.gebruik|default:'' }}">
 
                                     <select
                                         name="override_target__{{ group_id }}__{{ forloop.counter0 }}"
@@ -276,7 +303,11 @@
                                         {% for cid, cname in jansen_choices %}
                                         <option
                                             value="{{ cid }}"
-                                            {% if overrides_lookup and overrides_lookup|get_item:gm.clean == cid %}selected{% endif %}
+                                            {% with med_clean=gm.clean|default:"" gebruik=gm.gebruik|default:"" %}
+                                              {% with okey=med_clean|add:"||"|add:gebruik %}
+                                                {% if overrides_lookup and overrides_lookup|get_item:okey == cid %}selected{% endif %}
+                                              {% endwith %}
+                                            {% endwith %}
                                         >
                                             {{ cname }}
                                         </option>

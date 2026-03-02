@@ -82,8 +82,8 @@
 
 /* --- Analyse Sectie --- */
 .analysis-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
 }
 
@@ -323,3 +323,9 @@
 
 .comment-block.has-history { margin-top: 12px; }
 .comment-block.no-history  { margin-top: 20px; }
+
+@media (max-width: 768px) {
+    .analysis-container {
+        grid-template-columns: 1fr;
+    }
+}

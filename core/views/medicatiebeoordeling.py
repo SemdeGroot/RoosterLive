@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.http import HttpResponseForbidden, JsonResponse, HttpResponse
+from pathlib import Path
+import base64
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.contrib import messages
@@ -562,14 +564,20 @@ def patient_detail(request, pk):
 
     analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
-    vragen = analysis.get("analyses", {}).get("standaardvragen", [])
 
     # -----------------------------
     # OVERRIDES LOOKUP
     # -----------------------------
     overrides_qs = patient.med_group_overrides.all()
-    overrides_lookup = {(o.med_clean or "").strip(): o.target_jansen_group_id for o in overrides_qs}
-    override_name_lookup = {(o.med_clean or "").strip(): (o.override_name or "") for o in overrides_qs}
+    # Key: (med_clean, med_gebruik) — gebruik disambiguates duplicate med names.
+    overrides_lookup = {
+        ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): o.target_jansen_group_id
+        for o in overrides_qs
+    }
+    override_name_lookup = {
+        ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): (o.override_name or "")
+        for o in overrides_qs
+    }
 
     grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
 
@@ -578,7 +586,7 @@ def patient_detail(request, pk):
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
-        # A) Comments/historie opslaan (jouw bestaande logic)
+        # A) Comments/historie opslaan
         for group_id, group_data in grouped_meds:
             key_tekst = f"comment_{group_id}"
             key_historie = f"historie_{group_id}"
@@ -597,7 +605,7 @@ def patient_detail(request, pk):
                 defaults=defaults_data
             )
 
-        # B) Overrides opslaan/verwijderen + override_name
+        # B) Overrides opslaan/verwijderen
         override_updates = 0
         override_deletes = 0
 
@@ -608,6 +616,7 @@ def patient_detail(request, pk):
             suffix = key.replace("override_med_clean__", "", 1)  # "<gid>__<idx>"
             target_key = f"override_target__{suffix}"
             name_key = f"override_name__{suffix}"
+            gebruik_key = f"override_gebruik__{suffix}"
 
             if target_key not in request.POST:
                 continue
@@ -615,15 +624,16 @@ def patient_detail(request, pk):
             med_clean = (med_clean or "").strip()
             raw_target = (request.POST.get(target_key) or "").strip()
             override_name = (request.POST.get(name_key) or "").strip()
+            med_gebruik = (request.POST.get(gebruik_key) or "").strip()
 
             if not med_clean:
                 continue
 
-            # empty target = override verwijderen
             if raw_target == "":
                 deleted, _ = MedicatieReviewMedGroupOverride.objects.filter(
                     patient=patient,
-                    med_clean=med_clean
+                    med_clean=med_clean,
+                    med_gebruik=med_gebruik,
                 ).delete()
                 if deleted:
                     override_deletes += 1
@@ -634,16 +644,16 @@ def patient_detail(request, pk):
             except ValueError:
                 continue
 
-            # 1/2 NOOIT toestaan
-            # 50 WEL toestaan (Buiten formularium)
-            if target_gid in (1, 2):
-                messages.error(request, "Override niet toegestaan naar Vallen? of Malen?.")
+            if target_gid in (0, 1, 2):
+                messages.error(request, "Override niet toegestaan naar Labwaarden, Vallen? of Malen?.")
                 continue
 
             MedicatieReviewMedGroupOverride.objects.update_or_create(
                 patient=patient,
                 med_clean=med_clean,
+                med_gebruik=med_gebruik,
                 defaults={
+                    "source_jansen_group_id": int(suffix.split("__")[0]),
                     "target_jansen_group_id": target_gid,
                     "override_name": override_name,
                     "updated_by": request.user,
@@ -658,7 +668,6 @@ def patient_detail(request, pk):
             patient.afdeling.updated_by = request.user
             patient.afdeling.save()
 
-        # Export
         if request.POST.get("action") == "save_export":
             patient = (
                 MedicatieReviewPatient.objects
@@ -696,17 +705,34 @@ def patient_detail(request, pk):
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    jansen_choices = [(cid, cname) for cid, cname in get_jansen_group_choices() if cid not in (1, 2)]
+    jansen_choices = [(cid, cname) for cid, cname in get_jansen_group_choices() if cid not in (0, 1, 2)]
+
+    stopp_raw = analysis.get("analyses", {}).get("stopp", [])
+    stopp_by_category = {}
+    for item in stopp_raw:
+        cat = item.get("category", "Overig")
+        stopp_by_category.setdefault(cat, []).append(item)
+
+    # Flat string key for template lookups: "med_clean||gebruik"
+    overrides_lookup_display = {
+        f"{med_clean}||{gebruik}": target_gid
+        for (med_clean, gebruik), target_gid in overrides_lookup.items()
+    }
+    override_name_lookup_display = {
+        f"{med_clean}||{gebruik}": name
+        for (med_clean, gebruik), name in override_name_lookup.items()
+    }
 
     return render(request, "medicatiebeoordeling/patient_detail.html", {
         "patient": patient,
         "afdeling": patient.afdeling,
         "analysis": analysis,
+        "stopp_by_category": stopp_by_category,
         "grouped_meds": grouped_meds,
         "comments_lookup": comments_lookup,
         "jansen_choices": jansen_choices,
-        "overrides_lookup": overrides_lookup,
-        "override_name_lookup": override_name_lookup,
+        "overrides_lookup": overrides_lookup_display,
+        "override_name_lookup": override_name_lookup_display,
     })
 
 @login_required

@@ -1209,6 +1209,8 @@ class MedicatieReviewMedGroupOverride(models.Model):
 
     # display-naam override
     override_name = models.CharField(max_length=255, blank=True, default="")
+    med_gebruik = models.CharField(max_length=255, blank=True, null=True, default=None)
+    source_jansen_group_id = models.IntegerField(default=0)
 
     # target groep (met choices uit jouw JSON)
     target_jansen_group_id = models.IntegerField(choices=get_jansen_group_choices())
@@ -1222,7 +1224,16 @@ class MedicatieReviewMedGroupOverride(models.Model):
     )
 
     class Meta:
-        unique_together = ("patient", "med_clean")
+        unique_together = ("patient", "med_clean", "med_gebruik")
+
+    def save(self, *args, **kwargs):
+        self.med_clean = (self.med_clean or "").strip()
+        self.override_name = (self.override_name or "").strip()
+
+        mg = (self.med_gebruik or "").strip()
+        self.med_gebruik = mg or None  # empty -> NULL
+
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.patient_id}: {self.med_clean} -> {self.target_jansen_group_id}"
