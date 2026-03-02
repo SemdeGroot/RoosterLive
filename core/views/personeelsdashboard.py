@@ -299,7 +299,7 @@ def assign_slot_api(request):
             "user_ids": [1,2,3], "week_start": "...", "week_end": "..." }
     Computes the diff and creates/removes drafts atomically.
     """
-    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+    if not can(request.user, "can_edit_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
     try:
@@ -402,7 +402,7 @@ def assign_slot_api(request):
 @login_required
 @require_POST
 def save_concept_shifts_api(request):
-    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+    if not can(request.user, "can_edit_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
     try:
@@ -481,7 +481,7 @@ def save_concept_shifts_api(request):
 @login_required
 @require_POST
 def delete_shift_api(request):
-    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+    if not can(request.user, "can_edit_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
     try:
@@ -563,7 +563,7 @@ def delete_shift_api(request):
 @login_required
 @require_POST
 def publish_shifts_api(request):
-    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+    if not can(request.user, "can_edit_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
     try:
@@ -667,7 +667,7 @@ def copy_prev_week_api(request):
     Only creates drafts for slots that are not already planned (draft or published).
     Body: { "week_start": "YYYY-MM-DD", "week_end": "YYYY-MM-DD" }
     """
-    if not can(request.user, "can_view_beschikbaarheidsdashboard"):
+    if not can(request.user, "can_edit_beschikbaarheidsdashboard"):
         return JsonResponse({"ok": False, "error": "Geen toegang."}, status=403)
 
     try:

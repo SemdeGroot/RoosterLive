@@ -103,9 +103,15 @@
 
   const PERIODS = ["morning", "afternoon", "evening"];
   const PERIOD_LABEL = { morning: "Ochtend", afternoon: "Middag", evening: "Vooravond" };
-  const LOC_COLORS = { green: "#22c55e", red: "#ef4444", blue: "#3b82f6" };
-  // Tint values used for both table row backgrounds and legend swatches (same alpha)
-  const LOC_TINTS  = { green: "#22c55e25", red: "#ef444425", blue: "#3b82f625" };
+  function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    const LOC_BG = {
+      green: cssVar("--loc-green-bg"),
+      red: cssVar("--loc-red-bg"),
+      blue: cssVar("--loc-blue-bg"),
+    };
 
   function getCsrf() {
     return document.cookie.split("; ").find(r => r.startsWith("csrftoken="))?.split("=")[1] ?? "";
@@ -274,7 +280,7 @@
       data: {
         datasets: [{
           data: [required > 0 ? planned : 1, Math.max(required - planned, 0)],
-          backgroundColor: [color, "rgba(255,255,255,0.07)"],
+          backgroundColor: [color, "rgba(120, 130, 145, 0.35)"],
           borderWidth: 0,
           borderRadius: 3,
         }],
@@ -476,11 +482,10 @@
     if (!container) return;
     container.innerHTML = "";
     for (const loc of PD.locations) {
-      const solid = LOC_COLORS[loc.color] || "#888";
-      const tint  = LOC_TINTS[loc.color]  || "#88888825";
+      const bg = LOC_BG[loc.color] || "rgba(136,136,136,0.15)";
       const item = document.createElement("div");
+      item.innerHTML = `<span class="pd-legend-swatch" style="background:${bg};border-color:${bg};"></span>${loc.name}`;
       item.className = "pd-legend-item";
-      item.innerHTML = `<span class="pd-legend-swatch" style="background:${tint};border-color:${solid};"></span>${loc.name}`;
       container.appendChild(item);
     }
   }
@@ -500,7 +505,7 @@
 
     // colgroup: Taak (200px) + 18 slot cols (80px each)
     const colgroup = document.createElement("colgroup");
-    const col0 = document.createElement("col"); col0.style.width = "200px"; colgroup.appendChild(col0);
+    const col0 = document.createElement("col"); col0.style.width = "280px"; colgroup.appendChild(col0);
     for (let i = 0; i < PD.days.length * PERIODS.length; i++) {
       const col = document.createElement("col"); col.style.width = "80px"; colgroup.appendChild(col);
     }
@@ -686,9 +691,9 @@
     table.className = "pd-grid";
     userTableRef = table;
 
-    // colgroup: Medewerker (240px) + Functie (150px) + Diensten (100px) + 18 slot cols (80px)
+    // colgroup: Medewerker (300px) + Functie (190px) + Diensten (100px) + 18 slot cols (80px)
     const colgroup = document.createElement("colgroup");
-    [240, 150, 100].forEach(w => {
+    [300, 190, 100].forEach(w => {
       const col = document.createElement("col"); col.style.width = `${w}px`; colgroup.appendChild(col);
     });
     for (let i = 0; i < PD.days.length * PERIODS.length; i++) {
@@ -860,6 +865,7 @@
 
   let modalSelect2 = null;
   let currentSlot = null;
+  let taskSortMode = "vast_first"; // toggles between "vast_first" and "oproep_first"
 
   function openModal() {
     backdrop.classList.add("is-open");
@@ -909,13 +915,6 @@
     select.innerHTML = "";
     select.multiple = true;
 
-    // Sort option as first disabled item — rendered as clickable row inside dropdown
-    const sortOpt = document.createElement("option");
-    sortOpt.value = "__sort__";
-    sortOpt.disabled = true;
-    sortOpt.text = "Sorteer";
-    select.appendChild(sortOpt);
-
     for (const u of available) {
       const opt = document.createElement("option");
       opt.value = u.id;
@@ -933,18 +932,26 @@
     });
   }
 
-  // Sort called from inside the select2 dropdown — preserves selections, reopens dropdown
   function doInlineSort() {
     if (!currentSlot || currentSlot.mode !== "task") return;
     const { task, day, period } = currentSlot;
 
+    // Toggle mode each click
+    taskSortMode = (taskSortMode === "vast_first") ? "oproep_first" : "vast_first";
+
     const selectedIds = new Set((window.$("#pdModalSelect").val() || []).map(Number));
     const currentIds = usersForSlot(task.id, day.iso, period).map(o => o.user.id);
     const available = PD.users.filter(u => u.availability?.[day.iso]?.[period] || currentIds.includes(u.id));
+
+    const groupValue = (u) => (u.dienstverband === "vast" ? 0 : 1);
     available.sort((a, b) => {
-      const da = a.dienstverband === "vast" ? 0 : 1;
-      const db = b.dienstverband === "vast" ? 0 : 1;
-      if (da !== db) return da - db;
+      const da = groupValue(a);
+      const db = groupValue(b);
+
+      // Toggle: either vast first or oproep first
+      const primary = (taskSortMode === "vast_first") ? (da - db) : (db - da);
+      if (primary !== 0) return primary;
+
       if (a.function_rank !== b.function_rank) return a.function_rank - b.function_rank;
       return a.displayName.localeCompare(b.displayName, "nl");
     });
@@ -953,6 +960,7 @@
 
     populateTaskSelect(available, [...selectedIds]);
     initSelect2Multi(available, "Zoek medewerker…");
+
     setTimeout(() => {
       window.$("#pdModalSelect").select2("open");
       bindTaskChangeHandler(task, day, period);
@@ -961,37 +969,54 @@
 
   function initSelect2Multi(users, placeholder) {
     const $ = window.$;
+
     modalSelect2 = $("#pdModalSelect").select2({
       placeholder,
-      // dropdownParent body avoids clipping by modal overflow
       dropdownParent: $(document.body),
       width: "100%",
       templateResult: data => {
         if (!data.id) return data.text;
-
-        // Inline sort row at the top of the dropdown
-        if (String(data.id) === "__sort__") {
-          const el = $('<div class="pd-inline-sort">⇅ Sorteer op dienstverband</div>');
-          el.on("mousedown", e => {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            doInlineSort();
-          });
-          return el;
-        }
-
         const user = users.find(u => String(u.id) === String(data.id));
         if (!user) return data.text;
         const bold = user.dienstverband === "vast" ? "font-weight:900;" : "";
-        return $(`<span style="${bold}">${user.displayName} <span style="color:var(--muted);font-size:.85em;">(${user.function})</span></span>`);
+        return $(
+          `<span style="${bold}">${user.displayName} ` +
+          `<span style="color:var(--muted);font-size:.85em;">(${user.function})</span></span>`
+        );
       },
       templateSelection: data => {
-        if (!data.id || String(data.id) === "__sort__") return null;
+        if (!data.id) return data.text;
         const user = users.find(u => String(u.id) === String(data.id));
         if (!user) return data.text;
         const bold = user.dienstverband === "vast" ? "font-weight:900;" : "";
         return $(`<span style="${bold}">${user.displayName}</span>`);
       },
+    });
+
+    // Add an inline "Sort" row at the top of the open dropdown.
+    $("#pdModalSelect").off("select2:open.pdSort").on("select2:open.pdSort", () => {
+      const dropdown = document.querySelector(".select2-container--open .select2-dropdown");
+      if (!dropdown) return;
+
+      const results = dropdown.querySelector(".select2-results");
+      if (!results) return;
+
+      const existing = results.querySelector(".pd-inline-sort");
+      if (existing) existing.remove();
+
+      const sortRow = document.createElement("div");
+      sortRow.className = "pd-inline-sort";
+      sortRow.textContent = (taskSortMode === "vast_first")
+        ? "⇅ Sorteer: Oproep eerst"
+        : "⇅ Sorteer: Vast eerst";
+
+      sortRow.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        doInlineSort();
+      });
+
+      results.prepend(sortRow);
     });
   }
 
@@ -1113,7 +1138,7 @@
      PUBLISH
      ============================================================ */
   document.getElementById("pdPublishWeekBtn")?.addEventListener("click", async () => {
-    if (!confirm("Weekrooster publiceren? Dit wordt zichtbaar voor alle medewerkers en zij ontvangen een melding.")) return;
+    if (!confirm("Weekrooster publiceren? Dit wordt zichtbaar voor alle medewerkers en zij ontvangen een melding. Publiceer bij voorkeur pas zodra de volledige weekplanning definitief is.")) return;
     const res = await fetch(PD.publishUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrf() },
@@ -1125,10 +1150,8 @@
 
   document.getElementById("pdCopyPrevWeekBtn")?.addEventListener("click", async () => {
     const ok = confirm(
-      "Shifts van vorige week kopiëren?\n\n" +
-      "Dit vult de diensten van vorige week in voor deze week " +
-      "voor vaste medewerkers met beschikbaarheid op dat dagdeel deze week (beschikbaarheid wordt automatisch gevuld op basis van vaste werkdagen). " +
-      "Slots die al zijn ingevuld voor deze week worden overgeslagen."
+      "Planning van vorige week kopiëren?\n\n" +
+      "Vul de shifts van deze week automatisch in op basis van de planning van vorige week. Dit geldt alleen voor beschikbare vaste medewerkers. Bestaande shifts blijven behouden."
     );
     if (!ok) return;
     const res = await fetch(PD.copyPrevWeekUrl, {

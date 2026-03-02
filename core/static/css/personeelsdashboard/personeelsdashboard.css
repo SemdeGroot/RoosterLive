@@ -1,10 +1,10 @@
 :root {
   --pd-green:        #22c55e;
-  --pd-green-soft:   #22c55e1a;
+  --pd-green-soft:   #22c55e33; /* ~20% */
   --pd-red:          #ef4444;
-  --pd-red-soft:     #ef44441a;
+  --pd-red-soft:     #ef444433; /* ~20% */
   --pd-orange:       #f59e0b;
-  --pd-orange-soft:  #f59e0b2e;
+  --pd-orange-soft:  #f59e0b3d; /* ~24% */
 }
 
 *:focus-visible { outline: none !important; }
@@ -306,10 +306,10 @@ tr.pd-task-row td.pd-col-sticky {
   padding: 6px 8px;
 }
 
-/* Tint layered over solid panel — keeps sticky cell opaque when horizontal scroll occurs */
-tr.pd-task-row[data-loc-color="green"] td.pd-col-sticky { background: linear-gradient(#22c55e25, #22c55e25), var(--panel, var(--bg)); }
-tr.pd-task-row[data-loc-color="red"]   td.pd-col-sticky { background: linear-gradient(#ef444425, #ef444425), var(--panel, var(--bg)); }
-tr.pd-task-row[data-loc-color="blue"]  td.pd-col-sticky { background: linear-gradient(#3b82f625, #3b82f625), var(--panel, var(--bg)); }
+/* Task rows — location tints the sticky cell (from colors.css) */
+tr.pd-task-row[data-loc-color="green"] td.pd-col-sticky { background: linear-gradient(var(--loc-green-bg), var(--loc-green-bg)), var(--panel, var(--bg)); }
+tr.pd-task-row[data-loc-color="red"]   td.pd-col-sticky { background: linear-gradient(var(--loc-red-bg), var(--loc-red-bg)), var(--panel, var(--bg)); }
+tr.pd-task-row[data-loc-color="blue"]  td.pd-col-sticky { background: linear-gradient(var(--loc-blue-bg), var(--loc-blue-bg)), var(--panel, var(--bg)); }
 
 .pd-task-name {
   font-weight: 700;
@@ -364,8 +364,8 @@ td.pd-slot-cell:hover { background: var(--button-hover); }
 
 td.pd-slot-cell.is-ok    { background: var(--pd-green-soft); }
 td.pd-slot-cell.is-warn  { background: var(--pd-red-soft); }
-td.pd-slot-cell.is-ok:hover   { background: #22c55e2e; }
-td.pd-slot-cell.is-warn:hover { background: #ef44442e; }
+td.pd-slot-cell.is-ok:hover   { background: #22c55e3d; }
+td.pd-slot-cell.is-warn:hover { background: #ef44443d; }
 
 /* User chips inside slot cells (task view) */
 .pd-chip {

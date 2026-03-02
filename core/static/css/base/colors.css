@@ -29,10 +29,10 @@
     --theme-meta-base: #131a24;      /* base.html kleur */
     --theme-meta-login: #0d131b;     /* _base.html kleur */
 
-    /* Locatie kleuren */
-    --loc-green-bg: rgba(0, 160, 90, 0.10);
-    --loc-red-bg:   rgba(220, 60, 60, 0.10);
-    --loc-blue-bg:  rgba(60, 120, 220, 0.10);
+    /* Locatie kleuren */               
+    --loc-green-bg: rgba(62, 142, 62, 0.45);
+    --loc-red-bg:   rgba(165, 58, 58, 0.45);
+    --loc-blue-bg:  rgba(36, 94, 156, 0.45);
 
     /* Lucide icon colors (RGB) */
 
@@ -99,9 +99,9 @@
     --theme-meta-login: #D4D9E6;     /* _base.html kleur */
 
     /* Locatie kleuren */
-    --loc-green-bg: rgba(0, 160, 90, 0.07);
-    --loc-red-bg:   rgba(220, 60, 60, 0.07);
-    --loc-blue-bg:  rgba(60, 120, 220, 0.07);
+    --loc-green-bg: rgba(87, 168, 87, 0.50);
+    --loc-red-bg:   rgba(196, 95, 95, 0.50);
+    --loc-blue-bg:  rgba(58, 121, 184, 0.50);
 
     /* Lucide icon alpha */
     --icon-badge-alpha: 0.1;
