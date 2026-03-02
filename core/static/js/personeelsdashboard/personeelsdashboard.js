@@ -261,10 +261,26 @@
     }
     el.innerHTML = html;
     el.style.display = "block";
-    const x = evt.clientX + 12, y = evt.clientY + 12;
-    const w = el.offsetWidth || 200, h = el.offsetHeight || 100;
-    el.style.left = (x + w > window.innerWidth - 8 ? x - w - 24 : x) + "px";
-    el.style.top  = (y + h > window.innerHeight - 8 ? y - h - 24 : y) + "px";
+    // --- position tooltip: always below cursor, clamped to viewport ---
+    const gap = 12;
+
+    // start: always below
+    let left = evt.clientX + gap;
+    let top  = evt.clientY + gap;
+
+    const w = el.offsetWidth || 200;
+    const h = el.offsetHeight || 100;
+
+    // clamp horizontally
+    if (left + w > window.innerWidth - 8) left = window.innerWidth - 8 - w;
+    if (left < 8) left = 8;
+
+    // clamp vertically (keep it visible, but still "below" as much as possible)
+    if (top + h > window.innerHeight - 8) top = window.innerHeight - 8 - h;
+    if (top < 8) top = 8;
+
+    el.style.left = left + "px";
+    el.style.top  = top + "px";
   }
 
   function hideDonutTooltip() {
@@ -693,7 +709,7 @@
 
     // colgroup: Medewerker (300px) + Functie (190px) + Diensten (100px) + 18 slot cols (80px)
     const colgroup = document.createElement("colgroup");
-    [300, 190, 100].forEach(w => {
+    [200, 160, 100].forEach(w => {
       const col = document.createElement("col"); col.style.width = `${w}px`; colgroup.appendChild(col);
     });
     for (let i = 0; i < PD.days.length * PERIODS.length; i++) {
@@ -716,7 +732,7 @@
       return th;
     }
 
-    tr1.appendChild(makeSortHeader("Medewerker", "user", true));
+    tr1.appendChild(makeSortHeader("Naam", "user", true));
     tr1.appendChild(makeSortHeader("Functie", "function", false));
     tr1.appendChild(makeSortHeader("Diensten", "shifts", false));
 
