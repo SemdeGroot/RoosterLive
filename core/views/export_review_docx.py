@@ -13,24 +13,31 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt, RGBColor
+from docx.shared import Cm, Pt, RGBColor, Twips
 
 from core.models import MedicatieReviewAfdeling, MedicatieReviewPatient
 from core.views._helpers import _static_abs_path, can
 from core.views.export_review_pdf import PdfPatientBlock, _build_patient_block
 
 
-COL_HEADER_BG = "E8EDF2"  # lichtblauw-grijs voor tabelheaders (zoals PDF)
-COL_ROW_ALT = "F0F4F8"  # lichtgrijs alternerende rij
-COL_SECTION_FG = "1B3A5C"  # donkerblauw voor titels
-COL_MUTED = "555555"  # donkerder muted dan voorheen
-COL_DIVIDER = "CCCCCC"  # scheidingslijnen
-COL_COMMENT_BG = "F3F6FA"  # comment box achtergrond
+# ── Colour palette ─────────────────────────────────────────────────────────────
+COL_HEADER_BG = "EEF2F7"
+COL_SECTION_FG = "1B3A5C"
+COL_MUTED = "6B7280"
+COL_DIVIDER = "D1D5DB"
+COL_COMMENT_BG = "F3F6FA"
 
-PREPARED_BY_EMAIL_FIXED = "instellingen@apotheekjansen.com"
+PHARMACY_NAME = "Apotheek Jansen Amersfoort"
+PHARMACY_EMAIL = "instellingen@apotheekjansen.com"
+
+PREPARED_BY_EMAIL_FIXED = PHARMACY_EMAIL
+
+DOC_WIDTH_DXA = 9072
+HEADER_LOGO_COL_DXA = 900   # just wider than the 1.5 cm logo image
+HEADER_INFO_COL_DXA = DOC_WIDTH_DXA - HEADER_LOGO_COL_DXA
 
 
-# ── XML helpers ───────────────────────────────────────────────────────────────
+# ── XML helpers ────────────────────────────────────────────────────────────────
 
 def _get_or_create_tblPr(tbl):
     tbl_el = tbl._tbl
@@ -41,7 +48,7 @@ def _get_or_create_tblPr(tbl):
     return tblPr
 
 
-def _set_tbl_width(tbl, width_dxa: int = 9072) -> None:
+def _set_tbl_width(tbl, width_dxa: int = DOC_WIDTH_DXA) -> None:
     tblPr = _get_or_create_tblPr(tbl)
     for old in tblPr.findall(qn("w:tblW")):
         tblPr.remove(old)
@@ -49,6 +56,80 @@ def _set_tbl_width(tbl, width_dxa: int = 9072) -> None:
     tblW.set(qn("w:w"), str(width_dxa))
     tblW.set(qn("w:type"), "dxa")
     tblPr.append(tblW)
+
+
+def _set_tbl_fixed_layout(tbl) -> None:
+    tblPr = _get_or_create_tblPr(tbl)
+    for old in tblPr.findall(qn("w:tblLayout")):
+        tblPr.remove(old)
+    layout = OxmlElement("w:tblLayout")
+    layout.set(qn("w:type"), "fixed")
+    tblPr.append(layout)
+
+
+def _set_tbl_grid(tbl, col_widths_dxa: list) -> None:
+    """
+    Write explicit tblGrid so fixed-layout column widths are respected.
+    python-docx generates a default single-column grid that ignores _set_col_width.
+    """
+    tbl_el = tbl._tbl
+    for old in tbl_el.findall(qn("w:tblGrid")):
+        tbl_el.remove(old)
+    grid = OxmlElement("w:tblGrid")
+    for w in col_widths_dxa:
+        col = OxmlElement("w:gridCol")
+        col.set(qn("w:w"), str(w))
+        grid.append(col)
+    # tblGrid must follow tblPr in schema order
+    tblPr = tbl_el.find(qn("w:tblPr"))
+    tblPr.addnext(grid)
+
+
+def _set_table_grid_style(tbl) -> None:
+    """
+    Set tblStyle to TableGrid via direct XML — bypasses python-docx style lookup.
+    TableGrid is a Word built-in that guarantees borders exist as a base; our
+    per-cell _cell_borders calls then override the colour.
+    """
+    tblPr = _get_or_create_tblPr(tbl)
+    for old in tblPr.findall(qn("w:tblStyle")):
+        tblPr.remove(old)
+    tblStyle = OxmlElement("w:tblStyle")
+    tblStyle.set(qn("w:val"), "TableGrid")
+    tblPr.insert(0, tblStyle)
+
+
+def _suppress_tbl_look(tbl) -> None:
+    """
+    Zero out tblLook so Word doesn't apply built-in style overrides that
+    swallow custom border definitions.
+    """
+    tblPr = _get_or_create_tblPr(tbl)
+    for old in tblPr.findall(qn("w:tblLook")):
+        tblPr.remove(old)
+    look = OxmlElement("w:tblLook")
+    look.set(qn("w:val"), "0000")
+    look.set(qn("w:firstRow"), "0")
+    look.set(qn("w:lastRow"), "0")
+    look.set(qn("w:firstColumn"), "0")
+    look.set(qn("w:lastColumn"), "0")
+    look.set(qn("w:noHBand"), "1")
+    look.set(qn("w:noVBand"), "1")
+    tblPr.append(look)
+
+
+def _set_tbl_grid_borders(tbl, color: str = COL_DIVIDER, size: str = "8") -> None:
+    tblPr = _get_or_create_tblPr(tbl)
+    for old in tblPr.findall(qn("w:tblBorders")):
+        tblPr.remove(old)
+    borders = OxmlElement("w:tblBorders")
+    for side in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        el = OxmlElement(f"w:{side}")
+        el.set(qn("w:val"), "single")
+        el.set(qn("w:sz"), size)
+        el.set(qn("w:color"), color)
+        borders.append(el)
+    tblPr.append(borders)
 
 
 def _remove_tbl_borders(tbl) -> None:
@@ -88,7 +169,22 @@ def _cell_shading(cell, fill_hex: str) -> None:
     tcPr.append(shd)
 
 
-def _cell_borders(cell, color: str = COL_DIVIDER, size: str = "4") -> None:
+def _cell_borders_none(cell) -> None:
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    for old in tcPr.findall(qn("w:tcBorders")):
+        tcPr.remove(old)
+    tcBorders = OxmlElement("w:tcBorders")
+    for side in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        el = OxmlElement(f"w:{side}")
+        el.set(qn("w:val"), "none")
+        el.set(qn("w:sz"), "0")
+        el.set(qn("w:color"), "auto")
+        tcBorders.append(el)
+    tcPr.append(tcBorders)
+
+
+def _cell_borders(cell, color: str = COL_DIVIDER, size: str = "8") -> None:
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
     for old in tcPr.findall(qn("w:tcBorders")):
@@ -103,19 +199,14 @@ def _cell_borders(cell, color: str = COL_DIVIDER, size: str = "4") -> None:
     tcPr.append(tcBorders)
 
 
-def _cell_borders_none(cell) -> None:
+def _cell_valign(cell, val: str = "center") -> None:
     tc = cell._tc
     tcPr = tc.get_or_add_tcPr()
-    for old in tcPr.findall(qn("w:tcBorders")):
+    for old in tcPr.findall(qn("w:vAlign")):
         tcPr.remove(old)
-    tcBorders = OxmlElement("w:tcBorders")
-    for side in ("top", "left", "bottom", "right", "insideH", "insideV"):
-        el = OxmlElement(f"w:{side}")
-        el.set(qn("w:val"), "none")
-        el.set(qn("w:sz"), "0")
-        el.set(qn("w:color"), "auto")
-        tcBorders.append(el)
-    tcPr.append(tcBorders)
+    vAlign = OxmlElement("w:vAlign")
+    vAlign.set(qn("w:val"), val)
+    tcPr.append(vAlign)
 
 
 def _cell_margins(cell, top: int = 80, bottom: int = 80, left: int = 120, right: int = 120) -> None:
@@ -142,21 +233,7 @@ def _para_spacing(para, before: int = 0, after: int = 0) -> None:
     pPr.append(spacing)
 
 
-def _para_bottom_border(para, color: str = COL_SECTION_FG, size: str = "8") -> None:
-    pPr = para._p.get_or_add_pPr()
-    for old in pPr.findall(qn("w:pBdr")):
-        pPr.remove(old)
-    pBdr = OxmlElement("w:pBdr")
-    bottom = OxmlElement("w:bottom")
-    bottom.set(qn("w:val"), "single")
-    bottom.set(qn("w:sz"), size)
-    bottom.set(qn("w:color"), color)
-    bottom.set(qn("w:space"), "4")
-    pBdr.append(bottom)
-    pPr.append(pBdr)
-
-
-# ── Styles / Document setup ───────────────────────────────────────────────────
+# ── Styles / Document setup ────────────────────────────────────────────────────
 
 def _ensure_styles(doc: Document) -> None:
     styles = doc.styles
@@ -169,7 +246,7 @@ def _ensure_styles(doc: Document) -> None:
 
     normal = styles["Normal"]
     normal.font.name = "Calibri"
-    normal.font.size = Pt(10)
+    normal.font.size = Pt(9.5)
     pf = normal.paragraph_format
     pf.space_before = Pt(0)
     pf.space_after = Pt(0)
@@ -177,13 +254,13 @@ def _ensure_styles(doc: Document) -> None:
 
     section = _get_or_create("PdfSectionTitle")
     section.font.name = "Calibri"
-    section.font.size = Pt(11)
+    section.font.size = Pt(10.5)
     section.font.bold = True
     section.font.color.rgb = RGBColor.from_string(COL_SECTION_FG)
 
     group = _get_or_create("PdfGroupTitle")
     group.font.name = "Calibri"
-    group.font.size = Pt(10)
+    group.font.size = Pt(9.5)
     group.font.bold = True
     group.font.color.rgb = RGBColor.from_string(COL_SECTION_FG)
 
@@ -196,119 +273,144 @@ def _ensure_styles(doc: Document) -> None:
 def _new_doc() -> Document:
     doc = Document()
     sec = doc.sections[0]
-    sec.top_margin = Cm(2.0)
-    sec.bottom_margin = Cm(2.0)
-    sec.left_margin = Cm(2.5)
-    sec.right_margin = Cm(2.5)
+    sec.top_margin = Cm(1.8)
+    sec.bottom_margin = Cm(1.8)
+    sec.left_margin = Cm(2.2)
+    sec.right_margin = Cm(2.2)
+    sec.header_distance = Cm(0.8)
     _ensure_styles(doc)
     return doc
 
 
-# ── Header / Titles ───────────────────────────────────────────────────────────
+# ── Word page header (printed on every page) ───────────────────────────────────
 
-def _add_logo_and_title(doc: Document, title: str, meta: dict, prepared_by, generated_at) -> None:
+def _build_page_header(doc: Document) -> None:
+    """
+    Logo + pharmacy name + email in the Word header section.
+    Logo column is kept narrow (just wider than the logo image) so the text
+    sits close beside it.
+    """
     logo_path = _static_abs_path("img/app_icon_trans-512x512.png")
+    header = doc.sections[0].header
 
-    tbl = doc.add_table(rows=1, cols=2)
+    # Remove the default empty paragraph Word inserts into every header
+    for p in list(header.paragraphs):
+        p._element.getparent().remove(p._element)
+
+    # Newer python-docx requires width when calling add_table on a BlockItemContainer
+    tbl = header.add_table(rows=1, cols=2, width=Twips(DOC_WIDTH_DXA))
     tbl.alignment = WD_TABLE_ALIGNMENT.LEFT
-    # Remove borders at both table and cell level; Word applies table-level
-    # borders as a fallback even when cell borders are set to none.
+    _set_tbl_width(tbl, DOC_WIDTH_DXA)
+    _set_tbl_fixed_layout(tbl)
+    _set_tbl_grid(tbl, [HEADER_LOGO_COL_DXA, HEADER_INFO_COL_DXA])
     _remove_tbl_borders(tbl)
+    _suppress_tbl_look(tbl)
 
     logo_cell = tbl.rows[0].cells[0]
-    text_cell = tbl.rows[0].cells[1]
+    info_cell = tbl.rows[0].cells[1]
 
-    _set_col_width(logo_cell, 1440)
-    _set_col_width(text_cell, 7632)
+    _set_col_width(logo_cell, HEADER_LOGO_COL_DXA)
+    _set_col_width(info_cell, HEADER_INFO_COL_DXA)
 
-    _cell_borders_none(logo_cell)
-    _cell_borders_none(text_cell)
+    for cell in (logo_cell, info_cell):
+        _cell_borders_none(cell)
+
+    _cell_margins(logo_cell, top=80, bottom=40, left=0, right=80)
+    _cell_margins(info_cell, top=40, bottom=40, left=0, right=0)
+    # Centre the text block vertically. Logo fills its cell so centering there has
+    # no effect; centering only info_cell aligns both visual centres in the same row.
+    _cell_valign(info_cell, "center")
+    _cell_valign(logo_cell, "center")
 
     if logo_path and os.path.exists(logo_path):
         logo_para = logo_cell.paragraphs[0]
         _para_spacing(logo_para, 0, 0)
-        logo_para.add_run().add_picture(logo_path, width=Cm(1.8))
+        logo_para.add_run().add_picture(logo_path, width=Cm(1.5))
 
-    title_para = text_cell.paragraphs[0]
-    _para_spacing(title_para, 0, 60)
-    tr = title_para.add_run(title)
+    name_para = info_cell.paragraphs[0]
+    _para_spacing(name_para, 0, 10)
+    nr = name_para.add_run(PHARMACY_NAME)
+    nr.bold = True
+    nr.font.size = Pt(10)
+    nr.font.color.rgb = RGBColor.from_string(COL_SECTION_FG)
+
+    mail_para = info_cell.add_paragraph(style="PdfMuted")
+    _para_spacing(mail_para, 0, 0)
+    mail_para.add_run(PHARMACY_EMAIL)
+
+
+# ── Document title block (body) ────────────────────────────────────────────────
+
+def _add_logo_and_title(doc: Document, title: str, meta: dict, prepared_by, generated_at) -> None:
+    """Document title, metadata and prepared-by — plain paragraphs."""
+    p_title = doc.add_paragraph()
+    _para_spacing(p_title, 0, 80)
+    tr = p_title.add_run(title)
     tr.bold = True
-    tr.font.size = Pt(18)
-    tr.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+    tr.font.size = Pt(16)
+    tr.font.color.rgb = RGBColor.from_string(COL_SECTION_FG)
 
     for label, value in meta.items():
-        p = text_cell.add_paragraph()
-        _para_spacing(p, 0, 30)
+        p = doc.add_paragraph()
+        _para_spacing(p, 0, 20)
         lr = p.add_run(f"{label}: ")
         lr.bold = True
         lr.font.size = Pt(9)
         vr = p.add_run(str(value))
         vr.font.size = Pt(9)
 
-    p_prep = text_cell.add_paragraph()
-    _para_spacing(p_prep, 70, 0)
+    name = f"{prepared_by.first_name} {prepared_by.last_name}".strip() or prepared_by.username
+
+    p_prep = doc.add_paragraph()
+    _para_spacing(p_prep, 0, 20)
     lr = p_prep.add_run("Voorbereid door: ")
     lr.bold = True
     lr.font.size = Pt(9)
-    name = f"{prepared_by.first_name} {prepared_by.last_name}".strip() or prepared_by.username
-    nr = p_prep.add_run(name)
-    nr.font.size = Pt(9)
+    p_prep.add_run(name).font.size = Pt(9)
 
-    p_mail = text_cell.add_paragraph(style="PdfMuted")
-    _para_spacing(p_mail, 20, 0)
-    p_mail.add_run(PREPARED_BY_EMAIL_FIXED)
+    p_date = doc.add_paragraph(style="PdfMuted")
+    _para_spacing(p_date, 0, 160)
+    p_date.add_run(f"Export: {generated_at.strftime('%d-%m-%Y  %H:%M')}")
 
-    p_exp = text_cell.add_paragraph(style="PdfMuted")
-    _para_spacing(p_exp, 20, 0)
-    p_exp.add_run(f"Export: {generated_at.strftime('%d-%m-%Y %H:%M')}")
 
-    p_line = doc.add_paragraph()
-    _para_spacing(p_line, 80, 120)
-    _para_bottom_border(p_line, color=COL_SECTION_FG, size="12")
-
+# ── Section / structural helpers ──────────────────────────────────────────────
 
 def _add_section_title(doc: Document, text: str) -> None:
     p = doc.add_paragraph(style="PdfSectionTitle")
-    _para_spacing(p, 80, 50)
+    _para_spacing(p, 0, 60)
     p.add_run(text)
-    _para_bottom_border(p, color=COL_SECTION_FG, size="12")
 
 
 def _add_group_title(doc: Document, text: str) -> None:
     p = doc.add_paragraph(style="PdfGroupTitle")
-    _para_spacing(p, 120, 20)
+    _para_spacing(p, 100, 16)
     p.paragraph_format.keep_with_next = True
     p.add_run(text)
 
 
-def _add_divider(doc: Document) -> None:
-    p = doc.add_paragraph()
-    _para_spacing(p, 120, 120)
-    _para_bottom_border(p, color=COL_DIVIDER, size="6")
-
-
 def _add_patient_heading(doc: Document, naam: str, geboortedatum) -> None:
     p = doc.add_paragraph()
-    _para_spacing(p, 180, 50)
+    _para_spacing(p, 160, 40)
     p.paragraph_format.keep_with_next = True
 
     name_run = p.add_run(naam)
     name_run.bold = True
-    name_run.font.size = Pt(13)
+    name_run.font.size = Pt(12)
     name_run.font.color.rgb = RGBColor.from_string(COL_SECTION_FG)
 
     dob = geboortedatum.strftime("%d-%m-%Y") if geboortedatum else "Onbekend"
-    dob_run = p.add_run(f"  ({dob})")
-    dob_run.font.size = Pt(10)
+    dob_run = p.add_run(f" ({dob})")
+    dob_run.font.size = Pt(9)
     dob_run.font.color.rgb = RGBColor.from_string(COL_MUTED)
 
 
-# ── Tables / Comment cards ────────────────────────────────────────────────────
+# ── Tables / Comment cards ─────────────────────────────────────────────────────
 
 def _add_meds_table(doc: Document, meds: list) -> None:
     """
-    Kolommen: Middel 35% | Gebruik 30% | Opmerking 35% van 9072 DXA.
-    Header: lichtblauwe achtergrond met zwarte tekst, zoals PDF.
+    Kolommen: Middel 35% | Gebruik 30% | Opmerking 35% van DOC_WIDTH_DXA.
+    Header: lichtblauwe achtergrond, zwarte bold tekst.
+    Datarijen: witte achtergrond met zichtbare grid-lijnen.
     """
     if not meds:
         return
@@ -317,64 +419,72 @@ def _add_meds_table(doc: Document, meds: list) -> None:
 
     tbl = doc.add_table(rows=1, cols=3)
     tbl.alignment = WD_TABLE_ALIGNMENT.LEFT
-    _set_tbl_width(tbl, 9072)
+    _set_table_grid_style(tbl)
+    _set_tbl_width(tbl, DOC_WIDTH_DXA)
+    _set_tbl_grid_borders(tbl, color=COL_DIVIDER, size="8")  # before tblLayout (schema order)
+    _set_tbl_fixed_layout(tbl)
+    _set_tbl_grid(tbl, col_w)
+    _suppress_tbl_look(tbl)
 
     for i, (cell, label) in enumerate(zip(tbl.rows[0].cells, ["Middel", "Gebruik", "Opmerking (Medimo)"])):
         _set_col_width(cell, col_w[i])
+        _cell_borders(cell, color=COL_DIVIDER, size="8")  # before shd (schema order)
         _cell_shading(cell, COL_HEADER_BG)
-        _cell_borders(cell, color=COL_DIVIDER)
-        _cell_margins(cell, top=90, bottom=90, left=140, right=140)
+        _cell_margins(cell, top=80, bottom=80, left=120, right=120)
 
         run = cell.paragraphs[0].add_run(label)
         run.bold = True
-        run.font.size = Pt(9)
+        run.font.size = Pt(8.5)
         run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
-    for idx, gm in enumerate(meds):
+    for gm in meds:
         row = tbl.add_row()
-        bg = COL_ROW_ALT if idx % 2 == 1 else "FFFFFF"
 
         clean = str(gm.get("clean", "") if isinstance(gm, dict) else getattr(gm, "clean", "") or "")
         gebruik = str(gm.get("gebruik", "") if isinstance(gm, dict) else getattr(gm, "gebruik", "") or "")
-        opmerking = str(gm.get("opmerking", "") if isinstance(gm, dict) else getattr(gm, "opmerking", "") or "") or "-"
+        opmerking = str(
+            gm.get("opmerking", "") if isinstance(gm, dict) else getattr(gm, "opmerking", "") or ""
+        ) or "-"
 
         for i, (cell, val) in enumerate(zip(row.cells, [clean, gebruik, opmerking])):
             _set_col_width(cell, col_w[i])
-            _cell_shading(cell, bg)
-            _cell_borders(cell, color=COL_DIVIDER)
-            _cell_margins(cell, top=90, bottom=90, left=140, right=140)
+            _cell_borders(cell, color=COL_DIVIDER, size="8")  # before shd (schema order)
+            _cell_shading(cell, "FFFFFF")
+            _cell_margins(cell, top=80, bottom=80, left=120, right=120)
 
             run = cell.paragraphs[0].add_run(val)
-            run.font.size = Pt(9)
+            run.font.size = Pt(8.5)
+            run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
             if i == 0:
                 run.bold = True
-            if i == 2:
-                run.font.color.rgb = RGBColor.from_string(COL_MUTED)
 
 
-def _comment_card(doc: Document, label: str, lines: list[str]) -> None:
-    """Single-cell comment box with subtle background; no accent bar."""
+def _comment_card(doc: Document, label: str, lines: list) -> None:
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.LEFT
     _remove_tbl_borders(tbl)
-    _set_tbl_width(tbl, 9072)
+    _set_tbl_width(tbl, DOC_WIDTH_DXA)
+    _set_tbl_fixed_layout(tbl)
+    _set_tbl_grid(tbl, [DOC_WIDTH_DXA])
+    _suppress_tbl_look(tbl)
 
     body = tbl.rows[0].cells[0]
-    _set_col_width(body, 9072)
+    _set_col_width(body, DOC_WIDTH_DXA)
     _cell_borders_none(body)
     _cell_shading(body, COL_COMMENT_BG)
-    _cell_margins(body, top=140, bottom=140, left=180, right=180)
+    _cell_margins(body, top=120, bottom=120, left=160, right=160)
 
     p0 = body.paragraphs[0]
-    p0.style = doc.styles["PdfMuted"]
-    _para_spacing(p0, 0, 60)
+    _para_spacing(p0, 0, 50)
     r0 = p0.add_run(label)
     r0.bold = True
+    r0.font.size = Pt(8.5)
+    r0.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
     for i, line in enumerate(lines):
         p = body.add_paragraph()
-        _para_spacing(p, 0, 0 if i < len(lines) - 1 else 40)
-        p.add_run(line).font.size = Pt(9)
+        _para_spacing(p, 0, 0 if i < len(lines) - 1 else 30)
+        p.add_run(line).font.size = Pt(8.5)
 
 
 def _add_comment_box(doc: Document, label: str, text: str) -> None:
@@ -387,7 +497,7 @@ def _add_comment_box(doc: Document, label: str, text: str) -> None:
 
 
 def _add_empty_comment_box(doc: Document) -> None:
-    _comment_card(doc, "Opmerkingen", [""])
+    _comment_card(doc, "Opmerkingen:", [""])
 
 
 def _render_patient_block(doc: Document, block: PdfPatientBlock) -> None:
@@ -405,12 +515,12 @@ def _render_patient_block(doc: Document, block: PdfPatientBlock) -> None:
             _add_comment_box(doc, "Eerder besproken", historie_tekst)
 
         if opmerking_tekst:
-            _add_comment_box(doc, "Opmerkingen", opmerking_tekst)
+            _add_comment_box(doc, "Opmerkingen:", opmerking_tekst)
         else:
             _add_empty_comment_box(doc)
 
 
-# ── Responses ─────────────────────────────────────────────────────────────────
+# ── Responses ──────────────────────────────────────────────────────────────────
 
 def _build_response(doc: Document, filename: str) -> HttpResponse:
     buffer = BytesIO()
@@ -430,6 +540,7 @@ def _build_patient_docx_response(patient: MedicatieReviewPatient, user) -> HttpR
     now = timezone.localtime(timezone.now())
     dob = patient.geboortedatum.strftime("%d-%m-%Y") if patient.geboortedatum else "Onbekend"
 
+    _build_page_header(doc)
     _add_logo_and_title(
         doc,
         "Medicatiebeoordeling",
@@ -449,7 +560,7 @@ def _build_patient_docx_response(patient: MedicatieReviewPatient, user) -> HttpR
     return _build_response(doc, f"medicatiebeoordeling_{safe_name}.docx")
 
 
-# ── Views ─────────────────────────────────────────────────────────────────────
+# ── Views ──────────────────────────────────────────────────────────────────────
 
 @login_required
 def export_patient_review_docx(request, pk: int) -> HttpResponse:
@@ -487,58 +598,61 @@ def export_afdeling_review_docx(request, pk: int) -> HttpResponse:
     doc = _new_doc()
     now = timezone.localtime(timezone.now())
 
+    _build_page_header(doc)
     _add_logo_and_title(
         doc,
         "Medicatiebeoordeling",
-        {
-            "Afdeling": afdeling.afdeling,
-        },
+        {"Afdeling": afdeling.afdeling},
         request.user,
         now,
     )
 
     _add_section_title(doc, "Overzicht patiënten")
 
+    col_w_patients = [5436, 3636]
     tbl = doc.add_table(rows=1, cols=2)
     tbl.alignment = WD_TABLE_ALIGNMENT.LEFT
-    _set_tbl_width(tbl, 9072)
+    _set_table_grid_style(tbl)
+    _set_tbl_width(tbl, DOC_WIDTH_DXA)
+    _set_tbl_grid_borders(tbl, color=COL_DIVIDER, size="8")  # before tblLayout (schema order)
+    _set_tbl_fixed_layout(tbl)
+    _set_tbl_grid(tbl, col_w_patients)
+    _suppress_tbl_look(tbl)
 
     for i, (cell, label) in enumerate(zip(tbl.rows[0].cells, ["Naam", "Geboortedatum"])):
-        _set_col_width(cell, 5436 if i == 0 else 3636)
+        _set_col_width(cell, col_w_patients[i])
+        _cell_borders(cell, color=COL_DIVIDER, size="8")  # before shd (schema order)
         _cell_shading(cell, COL_HEADER_BG)
-        _cell_borders(cell, color=COL_DIVIDER)
-        _cell_margins(cell, top=90, bottom=90, left=140, right=140)
+        _cell_margins(cell, top=80, bottom=80, left=120, right=120)
 
         run = cell.paragraphs[0].add_run(label)
         run.bold = True
-        run.font.size = Pt(9)
+        run.font.size = Pt(8.5)
         run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
-    for idx, block in enumerate(blocks):
+    for block in blocks:
         row = tbl.add_row()
-        bg = COL_ROW_ALT if idx % 2 == 1 else "FFFFFF"
         dob = block.patient.geboortedatum.strftime("%d-%m-%Y") if block.patient.geboortedatum else "Onbekend"
 
         for i, (cell, val) in enumerate(zip(row.cells, [block.patient.naam, dob])):
-            _set_col_width(cell, 5436 if i == 0 else 3636)
-            _cell_shading(cell, bg)
-            _cell_borders(cell, color=COL_DIVIDER)
-            _cell_margins(cell, top=90, bottom=90, left=140, right=140)
+            _set_col_width(cell, col_w_patients[i])
+            _cell_borders(cell, color=COL_DIVIDER, size="8")  # before shd (schema order)
+            _cell_shading(cell, "FFFFFF")
+            _cell_margins(cell, top=80, bottom=80, left=120, right=120)
 
             run = cell.paragraphs[0].add_run(val)
-            run.font.size = Pt(9)
+            run.font.size = Pt(8.5)
+            run.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
             if i == 0:
                 run.bold = True
-            else:
-                run.font.color.rgb = RGBColor.from_string(COL_MUTED)
 
-    _add_divider(doc)
-    _add_section_title(doc, "Details")
+    doc.add_page_break()
+    for i, block in enumerate(blocks):
+        if i > 0:
+            doc.add_page_break()
 
-    for block in blocks:
         _add_patient_heading(doc, block.patient.naam, block.patient.geboortedatum)
         _render_patient_block(doc, block)
-        _add_divider(doc)
 
     safe_name = (afdeling.afdeling or "afdeling").replace("/", "-")
     return _build_response(doc, f"medicatiebeoordeling_{safe_name}.docx")

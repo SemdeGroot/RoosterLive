@@ -4,6 +4,12 @@
 <head>
   <meta charset="utf-8">
   <title>{{ title }} – {{ afdeling.afdeling }}</title>
+  <style>
+  .first-patient {
+    break-before: page;
+    page-break-before: always;
+  }
+</style>
 </head>
 <body>
 
@@ -46,9 +52,6 @@
     {% endfor %}
   </tbody>
 </table>
-
-<div class="divider"></div>
-<div class="section-title">Details</div>
 
 {% for block in blocks %}
   <div id="pat-{{ block.patient.pk }}" class="patient-page {% if forloop.first %}first-patient{% endif %}">
