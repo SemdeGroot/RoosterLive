@@ -614,7 +614,10 @@
       const cls = `pd-chip${isVast ? " is-vast" : ""}${isDelete ? " is-delete" : isDraft ? " is-concept" : ""}`;
       html += `<span class="${cls}">${user.displayName}</span>`;
     }
-    td.innerHTML = html || `<span style="opacity:.2;font-size:.65rem;">–</span>`;
+    const xySpan = min > 0
+      ? `<span class="pd-cell-xy" style="display:block;text-align:center;font-size:.65rem;font-weight:900;opacity:.75;margin-top:3px;">${count}/${min}</span>`
+      : "";
+    td.innerHTML = (html || `<span style="opacity:.2;font-size:.65rem;">–</span>`) + xySpan;
   }
 
   function refreshTaskTable() {
@@ -820,9 +823,13 @@
     const isDelete = draftObj?.action === "delete";
     const isDraft = !!draftObj && !isDelete;
 
+    const avail = user.availability?.[dateISO]?.[period] ?? false;
+    // Availability colour only on empty/unplanned cells; planned cells speak for themselves.
+    const availCls = (taskId === null && !isDelete) ? (avail ? " is-ok" : " is-warn") : "";
+
     if (taskId === null && !isDelete) {
       td.innerHTML = "";
-      td.className = "pd-slot-cell";
+      td.className = `pd-slot-cell${availCls}`;
       return;
     }
     const task = taskId ? findTask(taskId) : null;

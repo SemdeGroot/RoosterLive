@@ -68,7 +68,10 @@
             style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
             aria-hidden="true">
           </span>
-          <h4 class="analysis-title">STOP-NL V2 Criteria</h4>
+          <div>
+            <h4 class="analysis-title">STOP-NL V2 Criteria</h4>
+            <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://www.nhg.org/thema/farmacotherapie/stop-nl-v2/" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">NHG STOP-NL V2</a></span>
+          </div>
         </div>
 
         {# STOPP criteria: 2-koloms grid, elke categorie is een cel #}
@@ -118,7 +121,10 @@
                 style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
                 aria-hidden="true">
               </span>
-              <h4 class="analysis-title">Anticholinerge Belasting</h4>
+              <div>
+                <h4 class="analysis-title">Anticholinerge Belasting</h4>
+                <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://ephor.nl/wp-content/uploads/2018/12/anticholinergic-drugs.pdf" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">Ephor</a></span>
+              </div>
             </div>
 
             {% with score=analysis.analyses.acb.score %}
@@ -380,11 +386,11 @@
           {% endfor %}
         </div>
 
-        <div style="margin-top:32px; text-align:right;">
-          <button type="submit" class="btn btn-save">Opslaan</button>
-        </div>
-
-        <div style="text-align:center; margin-top: -40px;">
+        <div style="margin-top: 32px; text-align:left; display:flex; gap:8px; justify-content: space-between;">
+          <button type="submit" name="action" value="save_export" class="btn btn-save">
+            Exporteer als PDF
+          </button>
+          <button type="submit" name="action" value="save_export_docx" class="btn">Exporteer Word document</button>
           <button type="button" class="btn-copy-medimo btn-copy-all-medimo" title="Kopieer alles voor Medimo">
             <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1z"/>
@@ -392,12 +398,7 @@
             </svg>
             <span class="copy-label">Kopieer alles voor Medimo</span>
           </button>
-        </div>
-
-        <div style="margin-top: -42px; text-align:left;">
-          <button type="submit" name="action" value="save_export" class="btn btn-save">
-            Opslaan & Exporteer als PDF
-          </button>
+          <button type="submit" class="btn btn-save">Opslaan</button>
         </div>
 
       </div>

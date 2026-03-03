@@ -51,7 +51,10 @@
         Terug naar Historie
       </a>
       <a href="{% url 'medicatiebeoordeling_afdeling_export_pdf' afdeling.pk %}" class="btn btn-save" style="text-align:right;">
-        Exporteer afdeling als PDF
+        Exporteer PDF
+      </a>
+      <a href="{% url 'medicatiebeoordeling_afdeling_export_docx' afdeling.pk %}" class="btn" style="text-align:right;">
+        Exporteer Word
       </a>
     </div>
 

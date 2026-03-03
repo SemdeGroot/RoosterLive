@@ -565,11 +565,7 @@ def patient_detail(request, pk):
     analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
 
-    # -----------------------------
-    # OVERRIDES LOOKUP
-    # -----------------------------
     overrides_qs = patient.med_group_overrides.all()
-    # Key: (med_clean, med_gebruik) — gebruik disambiguates duplicate med names.
     overrides_lookup = {
         ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): o.target_jansen_group_id
         for o in overrides_qs
@@ -588,7 +584,7 @@ def patient_detail(request, pk):
 
         # A) Comments/historie opslaan
         for group_id, group_data in grouped_meds:
-            key_tekst = f"comment_{group_id}"
+            key_tekst   = f"comment_{group_id}"
             key_historie = f"historie_{group_id}"
 
             defaults_data = {"updated_by": request.user}
@@ -613,18 +609,18 @@ def patient_detail(request, pk):
             if not key.startswith("override_med_clean__"):
                 continue
 
-            suffix = key.replace("override_med_clean__", "", 1)  # "<gid>__<idx>"
+            suffix     = key.replace("override_med_clean__", "", 1)
             target_key = f"override_target__{suffix}"
-            name_key = f"override_name__{suffix}"
+            name_key   = f"override_name__{suffix}"
             gebruik_key = f"override_gebruik__{suffix}"
 
             if target_key not in request.POST:
                 continue
 
-            med_clean = (med_clean or "").strip()
-            raw_target = (request.POST.get(target_key) or "").strip()
+            med_clean    = (med_clean or "").strip()
+            raw_target   = (request.POST.get(target_key) or "").strip()
             override_name = (request.POST.get(name_key) or "").strip()
-            med_gebruik = (request.POST.get(gebruik_key) or "").strip()
+            med_gebruik  = (request.POST.get(gebruik_key) or "").strip()
 
             if not med_clean:
                 continue
@@ -668,13 +664,16 @@ def patient_detail(request, pk):
             patient.afdeling.updated_by = request.user
             patient.afdeling.save()
 
-        if request.POST.get("action") == "save_export":
+        # Reload with fresh relations for any export action
+        if request.POST.get("action") in ("save_export", "save_export_docx"):
             patient = (
                 MedicatieReviewPatient.objects
                 .select_related("afdeling")
                 .prefetch_related("comments", "med_group_overrides")
                 .get(pk=patient.pk)
             )
+
+        if request.POST.get("action") == "save_export":
             block = _build_patient_block(patient)
 
             context = {
@@ -698,6 +697,10 @@ def patient_detail(request, pk):
             resp["Content-Disposition"] = f'attachment; filename="medicatiebeoordeling_{patient.naam}.pdf"'
             return resp
 
+        if request.POST.get("action") == "save_export_docx":
+            from core.views.export_review_docx import _build_patient_docx_response
+            return _build_patient_docx_response(patient, request.user)
+
         messages.success(request, "Opmerkingen opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
@@ -713,7 +716,6 @@ def patient_detail(request, pk):
         cat = item.get("category", "Overig")
         stopp_by_category.setdefault(cat, []).append(item)
 
-    # Flat string key for template lookups: "med_clean||gebruik"
     overrides_lookup_display = {
         f"{med_clean}||{gebruik}": target_gid
         for (med_clean, gebruik), target_gid in overrides_lookup.items()
