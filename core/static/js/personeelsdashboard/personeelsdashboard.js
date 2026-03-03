@@ -242,8 +242,11 @@
         "background:var(--panel);border:1px solid var(--border);border-radius:12px",
         "padding:10px 12px;font-size:0.76rem;min-width:180px;max-width:240px",
         "box-shadow:0 8px 24px rgba(0,0,0,.4)",
+        "max-height:320px;overflow-y:auto;pointer-events:auto",
       ].join(";");
       document.body.appendChild(tooltipEl);
+      tooltipEl.addEventListener("mouseenter", () => clearTimeout(hideTooltipTimer));
+      tooltipEl.addEventListener("mouseleave", scheduleHideTooltip);
     }
     return tooltipEl;
   }
@@ -276,14 +279,23 @@
     if (left < 8) left = 8;
 
     // clamp vertically (keep it visible, but still "below" as much as possible)
-    if (top + h > window.innerHeight - 8) top = window.innerHeight - 8 - h;
+    if (top + Math.min(h, 320) > window.innerHeight - 8) top = window.innerHeight - 8 - Math.min(h, 320);
     if (top < 8) top = 8;
 
     el.style.left = left + "px";
     el.style.top  = top + "px";
   }
 
+  let hideTooltipTimer = null;
+
+  function scheduleHideTooltip() {
+    hideTooltipTimer = setTimeout(() => {
+      if (tooltipEl) tooltipEl.style.display = "none";
+    }, 250);
+  }
+
   function hideDonutTooltip() {
+    clearTimeout(hideTooltipTimer);
     if (tooltipEl) tooltipEl.style.display = "none";
   }
 
@@ -353,7 +365,7 @@
       const chart = buildDonut(canvas, planned, required, () => totalDayAssigned(day.iso));
       dayCharts.push({ chart, day });
       canvas.addEventListener("mousemove", evt => showDonutTooltip(evt, dayTooltipData(day.iso), `${day.label} – ${day.daymonth}`));
-      canvas.addEventListener("mouseleave", hideDonutTooltip);
+      canvas.addEventListener("mouseleave", scheduleHideTooltip);
     }
 
     const sep = document.createElement("div");
@@ -375,7 +387,7 @@
 
     weekChartRef = buildDonut(weekCanvas, wp, wr, totalWeekAssigned);
     weekCanvas.addEventListener("mousemove", evt => showDonutTooltip(evt, weekTooltipData(), "Hele week"));
-    weekCanvas.addEventListener("mouseleave", hideDonutTooltip);
+    weekCanvas.addEventListener("mouseleave", scheduleHideTooltip);
   }
 
   function refreshDonutData() {
