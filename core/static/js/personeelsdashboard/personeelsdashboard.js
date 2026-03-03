@@ -242,7 +242,7 @@
         "background:var(--panel);border:1px solid var(--border);border-radius:12px",
         "padding:10px 12px;font-size:0.76rem;min-width:180px;max-width:240px",
         "box-shadow:0 8px 24px rgba(0,0,0,.4)",
-        "max-height:320px;overflow-y:auto;pointer-events:auto",
+        "max-height:480px;overflow-y:auto;pointer-events:auto",
       ].join(";");
       document.body.appendChild(tooltipEl);
       tooltipEl.addEventListener("mouseenter", () => clearTimeout(hideTooltipTimer));
