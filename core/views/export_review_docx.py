@@ -22,8 +22,8 @@ from core.views.export_review_pdf import PdfPatientBlock, _build_patient_block
 
 # ── Colour palette ─────────────────────────────────────────────────────────────
 COL_HEADER_BG = "EEF2F7"
-COL_SECTION_FG = "1B3A5C"
-COL_MUTED = "6B7280"
+COL_SECTION_FG = "0C2742"
+COL_MUTED       = "334155"  # dark slate for secondary text
 COL_DIVIDER = "D1D5DB"
 COL_COMMENT_BG = "F3F6FA"
 
