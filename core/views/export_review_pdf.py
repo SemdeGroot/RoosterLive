@@ -29,10 +29,33 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
     analysis = patient.analysis_data or {}
     meds = analysis.get("geneesmiddelen", [])
 
-    # OVERRIDES (clean -> target id)
-    overrides_lookup = {o.med_clean: o.target_jansen_group_id for o in patient.med_group_overrides.all()}
+    overrides_qs = patient.med_group_overrides.all()
+
+    # keys must be (med_clean, gebruik) to match group_meds_by_jansen()
+    overrides_lookup = {
+        ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): o.target_jansen_group_id
+        for o in overrides_qs
+    }
+
+    override_name_lookup = {
+        ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): (o.override_name or "").strip()
+        for o in overrides_qs
+        if (o.override_name or "").strip()
+    }
 
     grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
+
+    # Apply display override name in export (without affecting grouping, which is already done)
+    if override_name_lookup:
+        for _, group_data in grouped_meds:
+            for gm in group_data.get("meds", []):
+                if not isinstance(gm, dict):
+                    continue
+                med_clean = (gm.get("clean") or "").strip()
+                gebruik = (gm.get("gebruik") or "").strip()
+                override_name = override_name_lookup.get((med_clean, gebruik))
+                if override_name:
+                    gm["clean"] = override_name  # export should show override, not original
 
     db_comments = patient.comments.all()
     comments_lookup = {c.jansen_group_id: c for c in db_comments}
@@ -43,7 +66,6 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
         grouped_meds=grouped_meds,
         comments_lookup=comments_lookup,
     )
-
 
 @login_required
 def export_patient_review_pdf(request, pk: int) -> HttpResponse:
