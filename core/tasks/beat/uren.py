@@ -22,7 +22,7 @@ from core.utils.emails.urenreminder import send_uren_reminder_email
 def monthly_uren_export_task(self):
     """
     Draait elke 11e van de maand om 09:00.
-    Exporteert vorige maand, mailt naar grootrk, en ruimt daarna op (file + db records).
+    Exporteert vorige maand, mailt naar grootrk, en ruimt daarna op (file).
     """
     today = timezone.localdate()
     res = export_uren_month_to_storage(today=today)
@@ -49,7 +49,7 @@ def monthly_uren_export_task(self):
 
     mail_sig = email_dispatcher_task.s(job).set(queue="mail")
 
-    # Alleen als mail(s) succesvol zijn => cleanup: storage + uren verwijderen
+    # Alleen als mail(s) succesvol zijn => cleanup: storage
     chord(group([mail_sig]))(
         cleanup_uren_export_task.s(res.xlsx_storage_path, res.month.isoformat()).set(queue="default")
     )

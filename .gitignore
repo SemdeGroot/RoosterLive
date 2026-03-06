@@ -64,3 +64,7 @@ xml_baxter_watchdog/env_config.py
 CLAUDE.md
 .claudeignore
 .claude/
+
+GEMINI.md
+.geminiignore
+.gemini/

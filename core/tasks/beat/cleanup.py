@@ -8,8 +8,6 @@ from celery.schedules import crontab
 
 from django.core.files.storage import default_storage
 
-from core.utils.beat.cleanup import cleanup_uren_retention
-
 @shared_task(ignore_result=True)
 def cleanup_baxter_snapshots_task() -> int:
     from core.models import BaxterProductieSnapshotPunt
@@ -35,12 +33,8 @@ def cleanup_uren_export_task(self, results, xlsx_path: str, month_first_iso: str
     """
     Callback voor chord: draait alleen na succesvolle verzending.
     - verwijdert excel uit storage
-    - verwijdert alle UrenInvoer t/m de verwerkte maand
     """
     month_first = date.fromisoformat(month_first_iso)
-
-    # retention cleanup: bewaar bijv. laatste 3 maanden
-    cleanup_uren_retention(today=timezone.localdate(), keep_last_n_months=3)
 
     # excel weg (best effort)
     try:
