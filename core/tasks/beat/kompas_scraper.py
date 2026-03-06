@@ -190,13 +190,6 @@ def run_kompas_scraper(test_mode=False, categories=None):
             )
             _send_error_mail(subject, body, log_storage_path)
 
-        # Verwijder tijdelijke md dumps (log blijft staan)
-        for p in dumped_paths:
-            try:
-                default_storage.delete(p)
-            except Exception:
-                pass
-
         return summary
 
     finally:

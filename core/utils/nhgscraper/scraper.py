@@ -238,10 +238,9 @@ class NHGScraper:
     def discovery_phase(self, categories: Optional[List[str]] = None) -> List[Dict]:
         """
         Returns a flat list of {"url", "category", "name", "revision_status"} dicts.
-        categories: subset of ["standaard", "behandelrichtlijn"], or None for all.
-
-        Tries sitemap.xml first (reliable, no JS). Falls back to homepage tab parsing.
+        Strips Drupal "-0" suffixes and removes duplicates.
         """
+
         selected = categories or list(self.CATEGORY_TAB.keys())
 
         items = self._discover_from_sitemap(selected)
@@ -250,10 +249,28 @@ class NHGScraper:
             self._log("Sitemap returned nothing, falling back to tab parsing")
             items = self._discover_from_tabs(selected)
 
-        if self.debug_limit:
-            items = items[: self.debug_limit]
+        # Strip alleen Drupal "-0" suffix (bv. /diabetes-mellitus-type-2-0 -> /diabetes-mellitus-type-2)
+        for item in items:
+            url = item.get("url")
+            if url and url.endswith("-0"):
+                item["url"] = url[:-2]
 
-        return items
+        # Deduplicate na normalisatie
+        seen_urls = set()
+        unique_items = []
+
+        for item in items:
+            url = item.get("url")
+            if not url or url in seen_urls:
+                continue
+
+            seen_urls.add(url)
+            unique_items.append(item)
+
+        if self.debug_limit:
+            unique_items = unique_items[: self.debug_limit]
+
+        return unique_items
 
     # ------------------------------------------------------------------
     # Extraction: HTML -> Markdown

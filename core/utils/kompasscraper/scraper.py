@@ -879,7 +879,7 @@ class KompasScraper:
         cat = (category or "page").strip().lower()
         cat = re.sub(r"[^a-z0-9]+", "_", cat).strip("_") or "page"
 
-        rel_path = f"{self.tmp_dump_dir}/{ts}_{cat}_{safe}"
+        rel_path = f"{self.tmp_dump_dir}/md_dumps/{ts}_{cat}_{safe}"
 
         # Sla op via storage
         saved_path = default_storage.save(rel_path, ContentFile(md_content.encode("utf-8")))
