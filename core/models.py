@@ -1707,7 +1707,7 @@ class UrenDag(models.Model):
     def __str__(self):
         return f"{self.user_id} {self.date} {self.start_time}-{self.end_time} (break={self.break_hours})"
     
-# ApotheekGPT
+# ApoGPT
 class ScrapedPage(models.Model):
     CATEGORY_CHOICES = [
         ('preparaat', 'Preparaat'),

@@ -48,7 +48,7 @@ from core.views.health import health
 from core.views.passkeys import PasskeySetupView, passkey_registration_options,passkey_register, passkey_password_login, passkey_authenticate,passkey_should_offer, passkey_skip, passkey_login_options
 from core.views.native_biometric import native_biometric_enable,native_biometric_login, native_biometric_revoke, native_biometric_skip, native_biometric_password_login
 from core.views.bezorgers import bezorgers_tiles, bakkenbezorgen, afleverstatus
-from core.views.kompasgpt import kompasgpt
+from core.views.kompasgpt import kompasgpt, kompasgpt_demo
 
 urlpatterns = [
     path("", home, name="home"),
@@ -198,7 +198,8 @@ urlpatterns = [
     path("beheer/functies/<int:pk>/delete/", delete_functie, name="delete_functie"),
     path("beheer/dagdelen/<str:code>/update/", dagdeel_update, name="dagdeel_update"),
     # KompasGPT
-    path("apotheekgpt/", kompasgpt, name="kompasgpt"),
+    path("apogpt/", kompasgpt, name="kompasgpt"),
+    path("apogpt-demo-83hd92/", kompasgpt_demo, name="kompasgpt_demo"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),

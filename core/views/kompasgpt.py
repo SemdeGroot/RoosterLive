@@ -131,7 +131,7 @@ def _ask_gemini_with_store(question: str, history: List[Dict]) -> Tuple[str, Lis
     history_text = _format_history_for_prompt(history, max_turns=8)
 
     system_rules = (
-        "Je bent ApotheekGPT. Gebruik uitsluitend informatie uit de opgehaalde passages "
+        "Je bent ApoGPT. Gebruik uitsluitend informatie uit de opgehaalde passages "
         "van het Farmacotherapeutisch Kompas en het Nederlands Huisartsen Genootschap (NHG).\n"
         "Als de passages onvoldoende informatie bevatten, zeg dan duidelijk dat je het niet zeker weet "
         "op basis van de bronnen en geef alleen wat je wél kunt afleiden uit de bronnen.\n"
@@ -214,6 +214,61 @@ def kompasgpt(request):
                 history.append({"role": "assistant", "content": f"**Fout:** {error}", "sources": []})
 
             request.session["kompasgpt_history"] = [
+                {"role": h["role"], "content": h["content"]}
+                for h in history[-8:]
+            ]
+
+            if is_xhr:
+                last = history[-1] if history else {}
+                return JsonResponse({
+                    "answer": last.get("content", ""),
+                    "sources": last.get("sources", []) or [],
+                })
+
+    return render(request, "kompasgpt/index.html", {
+        "page_title": "KompasGPT",
+        "history": history,
+        "error": error,
+    })
+
+@require_http_methods(["GET", "POST"])
+def kompasgpt_demo(request):
+    history = request.session.get("kompasgpt_demo_history", [])
+    if not isinstance(history, list):
+        history = []
+
+    error = None
+
+    if request.method == "POST":
+        is_xhr = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+        action = (request.POST.get("action") or "").strip().lower()
+        if action == "clear":
+            request.session["kompasgpt_demo_history"] = []
+            if is_xhr:
+                return JsonResponse({"ok": True})
+            return render(request, "kompasgpt/index.html", {
+                "page_title": "KompasGPT",
+                "history": [],
+                "error": None,
+            })
+
+        user_msg = (request.POST.get("message") or "").strip()
+        if not user_msg:
+            if is_xhr:
+                return JsonResponse({"error": "Typ eerst een vraag."}, status=400)
+            error = "Typ eerst een vraag."
+        else:
+            history.append({"role": "user", "content": user_msg})
+
+            try:
+                answer, sources = _ask_gemini_with_store(question=user_msg, history=history)
+                history.append({"role": "assistant", "content": answer, "sources": sources})
+            except Exception as e:
+                error = str(e)
+                history.append({"role": "assistant", "content": f"**Fout:** {error}", "sources": []})
+
+            request.session["kompasgpt_demo_history"] = [
                 {"role": h["role"], "content": h["content"]}
                 for h in history[-8:]
             ]
