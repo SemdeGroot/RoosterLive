@@ -199,7 +199,7 @@ urlpatterns = [
     path("beheer/dagdelen/<str:code>/update/", dagdeel_update, name="dagdeel_update"),
     # KompasGPT
     path("apogpt/", kompasgpt, name="kompasgpt"),
-    path("apogpt-demo-83hd92/", kompasgpt_demo, name="kompasgpt_demo"),
+    path("apogpt-demo-5fcdf4185942974d/", kompasgpt_demo, name="kompasgpt_demo"),
 
     path("api/push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
     path("api/push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
