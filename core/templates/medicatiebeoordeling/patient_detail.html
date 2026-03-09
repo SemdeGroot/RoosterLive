@@ -62,22 +62,27 @@
         {% load markdown_links %}
 
         {# STOPP header #}
-        <div class="analysis-header-row" style="margin-bottom:16px;">
-          <span
-            class="birthday-icon icon-badge i-red"
-            style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
-            aria-hidden="true">
-          </span>
-          <div>
-            <h4 class="analysis-title">STOP-NL V2 Criteria</h4>
-            <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://www.nhg.org/thema/farmacotherapie/stop-nl-v2/" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">NHG STOP-NL V2</a></span>
+        <div class="accordion-item" style="margin-bottom:24px;">
+          <div class="accordion-header analysis-header-row" style="margin-bottom:0;">
+            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+              <span
+                class="birthday-icon icon-badge i-red"
+                style="--icon: url('{% static 'img/lucide/stop-lucide.svg' %}');"
+                aria-hidden="true">
+              </span>
+              <div>
+                <h4 class="analysis-title">STOP-NL V2 Criteria</h4>
+                <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://www.nhg.org/thema/farmacotherapie/stop-nl-v2/" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">NHG STOP-NL V2</a></span>
+              </div>
+            </div>
+            <svg class="accordion-icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
           </div>
-        </div>
 
-        {# STOPP criteria: 2-koloms grid, elke categorie is een cel #}
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; margin-bottom:24px;">
+          <div class="accordion-content">
+            {# STOPP criteria: 2-koloms grid, elke categorie is een cel #}
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
 
-          {% if stopp_by_category %}
+              {% if stopp_by_category %}
             {% for category, items in stopp_by_category.items %}
               <div class="criteria-content stopp-box">
                 <strong style="display:block; margin-bottom:4px; color:var(--text);">
@@ -109,25 +114,31 @@
             </div>
           {% endif %}
 
+            </div>
+          </div>
         </div>
 
         {# ACB + dubbelmedicatie: altijd naast elkaar als laatste rij #}
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
 
-          <div class="analysis-box">
-            <div class="analysis-header-row">
-              <span
-                class="birthday-icon icon-badge i-rose"
-                style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
-                aria-hidden="true">
-              </span>
-              <div>
-                <h4 class="analysis-title">Anticholinerge Belasting</h4>
-                <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://ephor.nl/wp-content/uploads/2018/12/anticholinergic-drugs.pdf" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">Ephor</a></span>
+          <div class="analysis-box accordion-item">
+            <div class="accordion-header analysis-header-row" style="margin-bottom:0;">
+              <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                <span
+                  class="birthday-icon icon-badge i-rose"
+                  style="--icon: url('{% static 'img/lucide/anticholinerg-lucide.svg' %}');"
+                  aria-hidden="true">
+                </span>
+                <div>
+                  <h4 class="analysis-title">Anticholinerge Belasting</h4>
+                  <span style="font-size:0.8em; color:var(--muted);">Zie ook: <a href="https://ephor.nl/wp-content/uploads/2018/12/anticholinergic-drugs.pdf" target="_blank" rel="noopener" style="color:var(--muted); text-decoration:underline;">Ephor</a></span>
+                </div>
               </div>
+              <svg class="accordion-icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </div>
 
-            {% with score=analysis.analyses.acb.score %}
+            <div class="accordion-content">
+              {% with score=analysis.analyses.acb.score %}
               <div class="criteria-content acb-dynamic-box
                 {% if score == 0 %}acb-score-0
                 {% elif score == 1 %}acb-score-1
@@ -156,19 +167,24 @@
                 {% endif %}
               </div>
             {% endwith %}
+            </div>
           </div>
 
-          <div class="analysis-box">
-            <div class="analysis-header-row">
-              <span
-                class="birthday-icon icon-badge i-pink"
-                style="--icon: url('{% static 'img/lucide/dubbelmedicatie-lucide.svg' %}');"
-                aria-hidden="true">
-              </span>
-              <h4 class="analysis-title">Dubbelmedicatie</h4>
+          <div class="analysis-box accordion-item">
+            <div class="accordion-header analysis-header-row" style="margin-bottom:0;">
+              <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                <span
+                  class="birthday-icon icon-badge i-pink"
+                  style="--icon: url('{% static 'img/lucide/dubbelmedicatie-lucide.svg' %}');"
+                  aria-hidden="true">
+                </span>
+                <h4 class="analysis-title">Dubbelmedicatie</h4>
+              </div>
+              <svg class="accordion-icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </div>
 
-            {% if analysis.analyses.dubbelmedicatie %}
+            <div class="accordion-content">
+              {% if analysis.analyses.dubbelmedicatie %}
               <div class="criteria-content dubbel-box">
                 <strong style="display:block; margin-bottom:8px; color:var(--text);">
                   Mogelijke dubbelmedicatie:
@@ -187,6 +203,7 @@
                 <span style="color:var(--text);">Geen dubbelmedicatie gevonden.</span>
               </div>
             {% endif %}
+            </div>
           </div>
 
         </div>
@@ -195,19 +212,13 @@
 
     {# -------- Medicatie + opmerkingen card -------- #}
     <div class="review-card">
-      <div class="card-header">
+      <div class="card-header" style="position:relative; z-index: 10;">
         <h3 class="sub-title">Medicatieoverzicht & Opmerkingen</h3>
-      </div>
-
-      <div class="card-body">
-
-        <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+        <div style="position:relative;">
             <button type="button" id="toggleManualGroupForm" class="btn">
               Jansen categorie toevoegen
             </button>
-
-            <div id="manualGroupForm" style="display:none; min-width:360px;">
+            <div id="manualGroupForm" style="display:none; position:absolute; right:0; top:calc(100% + 8px); background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:360px;">
               <div style="display:flex; gap:8px; align-items:center;">
                 <select
                   name="manual_group_id"
@@ -226,12 +237,22 @@
                 </button>
               </div>
             </div>
-          </div>
         </div>
+      </div>
 
-        <div style="display:flex; flex-direction:column; gap:32px;">
+      <div class="card-body">
+
+        <div class="med-groups-layout">
           {% for group_id, group_data in grouped_meds %}
-            <div class="med-group" data-group-id="{{ group_id }}">
+            {% if forloop.counter == 1 %}
+              <div class="placeholder-groups-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px;">
+            {% endif %}
+            {% if forloop.counter == 5 %}
+              </div>
+              <div class="regular-groups-list" style="display:flex; flex-direction:column; gap:32px;">
+            {% endif %}
+
+            <div class="med-group {% if forloop.counter <= 4 %}is-placeholder{% endif %}" data-group-id="{{ group_id }}" {% if forloop.counter <= 4 %}style="border:1px solid var(--border); padding:16px; border-radius:8px; background:var(--panel-2);"{% endif %}>
 
               <div class="jansen-header">
                 <h4 class="jansen-title">{{ group_data.naam }}</h4>
@@ -411,6 +432,14 @@
               </div>
 
             </div>
+
+            {% if forloop.last and forloop.counter <= 4 %}
+              </div>
+            {% endif %}
+            {% if forloop.last and forloop.counter > 4 %}
+              </div>
+            {% endif %}
+
           {% endfor %}
         </div>
 

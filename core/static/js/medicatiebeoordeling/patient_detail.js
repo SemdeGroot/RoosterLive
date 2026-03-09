@@ -211,6 +211,19 @@ $(document).ready(function () {
       }
     });
   }
+
+  // ==========================================
+  // 3. ACCORDION LOGIC
+  // ==========================================
+  $('.accordion-header').on('click', function() {
+    $(this).toggleClass('is-open');
+    const $content = $(this).next('.accordion-content');
+    if ($(this).hasClass('is-open')) {
+       $content.hide().slideDown(300).css({opacity: 0}).animate({opacity: 1}, {queue: false, duration: 300});
+    } else {
+       $content.animate({opacity: 0}, {queue: false, duration: 300}).slideUp(300);
+    }
+  });
 });
 
 // ==========================================
