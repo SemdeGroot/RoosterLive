@@ -106,6 +106,37 @@ def _find_existing_patient_in_afdeling(selected_afdeling, patient_name, patient_
             return pat
     return None
 
+def _merge_manual_comment_groups(grouped_meds, comments_lookup):
+    group_name_by_id = {
+        group_id: group_name
+        for group_id, group_name in get_jansen_group_choices()
+    }
+    excluded_group_ids = {-1, 0, 1, 2}
+
+    existing_group_ids = {group_id for group_id, _ in grouped_meds}
+    manual_groups = []
+
+    for group_id in comments_lookup.keys():
+        if group_id in excluded_group_ids:
+            continue
+        if group_id in existing_group_ids:
+            continue
+        if group_id not in group_name_by_id:
+            continue
+
+        manual_groups.append((
+            group_id,
+            {
+                "naam": group_name_by_id[group_id],
+                "meds": [],
+                "is_manual": True,
+            }
+        ))
+
+    merged = list(grouped_meds) + manual_groups
+    merged.sort(key=lambda item: item[0])
+    return merged
+
 # --- STANDAARD LIST VIEW (Server-side rendered) ---
 @ip_restricted
 @login_required
@@ -576,15 +607,55 @@ def patient_detail(request, pk):
     }
 
     grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
+    db_comments = patient.comments.all()
+    comments_lookup = {c.jansen_group_id: c for c in db_comments}
+    display_groups = _merge_manual_comment_groups(grouped_meds, comments_lookup)
 
-    # --- POST ---
     if request.method == "POST":
         if not can(request.user, "can_perform_medicatiebeoordeling"):
             return HttpResponseForbidden("Alleen bewerken toegestaan.")
 
-        # A) Comments/historie opslaan
-        for group_id, group_data in grouped_meds:
-            key_tekst   = f"comment_{group_id}"
+        if request.POST.get("action") == "add_manual_group":
+            raw_group_id = (request.POST.get("manual_group_id") or "").strip()
+
+            try:
+                manual_group_id = int(raw_group_id)
+            except ValueError:
+                messages.error(request, "Kies een geldige Jansen categorie.")
+                return redirect("medicatiebeoordeling_patient_detail", pk=pk)
+
+            allowed_group_ids = {
+                group_id for group_id, _ in get_jansen_group_choices()
+                if group_id not in (-1, 0, 1, 2)
+            }
+
+            if manual_group_id not in allowed_group_ids:
+                messages.error(request, "Deze Jansen categorie kan niet handmatig worden toegevoegd.")
+                return redirect("medicatiebeoordeling_patient_detail", pk=pk)
+
+            if manual_group_id in {group_id for group_id, _ in display_groups}:
+                messages.error(request, "Deze Jansen categorie bestaat al voor deze patiënt.")
+                return redirect("medicatiebeoordeling_patient_detail", pk=pk)
+
+            MedicatieReviewComment.objects.update_or_create(
+                patient=patient,
+                jansen_group_id=manual_group_id,
+                defaults={"updated_by": request.user},
+            )
+
+            patient.updated_by = request.user
+            patient.save(update_fields=["updated_at", "updated_by"])
+
+            if patient.afdeling:
+                patient.afdeling.updated_by = request.user
+                patient.afdeling.save(update_fields=["updated_at", "updated_by"])
+
+            messages.success(request, "Jansen categorie toegevoegd.")
+            return redirect("medicatiebeoordeling_patient_detail", pk=pk)
+
+        # Comments en historie opslaan voor alle zichtbare groepen
+        for group_id, group_data in display_groups:
+            key_tekst = f"comment_{group_id}"
             key_historie = f"historie_{group_id}"
 
             defaults_data = {"updated_by": request.user}
@@ -601,38 +672,33 @@ def patient_detail(request, pk):
                 defaults=defaults_data
             )
 
-        # B) Overrides opslaan/verwijderen
-        override_updates = 0
-        override_deletes = 0
-
+        # Overrides opslaan/verwijderen
         for key, med_clean in request.POST.items():
             if not key.startswith("override_med_clean__"):
                 continue
 
-            suffix     = key.replace("override_med_clean__", "", 1)
+            suffix = key.replace("override_med_clean__", "", 1)
             target_key = f"override_target__{suffix}"
-            name_key   = f"override_name__{suffix}"
+            name_key = f"override_name__{suffix}"
             gebruik_key = f"override_gebruik__{suffix}"
 
             if target_key not in request.POST:
                 continue
 
-            med_clean    = (med_clean or "").strip()
-            raw_target   = (request.POST.get(target_key) or "").strip()
+            med_clean = (med_clean or "").strip()
+            raw_target = (request.POST.get(target_key) or "").strip()
             override_name = (request.POST.get(name_key) or "").strip()
-            med_gebruik  = (request.POST.get(gebruik_key) or "").strip()
+            med_gebruik = (request.POST.get(gebruik_key) or "").strip()
 
             if not med_clean:
                 continue
 
             if raw_target == "":
-                deleted, _ = MedicatieReviewMedGroupOverride.objects.filter(
+                MedicatieReviewMedGroupOverride.objects.filter(
                     patient=patient,
                     med_clean=med_clean,
                     med_gebruik=med_gebruik,
                 ).delete()
-                if deleted:
-                    override_deletes += 1
                 continue
 
             try:
@@ -640,7 +706,7 @@ def patient_detail(request, pk):
             except ValueError:
                 continue
 
-            if target_gid in (0, 1, 2):
+            if target_gid in (-1, 0, 1, 2):
                 messages.error(request, "Override niet toegestaan naar Labwaarden, Vallen? of Malen?.")
                 continue
 
@@ -655,7 +721,6 @@ def patient_detail(request, pk):
                     "updated_by": request.user,
                 }
             )
-            override_updates += 1
 
         patient.updated_by = request.user
         patient.save()
@@ -664,7 +729,6 @@ def patient_detail(request, pk):
             patient.afdeling.updated_by = request.user
             patient.afdeling.save()
 
-        # Reload with fresh relations for any export action
         if request.POST.get("action") in ("save_export", "save_export_docx"):
             patient = (
                 MedicatieReviewPatient.objects
@@ -704,11 +768,13 @@ def patient_detail(request, pk):
         messages.success(request, "Opmerkingen opgeslagen.")
         return redirect("medicatiebeoordeling_patient_detail", pk=pk)
 
-    # --- GET ---
-    db_comments = patient.comments.all()
-    comments_lookup = {c.jansen_group_id: c for c in db_comments}
-
-    jansen_choices = [(cid, cname) for cid, cname in get_jansen_group_choices() if cid not in (0, 1, 2)]
+    jansen_choices = [(cid, cname) for cid, cname in get_jansen_group_choices() if cid not in (-1, 0, 1, 2)]
+    visible_group_ids = {group_id for group_id, _ in display_groups}
+    manual_group_choices = [
+        (cid, cname)
+        for cid, cname in jansen_choices
+        if cid not in visible_group_ids
+    ]
 
     stopp_raw = analysis.get("analyses", {}).get("stopp", [])
     stopp_by_category = {}
@@ -730,7 +796,8 @@ def patient_detail(request, pk):
         "afdeling": patient.afdeling,
         "analysis": analysis,
         "stopp_by_category": stopp_by_category,
-        "grouped_meds": grouped_meds,
+        "grouped_meds": display_groups,
+        "manual_group_choices": manual_group_choices,
         "comments_lookup": comments_lookup,
         "jansen_choices": jansen_choices,
         "overrides_lookup": overrides_lookup_display,

@@ -14,7 +14,7 @@ from core.models import (
     MedicatieReviewPatient,
     MedicatieReviewComment,
 )
-from core.utils.medication import group_meds_by_jansen
+from core.utils.medication import group_meds_by_jansen, get_jansen_group_choices
 
 
 @dataclass
@@ -24,6 +24,36 @@ class PdfPatientBlock:
     grouped_meds: List[Tuple[str, Dict[str, Any]]]
     comments_lookup: Dict[str, MedicatieReviewComment]
 
+def _merge_manual_comment_groups(grouped_meds, comments_lookup):
+    group_name_by_id = {
+        group_id: group_name
+        for group_id, group_name in get_jansen_group_choices()
+    }
+    excluded_group_ids = {-1, 0, 1, 2}
+
+    existing_group_ids = {group_id for group_id, _ in grouped_meds}
+    manual_groups = []
+
+    for group_id in comments_lookup.keys():
+        if group_id in excluded_group_ids:
+            continue
+        if group_id in existing_group_ids:
+            continue
+        if group_id not in group_name_by_id:
+            continue
+
+        manual_groups.append((
+            group_id,
+            {
+                "naam": group_name_by_id[group_id],
+                "meds": [],
+                "is_manual": True,
+            }
+        ))
+
+    merged = list(grouped_meds) + manual_groups
+    merged.sort(key=lambda item: item[0])
+    return merged
 
 def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
     analysis = patient.analysis_data or {}
@@ -31,7 +61,6 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
 
     overrides_qs = patient.med_group_overrides.all()
 
-    # keys must be (med_clean, gebruik) to match group_meds_by_jansen()
     overrides_lookup = {
         ((o.med_clean or "").strip(), (o.med_gebruik or "").strip()): o.target_jansen_group_id
         for o in overrides_qs
@@ -44,8 +73,9 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
     }
 
     grouped_meds = group_meds_by_jansen(meds, overrides_lookup=overrides_lookup)
+    db_comments = patient.comments.all()
+    comments_lookup = {c.jansen_group_id: c for c in db_comments}
 
-    # Apply display override name in export (without affecting grouping, which is already done)
     if override_name_lookup:
         for _, group_data in grouped_meds:
             for gm in group_data.get("meds", []):
@@ -55,10 +85,9 @@ def _build_patient_block(patient: MedicatieReviewPatient) -> PdfPatientBlock:
                 gebruik = (gm.get("gebruik") or "").strip()
                 override_name = override_name_lookup.get((med_clean, gebruik))
                 if override_name:
-                    gm["clean"] = override_name  # export should show override, not original
+                    gm["clean"] = override_name
 
-    db_comments = patient.comments.all()
-    comments_lookup = {c.jansen_group_id: c for c in db_comments}
+    grouped_meds = _merge_manual_comment_groups(grouped_meds, comments_lookup)
 
     return PdfPatientBlock(
         patient=patient,

@@ -1,0 +1,40 @@
+site_name: Apo Jansen App Documentatie
+theme:
+  name: material
+  language: nl
+  logo: assets/images/app_icon_white.png
+  favicon: assets/images/app_icon_white.png
+  palette:
+    scheme: default
+    primary: custom
+    accent: custom
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.follow
+    - content.code.copy
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Algemeen:
+    - Hosting & Infrastructuur: general/hosting.md
+    - Authenticatie: general/auth.md
+  - Features:
+    - Medicatiebeoordeling:
+      - Gebruikershandleiding: features/medicatiebeoordeling/user.md
+      - Technische Documentatie: features/medicatiebeoordeling/technical.md
+  - Compliance:
+    - Privacyverklaring: compliance/privacy.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - attr_list
+  - md_in_html

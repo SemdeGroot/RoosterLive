@@ -1,0 +1,13 @@
+:root {
+  --md-primary-fg-color:        #072a72;
+  --md-primary-fg-color--light: #16409e;
+  --md-primary-fg-color--dark:  #041a4a;
+  --md-primary-bg-color:        #ffffff;
+}
+
+/* Ronde hoeken voor het logo */
+.md-logo img,
+.md-header__button.md-logo img,
+.md-nav__title .md-logo img {
+  border-radius: 15%;
+}

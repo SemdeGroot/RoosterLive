@@ -201,6 +201,34 @@
 
       <div class="card-body">
 
+        <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+            <button type="button" id="toggleManualGroupForm" class="btn">
+              Jansen categorie toevoegen
+            </button>
+
+            <div id="manualGroupForm" style="display:none; min-width:360px;">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select
+                  name="manual_group_id"
+                  id="manualGroupSelect"
+                  class="django-select2-jansen admin-select"
+                  style="width:100%;"
+                >
+                  <option value="">Kies een Jansen categorie...</option>
+                  {% for cid, cname in manual_group_choices %}
+                    <option value="{{ cid }}">{{ cname }}</option>
+                  {% endfor %}
+                </select>
+
+                <button type="submit" name="action" value="add_manual_group" class="btn btn-save">
+                  Toevoegen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div style="display:flex; flex-direction:column; gap:32px;">
           {% for group_id, group_data in grouped_meds %}
             <div class="med-group" data-group-id="{{ group_id }}">

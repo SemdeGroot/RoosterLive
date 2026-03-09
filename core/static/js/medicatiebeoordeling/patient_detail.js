@@ -196,6 +196,21 @@ $(document).ready(function () {
       }
     });
   }
+
+  const toggleManualGroupBtn = document.getElementById("toggleManualGroupForm");
+  const manualGroupForm = document.getElementById("manualGroupForm");
+  const manualGroupSelect = document.getElementById("manualGroupSelect");
+
+  if (toggleManualGroupBtn && manualGroupForm) {
+    toggleManualGroupBtn.addEventListener("click", function () {
+      const isHidden = manualGroupForm.style.display === "none" || manualGroupForm.style.display === "";
+      manualGroupForm.style.display = isHidden ? "block" : "none";
+
+      if (isHidden && manualGroupSelect) {
+        $(manualGroupSelect).select2("open");
+      }
+    });
+  }
 });
 
 // ==========================================
