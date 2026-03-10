@@ -51,12 +51,7 @@ path(
             template_name='well_known/apple-app-site-association', 
             content_type='application/json'
         )
-    ),
-    path(
-        "privacyverklaring/",
-        never_cache(TemplateView.as_view(template_name="includes/privacyverklaring.html")),
-        name="privacyverklaring",
-    ),
+    )
 ]
 
 # Static alleen in DEBUG via Django (prod doet static via S3)

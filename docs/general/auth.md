@@ -1,22 +1,21 @@
 # Authenticatie, Autorisatie & Beveiliging
 
-Omdat de Apotheek Jansen App medische en bedrijfsgevoelige informatie bevat, maken we gebruik van een strikt beveiligingsmodel. We bepalen niet alleen *wie* mag inloggen, maar ook *wat* iemand mag zien en *waar* iemand zich bevindt.
+De Apotheek Jansen App bevat medische en bedrijfsgevoelige informatie en maakt daarom gebruik van een strikt beveiligingsmodel. Dit document beschrijft hoe we de toegang tot de app en de zichtbaarheid van gegevens binnen de app beheren.
 
-## Role-Based Access Control (RBAC) & Least Privilege
+## Toegangsbeheer op basis van rollen (RBAC)
 
-De applicatie maakt gebruik van een **Role-Based Access Control (RBAC)** systeem. Dit betekent dat toegangsrechten worden gekoppeld aan de specifieke rol of functie van een medewerker (zoals apotheker of assistent). 
+De applicatie maakt gebruik van **Role-Based Access Control (RBAC)**. De toegang tot gegevens is direct gekoppeld aan de specifieke functie van een medewerker (zoals apotheker, assistent of bezorger). 
 
-Wij hanteren hierbij strikt het principe van **Least Privilege** (minimale rechten):
-*   Een medewerker heeft standaard **geen toegang** tot gegevens, tenzij dit absoluut noodzakelijk is voor het uitvoeren van zijn of haar werk.
-*   De app toont alleen menu-items, modules en overzichten die voor de ingelogde gebruiker relevant zijn.
+- Een medewerker krijgt uitsluitend toegang tot modules en overzichten die noodzakelijk zijn voor de uitvoering van zijn of haar werkzaamheden (**Least Privilege**).
+- Autorisatierechten worden op serverniveau gevalideerd bij elke aanvraag.
 
-## Patiëntgegevens: Versleuteling & IP-Restrictie
+## Beveiliging van patiëntgegevens
 
-Wanneer we in specifieke modules (zoals de medicatiebeoordeling) werken met herleidbare patiëntgegevens, gelden er extra zware beveiligingsmaatregelen:
+Wanneer er binnen modules gewerkt wordt met herleidbare patiëntgegevens, gelden aanvullende beveiligingsmaatregelen:
 
-1.  **Versleutelde Opslag (Encryption at Rest)**: Gevoelige patiëntdata zoals namen en geboortedatums worden nooit als leesbare tekst in onze database bewaard. We slaan deze altijd **versleuteld** op. Mocht een onbevoegde ooit toegang krijgen tot de database, dan ziet hij of zij enkel onleesbare reeksen karakters.
-2.  **IP-Restrictie**: Pagina's waarop patiëntgegevens worden getoond, zijn uitsluitend toegankelijk vanaf geautoriseerde IP-adressen. Dit betekent in de praktijk dat je deze overzichten alleen kunt openen wanneer je fysiek bent verbonden met het beveiligde (bedrijfs)netwerk van Apotheek Jansen. Probeer je het thuis of onderweg? Dan blokkeert de app de toegang tot die specifieke pagina's.
+- **Versleutelde Opslag**: Gevoelige gegevens, zoals patiëntnamen en geboortedatums, worden versleuteld in de database bewaard. Zonder de juiste cryptografische sleutels zijn deze gegevens niet leesbaar op databaseniveau.
+- **IP-Restricties**: Pagina's die medische informatie bevatten, zijn uitsluitend toegankelijk vanaf het geautoriseerde interne netwerk van de apotheek. Toegang vanaf een externe locatie wordt voor deze onderdelen geblokkeerd.
 
 ## Interne API-beveiliging
 
-Naast de gebruikerslogin is de communicatie tussen onze hoofdapplicatie (de Django webserver op EC2) en de analyse-servers (AWS Lambda) beveiligd. Dit gebeurt via een gecodeerde `X-API-Key`. Hierdoor kunnen de servers veilig onderling data uitwisselen zonder risico op ongeautoriseerde toegang van buitenaf.
+Communicatie tussen de verschillende componenten van de app, zoals de Django webserver en de analyse-engine (AWS Lambda), is beveiligd via een statische `X-API-Key`. Hierdoor kunnen de servers onderling veilig data uitwisselen zonder risico op ongeautoriseerde toegang van buitenaf.
