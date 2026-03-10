@@ -18,4 +18,7 @@ Wanneer er binnen modules gewerkt wordt met herleidbare patiëntgegevens, gelden
 
 ## Interne API-beveiliging
 
-Communicatie tussen de verschillende componenten van de app, zoals de Django webserver en de analyse-engine (AWS Lambda), is beveiligd via een statische `X-API-Key`. Hierdoor kunnen de servers onderling veilig data uitwisselen zonder risico op ongeautoriseerde toegang van buitenaf.
+De beveiliging van de interne communicatie is gelaagd en afhankelijk van het type verbinding:
+
+- **Django naar Analyse-engine (AWS Lambda)**: Verzoeken tussen de webserver en de analyse-engine worden gevalideerd via een statische `X-API-Key`. Dit zorgt ervoor dat uitsluitend geautoriseerde verzoeken vanuit de applicatie door de engine worden verwerkt.
+- **AWS Infrastructuur**: De communicatie binnen de AWS-cloudomgeving (bijvoorbeeld tussen servers en databases) is beveiligd met **IAM-rollen**. Hierdoor heeft uitsluitend de geautoriseerde server toegang tot de specifieke data en bronnen, zonder dat er statische wachtwoorden of keys in de code nodig zijn.

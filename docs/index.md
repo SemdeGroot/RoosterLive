@@ -1,16 +1,16 @@
 # Welkom bij de documentatie van de Apotheek Jansen App
 
-Welkom! Op deze website vind je de handleidingen en technische details van de Apotheek Jansen App. We leggen hier uit hoe de verschillende onderdelen van de app werken en hoe de techniek achter de schermen is opgezet.
+Welkom! Op deze website vind je de handleidingen en technische details van de Apotheek Jansen App. Hier vind je uitleg over hoe de verschillende onderdelen van de app werken en hoe de techniek achter de schermen is opgezet.
 
 !!! info "Onder ontwikkeling"
-    Omdat de Apotheek Jansen App nog volop wordt uitgebreid, passen we deze documentatie regelmatig aan. Het kan voorkomen dat sommige nieuwe functies nog niet volledig zijn beschreven.
+    Omdat de Apotheek Jansen App nog volop wordt uitgebreid, wordt de documentatie regelmatig aangepast. Het kan voorkomen dat sommige functies nog niet volledig zijn beschreven.
 
 ## Wat is de Apo Jansen App?
 
-De Apo Jansen App is ontwikkeld om dagelijkse processen binnen de apotheek makkelijker te maken. De app bevat onder andere:
+De Apo Jansen App is ontwikkeld om dagelijkse processen binnen de apotheek makkelijker en efficiënter te maken. De app bevat onder andere:
 
 - Modules voor het uitvoeren van medicatiebeoordelingen.
-- Een chatbot voor interne vragen.
+- Een chatbot voor farmacotherapeutische vragen.
 - Modules voor baxterproductie.
 - Algemene functies zoals roosters, een agenda en nieuwsberichten.
 
@@ -18,7 +18,7 @@ De app is gebouwd als een **Progressive Web App (PWA)**. Dit betekent dat je de 
 
 ## Hoe gebruik je deze documentatie?
 
-De documentatie is verdeeld in onderwerpen die je in het menu aan de linkerkant kunt vinden. Voor de meeste onderdelen maken we een onderscheid tussen:
+De documentatie is verdeeld in onderwerpen die je in het menu kunt vinden. Voor de meeste onderdelen maken we een onderscheid tussen:
 
 - **Gebruikershandleidingen**: Praktische instructies voor het dagelijks gebruik van de app.
 - **Technische documentatie**: Achtergrondinformatie over de architectuur en de data voor beheerders en ontwikkelaars.

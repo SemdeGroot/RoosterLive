@@ -2,14 +2,14 @@
 
 De Apotheek Jansen App wordt gehost op Amazon Web Services (AWS) en is ontworpen om medische en bedrijfsgegevens veilig en betrouwbaar te verwerken.
 
-## Technologie-keuze
+## Technologie
 
 De app is opgebouwd als een **Progressive Web App (PWA)**. Gebruikers kunnen de app direct via de browser op hun telefoon of computer installeren voor een app-achtige ervaring.
 
 - **Backend**: Python (Django framework) voor de hoofdapplicatie en FastAPI voor de microservices.
 - **Frontend**: HTML, CSS en JavaScript met een server-rendered opzet voor eenvoud, snelheid en role-based access control.
 
-## Belangrijke AWS Componenten
+## Infrastructuur
 
 ### Applicatieserver (AWS EC2)
 De kern van de Django-applicatie draait op een AWS EC2-instantie. Hierop worden webrequests afgehandeld door een Nginx webserver. Op deze server draaien ook:

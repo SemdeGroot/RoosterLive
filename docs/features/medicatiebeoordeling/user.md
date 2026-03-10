@@ -13,7 +13,7 @@ Volg deze stappen om een lijst te controleren:
 
 1.  **Selecteer de instellingen**: 
 
-    - Kies het bronsysteem (momenteel Medimo). Ondersteuning voor Pharmacom-exports is in ontwikkeling.
+    - Kies het bronsysteem (momenteel alleen Medimo). Ondersteuning voor Pharmacom-exports is in ontwikkeling.
     - Kies de scope: een afdelingslijst (meerdere patiënten) of een individuele patiënt.
 
 2.  **Kopieer de tekst uit het AIS**:
@@ -23,7 +23,7 @@ Volg deze stappen om een lijst te controleren:
 3.  **Plakken en Analyseren**: 
 
     - Plak de tekst in het invoerveld.
-    - Bij individuele patiënten is het aan te raden de geboortedatum handmatig in te vullen voor een correcte analyse.
+    - Vul bij individuele patiënten de naam en geboortedatum in zoals ze in Medimo staan.
     - Klik op 'Analyseer'.
 
 ---
@@ -49,18 +49,24 @@ Indien een medicijnnaam niet correct wordt herkend of in een verkeerde categorie
 3. Klik op opslaan om de wijziging direct door te voeren in de analyse en exports.
 
 ### Bevindingen en Historie vastleggen
-Gebruik de tekstvakken voor klinische opmerkingen. Deze notities worden opgeslagen. Bij een volgende beoordeling van dezelfde patiënt zie je eerdere opmerkingen terug onder het veld **Historie**.
+Gebruik de tekstvakken voor klinische opmerkingen. Deze notities worden opgeslagen. Bij een volgende beoordeling van dezelfde patiënt zie je eerdere opmerkingen terug onder het veld **Historie** van die Jansen categorie.
 
 ---
 
 ## 4. Resultaten Exporteren
 
-Het overzicht kan worden geëxporteerd voor het patiëntendossier of overleg met de arts:
+Het overzicht kan worden geëxporteerd voor overleg met de arts:
 
 - **Word-document (.docx)**: Voor handmatige aanpassingen in het definitieve document.
 - **PDF-document**: Voor een onwijzigbaar verslag.
 
-Alle aanpassingen en opmerkingen worden automatisch meegenomen in de export.
+Alle aanpassingen en opmerkingen die in de app zijn ingevoerd, worden automatisch meegenomen in de export.
+
+!!! warning "Documentatie in de app"
+    Hoewel het mogelijk is om handmatige aanpassingen te doen in een geëxporteerd Word-document, worden deze wijzigingen **niet** teruggestuurd naar de Apo Jansen App. Dit betekent dat dergelijke aantekeningen niet zichtbaar zijn in de **Historie** bij een volgende beoordeling van de patiënt. 
+
+    Het is daarom aanbevolen om alle bevindingen en opmerkingen direct in de app te documenteren. Zo hoeft u bij toekomstige controles niet in oude documenten te zoeken naar eerdere besluitvorming.
+
 
 ---
 
@@ -82,12 +88,12 @@ Elke vraag heeft een basisvoorwaarde (Primary Trigger) nodig.
 Met de "AND" regel voeg je een extra vereiste toe. Deze regel slaagt alleen als er een **ander, uniek medicijn** op de lijst staat dat aan de voorwaarde voldoet.
 
 - **Meerdere codes binnen één regel (OF-voorwaarde)**: De patiënt moet naast de hoofdtrigger minimaal één van deze andere middelen gebruiken.
-    - *Voorbeeld*: Trigger = `C03C (Lisdiuretica, bijv. Furosemide)`. Je voegt één AND-regel toe met `C07 (Bètablokkers)` en `C09 (RAS-remmers)`. De vraag verschijnt alleen als de patiënt Furosemide gebruikt **EN** daarnaast nog een ander medicijn heeft uit de groep bètablokkers of RAS-remmers.
+    - *Voorbeeld*: Trigger = `C03C (Lisdiuretica, bijv. Furosemide)`. Je voegt één AND-regel toe met `C07 (Bètablokkers)` en `C09 (RAS-remmers)`. De vraag verschijnt alleen als de patiënt Furosemide gebruikt **EN** daarnaast nog een ander medicijn heeft uit de groep bètablokkers **OF** RAS-remmers.
 - **Meerdere aparte AND-regels (EN-voorwaarde)**: De patiënt moet aan alle regels tegelijk voldoen met steeds verschillende medicijnen.
     - *Voorbeeld*: Trigger = `C03C (Lisdiuretica)`. Je maakt regel 1 met `C07 (Bètablokkers)` en regel 2 met `C09 (RAS-remmers)`. De vraag verschijnt nu alleen als de patiënt middelen uit **alle drie** de groepen tegelijk op zijn lijst heeft staan.
 
 **C. Uitsluiting / "AND_NOT" (Wanneer moet de vraag verborgen worden?)**
-De "AND_NOT" regel werkt als een "veto". Zodra een patiënt een medicijn gebruikt dat in deze lijst staat, wordt de vraag direct geblokkeerd.
+De "AND_NOT" regel werkt als een uitsluiting. Zodra een patiënt een medicijn gebruikt dat in deze lijst staat, wordt de vraag niet weergegeven.
 
 - **Codes binnen de regel (OF-voorwaarde)**: Als er ook maar één middel uit deze lijst aanwezig is, verdwijnt de vraag.
     - *Voorbeeld (Maagbescherming bij NSAID)*: Trigger = `M01A (NSAID's)`. Je voegt één AND_NOT regel toe met `A02BC (Protonpompremmers)` en `A02BA (H2-antagonisten)`. Gebruikt de patiënt Omeprazol **OF** Famotidine? Dan is de maag al beschermd en wordt de vraag verborgen.

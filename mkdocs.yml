@@ -20,8 +20,8 @@ extra_css:
 nav:
   - Home: index.md
   - Algemeen:
-    - Hosting & Infrastructuur: general/hosting.md
     - Authenticatie: general/auth.md
+    - Hosting & Infrastructuur: general/hosting.md
   - Features:
     - Medicatiebeoordeling:
       - Gebruikershandleiding: features/medicatiebeoordeling/user.md
