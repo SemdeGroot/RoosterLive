@@ -86,9 +86,6 @@ nav:
       - Gebruikers: features/baxterproductie/laatstepotten/user.md
       - Technisch: features/baxterproductie/laatstepotten/technical.md
   - Openbare Apotheek:
-    - Review planner:
-      - Gebruikers: features/openbare-apo/reviewplanner/user.md
-      - Technisch: features/openbare-apo/reviewplanner/technical.md
     - ApoGPT:
       - Gebruikers: features/openbare-apo/apogpt/user.md
       - Technisch: features/openbare-apo/apogpt/technical.md
@@ -102,9 +99,6 @@ nav:
     - Review planner:
       - Gebruikers: features/instellingsapotheek/reviewplanner/user.md
       - Technisch: features/instellingsapotheek/reviewplanner/technical.md
-    - ApoGPT:
-      - Gebruikers: features/instellingsapotheek/apogpt/user.md
-      - Technisch: features/instellingsapotheek/apogpt/technical.md
     - Portavita check:
       - Gebruikers: features/instellingsapotheek/portavitacheck/user.md
       - Technisch: features/instellingsapotheek/portavitacheck/technical.md
