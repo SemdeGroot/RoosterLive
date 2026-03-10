@@ -1,55 +1,35 @@
-# STS Halfjes (Technisch)
+# STS-halfjes (Technisch)
 
-De STS Halfjes module registreert geneesmiddelen die onnodig gehalveerd worden in het baxterproces. De module faciliteert rapportage en communicatie hierover naar de betreffende apotheken.
+De module STS-halfjes registreert onnodig gehalveerde geneesmiddelen in baxterrollen en ontsluit deze voor externe organisaties.
 
-## Architectuur en Gegevensmodel
+## Technisch ontwerp
+De module combineert database-registratie met PDF-generatie en asynchrone distributie per organisatie. De architectuur is ontworpen om meldingen per apotheek te groeperen en deze geautomatiseerd te verzenden.
 
-### Model: `STSHalfje`
-Het model bevindt zich in `core/models.py`.
+## Datamodel
+- `STSHalfje`:
+    - `afdeling`: Vrij tekstveld voor de bronafdeling.
+    - `item_gehalveerd`: ForeignKey naar `VoorraadItem` (medicijn dat gehalveerd wordt).
+    - `item_alternatief`: ForeignKey naar `VoorraadItem` (alternatieve sterkte).
+    - `apotheek`: ForeignKey naar `Organization` (doelorganisatie).
+    - `patient_naam_enc`: Versleutelde patiëntnaam (`EncryptedCharField`).
+    - `patient_geboortedatum_enc`: Versleutelde patiëntgeboortedatum (`EncryptedDateField`).
 
+## Implementatiedetails
+- **CRUD**: De view `stshalfjes` in `core/views/stshalfjes.py` beheert de registratie en wijzigingen via `STSHalfjeForm`.
+- **PDF Export**: Maakt gebruik van de helper `_render_pdf` (WeasyPrint) om de template `stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html` te converteren.
+- **Email Distributie**: De task `send_stshalfjes_pdf_task` verstuurt alleen die meldingen naar een apotheek die expliciet aan die apotheek gekoppeld zijn.
 
-- `afdeling`: CharField voor de afdeling van de patiënt.
-- `item_gehalveerd`: ForeignKey naar `VoorraadItem` (gehalveerd middel).
-- `item_alternatief`: ForeignKey naar `VoorraadItem` (alternatieve sterkte).
-- `apotheek`: ForeignKey naar `Organization` (eigenaar van de melding).
-- `patient_naam_enc` en `patient_geboortedatum_enc`: Versleutelde velden voor patiëntgegevens via `EncryptedCharField` en `EncryptedDateField`.
+## Autorisatie en beveiliging
+- Toegang tot de pagina is beveiligd met `@ip_restricted` en `@login_required`.
+- Rechten worden gecontroleerd via:
+    - `can_view_baxter_sts_halfjes`: Bekijken.
+    - `can_edit_baxter_sts_halfjes`: Wijzigen.
+    - `can_send_baxter_sts_halfjes`: Export en verzending.
+- Patiëntgegevens worden versleuteld in de database opgeslagen om aan privacy-eisen te voldoen.
 
-### Views
-De logica is ondergebracht in `core/views/stshalfjes.py`.
-
-
-- `stshalfjes(request)`: Hoofdpagina voor weergave en beheer via `STSHalfjeForm`.
-- `export_stshalfjes_pdf(request)`: Genereert PDF-export van (gefilterde) meldingen.
-- `email_stshalfjes_pdf(request)`: Start de Celery-task voor e-mailverzending.
-
-## Verzending en PDF-generatie
-
-### Celery Task: `send_stshalfjes_pdf_task`
-De verzending verloopt via `core/tasks/emails.py`. De workflow is:
-
-
-1.  **Iteratie**: Per `Organization ID` wordt een PDF gegenereerd.
-2.  **Filtering**: Meldingen worden gefilterd op `apotheek_id`.
-3.  **PDF Creatie**: De PDF wordt opgebouwd met template `stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html` via de `_render_pdf` helper.
-4.  **E-mail Dispatcher**: Signaal naar `email_dispatcher_task` met type `stshalfjes_single`.
-5.  **Verwijdering**: Na succesvolle verzending roept de dispatcher `delete_stshalfjes_by_ids(item_ids)` aan.
-
-### Verwijderingslogica
-De functie `delete_stshalfjes_by_ids` in `core/utils/emails/stshalfjes_email.py` verwijdert records uitsluitend na bevestiging van succesvolle e-mailverwerking.
-
-## Beveiliging en Autorisatie
-
-- **Toegang**: Beveiligd met `@ip_restricted` en `@login_required`.
-- **Permissies**:
-    - `can_view_baxter_sts_halfjes`: Inzien van de lijst.
-    - `can_edit_baxter_sts_halfjes`: Toevoegen, bewerken en handmatig verwijderen.
-    - `can_send_baxter_sts_halfjes`: Exporteren en e-mailen van rapportages.
-- **Encryptie**: Patiëntgegevens zijn versleuteld opgeslagen op database-niveau.
-
-## Bestanden
-
-- **Backend**: `core/models.py`, `core/views/stshalfjes.py`, `core/forms.py`
-- **Taken**: `core/tasks/emails.py`, `core/tasks/email_dispatcher.py`
-- **Utility**: `core/utils/emails/stshalfjes_email.py`
-- **Templates**: `core/templates/stshalfjes/index.html`, `core/templates/stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html`
-- **Static**: `core/static/css/stshalfjes/stshalfjes.css`, `core/static/js/stshalfjes/stshalfjes.js`
+## Relevante bestanden
+- `core/models.py`: Het `STSHalfje` model.
+- `core/views/stshalfjes.py`: De hoofdview en export-functionaliteit.
+- `core/tasks.py`: De Celery-task voor verzending.
+- `core/forms.py`: Het `STSHalfjeForm`.
+- `core/templates/stshalfjes/`: Interface en PDF-layouts.
