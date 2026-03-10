@@ -1,6 +1,7 @@
-site_name: Apo Jansen App Documentatie
+site_name: Apo Jansen App Docs
 theme:
   name: material
+  custom_dir: docs/overrides
   language: nl
   logo: assets/images/app_icon_white.png
   favicon: assets/images/app_icon_white.png

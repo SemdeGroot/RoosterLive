@@ -1,6 +1,6 @@
-# Team (Wie is wie?) (Technisch)
+# Team (Technisch)
 
-De module Team (Who is Who) biedt een overzicht van de medewerkers die werkzaam zijn bij Apotheek Jansen. De focus ligt op het ontsluiten van actieve profielen vanuit de database.
+De module Team biedt een overzicht van de medewerkers die werkzaam zijn bij Apotheek Jansen. De focus ligt op het ontsluiten van actieve profielen vanuit de database.
 
 ## Technisch ontwerp
 De module is onderdeel van de `core` app en ontsluit gegevens uit de profielen- en functietabellen. De architectuur is gebaseerd op een standaard Django view die een gefilterde queryset naar een template stuurt, waarbij de filtering op de client-side wordt afgehandeld voor een snelle gebruikerservaring.

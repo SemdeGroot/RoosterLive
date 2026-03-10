@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block htmltitle %}
+  {% if page and page.parent and page.title in ("Gebruikers", "Technisch") %}
+    <title>{{ page.parent.title }} ({{ page.title }}) - {{ config.site_name }}</title>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
