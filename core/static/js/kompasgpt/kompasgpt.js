@@ -94,7 +94,7 @@
 
   function thinkingHtml() {
     return `
-      <span class="kgpt-thinking" aria-label="KompasGPT is aan het denken">
+      <span class="kgpt-thinking" aria-label="ApoGPT is aan het denken">
         <span class="kgpt-dot"></span>
         <span class="kgpt-dot"></span>
         <span class="kgpt-dot"></span>
@@ -132,7 +132,7 @@
     const wrap = document.createElement("div");
     wrap.className = "kgpt-msg kgpt-assistant kgpt-typing";
     wrap.innerHTML = `
-      <div class="kgpt-meta">KompasGPT</div>
+      <div class="kgpt-meta">ApoGPT</div>
       <div class="kgpt-bubble kgpt-bubble-assistant">
         ${thinkingHtml()}
       </div>
@@ -205,7 +205,7 @@
     const wrap = document.createElement("div");
     wrap.className = "kgpt-msg kgpt-assistant";
     wrap.innerHTML = `
-      <div class="kgpt-meta">KompasGPT</div>
+      <div class="kgpt-meta">ApoGPT</div>
       <div class="kgpt-bubble kgpt-bubble-assistant">
         <div class="kgpt-md js-md"></div>
       </div>
