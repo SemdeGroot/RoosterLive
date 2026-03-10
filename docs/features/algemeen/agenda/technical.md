@@ -18,7 +18,7 @@ De module is opgebouwd uit de volgende onderdelen:
 
 - **WebCal Feed**: Via `core/views/diensten_webcal.py` wordt een ICS-feed gegenereerd die alle actieve agendapunten ontsluit voor externe agenda-applicaties.
 - **Push Notificaties**: Bij het toevoegen van een nieuw agendapunt kan de Celery-task `send_agenda_uploaded_push_task` worden aangeroepen om gebruikers te informeren.
-- **Caching**: Voor een snelle weergave worden agendapunten vaak gecachet in de frontend componenten (bijv. in dashboard-tegels).
+- **Caching**: Voor een snelle weergave en ontlasting van de database worden .ics bestanden in **Redis** gecachet.
 
 ## Autorisatie en beveiliging
 De volgende Django permissies zijn van toepassing op deze module:

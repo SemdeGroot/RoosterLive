@@ -1,7 +1,7 @@
 # Beschikbaarheid (Gebruiker)
 
 ## Doel van de module
-Het doel van de Beschikbaarheid module is om medewerkers van de **Apotheek Jansen App** de mogelijkheid te bieden hun beschikbaarheid voor werk door te geven. Dit stelt de planners in staat om een evenwichtig en efficiënt rooster te maken.
+Het doel van de Beschikbaarheid module is om medewerkers van **Apotheek Jansen** de mogelijkheid te bieden hun beschikbaarheid voor werk door te geven. Dit stelt de planners in staat om efficiënt een rooster op te stellen en vermindert de noodzaak voor afstemming via externe kanalen zoals WhatsApp.
 
 ## Wat kun je met deze module?
 Met deze module kun je:

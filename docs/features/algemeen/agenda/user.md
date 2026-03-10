@@ -6,7 +6,7 @@ Het doel van de Agenda module is om medewerkers van de **Apotheek Jansen App** o
 ## Wat kun je met deze module?
 Met deze module kun je:
 
-- Belangrijke data en evenementen inzien via het dashboard.
+- Belangrijke agendapunten en evenementen inzien.
 - Details bekijken van specifieke agendapunten, zoals de start- en eindtijd.
 - De agenda synchroniseren met je eigen persoonlijke kalender op je telefoon of computer via een WebCal-koppeling.
 - Onderscheid maken tussen verschillende categorieën, zoals "Algemeen" en "Uitje".
@@ -17,7 +17,7 @@ De agenda is direct zichtbaar op het hoofdscherm van de applicatie in de vorm va
 1. Navigeer naar de Agenda via het hoofdmenu of de dashboardtegel.
 2. Bekijk de lijst met aankomende evenementen gesorteerd op datum.
 3. Klik op een evenement voor meer informatie.
-4. Gebruik de link in je profielinstellingen om de agenda te synchroniseren met je eigen agenda-applicatie (zoals Outlook, Google Calendar of Apple Calendar).
+4. Klik op "Synchroniseer agenda" om de agenda te synchroniseren met je eigen agenda-applicatie (zoals Outlook, Google Calendar of Apple Calendar).
 
 ## Bijzonderheden
 - Alleen gebruikers met de juiste rechten kunnen nieuwe agendapunten toevoegen of bestaande punten wijzigen.

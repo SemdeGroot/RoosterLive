@@ -16,7 +16,7 @@ De belangrijkste velden van het `NewsItem` model zijn:
 ## Implementatiedetails
 De module is opgebouwd uit de volgende componenten:
 
-- **Bestandsbeheer**: Bestanden worden opgeslagen in een specifieke directory binnen de `MEDIA_ROOT`. Voor PDF-bestanden wordt vaak een preview gegenereerd en gecachet in de `CACHE_DIR`.
+- **Bestandsbeheer**: Bij het uploaden worden bestanden naar het WebP-formaat geconverteerd en opgeslagen in AWS S3.
 - **Opschoning**: In `core/views/news.py` bevindt zich de functie `_cleanup_expired_news`, die periodiek wordt aangeroepen om berichten ouder dan 3 maanden te verwijderen (inclusief bijbehorende bestanden).
 - **Push Notificaties**: Bij het opslaan van een nieuw `NewsItem` wordt de taak `send_news_uploaded_push_task` gestart om push-notificaties te versturen naar alle geregistreerde apparaten.
 

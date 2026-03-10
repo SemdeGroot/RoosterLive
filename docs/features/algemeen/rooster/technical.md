@@ -22,7 +22,7 @@ De belangrijkste modellen zijn:
 ## Implementatiedetails
 De module bevat logica voor de volgende processen:
 
-- **PDF Verwerking**: Bij het uploaden van een rooster wordt de PDF door een script (of task) verwerkt. Hierbij wordt elke pagina omgezet naar een geoptimaliseerd afbeeldingsformaat (meestal WebP of PNG) en opgeslagen in de `MEDIA_ROOT`.
+- **PDF Verwerking**: Bij het uploaden van een rooster wordt de PDF door een script verwerkt. Hierbij wordt elke pagina naar het WebP-formaat geconverteerd en opgeslagen in AWS S3.
 - **Weeknavigatie**: Roosters worden gesorteerd op de startdatum van de week (maandag). De applicatie bepaalt op basis van de huidige datum welk `RosterWeek` object als standaard moet worden getoond.
 - **Deduplicatie**: Door gebruik te maken van bestandshashes wordt voorkomen dat dezelfde bestanden onnodig dubbel worden opgeslagen.
 

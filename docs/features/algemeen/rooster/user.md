@@ -21,6 +21,6 @@ Het rooster is een centraal onderdeel van de applicatie en is vaak direct zichtb
 4. Klik op de rooster-weergave om een vergroting of de volledige PDF te bekijken.
 
 ## Bijzonderheden
-- Roosters worden vaak geüpload als PDF-bestand en door het systeem automatisch omgezet naar afbeeldingen (PNG/WebP) voor een optimale weergave op mobiele apparaten.
+- Roosters worden geüpload als PDF-bestand en door het systeem automatisch geconverteerd naar het WebP-formaat voor een optimale en snelle weergave op alle apparaten.
 - Er wordt per week een overzicht bijgehouden, waarbij de maandag van de betreffende week als startpunt dient.
-- Zodra een nieuw rooster is geüpload, worden alle medewerkers hiervan op de hoogte gesteld via een push-notificatie.
+- Zodra een nieuw rooster is geüpload, worden medewerkers hiervan op de hoogte gesteld via een push-notificatie.
