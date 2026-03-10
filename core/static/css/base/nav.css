@@ -253,7 +253,9 @@
       "header header"
       "sidebar content"
       "footer footer";
-    min-height:100dvh;
+    height:100dvh;
+    max-height:100dvh;
+    overflow:hidden;
     transition:grid-template-columns .22s cubic-bezier(.4,0,.2,1);
   }
 
@@ -334,6 +336,10 @@
     padding-left:14px;
     padding-right:14px;
   }
+
+  /* scroll-indicator verbergen als sidebar ingeklapt is; scrollen blijft werken */
+  html:not(.sidebar-open) .sidebar-nav{ scrollbar-width:none; }
+  html:not(.sidebar-open) .sidebar-nav::-webkit-scrollbar{ display:none; }
 }
 
 /* ---- Forceer: active link blijft active (ook bij summary caret tap op mobile) ---- */

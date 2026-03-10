@@ -8,7 +8,7 @@
     isCapacitor;
 
   if (!isStandalone) {
-    return; 
+    return;
   }
 
   const ptr = document.getElementById('pull-to-refresh');
@@ -17,6 +17,7 @@
   const dots = Array.from(ptr.querySelectorAll('.ptr-dot'));
   const app = document.querySelector('.app');
   const body = document.body;
+  const content = document.querySelector('.content'); // cached
 
   let startY = 0;
   let pulling = false;
@@ -26,39 +27,31 @@
   const PULL_THRESHOLD = 220;   // hoeveel je moet pullen
   const MAX_VISUAL_PULL = 90;   // hoe ver de indicator visueel naar beneden komt
   const REFRESH_OFFSET = 90;    // zelfde positie aanhouden tijdens refresh
+  const CONTENT_PUSH_MAX = 40;  // max px de content mee naar beneden schuift
 
   // ============================
   //  SENTINEL: "bovenaan" detectie
   // ============================
-  let sentinelVisible = true; // fallback: liever wél PTR aan de top als er iets misgaat
+  let sentinelVisible = true;
 
   (function setupSentinel() {
-    const content = document.querySelector('main.content');
-    if (!content) return; // fallback: dan doen we het zonder sentinel
+    if (!content) return;
 
-    // klein onzichtbaar element bovenaan de content
     const sentinel = document.createElement('div');
     sentinel.setAttribute('data-ptr-sentinel', 'true');
-    sentinel.style.position = 'relative';
-    sentinel.style.width = '1px';
-    sentinel.style.height = '1px';
-    sentinel.style.margin = '0';
-    sentinel.style.padding = '0';
-    sentinel.style.opacity = '0';
-    sentinel.style.pointerEvents = 'none';
+    // position:absolute zodat hij NIET als grid-item meedoet (geen extra rij + gap)
+    sentinel.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
 
-    // als eerste kind van .content
     content.insertBefore(sentinel, content.firstChild);
 
-    // observer die bijhoudt of de sentinel in beeld is
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         sentinelVisible = !!entry.isIntersecting && entry.intersectionRatio > 0;
       },
       {
-        root: null,          // viewport
-        threshold: 0.01      // zodra hij maar een beetje in beeld is
+        root: null,
+        threshold: 0.01
       }
     );
 
@@ -77,14 +70,12 @@
       const Haptics = Cap?.Plugins?.Haptics;
 
       if (isNative && Haptics && typeof Haptics.impact === "function") {
-        await Haptics.impact({ style: "LIGHT" }); // of "MEDIUM"
+        await Haptics.impact({ style: "LIGHT" });
         return;
       }
-    } catch (_) {
-      // fall through naar web fallback
-    }
+    } catch (_) {}
 
-    // 2) Web/PWA fallback (ongewijzigd)
+    // 2) Web/PWA fallback
     if (navigator.vibrate) {
       navigator.vibrate(40);
       return;
@@ -110,7 +101,6 @@
   }
 
   function updateDotsByProgress(progress) {
-    // progress: 0–1 → aantal actieve dots
     const count = Math.round(progress * dots.length);
     dots.forEach((dot, i) => {
       dot.classList.toggle('active', i < count);
@@ -120,19 +110,22 @@
   function setProgress(dy) {
     const clamped = Math.max(0, dy);
     const visual = Math.min(clamped, MAX_VISUAL_PULL);
-    const progress = Math.min(clamped / PULL_THRESHOLD, 1); // 0–1
+    const progress = Math.min(clamped / PULL_THRESHOLD, 1);
 
-    // verticale positie en zichtbaarheid
     ptr.style.setProperty('--ptr-translate', `${visual}px`);
     ptr.style.setProperty(
       '--ptr-opacity',
       Math.min(1, clamped / 40).toString()
     );
 
-    // dots vullen per stap
     updateDotsByProgress(progress);
 
-    // "tikje" als de drempel voor het eerst wordt gehaald
+    // Schuif de content proportioneel mee voor vloeiende PTR-feedback
+    if (content) {
+      const push = Math.min(progress * CONTENT_PUSH_MAX, CONTENT_PUSH_MAX);
+      content.style.transform = `translateY(${push}px)`;
+    }
+
     if (progress >= 1 && !wasArmed) {
       wasArmed = true;
       hapticTick();
@@ -151,12 +144,10 @@
     ptr.style.setProperty('--ptr-opacity', '0');
     dots.forEach((dot) => dot.classList.remove('active'));
 
-    if (app) {
-      app.classList.remove('ptr-shift-down');
-    }
-
-    if (body) {              
-      body.classList.remove('ptr-panel-bg');
+    if (content) {
+      content.classList.remove('ptr-shift-down');
+      content.style.transition = ''; // herstel CSS-transitie
+      content.style.transform = '';  // spring terug naar 0 (via CSS-transitie)
     }
   }
 
@@ -167,11 +158,25 @@
 
       const target = e.target;
 
-      // Nooit PTR starten op form-controls
       if (target.closest('input, textarea, select, [contenteditable="true"]')) {
         return;
       }
 
+      let el = target;
+      let isInnerScrolled = false;
+      while (el && el !== document.body && el !== document.documentElement) {
+        if (el.scrollTop > 0) {
+          isInnerScrolled = true;
+          break;
+        }
+        el = el.parentElement;
+      }
+
+      if (content && content.scrollTop > 0) {
+        isInnerScrolled = true;
+      }
+
+      if (isInnerScrolled) return;
       if (!sentinelVisible) return;
 
       startY = e.touches[0].clientY;
@@ -180,6 +185,7 @@
       wasArmed = false;
 
       ptr.style.transition = 'none';
+      if (content) content.style.transition = 'none'; // geen transitie tijdens drag
       setProgress(0);
     },
     { passive: true }
@@ -192,7 +198,6 @@
 
       const target = e.target;
 
-      // Extra veiligheid: tijdens move ook niet rommelen met form-controls
       if (target.closest('input, textarea, select, [contenteditable="true"]')) {
         return;
       }
@@ -215,28 +220,22 @@
     if (!pulling) return;
 
     ptr.style.transition = 'transform 0.18s ease-out, opacity 0.18s ease-out';
+    if (content) content.style.transition = ''; // herstel CSS-transitie voor animatie
 
     if (maxPull >= PULL_THRESHOLD) {
-      // Drempel gehaald → dots worden spinner
       ptr.classList.add('refreshing');
       ptr.style.setProperty('--ptr-translate', `${REFRESH_OFFSET}px`);
       ptr.style.setProperty('--ptr-opacity', '1');
       dots.forEach((dot) => dot.classList.remove('active'));
 
-      // hele app (header + content) een beetje omlaag
-      if (app) {
-        app.classList.add('ptr-shift-down');
+      if (content) {
+        // inline transform houdt de content op 60px terwijl de pagina herlaadt
+        content.style.transform = `translateY(60px)`;
       }
 
-      // body-top vlak in kleur var(--panel)
-      if (body) {
-        body.classList.add('ptr-panel-bg');
-      }
-
-      // kleine delay zodat spinner + shift zichtbaar zijn
       setTimeout(() => {
         window.location.reload();
-      }, 2500); // tijd van animatie
+      }, 2500);
     } else {
       resetPTR();
     }

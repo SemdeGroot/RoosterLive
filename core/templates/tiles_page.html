@@ -6,6 +6,7 @@
 {% block header_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+<div class="admin-wrap">
 <div class="card" style="padding:16px;">
   {% if intro %}
     <h3 style="margin-top:0;">{{ intro }}</h3>
@@ -31,5 +32,6 @@
       </a>
     {% endfor %}
   </div>
+</div>
 </div>
 {% endblock %}

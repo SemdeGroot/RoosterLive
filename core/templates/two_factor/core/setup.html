@@ -12,7 +12,8 @@
 {% endblock %}
 
 {% block content %}
-  <h1 style="text-align:center; font-size: 30px;">{% trans "2FA instellen" %}</h1>
+<div class="admin-wrap">
+<h1 style="text-align:center; font-size: 30px;">{% trans "2FA instellen" %}</h1>
     <p class="muted" style="font-size: 15.5px; margin-top: -5px;">
       Scan deze QR-code met een authenticator-app (bijv. <span id="gaStoreLink" class="muted">Google Authenticator</span>) en vul daarna de 6-cijferige code in.
     </p>
@@ -55,4 +56,5 @@
       <button class="btn btn-save" type="submit" style="padding: 12px;" data-haptic>{% trans "Bevestigen" %}</button>
     </form>
   </div>
+</div>
 {% endblock %}

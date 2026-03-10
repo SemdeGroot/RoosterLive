@@ -17,6 +17,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="admin-wrap">
 <form method="post">
   {% csrf_token %}
 
@@ -463,6 +464,7 @@
 
   </div>
 </form>
+</div>
 {% endblock %}
 
 {% block extra_js %}

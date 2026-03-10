@@ -4,7 +4,7 @@
   --ptr-opacity: 0;
 
   position: fixed;
-  top: 0;
+  top: 70px; /* Shift it down so it is visible below the sticky header (which is typically around 60-70px tall) */
   left: 0;
   right: 0;
   height: 64px;
@@ -19,7 +19,7 @@
   opacity: var(--ptr-opacity);
   transition: transform 0.18s ease-out, opacity 0.18s ease-out;
   pointer-events: none;
-  z-index: 1;
+  z-index: 999; /* Below the header, but above the content */
 }
 
 /* Cirkelhouder */
@@ -112,14 +112,6 @@
 @keyframes ptr-ring-rotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
-}
-
-/* Alleen tijdens refresh — body-topvlak wordt identiek aan de header */
-body.ptr-panel-bg {
-  background:var(--panel) !important;
-
-  /* Hoogte van de “header extension” */
-  background-size: 40px !important;
 }
 
 /* Zorg dat de PTR-indicator nooit taps blokkeert */

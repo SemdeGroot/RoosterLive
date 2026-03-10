@@ -12,8 +12,8 @@
 {% endblock %}
 
 {% block content %}
-
-  {# ========= Capacitor (Native) → BIOMETRIE ========= #}
+<div class="admin-wrap">
+{# ========= Capacitor (Native) → BIOMETRIE ========= #}
   <section id="biometricSetupSection" class="passkey-setup" style="display:none;">
     <h1 style="text-align:center;">Snel inloggen met biometrie</h1>
     <p class="twofa-logintext muted">
@@ -168,4 +168,5 @@
     if (skipBtn) skipBtn.addEventListener("click", handleSkip);
   });
   </script>
+</div>
 {% endblock %}
