@@ -22,10 +22,125 @@ nav:
   - Algemeen:
     - Authenticatie: general/auth.md
     - Hosting & Infrastructuur: general/hosting.md
-  - Features:
+    - Agenda:
+      - Gebruikers: features/algemeen/agenda/user.md
+      - Technisch: features/algemeen/agenda/technical.md
+    - Nieuws:
+      - Gebruikers: features/algemeen/nieuws/user.md
+      - Technisch: features/algemeen/nieuws/technical.md
+    - Rooster:
+      - Gebruikers: features/algemeen/rooster/user.md
+      - Technisch: features/algemeen/rooster/technical.md
+    - Beschikbaarheid:
+      - Gebruikers: features/algemeen/beschikbaarheid/user.md
+      - Technisch: features/algemeen/beschikbaarheid/technical.md
+    - Profiel:
+      - Gebruikers: features/algemeen/profiel/user.md
+      - Technisch: features/algemeen/profiel/technical.md
+  - Personeel:
+    - Teamdashboard:
+      - Gebruikers: features/personeel/teamdashboard/user.md
+      - Technisch: features/personeel/teamdashboard/technical.md
+    - Diensten:
+      - Gebruikers: features/personeel/diensten/user.md
+      - Technisch: features/personeel/diensten/technical.md
+    - Uren doorgeven:
+      - Gebruikers: features/personeel/urendoorgeven/user.md
+      - Technisch: features/personeel/urendoorgeven/technical.md
+    - Ziek melden:
+      - Gebruikers: features/personeel/ziekmelden/user.md
+      - Technisch: features/personeel/ziekmelden/technical.md
+    - Inschrijven:
+      - Gebruikers: features/personeel/inschrijven/user.md
+      - Technisch: features/personeel/inschrijven/technical.md
+    - Werkafspraken:
+      - Gebruikers: features/personeel/werkafspraken/user.md
+      - Technisch: features/personeel/werkafspraken/technical.md
+  - Onboarding:
+    - Team:
+      - Gebruikers: features/onboarding/team/user.md
+      - Technisch: features/onboarding/team/technical.md
+    - Formulieren:
+      - Gebruikers: features/onboarding/formulieren/user.md
+      - Technisch: features/onboarding/formulieren/technical.md
+    - Checklist:
+      - Gebruikers: features/onboarding/checklist/user.md
+      - Technisch: features/onboarding/checklist/technical.md
+  - Baxterproductie:
+    - Voorraad:
+      - Gebruikers: features/baxter/voorraad/user.md
+      - Technisch: features/baxter/voorraad/technical.md
+    - Nazendingen:
+      - Gebruikers: features/baxter/nazendingen/user.md
+      - Technisch: features/baxter/nazendingen/technical.md
+    - Omzettingslijst:
+      - Gebruikers: features/baxter/omzettingslijst/user.md
+      - Technisch: features/baxter/omzettingslijst/technical.md
+    - Geen levering:
+      - Gebruikers: features/baxter/geenlevering/user.md
+      - Technisch: features/baxter/geenlevering/technical.md
+    - STS halfjes:
+      - Gebruikers: features/baxter/stshalfjes/user.md
+      - Technisch: features/baxter/stshalfjes/technical.md
+    - Laatste potten:
+      - Gebruikers: features/baxter/laatstepotten/user.md
+      - Technisch: features/baxter/laatstepotten/technical.md
+  - Openbare Apotheek:
+    - Review planner:
+      - Gebruikers: features/openbare/reviewplanner/user.md
+      - Technisch: features/openbare/reviewplanner/technical.md
+    - ApoGPT:
+      - Gebruikers: features/openbare/apogpt/user.md
+      - Technisch: features/openbare/apogpt/technical.md
+    - Houdbaarheidscheck:
+      - Gebruikers: features/openbare/houdbaarheidscheck/user.md
+      - Technisch: features/openbare/houdbaarheidscheck/technical.md
+  - Instellingsapotheek:
     - Medicatiebeoordeling:
-      - Gebruikershandleiding: features/medicatiebeoordeling/user.md
-      - Technische Documentatie: features/medicatiebeoordeling/technical.md
+      - Gebruikers: features/instellings/medicatiebeoordeling/user.md
+      - Technisch: features/instellings/medicatiebeoordeling/technical.md
+    - Review planner:
+      - Gebruikers: features/instellings/reviewplanner/user.md
+      - Technisch: features/instellings/reviewplanner/technical.md
+    - ApoGPT:
+      - Gebruikers: features/instellings/apogpt/user.md
+      - Technisch: features/instellings/apogpt/technical.md
+    - Portavita check:
+      - Gebruikers: features/instellings/portavitacheck/user.md
+      - Technisch: features/instellings/portavitacheck/technical.md
+  - Bezorgers:
+    - Bakken bezorgen:
+      - Gebruikers: features/bezorgers/bakkenbezorgen/user.md
+      - Technisch: features/bezorgers/bakkenbezorgen/technical.md
+    - Afleverstatus:
+      - Gebruikers: features/bezorgers/afleverstatus/user.md
+      - Technisch: features/bezorgers/afleverstatus/technical.md
+  - Statistieken:
+    - Machine statistieken:
+      - Gebruikers: features/statistieken/machinestatistieken/user.md
+      - Technisch: features/statistieken/machinestatistieken/technical.md
+  - Beheer:
+    - Gebruikers:
+      - Gebruikers: features/beheer/gebruikers/user.md
+      - Technisch: features/beheer/gebruikers/technical.md
+    - Groepen:
+      - Gebruikers: features/beheer/groepen/user.md
+      - Technisch: features/beheer/groepen/technical.md
+    - Afdelingen:
+      - Gebruikers: features/beheer/afdelingen/user.md
+      - Technisch: features/beheer/afdelingen/technical.md
+    - Organisaties:
+      - Gebruikers: features/beheer/organisaties/user.md
+      - Technisch: features/beheer/organisaties/technical.md
+    - Taken:
+      - Gebruikers: features/beheer/taken/user.md
+      - Technisch: features/beheer/taken/technical.md
+    - Functies:
+      - Gebruikers: features/beheer/functies/user.md
+      - Technisch: features/beheer/functies/technical.md
+    - Bezorgen:
+      - Gebruikers: features/beheer/bezorgen/user.md
+      - Technisch: features/beheer/bezorgen/technical.md
   - Compliance:
     - Privacyverklaring: compliance/privacy.md
 

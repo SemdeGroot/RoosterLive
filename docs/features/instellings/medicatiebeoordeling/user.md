@@ -32,7 +32,7 @@ Volg deze stappen om een lijst te controleren:
 
 De resultaten verschijnen per patiënt op het scherm. De Apo Jansen App voert automatisch de volgende controles uit:
 
-- **STOPP-NL v2**: Signaleert medicatie die volgens de richtlijn mogelijk gestopt of gewijzigd dient te worden (zie: [NHG STOP-NL V2](https://www.nhg.org/thema/farmacotherapie/stop-nl-v2/)).
+- **STOP-NL V2**: Signaleert medicatie die volgens de richtlijn mogelijk gestopt of gewijzigd dient te worden (zie: [NHG STOP-NL V2](https://www.nhg.org/thema/farmacotherapie/stop-nl-v2/)).
 - **Anticholinerge Belasting (ACB)**: Berekent de ACB-score op basis van de [Ephor lijst](https://ephor.nl/wp-content/uploads/2018/12/anticholinergic-drugs.pdf). Bij een score van 3 of hoger wordt een waarschuwing getoond.
 - **Dubbelmedicatie**: Controleert op meerdere voorschriften binnen dezelfde werkzame stof-groep.
 - **Standaardvragen**: Toont apotheek-specifieke vragen als aandachtspunt of agendapunt.

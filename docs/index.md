@@ -18,7 +18,7 @@ De app is gebouwd als een **Progressive Web App (PWA)**. Dit betekent dat je de 
 
 ## Hoe gebruik je deze documentatie?
 
-De documentatie is verdeeld in onderwerpen die je in het menu kunt vinden. Voor de meeste onderdelen maken we een onderscheid tussen:
+De documentatie volgt grotendeels de structuur van de app. Per module maken we onderscheid tussen:
 
 - **Gebruikershandleidingen**: Praktische instructies voor het dagelijks gebruik van de app.
 - **Technische documentatie**: Achtergrondinformatie over de architectuur en de data voor beheerders en ontwikkelaars.
