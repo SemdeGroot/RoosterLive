@@ -3,8 +3,7 @@
 De module voor medicatiebeoordelingen in de Apotheek Jansen App is opgebouwd als een losse microservice (FastAPI op AWS Lambda) die samenwerkt met de hoofdapplicatie (Django op AWS EC2). Dit document beschrijft de dataflow en technische opzet van deze analyse-engine.
 
 !!! warning "In ontwikkeling"
-    De technische implementatie van de analyse-engine wordt continu geoptimaliseerd voor snelheid en nauwkeurigheid.
-
+    De documentatie van de techbische medicatiebeoordeling is nog in ontwikkeling en is dus nog niet volledig
 ## Architectuur en Dataflow
 
 Wanneer een gebruiker een analyse start, doorloopt het systeem de volgende stappen:

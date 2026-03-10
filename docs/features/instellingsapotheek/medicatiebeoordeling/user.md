@@ -62,7 +62,7 @@ Het overzicht kan worden geëxporteerd voor overleg met de arts:
 
 Alle aanpassingen en opmerkingen die in de app zijn ingevoerd, worden automatisch meegenomen in de export.
 
-!!! warning "Documentatie in de app"
+!!! note "Documentatie in de app"
     Hoewel het mogelijk is om handmatige aanpassingen te doen in een geëxporteerd Word-document, worden deze wijzigingen **niet** teruggestuurd naar de Apo Jansen App. Dit betekent dat dergelijke aantekeningen niet zichtbaar zijn in de **Historie** bij een volgende beoordeling van de patiënt. 
 
     Het is daarom aanbevolen om alle bevindingen en opmerkingen direct in de app te documenteren. Zo hoeft u bij toekomstige controles niet in oude documenten te zoeken naar eerdere besluitvorming.

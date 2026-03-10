@@ -68,46 +68,46 @@ nav:
       - Technisch: features/onboarding/checklist/technical.md
   - Baxterproductie:
     - Voorraad:
-      - Gebruikers: features/baxter/voorraad/user.md
-      - Technisch: features/baxter/voorraad/technical.md
+      - Gebruikers: features/baxterproductie/voorraad/user.md
+      - Technisch: features/baxterproductie/voorraad/technical.md
     - Nazendingen:
-      - Gebruikers: features/baxter/nazendingen/user.md
-      - Technisch: features/baxter/nazendingen/technical.md
+      - Gebruikers: features/baxterproductie/nazendingen/user.md
+      - Technisch: features/baxterproductie/nazendingen/technical.md
     - Omzettingslijst:
-      - Gebruikers: features/baxter/omzettingslijst/user.md
-      - Technisch: features/baxter/omzettingslijst/technical.md
+      - Gebruikers: features/baxterproductie/omzettingslijst/user.md
+      - Technisch: features/baxterproductie/omzettingslijst/technical.md
     - Geen levering:
-      - Gebruikers: features/baxter/geenlevering/user.md
-      - Technisch: features/baxter/geenlevering/technical.md
+      - Gebruikers: features/baxterproductie/geenlevering/user.md
+      - Technisch: features/baxterproductie/geenlevering/technical.md
     - STS halfjes:
-      - Gebruikers: features/baxter/stshalfjes/user.md
-      - Technisch: features/baxter/stshalfjes/technical.md
+      - Gebruikers: features/baxterproductie/stshalfjes/user.md
+      - Technisch: features/baxterproductie/stshalfjes/technical.md
     - Laatste potten:
-      - Gebruikers: features/baxter/laatstepotten/user.md
-      - Technisch: features/baxter/laatstepotten/technical.md
+      - Gebruikers: features/baxterproductie/laatstepotten/user.md
+      - Technisch: features/baxterproductie/laatstepotten/technical.md
   - Openbare Apotheek:
     - Review planner:
-      - Gebruikers: features/openbare/reviewplanner/user.md
-      - Technisch: features/openbare/reviewplanner/technical.md
+      - Gebruikers: features/openbare-apo/reviewplanner/user.md
+      - Technisch: features/openbare-apo/reviewplanner/technical.md
     - ApoGPT:
-      - Gebruikers: features/openbare/apogpt/user.md
-      - Technisch: features/openbare/apogpt/technical.md
+      - Gebruikers: features/openbare-apo/apogpt/user.md
+      - Technisch: features/openbare-apo/apogpt/technical.md
     - Houdbaarheidscheck:
-      - Gebruikers: features/openbare/houdbaarheidscheck/user.md
-      - Technisch: features/openbare/houdbaarheidscheck/technical.md
+      - Gebruikers: features/openbare-apo/houdbaarheidscheck/user.md
+      - Technisch: features/openbare-apo/houdbaarheidscheck/technical.md
   - Instellingsapotheek:
     - Medicatiebeoordeling:
-      - Gebruikers: features/instellings/medicatiebeoordeling/user.md
-      - Technisch: features/instellings/medicatiebeoordeling/technical.md
+      - Gebruikers: features/instellingsapotheek/medicatiebeoordeling/user.md
+      - Technisch: features/instellingsapotheek/medicatiebeoordeling/technical.md
     - Review planner:
-      - Gebruikers: features/instellings/reviewplanner/user.md
-      - Technisch: features/instellings/reviewplanner/technical.md
+      - Gebruikers: features/instellingsapotheek/reviewplanner/user.md
+      - Technisch: features/instellingsapotheek/reviewplanner/technical.md
     - ApoGPT:
-      - Gebruikers: features/instellings/apogpt/user.md
-      - Technisch: features/instellings/apogpt/technical.md
+      - Gebruikers: features/instellingsapotheek/apogpt/user.md
+      - Technisch: features/instellingsapotheek/apogpt/technical.md
     - Portavita check:
-      - Gebruikers: features/instellings/portavitacheck/user.md
-      - Technisch: features/instellings/portavitacheck/technical.md
+      - Gebruikers: features/instellingsapotheek/portavitacheck/user.md
+      - Technisch: features/instellingsapotheek/portavitacheck/technical.md
   - Bezorgers:
     - Bakken bezorgen:
       - Gebruikers: features/bezorgers/bakkenbezorgen/user.md
