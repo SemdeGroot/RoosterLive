@@ -1,39 +1,33 @@
-# STS Halfjes (Onnodig Gehalveerde Geneesmiddelen) (Gebruiker)
+# STS Halfjes (Gebruiker)
 
-De **Apotheek Jansen App** biedt een module om "STS halfjes" te registreren. Dit zijn geneesmiddelen die in het GDS-proces (baxter) handmatig gehalveerd worden, terwijl er een alternatieve sterkte beschikbaar is die het halveren overbodig zou maken.
+De **Apotheek Jansen App** bevat een module voor het registreren van "STS halfjes". Dit zijn geneesmiddelen die in het GDS-proces (baxter) handmatig gehalveerd worden, terwijl er een alternatieve sterkte beschikbaar is die het halveren overbodig maakt.
 
 ## Doel van de module
-Het doel is om inzichtelijk te maken welke geneesmiddelen onnodig gehalveerd worden. Door dit per apotheek te rapporteren, kan de apotheker in overleg met de voorschrijver kijken of de medicatie aangepast kan worden naar een sterkte die niet gehalveerd hoeft te worden. Dit verhoogt de patiëntveiligheid en efficiëntie in de baxter-productie.
+Het doel is inzichtelijk maken welke geneesmiddelen onnodig gehalveerd worden. Door dit per apotheek te rapporteren, kan de apotheker bepalen of de medicatie aangepast kan worden naar een sterkte die niet gehalveerd hoeft te worden. Dit verhoogt de patiëntveiligheid en efficiëntie in de baxter-productie.
 
 ## Wat kun je met deze module?
+Met deze module kun je meldingen van onnodig gehalveerde medicatie vastleggen, beheren en rapporteren aan de betreffende apotheken. De module ondersteunt:
 
-### 1. Registreren van een melding
-Wanneer je een onnodig gehalveerd geneesmiddel tegenkomt, kun je dit direct registreren:
 
-- **Apotheek**: Selecteer de betreffende apotheek uit de lijst.
-- **Afdeling**: Voer de afdeling van de patiënt in.
-- **Patiënt**: Voer de naam en geboortedatum van de patiënt in. De datum wordt automatisch geformatteerd terwijl je typt.
-- **Wordt gehalveerd**: Zoek het geneesmiddel dat momenteel gehalveerd wordt. Je kunt zoeken op **naam** of op **ZI-nummer**.
-- **Alternatief beschikbaar**: Zoek op dezelfde manier naar de sterkte die als alternatief kan dienen.
+- Het registreren van patiëntgebonden meldingen inclusief alternatieve sterktes.
+- Het zoeken en filteren in openstaande meldingen.
+- Het genereren van PDF-overzichten.
+- Het geautomatiseerd verzenden van rapportages per e-mail naar externe apotheken.
 
-### 2. Beheren en Zoeken
-In het hoofdscherm zie je alle huidige openstaande meldingen. Handige functies hierbij zijn:
+## Werkwijze
+De module volgt een vaste volgorde voor registratie en afhandeling:
 
-- **Snelzoeken**: Gebruik de zoekbalk bovenaan de tabel om direct te filteren op patiëntnaam, geneesmiddel of apotheek.
-- **Bewerken**: Klik op het bewerk-icoon (potloodje) om een regel direct in de tabel aan te passen.
-- **Verwijderen**: Gebruik het prullenbak-icoon om foutieve of dubbele meldingen handmatig te verwijderen.
 
-### 3. Exporteren en Rapporteren
-Je kunt een actueel overzicht downloaden als PDF via de knop "Exporteer PDF". Dit overzicht bevat alle geregistreerde meldingen met de bijbehorende patiëntgegevens en ZI-nummers van de geneesmiddelen.
+1.  **Registratie**: Voer een nieuwe melding in via het invoerscherm. Selecteer de apotheek, de afdeling en de patiënt. Zoek vervolgens op ZI-nummer of naam naar zowel het gehalveerde middel als het beschikbare alternatief.
+2.  **Beheer**: In het overzicht kun je meldingen opzoeken via de zoekbalk. Gebruik de iconen in de tabel om foutieve invoer aan te passen of handmatig te verwijderen.
+3.  **Rapportage**: Klik op "Verstuur meldingen via e-mail" om de rapportagecyclus te starten.
+4.  **Verzending**: Selecteer in het venster de apotheken waarvoor je de rapportage wilt versturen. De app genereert per apotheek een unieke PDF met uitsluitend hun eigen meldingen en verstuurt deze direct.
+5.  **Opschoning**: Na een succesvolle verzending worden de betreffende meldingen automatisch uit de actuele lijst verwijderd.
 
-## Het versturen van meldingen naar apotheken
+## Bijzonderheden
+Let bij het gebruik van de module op de volgende punten:
 
-Het versturen van de meldingen naar de verschillende apotheken is een geautomatiseerd proces:
 
-1.  **Open het verzendscherm**: Klik op de knop "Verstuur meldingen via e-mail".
-2.  **Selectie**: Er opent een venster waarin je de ontvangers kunt selecteren. Je kunt specifiek een paar apotheken kiezen, of de knoppen **"Selecteer alles"** of **"Deselecteer alles"** gebruiken voor een snelle selectie.
-3.  **Gefilterde verzending**: Wanneer je op de verzendknop drukt, splitst de app de lijst automatisch op. Elke apotheek ontvangt een e-mail met een PDF die **alleen hun eigen meldingen** bevat. Privacy is hierdoor gewaarborgd.
-4.  **Automatische opschoning**: Zodra een e-mail succesvol is verzonden, worden die specifieke meldingen voor die apotheek **verwijderd** uit de lijst. Zo blijft je overzicht schoon en voorkom je dubbele rapportages in de toekomst.
-
-!!! note "Belangrijk"
-    Zorg ervoor dat de e-mailadressen van de apotheken correct zijn ingesteld in de organisatie-instellingen, zodat de rapportages op de juiste plek aankomen.
+- **E-mailconfiguratie**: De rapportages worden verstuurd naar de e-mailadressen die zijn ingesteld in de beheersectie van de betreffende apotheek (Organization).
+- **Automatische verwijdering**: Meldingen verdwijnen pas uit de lijst nadat de e-mail succesvol is verzonden door het systeem.
+- **Privacy**: Patiëntgegevens worden in de database versleuteld opgeslagen.

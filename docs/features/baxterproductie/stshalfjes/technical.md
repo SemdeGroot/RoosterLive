@@ -1,56 +1,55 @@
-# STS Halfjes (Onnodig Gehalveerde Geneesmiddelen) (Technisch)
+# STS Halfjes (Technisch)
 
-De STS Halfjes module is ontworpen om registraties te maken van geneesmiddelen die onnodig gehalveerd worden in het baxterproces en deze informatie te communiceren naar de verantwoordelijke apotheken.
+De STS Halfjes module registreert geneesmiddelen die onnodig gehalveerd worden in het baxterproces. De module faciliteert rapportage en communicatie hierover naar de betreffende apotheken.
 
 ## Architectuur en Gegevensmodel
 
 ### Model: `STSHalfje`
-Het kernmodel voor deze module bevindt zich in `core/models.py`.
+Het model bevindt zich in `core/models.py`.
 
-Belangrijke velden:
 
 - `afdeling`: CharField voor de afdeling van de patiënt.
-- `item_gehalveerd`: ForeignKey naar `VoorraadItem` (het gehalveerde middel).
-- `item_alternatief`: ForeignKey naar `VoorraadItem` (de alternatieve sterkte).
-- `apotheek`: ForeignKey naar `Organization` (de eigenaar van de patiënt/melding).
-- `patient_naam_enc` en `patient_geboortedatum_enc`: Versleutelde velden voor patiëntgegevens (gebruikmakend van Django's `EncryptedCharField` en `EncryptedDateField`).
+- `item_gehalveerd`: ForeignKey naar `VoorraadItem` (gehalveerd middel).
+- `item_alternatief`: ForeignKey naar `VoorraadItem` (alternatieve sterkte).
+- `apotheek`: ForeignKey naar `Organization` (eigenaar van de melding).
+- `patient_naam_enc` en `patient_geboortedatum_enc`: Versleutelde velden voor patiëntgegevens via `EncryptedCharField` en `EncryptedDateField`.
 
 ### Views
-De logica voor het weergeven, toevoegen en wijzigen van meldingen bevindt zich in `core/views/stshalfjes.py`.
+De logica is ondergebracht in `core/views/stshalfjes.py`.
 
-- `stshalfjes(request)`: De hoofdpagina die de lijst met meldingen toont en het `STSHalfjeForm` afhandelt.
-- `export_stshalfjes_pdf(request)`: Genereert een PDF-export van alle of gefilterde meldingen.
-- `email_stshalfjes_pdf(request)`: Verwerkt de POST-aanvraag voor het versturen van meldingen naar geselecteerde organisaties via een Celery-task.
 
-## Verzending en PDF Generatie
+- `stshalfjes(request)`: Hoofdpagina voor weergave en beheer via `STSHalfjeForm`.
+- `export_stshalfjes_pdf(request)`: Genereert PDF-export van (gefilterde) meldingen.
+- `email_stshalfjes_pdf(request)`: Start de Celery-task voor e-mailverzending.
 
-Het verzendproces is ontworpen om privacy en efficiëntie te waarborgen.
+## Verzending en PDF-generatie
 
 ### Celery Task: `send_stshalfjes_pdf_task`
-De verzending wordt afgehandeld door een achtergrondtaak in `core/tasks/emails.py`. De workflow binnen deze taak is als volgt:
+De verzending verloopt via `core/tasks/emails.py`. De workflow is:
 
-1.  **Iteratie**: Voor elke geselecteerde `Organization ID` wordt een aparte PDF gegenereerd.
-2.  **Filtering**: De query wordt gefilterd op `apotheek=org`. Dit zorgt ervoor dat de PDF alleen meldingen bevat die eigendom zijn van de betreffende apotheek.
-3.  **PDF Creatie**: De PDF wordt opgebouwd met het sjabloon `stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html` via de `_render_pdf` helper.
-4.  **E-mail Dispatcher**: Er wordt een signaal gestuurd naar de `email_dispatcher_task` met het type `stshalfjes_single`.
-5.  **Verwijdering**: Zodra de e-mail succesvol is verzonden, roept de dispatcher `delete_stshalfjes_by_ids(item_ids)` aan om de verzonden meldingen uit de database te verwijderen.
+
+1.  **Iteratie**: Per `Organization ID` wordt een PDF gegenereerd.
+2.  **Filtering**: Meldingen worden gefilterd op `apotheek_id`.
+3.  **PDF Creatie**: De PDF wordt opgebouwd met template `stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html` via de `_render_pdf` helper.
+4.  **E-mail Dispatcher**: Signaal naar `email_dispatcher_task` met type `stshalfjes_single`.
+5.  **Verwijdering**: Na succesvolle verzending roept de dispatcher `delete_stshalfjes_by_ids(item_ids)` aan.
 
 ### Verwijderingslogica
-De logica voor het verwijderen bevindt zich in `core/utils/emails/stshalfjes_email.py` in de functie `delete_stshalfjes_by_ids`. Dit gebeurt alleen *nadat* de e-mail succesvol is verwerkt.
+De functie `delete_stshalfjes_by_ids` in `core/utils/emails/stshalfjes_email.py` verwijdert records uitsluitend na bevestiging van succesvolle e-mailverwerking.
 
 ## Beveiliging en Autorisatie
 
-- **Toegang**: De module is beveiligd met `@ip_restricted` en `@login_required`.
-- **Permissies**: Er zijn drie specifieke permissies gedefinieerd:
-    - `can_view_baxter_sts_halfjes`: Voor het inzien van de lijst.
-    - `can_edit_baxter_sts_halfjes`: Voor het toevoegen, bewerken en verwijderen van meldingen.
-    - `can_send_baxter_sts_halfjes`: Voor het exporteren en versturen van de rapportages via e-mail.
-- **Encryptie**: Patiëntgegevens worden versleuteld in de database opgeslagen om te voldoen aan privacywetgeving.
+- **Toegang**: Beveiligd met `@ip_restricted` en `@login_required`.
+- **Permissies**:
+    - `can_view_baxter_sts_halfjes`: Inzien van de lijst.
+    - `can_edit_baxter_sts_halfjes`: Toevoegen, bewerken en handmatig verwijderen.
+    - `can_send_baxter_sts_halfjes`: Exporteren en e-mailen van rapportages.
+- **Encryptie**: Patiëntgegevens zijn versleuteld opgeslagen op database-niveau.
 
-## Gerelateerde bestanden
+## Bestanden
 
 - **Backend**: `core/models.py`, `core/views/stshalfjes.py`, `core/forms.py`
-- **Achtergrondtaken**: `core/tasks/emails.py`, `core/tasks/email_dispatcher.py`
+- **Taken**: `core/tasks/emails.py`, `core/tasks/email_dispatcher.py`
 - **Utility**: `core/utils/emails/stshalfjes_email.py`
 - **Templates**: `core/templates/stshalfjes/index.html`, `core/templates/stshalfjes/pdf/onnodig_gehalveerde_geneesmiddelen.html`
-- **Assets**: `core/static/css/stshalfjes/stshalfjes.css`, `core/static/js/stshalfjes/stshalfjes.js`
+- **Static**: `core/static/css/stshalfjes/stshalfjes.css`, `core/static/js/stshalfjes/stshalfjes.js`
