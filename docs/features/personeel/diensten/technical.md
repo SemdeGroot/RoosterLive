@@ -1,6 +1,6 @@
 # Diensten (Technisch)
 
-De module **Diensten** binnen de **Apotheek Jansen App** beheert het weergeven en ontsluiten van persoonlijke werkroosters voor medewerkers.
+De module **Diensten** binnen de **Apotheek Jansen App** beheert het weergeven van persoonlijke werkroosters voor medewerkers.
 
 ## Technisch ontwerp
 De architectuur is opgebouwd rondom de toewijzing van specifieke taken (`Task`) op specifieke tijdstippen (`Shift`) aan gebruikers. De module integreert een webkalender-systeem (WebCal/iCal) en een notificatiesysteem (Celery tasks voor e-mail en push-notificaties).

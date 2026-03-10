@@ -3,7 +3,7 @@
 De module **Diensten** in de **Apotheek Jansen App** biedt medewerkers een overzicht van hun persoonlijke werkrooster. Het stelt gebruikers in staat om per week in te zien welke diensten en taken aan hen zijn toegewezen en op welke locaties zij worden verwacht.
 
 ## Doel van de module
-Het doel van deze module is om medewerkers altijd en overal inzicht te geven in hun actuele rooster. Door de integratie met persoonlijke agenda's en automatische notificaties wordt de communicatie over roosterwijzigingen efficiënter en minder foutgevoelig.
+Het doel van deze module is om medewerkers overal inzicht te geven in hun individuele rooster.
 
 ## Wat kun je met deze module?
 Met de module Diensten kun je het volgende:
