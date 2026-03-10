@@ -3,7 +3,7 @@
 De module **Urendoorgeven** binnen de **Apotheek Jansen App** verzorgt de registratie en verwerking van gewerkte uren en reiskosten.
 
 ## Technisch ontwerp
-De module maakt gebruik van een gelaagd datamodel waarbij ruwe invoer (`UrenDag`) wordt vertaald naar geatomiseerde regels (`UrenRegel`) om berekeningen en rapportages te vergemakkelijken. De module integreert met het roostersysteem om gegevens voor-in te kunnen vullen.
+De module maakt gebruik van een gelaagd datamodel waarbij ruwe invoer (`UrenDag`) wordt vertaald naar geatomiseerde regels (`UrenRegel`) om berekeningen en rapportages te vergemakkelijken. De module integreert met het roostersysteem om gewerkte diensten weer te geven.
 
 ## Datamodel
 De module wordt ondersteund door de volgende modellen in `core/models.py`:
