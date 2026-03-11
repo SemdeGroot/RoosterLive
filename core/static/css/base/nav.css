@@ -52,6 +52,8 @@
   padding:0; display:flex; flex-direction:column; z-index:1200;
   transform:translateX(100%); transition:transform .25s ease;
   overflow-y:auto;
+  /* Voorkom dat overscroll van het paneel naar de viewport propageert (iOS rubber-band fix) */
+  overscroll-behavior: contain;
   padding-bottom: calc(var(--inset-bottom)) !important;
 }
 .nav-panel.open{ transform:translateX(0); }

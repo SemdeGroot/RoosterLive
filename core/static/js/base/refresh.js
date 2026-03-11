@@ -18,6 +18,7 @@
   const app = document.querySelector('.app');
   const body = document.body;
   const content = document.querySelector('.content'); // cached
+  const navPanel = document.getElementById('navPanel'); // voor nav-open check
 
   let startY = 0;
   let pulling = false;
@@ -155,6 +156,9 @@
     'touchstart',
     (e) => {
       if (e.touches.length !== 1) return;
+
+      // Niet starten als de nav open is (voorkomt accidentele PTR + viewport-bounce na sluiten)
+      if (navPanel && !navPanel.hidden) return;
 
       const target = e.target;
 
