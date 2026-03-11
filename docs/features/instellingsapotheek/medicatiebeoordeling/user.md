@@ -1,6 +1,6 @@
 # Medicatiebeoordeling (Gebruiker)
 
-De module voor medicatiebeoordelingen in de Apotheek Jansen App controleert medicatielijsten uit externe systemen op basis van ingestelde standaardvragen en landelijke richtlijnen. De app toont direct relevante aandachtspunten voor de patiënt.
+De module voor medicatiebeoordelingen in de Apotheek Jansen App controleert medicatieoverzichten uit externe systemen op basis van ingestelde standaardvragen en landelijke richtlijnen. De app toont direct relevante aandachtspunten voor de patiënt.
 
 !!! info "Privacy & Beveiliging"
     Namen en geboortedatums van patiënten worden versleuteld opgeslagen. Het overzicht is IP-afgeschermd: resultaten zijn uitsluitend in te zien via het interne netwerk van de apotheek. Alleen apothekers en beheerders hebben toegang tot de medicatiebeoordelingen.

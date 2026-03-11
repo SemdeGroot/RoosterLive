@@ -6,7 +6,7 @@ Het beheren van de verschillende functietitels binnen de organisatie. Dit zorgt 
 ## Wat kun je met deze module?
 
 - Functietitels toevoegen (bijv. 'Apotheker', 'Apothekersassistent', 'Logistiek medewerker').
-- De sorteervolgorde (prioriteit) van functies instellen.
+- De sorteervolgorde van functies instellen.
 - Bestaande functies wijzigen of verwijderen.
 
 ## Werkwijze

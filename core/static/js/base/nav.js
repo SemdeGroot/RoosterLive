@@ -9,8 +9,8 @@
 
   if (!toggleBtn || !panel || !overlay) return;
 
-  const preventScroll = () => { document.body.style.overflow = 'hidden'; };
-  const allowScroll = () => { document.body.style.overflow = ''; };
+  const preventScroll = () => { /* Body has overflow:hidden in CSS already */ };
+  const allowScroll = () => { /* No-op to prevent breaking sticky positioning on Safari */ };
 
   const open = () => {
     panel.hidden = false;

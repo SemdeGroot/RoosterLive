@@ -1,6 +1,6 @@
 # Medicatiebeoordeling (Technisch)
 
-De module voor medicatiebeoordelingen in de Apotheek Jansen App is opgedeeld in twee hoofdonderdelen: een Django-gebaseerde beheerlaag op AWS EC2 en een gespecialiseerde analyse-engine op AWS Lambda. Dit document beschrijft de technische architectuur, de dataflow en de implementatiedetails van beide componenten.
+De module voor medicatiebeoordelingen in de Apotheek Jansen App is opgedeeld in twee hoofdonderdelen: een Django-gebaseerde beheerlaag op AWS EC2 en een analyse-engine op AWS Lambda. Dit document beschrijft de technische architectuur, de dataflow en de implementatiedetails van beide componenten.
 
 ## Technisch ontwerp
 
@@ -28,6 +28,7 @@ De architectuur volgt een microservices-patroon waarbij de zware reken- en parsi
 
 ### Lambda (Analyse-engine)
 De Lambda maakt gebruik van een SQLite database (`lookup.db`) die wordt opgebouwd uit G-Standaard bestanden:
+
 - **`bst020_namen`**: Voor het matchen van productnamen naar Naamnummers (NMNR).
 - **`bst711_generiek`**: Voor het koppelen van NMNR aan ATC-codes en SPKodes.
 - **`atc_jansen_mapping`**: Voor het indelen van ATC-codes in de specifieke Jansen-groepen.
@@ -37,11 +38,13 @@ De Lambda maakt gebruik van een SQLite database (`lookup.db`) die wordt opgebouw
 
 ### Tekst-parsing (Medimo)
 De parser identificeert patiënten door te zoeken naar headers als `Dhr.` of `Mevr.`. Medicatieregels worden herkend aan de prefixen `C` (Continu), `Z` (Zo nodig) of `T` (Tijdelijk).
+
 - **Schoonmaken**: AIS-specifieke codes zoals `ARBO`, `KK` of `OW` worden gestript om de matching-kans in de G-Standaard te vergroten.
 - **Doseringsextractie**: Met regex-patronen worden doseringsschema's (bijv. `1 - 1 - 1 - 1`) gescheiden van de eenheid en eventuele opmerkingen.
 
 ### G-Standaard Matching
 De engine gebruikt vier 'routes' om een medicijnnaam te koppelen aan een ATC-code:
+
 1.  **Direct**: Match op basis van Generiek Product Stamnummer (GPSTNR).
 2.  **Recept**: Koppeling via Receptnaamnummer (PRNMNR).
 3.  **Artikel**: Koppeling via Artikelnaamnummer (ATNMNR) en Handelsproduct (HPKODE).

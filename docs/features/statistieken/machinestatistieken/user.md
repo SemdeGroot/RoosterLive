@@ -1,9 +1,9 @@
 # Machine statistieken (Gebruiker)
 
-De module **Machine statistieken** in de **Apotheek Jansen App** biedt real-time inzicht in de productieprestaties van de baxter-machines. Hiermee kan de voortgang van de dagelijkse productie nauwgezet worden gevolgd en kunnen trends in de productiecapaciteit over langere periodes worden geanalyseerd.
+De module **Machine statistieken** in de **Apotheek Jansen App** biedt real-time inzicht in de productieprestaties van de baxter-machines. Hiermee kan de voortgang van de dagelijkse productie worden gevolgd en kunnen trends in de productiecapaciteit over langere periodes worden geanalyseerd.
 
 ## Doel van de module
-Het doel van deze module is het monitoren van de operationele efficiëntie van het baxterpark. Door inzicht te geven in het aantal geproduceerde zakjes per machine, kan de planning worden geoptimaliseerd en kunnen eventuele afwijkingen of vertragingen in het productieproces sneller worden gesignaleerd.
+Het doel van deze module is het monitoren van de operationele efficiëntie van de baxter-machines. Door inzicht te geven in het aantal geproduceerde zakjes per machine, kan de planning worden geoptimaliseerd en kunnen eventuele afwijkingen of vertragingen in het productieproces sneller worden gesignaleerd.
 
 ## Wat kun je met deze module?
 Met de module Machine statistieken kun je het volgende:
@@ -12,7 +12,7 @@ Met de module Machine statistieken kun je het volgende:
 - De voortgang gedurende de dag volgen via een grafiek met tijdstippen (snapshots).
 - Weektotalen bekijken om de prestaties van de afgelopen dagen te vergelijken.
 - Historische gegevens opvragen om de productie van specifieke periodes in het verleden te analyseren.
-- Direct zien wanneer de laatste melding van een machine is ontvangen.
+- Direct zien wanneer de laatste update van een machine is ontvangen.
 
 ## Werkwijze
 Volg deze stappen om de statistieken te raadplegen:

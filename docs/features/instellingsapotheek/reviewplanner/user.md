@@ -1,7 +1,7 @@
 # Review planner (Gebruiker)
 
 ## Doel van de module
-De Review planner is ontworpen om het proces van medicatiebeoordelingen (reviews) binnen de instellingsapotheek te structureren en te bewaken. De module biedt een centraal overzicht van geplande, lopende en voltooide beoordelingen per afdeling en arts.
+De Review planner is ontworpen om het proces van medicatiebeoordelingen (reviews) binnen de instellingsapotheek te plannen. De module biedt een overzicht van geplande, lopende en voltooide beoordelingen per afdeling en arts.
 
 ## Wat kun je met deze module?
 - **Planning beheren**: Het inplannen van medicatiebeoordelingen op specifieke data en tijdstippen.

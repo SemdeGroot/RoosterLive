@@ -44,8 +44,6 @@ html{
 }
 
 .header{
-  position: sticky;
-  top: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -78,7 +76,7 @@ html{
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   }
   html[data-theme="light"] .logo {
-    max-height: 46px; /* Omdat padding: 2px, geven we de image ook die max-height mee binnen in, anders schaalt flex de boel */
+    max-height: 46px; /* Omdat padding: 1px, geven we de image ook die max-height mee binnen in, anders schaalt flex de boel */
   }
 }
 
@@ -120,6 +118,7 @@ html{
   display:grid;
   gap:18px;
   max-width:100vw;
+  min-height:0; /* Safari bug fix: voorkomt dat grid items hun container uitrekken over 100dvh */
   overflow-x:hidden;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;

@@ -1,7 +1,7 @@
 # Organisatiesbeheer (Gebruiker)
 
 ## Doel van de module
-Het beheren van de verschillende organisaties die gebruikmaken van de Apo Jansen App. Dit omvat zowel de eigen apotheek-locaties als externe zorginstellingen.
+Het beheren van de verschillende organisaties die klant zijn van **Apotheek Jansen**. De contactgegevens van deze organisaties worden opgeslagen voor automatische communicatie binnen de baxterproductie.
 
 ## Wat kun je met deze module?
 

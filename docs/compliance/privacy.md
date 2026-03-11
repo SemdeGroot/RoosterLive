@@ -72,7 +72,7 @@ Wij treffen passende technische en organisatorische maatregelen om je gegevens t
 
 ## 9. Bewaartermijnen
 
-Gegevens worden niet langer bewaard dan noodzakelijk voor de doelen waarvoor ze zijn verzameld, of om te voldoen aan wettelijke bewaarplichten. Bij beëindiging van het dienstverband worden accounts gedeactiveerd en persoonsgegevens volgens vastgesteld protocol verwijderd of geanonimiseerd.
+Gegevens worden niet langer bewaard dan noodzakelijk voor de doelen waarvoor ze zijn verzameld, of om te voldoen aan wettelijke bewaarplichten. Bij beëindiging van het dienstverband worden accounts gedeactiveerd en persoonsgegevens waar mogelijk verwijderd of geanonimiseerd.
 
 ## 10. Cookies en Techniek
 

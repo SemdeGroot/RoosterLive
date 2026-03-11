@@ -1,9 +1,9 @@
 # Laatste potten (Technisch)
 
-De module **Laatste potten** binnen de **Apotheek Jansen App** beheert meldingen over kritieke voorraadstanden in de baxterproductie en automatiseert het proces van notificeren aan de inkoopafdeling.
+De module **Laatste potten** binnen de **Apotheek Jansen App** beheert meldingen over geneesmiddelen die bijna uit voorraad zijn in de baxterproductie en automatiseert het proces van notificeren aan de bestellingenafdeling.
 
 ## Technisch ontwerp
-De module is ontworpen rond een event-driven notificatiesysteem. Bij het aanmaken van een nieuwe record (`LaatstePot`) worden direct acties getriggerd om relevante medewerkers te informeren via pushberichten en e-mail. De module bevat tevens een automatische opschoningsfunctie die het overzicht actueel houdt.
+De module is ontworpen rond een event-driven notificatiesysteem. Bij het aanmaken van een nieuwe record (`LaatstePot`) worden direct acties getriggerd om relevante medewerkers te informeren via pushberichten. De module bevat tevens een automatische opschoningsfunctie die het overzicht actueel houdt.
 
 ## Datamodel
 De module maakt gebruik van het `LaatstePot` model in `core/models.py`.

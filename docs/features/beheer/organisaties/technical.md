@@ -1,7 +1,7 @@
 # Organisatiesbeheer (Technisch)
 
 ## Technisch ontwerp
-Het organisatiemodel dient als de hoogste laag voor data-isolatie en categorisering binnen de applicatie. Gebruikersprofielen en afdelingen zijn altijd gekoppeld aan een specifieke organisatie.
+Het organisatiemodel dient als de hoogste laag voor categorisering binnen de applicatie. Gebruikersprofielen en afdelingen zijn altijd gekoppeld aan een specifieke organisatie.
 
 ## Datamodel
 - `core.models.Organization`:

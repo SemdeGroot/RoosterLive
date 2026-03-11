@@ -1,9 +1,9 @@
 # Laatste potten (Gebruiker)
 
-De module **Laatste potten** in de **Apotheek Jansen App** is een essentieel hulpmiddel voor het voorraadbeheer binnen de baxterproductie. Het stelt medewerkers in staat om direct te melden wanneer een geneesmiddel de status "laatste pot" heeft bereikt, zodat er tijdig actie kan worden ondernomen door de afdeling inkoop/bestellingen.
+De module **Laatste potten** in de **Apotheek Jansen App** is een hulpmiddel voor het voorraadbeheer binnen de baxterproductie. Het stelt medewerkers in staat om direct te melden wanneer een geneesmiddel de status "laatste pot" heeft bereikt, zodat er tijdig actie kan worden ondernomen door de afdeling bestellingen.
 
 ## Doel van de module
-Het doel van deze module is het voorkomen van productiestops door tijdig inzicht te geven in kritieke voorraadstanden. Door de automatische notificaties worden de verantwoordelijke bestellers direct op de hoogte gebracht, wat de kans op het volledig uitlopen van de voorraad minimaliseert.
+Het doel van deze module is het voorkomen van productieproblemen bij de baxterafdeling door tijdig inzicht te geven in geneesmiddelen die bijna uit de voorraad zijn. Door de automatische notificaties worden de verantwoordelijke bestellers direct op de hoogte gebracht, wat de kans op het volledig uitlopen van de voorraad minimaliseert.
 
 ## Wat kun je met deze module?
 Met de module Laatste potten kun je het volgende:
