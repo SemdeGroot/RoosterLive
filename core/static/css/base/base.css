@@ -61,8 +61,8 @@ html{
 }
 
 .logo-wrap{
-  background:#fff;
-  padding:8px 12px;
+  background:transparent;
+  padding:0;
   border-radius:12px;
   display:flex;
   align-items:center;
@@ -70,11 +70,30 @@ html{
   flex-shrink:0;
 }
 
+@media (max-width: 899px) {
+  html[data-theme="light"] .logo-wrap {
+    background: #fff;
+    padding: 1px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  html[data-theme="light"] .logo {
+    max-height: 46px; /* Omdat padding: 2px, geven we de image ook die max-height mee binnen in, anders schaalt flex de boel */
+  }
+}
+
 .logo{
-  max-height:32px;
+  max-height:50px;
   width:auto;
   object-fit:contain;
   display:block;
+}
+
+.logo-desktop {
+  display: none;
+}
+.logo-mobile {
+  display: block;
 }
 
 .title-wrapper{
@@ -659,7 +678,7 @@ th,td{
 /* Tablet */
 @media (min-width:600px){
   .header{ padding:14px 20px; gap:16px; }
-  .logo{ max-height:44px; }
+  .logo{ max-height:48px; }
   .title{ font-size:1.5rem; }
 
   /* LET OP: tiles overrides expres verwijderd om rechthoeken te behouden */
@@ -684,13 +703,15 @@ th,td{
     column-gap:16px;
     row-gap:var(--header-gap);
     /* absorb safe-area-inset-top (PWA titlebar) into header, niet als losse ruimte boven content */
-    padding: max(20px, calc(var(--pad-top) + var(--inset-top))) 20px 20px;
+    padding: max(16px, calc(var(--pad-top) + var(--inset-top))) 20px 16px;
   }
 
-  .logo{ max-height:52px; }
-  .logo-wrap{ grid-area:logo; padding:10px 16px; border-radius:16px; }
+  .logo{ max-height:44px; }
+  .logo-wrap{ grid-area:logo; background:#fff; padding:8px 12px; border-radius:14px; }
+  .logo-desktop { display: block; }
+  .logo-mobile { display: none; }
   .title-wrapper{ grid-area:title; }
-  .title{ font-size:1.9rem; }
+  .title{ font-size:1.6rem; }
 
   /* LET OP: tiles overrides expres verwijderd om rechthoeken te behouden */
 

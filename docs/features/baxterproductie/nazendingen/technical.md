@@ -1,6 +1,6 @@
 # Nazendingen (Technisch)
 
-De module Nazendingen beheert de registratie en distributie van geneesmiddelen die tijdelijk niet leverbaar zijn.
+De module Nazendingen beheert de registratie en de communicatie van geneesmiddelen die tijdelijk niet leverbaar zijn.
 
 ## Technisch ontwerp
 De module combineert een database-overzicht van nazendingen met functionaliteiten voor PDF-generatie en asynchrone e-maildistributie. De architectuur maakt gebruik van een API-endpoint voor snelle voorraadselectie en Celery-tasks voor achtergrondprocessen.

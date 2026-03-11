@@ -3,7 +3,7 @@
 De **Apotheek Jansen App** biedt een module voor het inzien en beheren van de actuele baxtervoorraad. Deze module stelt medewerkers in staat om snel te controleren welke geneesmiddelen aanwezig zijn in de baxterproductie en biedt beheerders de mogelijkheid om deze lijst actueel te houden.
 
 ## Doel van de module
-Het doel van de module is het centraal beschikbaar stellen van de actuele voorraadstatus van geneesmiddelen die gebruikt worden in het baxterproces. Dit voorkomt onnodige vragen over de beschikbaarheid en versnelt het productieproces door direct inzicht te geven in de aanwezige middelen en bijbehorende specificaties.
+Het doel van de module is het centraal beschikbaar stellen van de actuele voorraadstatus van geneesmiddelen die gebruikt worden in het baxterproces. Dit versnelt het productieproces door direct inzicht te geven in de aanwezige middelen en bijbehorende specificaties.
 
 ## Wat kun je met deze module?
 Met de module Voorraad kun je het volgende:

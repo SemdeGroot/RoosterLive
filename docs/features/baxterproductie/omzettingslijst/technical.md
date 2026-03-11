@@ -3,7 +3,7 @@
 De module **Omzettingslijst** binnen de **Apotheek Jansen App** faciliteert de administratie van medicatie-omzettingen in het baxterproces. De module maakt gebruik van versleutelde patiëntgegevens en is direct gekoppeld aan de centrale baxtervoorraad.
 
 ## Technisch ontwerp
-De module volgt een container-entry architectuur waarbij individuele omzettingen (`OmzettingslijstEntry`) worden gegroepeerd binnen een `Omzettingslijst`. De architectuur zorgt voor een strikte scheiding tussen de beheerinterface en het asynchrone proces voor het genereren en verzenden van PDF-rapportages.
+De module volgt een architectuur waarbij individuele omzettingen (`OmzettingslijstEntry`) worden gegroepeerd binnen een `Omzettingslijst`. De architectuur zorgt voor een strikte scheiding tussen de beheerinterface en het asynchrone proces voor het genereren en verzenden van PDF-rapportages.
 
 ## Datamodel
 De module gebruikt twee modellen in `core/models.py`:
@@ -20,6 +20,7 @@ De module gebruikt twee modellen in `core/models.py`:
 
 ## Autorisatie en beveiliging
 De toegang is geregeld via drie specifieke permissies:
+
 - `can_view_baxter_omzettingslijst`: Inzien van de lijsten.
 - `can_edit_baxter_omzettingslijst`: Aanmaken en wijzigen van lijsten en entries.
 - `can_send_baxter_omzettingslijst`: Verzenden van de PDF-rapportage.

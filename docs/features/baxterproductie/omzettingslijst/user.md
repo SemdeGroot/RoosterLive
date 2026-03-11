@@ -3,7 +3,7 @@
 De module **Omzettingslijst** in de **Apotheek Jansen App** wordt gebruikt voor het registreren en communiceren van medicatie-omzettingen binnen het baxterproces. Hiermee wordt vastgelegd wanneer een gevraagd geneesmiddel is vervangen door een alternatief (bijvoorbeeld een ander merk of een andere vorm) voor een specifieke patiënt.
 
 ## Doel van de module
-Het doel van deze module is het waarborgen van de medicatieveiligheid en transparantie bij omzettingen. Door omzettingen digitaal vast te leggen en te accorderen met parafen (STS en Roller), ontstaat een sluitende administratie die eenvoudig gedeeld kan worden met de betrokken apotheken.
+Het doel van deze module is het waarborgen van de medicatieveiligheid en transparantie bij omzettingen door omzettingen digitaal vast te leggen en te communiceren met andere organisaties (apotheken en zorginstellingen)
 
 ## Wat kun je met deze module?
 Met de module Omzettingslijst kun je het volgende:

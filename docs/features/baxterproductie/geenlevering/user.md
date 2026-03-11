@@ -1,9 +1,9 @@
 # Geen levering (Gebruiker)
 
-De module **Geen levering** in de **Apotheek Jansen App** wordt gebruikt voor het registreren van geneesmiddelen die, om uiteenlopende redenen, niet geleverd zijn in de baxterrol voor een patiënt. Dit is essentieel voor de communicatie tussen de baxterproductie en de ontvangende apotheek.
+De module **Geen levering** in de **Apotheek Jansen App** wordt gebruikt voor het registreren van geneesmiddelen die niet geleverd zijn in de baxterrol voor een patiënt. Dit is essentieel voor de communicatie tussen de baxterproductie en de ontvangende apotheek.
 
 ## Doel van de module
-Het doel van deze module is het tijdig en foutloos informeren van de apotheek over ontbrekende medicatie in de baxter. Door deze informatie digitaal vast te leggen, kan de apotheek direct actie ondernemen (zoals handmatige nalevering of overleg met de arts) en wordt voorkomen dat patiënten onbedoeld hun medicatie overslaan.
+Het doel van deze module is het informeren van de apotheek over ontbrekende medicatie in de baxter. Door deze informatie digitaal vast te leggen, kan de apotheek direct actie ondernemen en wordt voorkomen dat patiënten onbedoeld hun medicatie overslaan.
 
 ## Wat kun je met deze module?
 Met de module Geen levering kun je het volgende:

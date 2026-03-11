@@ -20,6 +20,7 @@ De module wordt ondersteund door twee modellen in `core/models.py`:
 
 ## Autorisatie en beveiliging
 Toegang wordt verleend op basis van de volgende permissies:
+
 - `can_view_baxter_no_delivery`: Inzien van meldingen.
 - `can_edit_baxter_no_delivery`: Toevoegen en wijzigen van meldingen.
 - `can_send_baxter_no_delivery`: Verzenden van PDF-exports naar apotheken.
