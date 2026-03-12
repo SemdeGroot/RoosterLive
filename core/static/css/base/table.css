@@ -40,7 +40,7 @@ table.crud-table td{
 /* Force sticky behavior for all th inside thead, regardless of other classes */
 table.crud-table thead th {
   position: sticky !important;
-  top: 0 !important;
+  top: -1px !important; /* -1px prevents subpixel bleed-through on scroll */
   background-color: var(--panel) !important;
   z-index: 10 !important;
   box-shadow: inset 0 -1px 0 var(--border) !important;
@@ -148,17 +148,6 @@ tr.edit-row td{
   border:1px solid var(--border);
   border-radius:8px;
   padding:6px 8px;
-}
-
-/* -------------------------------------------------------
-   GENERIEKE "TOON MEER" (max 10 per keer)
-------------------------------------------------------- */
-tr.is-hidden-row{ display:none !important; }
-
-.crud-more-wrap{
-  margin-top:10px;
-  display:flex;
-  justify-content:flex-start;
 }
 
 /* -------------------------------------------------------

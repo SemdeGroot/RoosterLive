@@ -68,3 +68,5 @@ CLAUDE.md
 GEMINI.md
 .geminiignore
 .gemini/
+
+.netlify/

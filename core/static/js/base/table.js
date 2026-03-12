@@ -1,22 +1,15 @@
 // core/static/js/base/table.js
 (function () {
   function initOne(wrapper) {
-    const pageSize = Number(wrapper.dataset.pageSize || 10);
-    const btn = wrapper.querySelector("[data-crud-more]");
     const tableSel = wrapper.dataset.table;
-
-    // Houd je huidige contract aan: zonder btn of table selector doen we niks
-    if (!btn || !tableSel) return;
+    if (!tableSel) return;
 
     const table = document.querySelector(tableSel);
     const tbody = table?.querySelector("tbody");
     if (!table || !tbody) return;
 
-    // welke rows pagineren we?
     const rowSelector = wrapper.dataset.rows || "tbody tr";
     const getRows = () => Array.from(table.querySelectorAll(rowSelector));
-
-    let visible = pageSize;
 
     // =========================
     // SORT STATE
@@ -128,7 +121,7 @@
       const th = table.querySelectorAll("thead th")[sortIndex];
       const type = (th?.dataset.sort || "string").toLowerCase();
 
-      // Alleen sorteren op de rows die “meedoen” (dus niet display:none door search)
+      // Alleen sorteren op de rows die "meedoen" (dus niet display:none door search)
       const rows = getRows();
       const visibleRows = rows.filter(r => r.style.display !== "none");
 
@@ -147,37 +140,12 @@
       updateHeaderIndicators();
     }
 
-    // =========================
-    // PAGINATION APPLY
-    // =========================
-    function applyPagination() {
-      const rows = getRows().filter(r => r.style.display !== "none"); // respecteer search
-      rows.forEach((r, idx) => {
-        if (idx < visible) r.classList.remove("is-hidden-row");
-        else r.classList.add("is-hidden-row");
-      });
-
-      const hiddenCount = rows.filter(r => r.classList.contains("is-hidden-row")).length;
-      btn.style.display = hiddenCount > 0 ? "" : "none";
-    }
-
-    function applyAll() {
-      applySort();
-      applyPagination();
-    }
-
     // init
-    applyAll();
-
-    btn.addEventListener("click", () => {
-      visible += pageSize;
-      applyPagination();
-    });
+    applySort();
 
     // laat search ons resetten
     wrapper.addEventListener("crud:reset", () => {
-      visible = pageSize;
-      applyAll();
+      applySort();
     });
 
     // =========================
@@ -199,9 +167,7 @@
           sortDir = "asc";
         }
 
-        // na sorteren wil je meestal weer “vanaf boven” kijken
-        visible = pageSize;
-        applyAll();
+        applySort();
       });
     });
   }

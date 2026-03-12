@@ -32,4 +32,6 @@ xml_baxter_watchdog/
 
 docs/
 mkdocs.yml
+
 netlify.toml
+.netlify/
