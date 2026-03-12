@@ -173,6 +173,8 @@ def machine_statistieken_api_vandaag(request):
         "week_dagen":         week_dagen,
         "intradag":           intradag,
         "last_snapshot_time": last_snapshot_local_iso,
+        # ISO-8601 met Amsterdam-offset; client gebruikt dit om klokafwijking te corrigeren.
+        "server_time":        timezone.now().astimezone(AMSTERDAM).isoformat(),
     })
 
 # -------------------------------------------------------

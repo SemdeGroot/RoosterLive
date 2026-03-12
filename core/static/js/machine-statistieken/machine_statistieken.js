@@ -35,15 +35,11 @@ const MS_USE_DEMO = false;
 ------------------------------------------------------- */
 
 function nuMinutenAmsterdam() {
-  const parts = new Intl.DateTimeFormat("nl-NL", {
-    timeZone: "Europe/Amsterdam",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: false,
-  }).formatToParts(new Date());
-  const h = parseInt(parts.find(p => p.type === "hour").value);
-  const m = parseInt(parts.find(p => p.type === "minute").value);
-  return h * 60 + m;
+  // Volledig onafhankelijk van browser-klok en browser-timezone.
+  // state.serverFetchMinuten = HH:MM uit de Amsterdam-lokale server_time ISO-string.
+  // Date.now()-delta tikt altijd op de juiste snelheid (hardware), alleen de offset kan fout zijn.
+  if (!state.serverFetchLocalMs) return 0; // vóór eerste fetch (alleen in demo-modus)
+  return state.serverFetchMinuten + Math.floor((Date.now() - state.serverFetchLocalMs) / 60000);
 }
 
 /* -------------------------------------------------------
@@ -313,12 +309,14 @@ async function fetchGeschiedenis(bereik) {
 ------------------------------------------------------- */
 
 const state = {
-  huidigView:   "vandaag",
-  dagenBereik:  "dagen7",
-  wekenBereik:  "weken4",
-  data:         null,
-  charts:       {},
-  historyCache: {},
+  huidigView:         "vandaag",
+  dagenBereik:        "dagen7",
+  wekenBereik:        "weken4",
+  data:               null,
+  charts:             {},
+  historyCache:       {},
+  serverFetchMinuten: 0, // HH:MM in minuten uit server_time ISO-string op moment van fetch
+  serverFetchLocalMs: 0, // Date.now() op het moment van die fetch (voor elapsed-time delta)
 };
 
 /* -------------------------------------------------------
@@ -440,6 +438,13 @@ async function ensureHistoryLoadedForCurrentSelection() {
 
 async function laadEnRender() {
   if (MS_USE_DEMO) {
+    // Demo-modus: gebruik Intl als surrogaat voor servertijd (alleen in dev).
+    const parts = new Intl.DateTimeFormat("nl-NL", {
+      timeZone: "Europe/Amsterdam", hour: "numeric", minute: "numeric", hour12: false,
+    }).formatToParts(new Date());
+    state.serverFetchMinuten = parseInt(parts.find(p => p.type === "hour").value) * 60 +
+                               parseInt(parts.find(p => p.type === "minute").value);
+    state.serverFetchLocalMs = Date.now();
     state.data = buildDemoData();
     renderAlles();
     syncDropdowns();
@@ -451,7 +456,15 @@ async function laadEnRender() {
 
   // Vandaag: fail-safe
   try {
-    state.data.vandaag = await fetchVandaag();
+    const vandaag = await fetchVandaag();
+    if (vandaag.server_time) {
+      // server_time is Amsterdam-lokale ISO: "YYYY-MM-DDTHH:MM:SS.ffffff+HH:MM".
+      // HH:MM staat altijd op positie 11-16 — geen Intl of Date-parsing nodig.
+      const [sh, sm] = vandaag.server_time.slice(11, 16).split(":").map(Number);
+      state.serverFetchMinuten = sh * 60 + sm;
+      state.serverFetchLocalMs = Date.now();
+    }
+    state.data.vandaag = vandaag;
   } catch (e) {
     console.error(e);
     // laat oude state.data.vandaag staan
@@ -497,14 +510,8 @@ function updateLastUpdated() {
     return;
   }
 
-  const d = new Date(raw);
-  el.textContent =
-    "Laatst bijgewerkt: " +
-    d.toLocaleTimeString("nl-NL", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Europe/Amsterdam",
-    });
+  // last_snapshot_time is Amsterdam-lokale ISO; HH:MM staat altijd op positie 11-16.
+  el.textContent = "Laatst bijgewerkt: " + raw.slice(11, 16);
 }
 
 /* -------------------------------------------------------
@@ -1027,10 +1034,7 @@ function renderWeekDagenChart(weekDagen) {
   const target   = MS_CONFIG.dagTarget;
 
   const volledigeWeek = dagNamen.map((naam, i) => {
-    const dagData = weekDagen.find(d => {
-      const dt = new Date(d.datum);
-      return (dt.getDay() === 0 ? 6 : dt.getDay() - 1) === i;
-    });
+    const dagData = weekDagen.find(d => weekdagIndexAmsterdam(d.datum) === i);
     const totaal = dagData
       ? Object.values(dagData.machines).reduce((s, v) => s + v, 0)
       : null;
@@ -1602,12 +1606,20 @@ function getIsoYearWeek(d) {
 function datumString(d)     { return d.toISOString().slice(0, 10); }
 function tijdNaarMinuten(t) { const [h, m] = t.split(":").map(Number); return h * 60 + m; }
 
+// Geeft weekdagindex 0=Ma..6=Zo voor een "YYYY-MM-DD" string.
+// Noon UTC (12:00Z) valt altijd binnen de Amsterdam-datum (UTC+1 winter, UTC+2 zomer),
+// dus getUTCDay() geeft de juiste weekdag — zonder Intl, zonder lokale timezone.
+function weekdagIndexAmsterdam(datumStr) {
+  const [y, m, d] = datumStr.split("-").map(Number);
+  const utcDay = new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay(); // 0=Zo..6=Za
+  return utcDay === 0 ? 6 : utcDay - 1;                           // 0=Ma..6=Zo
+}
+
+const _nlDagNamen = ["Ma","Di","Wo","Do","Vr","Za","Zo"]; // 0=Ma..6=Zo
+
 function formatDatumLabel(datumStr) {
-  const d     = new Date(datumStr);
-  const namen = ["Zo","Ma","Di","Wo","Do","Vr","Za"];
-  const dag   = String(d.getDate()).padStart(2, "0");
-  const maand = String(d.getMonth() + 1).padStart(2, "0");
-  return `${namen[d.getDay()]} ${dag}-${maand}-${d.getFullYear()}`;
+  const [jaar, maand, dag] = datumStr.split("-");
+  return `${_nlDagNamen[weekdagIndexAmsterdam(datumStr)] ?? "??"} ${dag}-${maand}-${jaar}`;
 }
 
 function formatNummer(n) { return n == null ? "—" : Math.round(n).toLocaleString("nl-NL"); }
