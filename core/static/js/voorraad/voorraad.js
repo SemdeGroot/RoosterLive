@@ -38,11 +38,63 @@
       const rows = table.querySelectorAll('tbody tr');
 
       rows.forEach(tr => {
-        const text = tr.innerText.toLowerCase();
+        // Gebruik textContent ipv innerText zodat we ook in verborgen rijen (door pagination) kunnen zoeken
+        const text = tr.textContent.toLowerCase();
         tr.style.display = text.includes(needle) ? '' : 'none';
       });
 
       wrapper.dispatchEvent(new CustomEvent('crud:reset'));
+    });
+  }
+
+  function initPagination() {
+    const table = document.getElementById('medTable');
+    const tbody = table?.querySelector('tbody');
+    const wrapper = document.querySelector('[data-crud]');
+    const loadMoreBtn = document.getElementById('medLoadMore');
+    if (!tbody || !wrapper || !loadMoreBtn) return;
+
+    const pageSize = Number(wrapper.dataset.pageSize || 20);
+    let visibleCount = pageSize;
+
+    function applyPagination() {
+      // Alleen de rijen die niet door search verborgen zijn (inline style)
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.style.display !== 'none');
+      
+      rows.forEach((r, idx) => {
+        if (idx < visibleCount) {
+          r.classList.remove('is-hidden-page');
+        } else {
+          r.classList.add('is-hidden-page');
+        }
+      });
+
+      if (visibleCount >= rows.length) {
+        loadMoreBtn.style.display = 'none';
+      } else {
+        loadMoreBtn.style.display = '';
+      }
+    }
+
+    loadMoreBtn.addEventListener('click', () => {
+      visibleCount += pageSize;
+      applyPagination();
+    });
+
+    applyPagination();
+
+    wrapper.addEventListener('crud:reset', () => {
+      visibleCount = pageSize;
+      applyPagination();
+    });
+
+    // Luister naar table.js sorting clicks
+    const headers = table.querySelectorAll('thead th');
+    headers.forEach(th => {
+      th.addEventListener('click', () => {
+        visibleCount = pageSize;
+        setTimeout(applyPagination, 10);
+      });
     });
   }
 
@@ -96,6 +148,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     wireUpload('medFile','medDrop','medMeta','medName','medUpload','medClear');
     initMedSearch();
+    initPagination();
     initEmailSelect2();
   });
 })();

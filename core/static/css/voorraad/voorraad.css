@@ -43,3 +43,7 @@
     display: table; /* Zorg dat de tabel zich als tabel blijft gedragen */
   }
 }
+
+tr.is-hidden-page {
+  display: none !important;
+}
