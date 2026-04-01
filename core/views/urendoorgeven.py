@@ -361,6 +361,8 @@ def urendoorgeven_view(request):
                 with transaction.atomic():
                     maand_form.save()
 
+                    submitted_dates = set()
+
                     for ds, st, en, br in zip(dates, starts, ends, breaks):
                         # parse date
                         try:
@@ -381,6 +383,8 @@ def urendoorgeven_view(request):
                             UrenDag.objects.filter(user=request.user, date=row_date).delete()
                             UrenRegel.objects.filter(user=request.user, date=row_date).delete()
                             continue
+
+                        submitted_dates.add(row_date)
 
                         f = UrenDagInputForm({"start_time": st, "end_time": en, "break_hours": br})
                         if not f.is_valid():
@@ -416,6 +420,18 @@ def urendoorgeven_view(request):
                             break_hours=break_h,
                             dagdelen=dagdelen,
                         )
+
+                    # Verwijder rijen die uit de UI zijn verwijderd
+                    removed = UrenDag.objects.filter(
+                        user=request.user,
+                        date__gte=window_start,
+                        date__lt=window_end,
+                    ).exclude(date__in=submitted_dates)
+                    removed_dates = list(removed.values_list("date", flat=True))
+                    removed.delete()
+                    if removed_dates:
+                        UrenRegel.objects.filter(user=request.user, date__in=removed_dates).delete()
+
             except ValueError as e:
                 return JsonResponse({"ok": False, "error": str(e)}, status=400)
 
