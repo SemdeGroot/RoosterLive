@@ -8,7 +8,7 @@
     (function() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#EAEEF7';
       let meta = document.createElement('meta');
       meta.name = 'theme-color';
       meta.id = 'meta-theme-color';
@@ -29,8 +29,8 @@
       --card-shadow: rgba(0,0,0,0.4); --card-border: rgba(255,255,255,0.08);
     }
     [data-theme='light'] {
-      --bg: #D4D9E6; --panel-2: #D1D8E6; --muted: #2F3B46; --text: #000000;
-      --border: #7A8694; --button-color: #BCC7D2; --button-hover: #A6B5C3;
+      --bg: #EAEEF7; --panel-2: #E6EBF5; --muted: #2F3B46; --text: #000000;
+      --border: #96A2AE; --button-color: #D8E2EC; --button-hover: #C8D5E0;
       --card-shadow: rgba(0,0,0,0.1); --card-border: rgba(0,0,0,0.05);
     }
     body {

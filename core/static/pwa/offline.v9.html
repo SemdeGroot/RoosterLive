@@ -9,7 +9,7 @@
     (function() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      const color = (savedTheme === 'dark') ? '#0d131b' : '#D4D9E6';
+      const color = (savedTheme === 'dark') ? '#0d131b' : '#EAEEF7';
       let meta = document.createElement('meta');
       meta.name = 'theme-color';
       meta.id = 'meta-theme-color';
@@ -66,24 +66,24 @@
 
     /* Light Mode overschrijvingen */
     [data-theme='light'] {
-      --bg: #D4D9E6;
-      --panel: #E3E8F0;
-      --panel-2: #D1D8E6;
-      --tiles: #D1D8E6;
+      --bg: #EAEEF7;
+      --panel: #F3F6FD;
+      --panel-2: #E6EBF5;
+      --tiles: #E6EBF5;
       --text: #000000;
       --muted: #2F3B46;
-      --border: #7A8694;
+      --border: #96A2AE;
       --shadow: rgba(0, 0, 0, 0.05);
-      --button-color: #BCC7D2;
-      --button-hover: #A6B5C3;
+      --button-color: #D8E2EC;
+      --button-hover: #C8D5E0;
       --logout-color: #D85D5D;
       --danger: #9B2D28;
       --danger-hover: #AF332E;
       --danger-border: #892823;
 
       /* Meta theme-color variabelen voor light mode */
-      --theme-meta-base: #E3E8F0;  /* base.html kleur */
-      --theme-meta-login: #D4D9E6; /* _base.html kleur */
+      --theme-meta-base: #F3F6FD;  /* base.html kleur */
+      --theme-meta-login: #EAEEF7; /* _base.html kleur */
 
       /* Locatie kleuren */
       --loc-green-bg: rgba(0, 160, 90, 0.07);
