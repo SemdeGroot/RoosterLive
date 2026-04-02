@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const isDark = (theme === 'dark');
-        const themeColor = isDark ? '#131a24' : '#E3E8F0';
+        const themeColor = isDark ? '#131a24' : '#F3F6FD';
         meta.setAttribute('content', themeColor);
 
         // --- DE FIX VOOR DE ICOONTJES ---
