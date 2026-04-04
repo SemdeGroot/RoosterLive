@@ -836,12 +836,13 @@ class InschrijvingItemForm(forms.ModelForm):
 class MedicatieReviewForm(forms.Form):
     afdeling_id = forms.ModelChoiceField(
         queryset=MedicatieReviewAfdeling.objects.none(),
-        required=True,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control django-select2'})
     )
 
-    BRON_CHOICES = [("medimo", "Medimo")]
+    BRON_CHOICES = [("medimo", "Medimo"), ("pharmacom", "Pharmacom")]
     SCOPE_CHOICES = [("afdeling", "Volledige Afdeling"), ("patient", "Individuele Patiënt")]
+    PATIENT_TYPE_CHOICES = [("new", "Nieuwe patiënt"), ("existing", "Bestaande patiënt")]
 
     source = forms.ChoiceField(
         choices=BRON_CHOICES,
@@ -857,9 +858,22 @@ class MedicatieReviewForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_scope'})
     )
 
+    patient_type = forms.ChoiceField(
+        choices=PATIENT_TYPE_CHOICES,
+        initial="new",
+        required=False,
+        label="Patiënt",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_patient_type'})
+    )
+
+    existing_patient_id = forms.IntegerField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_existing_patient_id'})
+    )
+
     patient = forms.CharField(
         required=False,
-        label="Patiëntnaam (zoals in Medimo)",
+        label="Patiëntnaam",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'id': 'id_patient',
@@ -887,25 +901,30 @@ class MedicatieReviewForm(forms.Form):
             'rows': 12,
             'placeholder': 'Kopieer het medicatieoverzicht volgens de instructies hierboven en plak het hier...'
         }),
-        required=True
+        required=False
+    )
+
+    pdf_file = forms.FileField(
+        required=False,
+        label="Upload PDF",
+        validators=[FileExtensionValidator(['pdf'])],
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'id': 'id_pdf_file',
+            'accept': '.pdf',
+        })
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['afdeling_id'].queryset = MedicatieReviewAfdeling.objects.all()
+        self.fields['afdeling_id'].queryset = MedicatieReviewAfdeling.objects.exclude(
+            locatie="Pharmacom", afdeling="Pharmacom (individueel)"
+        )
 
     def clean_patient(self):
-        # Trim altijd; maakt matching stabieler
         return (self.cleaned_data.get("patient") or "").strip()
 
     def clean_patient_geboortedatum(self):
-        """
-        Parse dd-mm-jjjj naar date.
-        - Als leeg: return None (wordt in clean() verplicht gemaakt bij scope=patient)
-        - Valideert ook:
-          * jaar >= 1900
-          * niet in de toekomst
-        """
         raw = (self.cleaned_data.get("patient_geboortedatum") or "").strip()
         if not raw:
             return None
@@ -926,17 +945,40 @@ class MedicatieReviewForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
+        source = cleaned.get("source")
         scope = cleaned.get("scope")
+        patient_type = cleaned.get("patient_type", "new")
 
-        if scope == "patient":
-            patient = cleaned.get("patient") or ""
-            dob_date = cleaned.get("patient_geboortedatum")  # date of None
+        if source == "pharmacom":
+            # Pharmacom: altijd individueel, PDF verplicht
+            cleaned["scope"] = "patient"
+            scope = "patient"
+            if not cleaned.get("pdf_file"):
+                self.add_error("pdf_file", "Upload een PDF-bestand voor Pharmacom.")
 
-            if not patient:
-                self.add_error("patient", "Vul de patiëntnaam in (zoals in Medimo).")
+            if patient_type == "existing":
+                if not cleaned.get("existing_patient_id"):
+                    self.add_error("existing_patient_id", "Selecteer een bestaande patiënt.")
 
-            if not dob_date:
-                self.add_error("patient_geboortedatum", "Vul de geboortedatum in (dd-mm-jjjj).")
+        elif source == "medimo":
+            # Medimo: afdeling verplicht
+            if not cleaned.get("afdeling_id"):
+                self.add_error("afdeling_id", "Selecteer een afdeling.")
+
+            if not cleaned.get("medimo_text"):
+                self.add_error("medimo_text", "Plak het medicatieoverzicht.")
+
+            if scope == "patient":
+                if patient_type == "new":
+                    patient = cleaned.get("patient") or ""
+                    dob_date = cleaned.get("patient_geboortedatum")
+                    if not patient:
+                        self.add_error("patient", "Vul de patiëntnaam in.")
+                    if not dob_date:
+                        self.add_error("patient_geboortedatum", "Vul de geboortedatum in (dd-mm-jjjj).")
+                elif patient_type == "existing":
+                    if not cleaned.get("existing_patient_id"):
+                        self.add_error("existing_patient_id", "Selecteer een bestaande patiënt.")
 
         return cleaned
 

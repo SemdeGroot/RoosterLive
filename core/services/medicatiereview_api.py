@@ -57,6 +57,57 @@ def call_review_api(text, source="medimo", scope="afdeling", geboortedatum=None)
 
     return results, errors
 
+
+def call_review_api_upload(file_bytes, source="pharmacom", scope="patient", geboortedatum=None):
+    url = settings.MEDICATIEREVIEW_API_URL.rstrip("/") + "/upload"
+    api_key = getattr(settings, "MEDICATIEREVIEW_API_KEY", None)
+
+    files = {"file": ("upload.pdf", file_bytes, "application/pdf")}
+    data = {"source": source, "scope": scope}
+    if geboortedatum:
+        data["geboortedatum"] = geboortedatum
+
+    headers = {}
+    if api_key:
+        headers["X-API-Key"] = api_key
+
+    results = None
+    errors = []
+
+    try:
+        r = requests.post(url, files=files, data=data, headers=headers, timeout=120)
+
+        if r.status_code == 401:
+            return None, ["Niet geautoriseerd bij de medicatiereview-service (check API key)."]
+
+        if r.status_code >= 400:
+            return None, [f"HTTP {r.status_code} van medicatiereview-service: {r.text[:1000]}"]
+
+        for line in r.text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            msg_type = obj.get("type")
+            if msg_type == "result":
+                results = obj
+            elif msg_type == "error":
+                errors.append(obj.get("msg", "Onbekende fout in API"))
+
+    except requests.exceptions.Timeout:
+        errors.append("De analyse duurde te lang (timeout). Probeer een kleinere tekst.")
+    except requests.exceptions.ConnectionError:
+        errors.append(f"Kan geen verbinding maken met de medicatiereview-service op {url}.")
+    except requests.exceptions.RequestException as e:
+        errors.append(f"Fout bij communicatie met de medicatiereview-service: {str(e)}")
+
+    return results, errors
+
+
 def _normalize_lines(txt: str) -> str:
     # kleine normalisatie om dubbele whitespace te beperken
     return "\n".join([line.rstrip() for line in (txt or "").strip().splitlines()]).strip()

@@ -34,7 +34,7 @@ table.crud-table td{
   text-overflow: clip;
   white-space: normal;
 
-  overflow-wrap: anywhere; 
+  overflow-wrap: anywhere;
 }
 
 /* Force sticky behavior for all th inside thead, regardless of other classes */

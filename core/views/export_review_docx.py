@@ -426,7 +426,7 @@ def _add_meds_table(doc: Document, meds: list) -> None:
     _set_tbl_grid(tbl, col_w)
     _suppress_tbl_look(tbl)
 
-    for i, (cell, label) in enumerate(zip(tbl.rows[0].cells, ["Middel", "Gebruik", "Opmerking (Medimo)"])):
+    for i, (cell, label) in enumerate(zip(tbl.rows[0].cells, ["Middel", "Gebruik", "Opmerking AIS"])):
         _set_col_width(cell, col_w[i])
         _cell_borders(cell, color=COL_DIVIDER, size="8")  # before shd (schema order)
         _cell_shading(cell, COL_HEADER_BG)

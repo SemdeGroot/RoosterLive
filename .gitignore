@@ -70,3 +70,5 @@ GEMINI.md
 .gemini/
 
 .netlify/
+.codex
+plans/

@@ -23,7 +23,8 @@
 /* --- KOLOMBREEDTES INSTELEN --- */
 #medTable {
   --c1: 120px; /* ZI-nummer */
-  --c2: 350px; /* Medicijn naam (lekker breed) */
+  --c2: 280px; /* Medicijn naam */
+  min-width: 1000px;
 }
 
 /* Zorg dat de zoekbalk uit voorraad.css goed aansluit op de card */
@@ -39,8 +40,8 @@
 @media (max-width: 900px) {
 
   #medTable {
-    min-width: 800px; 
-    display: table; /* Zorg dat de tabel zich als tabel blijft gedragen */
+    min-width: 1000px;
+    display: table;
   }
 }
 

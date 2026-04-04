@@ -377,3 +377,25 @@
     max-height: 250px;
     overflow-y: auto;
 }
+
+/* --- PDF Upload Dropzone --- */
+.pdf-dropzone {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: var(--panel-2);
+    border: 1px dashed var(--border); border-radius: 12px; cursor: pointer;
+    transition: border-color 0.15s;
+}
+.pdf-dropzone:hover,
+.pdf-dropzone.is-dragover { border-color: var(--accent); }
+
+.pdf-dz-icon {
+    flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); color: var(--text); border: 1px solid var(--border);
+}
+.pdf-dz-text { display: flex; flex-direction: column; gap: 4px; }
+.pdf-dz-title { color: var(--text); font-weight: 600; line-height: 1.1; }
+.pdf-dz-hint { color: var(--muted); font-size: 14px; }
+.pdf-file-meta { margin-top: 8px; color: var(--muted); display: none; }
+.pdf-file-meta.is-visible { display: block; }
+.pdf-file-name { color: var(--text); font-weight: 600; }

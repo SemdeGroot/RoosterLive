@@ -181,6 +181,21 @@ $(document).ready(function () {
     return parts.join("\n\n----------------------------------------\n\n").trim();
   }
 
+  function buildAllOpmerkingen() {
+    const parts = [];
+
+    document.querySelectorAll(".med-group").forEach((groupEl) => {
+      const groupId = groupEl.getAttribute("data-group-id");
+      if (!groupId) return;
+
+      const commentTa = groupEl.querySelector(`textarea[name="comment_${groupId}"]`);
+      const comment = commentTa ? (commentTa.value || "").trim() : "";
+      if (comment) parts.push(comment);
+    });
+
+    return parts.join("\n\n").trim();
+  }
+
   const copyAllBtn = document.querySelector(".btn-copy-all-medimo");
   if (copyAllBtn) {
     copyAllBtn.addEventListener("click", async () => {
@@ -193,6 +208,22 @@ $(document).ready(function () {
       } catch (e) {
         console.error("Kopiëren mislukt:", e);
         setCopyFeedback(copyAllBtn, false, "Kopieer alles voor Medimo");
+      }
+    });
+  }
+
+  const copyOpmBtn = document.querySelector(".btn-copy-opmerkingen");
+  if (copyOpmBtn) {
+    copyOpmBtn.addEventListener("click", async () => {
+      const text = buildAllOpmerkingen();
+
+      try {
+        const ok = await copyTextToClipboard(text);
+        if (!ok) throw new Error("Copy failed");
+        setCopyFeedback(copyOpmBtn, true, "Kopieer opmerkingen");
+      } catch (e) {
+        console.error("Kopiëren mislukt:", e);
+        setCopyFeedback(copyOpmBtn, false, "Kopieer opmerkingen");
       }
     });
   }
@@ -210,6 +241,16 @@ $(document).ready(function () {
         $(manualGroupSelect).select2("open");
       }
     });
+
+    // Capture phase so select2's own stopPropagation cannot block this handler.
+    document.addEventListener("click", function (e) {
+      if (manualGroupForm.style.display === "none") return;
+      if (toggleManualGroupBtn.contains(e.target)) return;
+      if (manualGroupForm.contains(e.target)) return;
+      // Keep open while interacting with the select2 results overlay.
+      if (e.target.closest(".select2-dropdown")) return;
+      manualGroupForm.style.display = "none";
+    }, true);
   }
 
   // ==========================================

@@ -25,14 +25,14 @@
     </span>
       <div class="birthday-header-text">
         <h2>Gegevens invoeren</h2>
-        <p>Selecteer de afdeling en plak het medicatieoverzicht om de analyse te starten.</p>
+        <p>Selecteer de bron en vul de gegevens in om de analyse te starten.</p>
       </div>
         <a href="{% url 'medicatiebeoordeling_tiles' %}" class="btn btn-save">
           Terug naar Medicatiebeoordeling
         </a>
     </div>
 
-    <form method="post" class="form" style="padding: 0 16px 16px;">
+    <form method="post" enctype="multipart/form-data" class="form" style="padding: 0 16px 16px;">
         {% csrf_token %}
         <input type="hidden" name="btn_start_review" value="1">
 
@@ -40,28 +40,46 @@
             <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <div style="margin-bottom: 24px;">
-            <label class="section-label" style="margin-bottom: 6px;">Selecteer Afdeling</label>
-
-            {{ form.afdeling_id }}
-
-            {% if form.afdeling_id.errors %}
-                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.afdeling_id.errors }}</div>
-            {% endif %}
-        </div>
-
+        {# --- BRON & SCOPE --- #}
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
             <div style="margin-bottom: 15px; flex:1;">
                 <label class="section-label">{{ form.source.label }}</label>
                 {{ form.source }}
             </div>
-            <div style="margin-bottom: 15px; flex:1;">
+            <div id="scope-wrapper" style="margin-bottom: 15px; flex:1;">
                 <label class="section-label">{{ form.scope.label }}</label>
                 {{ form.scope }}
             </div>
         </div>
 
-        {# --- EXTRA: SINGLE PATIENT VELDEN --- #}
+        {# --- AFDELING (verborgen bij pharmacom) --- #}
+        <div id="afdeling-wrapper" style="margin-bottom: 24px;">
+            <label class="section-label" style="margin-bottom: 6px;">Selecteer Afdeling</label>
+            {{ form.afdeling_id }}
+            {% if form.afdeling_id.errors %}
+                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.afdeling_id.errors }}</div>
+            {% endif %}
+        </div>
+
+        {# --- PATIENT TYPE (segmented control) --- #}
+        <div id="patient-type-wrapper" style="display:none; margin-bottom: 15px;">
+            <label class="section-label">{{ form.patient_type.label }}</label>
+            {{ form.patient_type }}
+        </div>
+
+        {# --- BESTAANDE PATIENT SELECTIE --- #}
+        <div id="existing-patient-wrapper" style="display:none; margin-bottom: 15px;">
+            <label class="section-label">Selecteer bestaande patient</label>
+            <select id="id_existing_patient_select" class="form-control" style="width:100%;">
+                <option value="">Zoek een patient...</option>
+            </select>
+            {{ form.existing_patient_id }}
+            {% if form.existing_patient_id.errors %}
+                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.existing_patient_id.errors }}</div>
+            {% endif %}
+        </div>
+
+        {# --- NIEUWE PATIENT VELDEN (naam + geboortedatum) --- #}
         <div id="single-patient-fields" style="display:none; margin-bottom: 15px;">
             <div style="display:flex; gap:20px; flex-wrap:wrap;">
                 <div style="margin-bottom: 0px; flex:1;">
@@ -81,14 +99,46 @@
             </div>
         </div>
 
-        <div style="margin-bottom: 15px;">
-            <div id="instruction-wrapper" style="display:none; margin-bottom: 15px;">
-                <label class="section-label" style="margin-bottom: 6px;">Instructie:</label>
-                <div id="instruction-content" class="alert alert-info" style="margin-bottom: 24px; font-size: 0.9em; background-color: var(--bg); color: var(--text); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
-                </div>
+        {# --- INSTRUCTIES --- #}
+        <div id="instruction-wrapper" style="display:none; margin-bottom: 15px;">
+            <label class="section-label" style="margin-bottom: 6px;">Instructie:</label>
+            <div id="instruction-content" class="alert alert-info" style="margin-bottom: 24px; font-size: 0.9em; background-color: var(--bg); color: var(--text); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
             </div>
+        </div>
+
+        {# --- MEDIMO TEKSTVELD --- #}
+        <div id="medimo-text-wrapper" style="margin-bottom: 15px;">
             <label class="section-label">Medicatieoverzicht:</label>
             {{ form.medimo_text }}
+            {% if form.medimo_text.errors %}
+                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.medimo_text.errors }}</div>
+            {% endif %}
+        </div>
+
+        {# --- PDF UPLOAD (pharmacom) --- #}
+        <div id="pdf-upload-wrapper" style="display:none; margin-bottom: 15px;">
+            <label class="section-label">{{ form.pdf_file.label }}</label>
+            <input type="file" id="id_pdf_file" name="pdf_file" accept=".pdf" hidden>
+            <div class="pdf-dropzone" id="pdfDropzone">
+                <div class="pdf-dz-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <path d="M14 2v6h6"/>
+                        <path d="M12 12v6"/>
+                        <path d="M9 15h6"/>
+                    </svg>
+                </div>
+                <div class="pdf-dz-text">
+                    <div class="pdf-dz-title">Sleep je Pharmacom PDF hierheen of klik om te kiezen</div>
+                    <div class="pdf-dz-hint">Alleen .pdf bestanden</div>
+                </div>
+            </div>
+            <div class="pdf-file-meta" id="pdfFileMeta">
+                Geselecteerd: <span class="pdf-file-name" id="pdfFileName"></span>
+            </div>
+            {% if form.pdf_file.errors %}
+                <div style="color:var(--logout-color); font-size:0.9em; margin-top:4px;">{{ form.pdf_file.errors }}</div>
+            {% endif %}
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -129,5 +179,8 @@
 {# IMask #}
 <script src="https://unpkg.com/imask"></script>
 
+<script>
+    window.PATIENT_SELECT_URL = "{% url 'medicatiebeoordeling_patient_select_api' %}";
+</script>
 <script src="{% static 'js/medicatiebeoordeling/medicatiebeoordeling_create.js' %}"></script>
 {% endblock %}

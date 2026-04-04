@@ -143,6 +143,7 @@ urlpatterns = [
     # Oude review openen
     path("medicatiebeoordeling/historie/", med_views.review_list, name="medicatiebeoordeling_list"),
     path("medicatiebeoordeling/search/", med_views.review_search_api, name="medicatiebeoordeling_search_api"),
+    path("medicatiebeoordeling/api/patient-select/", med_views.patient_select_api, name="medicatiebeoordeling_patient_select_api"),
     # med review settings aanpassen
     path("medicatiebeoordeling/instellingen/", med_settings.standaardvragen, name="medicatiebeoordeling_settings"),
     path("medicatiebeoordeling/api/atc-lookup/", med_settings.atc_lookup, name="api_atc_lookup"),
