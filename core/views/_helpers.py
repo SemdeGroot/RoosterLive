@@ -68,7 +68,7 @@ PERM_LABELS = {
     "can_view_diensten":       "Mag Diensten bekijken",
     # Uren doorgeven
     "can_view_urendoorgeven":       "Mag uren doorgeven",
-    "can_edit_urendoorgeven": "Mag uren toeslag aanpassen",
+    "can_edit_urendoorgeven": "Mag personeelsuren inzien en toeslag aanpassen",
     # Ziek melden
     "can_view_ziekmelden":       "Mag Ziek Melden bekijken",
     "can_edit_ziekmelden":       "Mag personeel ziek melden",

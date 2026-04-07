@@ -135,37 +135,11 @@ def _style_status_cell(cell, *, text: str, kind: str) -> None:
     cell.alignment = Alignment(horizontal="center", vertical="center")
 
 
-def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResult:
+def generate_uren_month_xlsx(month_first: date) -> Optional[bytes]:
     """
-    Exporteert vorige kalendermaand (1e t/m 1e volgende maand).
-
-    TAB 1 (Overzicht):
-    - Totaal doorgegeven uren (gewogen): sum(actual_hours * allowance_multiplier)
-    - Totaal geschatte uren (gewogen): shifts per dagdeel * dagdeel_duur * allowance_multiplier(dagdeel)
-    - Verschil (uren): doorgegeven - geschat
-    - Verschil (%): (doorgegeven - geschat) / geschat * 100
-    - Kilometers: UrenMaand.kilometers (0 als ontbreekt)
-    - Sortering: grootste absolute verschil in UREN bovenaan (abs(verschil_uren) desc)
-
-    TAB 2 (Details):
-    Werknemer | Datum | Shift | Dagdeel | Theoretisch (gewogen) uren | Doorgegeven (gewogen) uren | Verschil (uren) | Verschil (%)
-
-    Regels in Details:
-    1) Voor geplande shifts:
-       - Shift kolom: "Ingepland" (groen)
-       - Theoretisch gevuld (dagdeel_duur * multiplier)
-       - Doorgegeven is gewogen uit UrenRegel (of "Geen uren" rood)
-    2) Voor alle doorgegeven uren ZONDER bijbehorende shift:
-       - Shift kolom: "Geen shift" (rood)
-       - Theoretisch leeg
-       - Verschil(uren)=doorgegeven
-       - Verschil(%) leeg
-    Details wordt gesorteerd op: werknemer -> datum -> dagdeel.sort_order
+    Genereer een Excel-bestand (bytes) met uren overzicht + details voor een
+    specifieke maand. Retourneert None als er geen data is.
     """
-    if today is None:
-        today = timezone.localdate()
-
-    month_first = _prev_month_first(today)
     next_month = _next_month_first(month_first)
 
     # Dagdelen + mapping
@@ -208,7 +182,7 @@ def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResu
     )
     user_ids = sorted(user_ids_from_hours | user_ids_from_shifts)
     if not user_ids:
-        return UrenExportResult(month=month_first, xlsx_storage_path=None, filename=None, row_count=0)
+        return None
 
     # --- Kilometers per user ---
     km_by_user: Dict[int, int] = {
@@ -548,10 +522,23 @@ def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResu
 
     _autosize_columns(ws2, min_width=12, max_width=65)
 
-    # Save to storage
     bio = BytesIO()
     wb.save(bio)
-    xlsx_bytes = bio.getvalue()
+    return bio.getvalue()
+
+
+def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResult:
+    """
+    Exporteert vorige kalendermaand naar storage (voor de beat-task / email).
+    """
+    if today is None:
+        today = timezone.localdate()
+
+    month_first = _prev_month_first(today)
+    xlsx_bytes = generate_uren_month_xlsx(month_first)
+
+    if xlsx_bytes is None:
+        return UrenExportResult(month=month_first, xlsx_storage_path=None, filename=None, row_count=0)
 
     filename = f"Urenoverzicht_{month_first.strftime('%Y-%m')}.xlsx"
     ts = timezone.now().strftime("%Y%m%d_%H%M%S")
@@ -562,5 +549,5 @@ def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResu
         month=month_first,
         xlsx_storage_path=storage_path,
         filename=filename,
-        row_count=len(user_ids),
+        row_count=0,
     )

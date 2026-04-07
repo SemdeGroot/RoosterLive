@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 
@@ -536,5 +536,29 @@ def urendoorgeven_view(request):
         "planned_by_date": planned_by_date,
         "existing_by_date": existing_by_date,
         "dagdelen": dagdelen,  # handig voor JSON meta
+        "can_edit": can(request.user, "can_edit_urendoorgeven"),
     }
     return render(request, "urendoorgeven/index.html", context)
+
+
+@login_required
+def urendoorgeven_export_view(request):
+    if not can(request.user, "can_edit_urendoorgeven"):
+        return HttpResponseForbidden("Geen toegang.")
+
+    from core.utils.beat.uren import generate_uren_month_xlsx
+
+    active_month = _active_month(timezone.localdate())
+    xlsx_bytes = generate_uren_month_xlsx(active_month)
+
+    if xlsx_bytes is None:
+        messages.error(request, "Geen data beschikbaar voor deze maand.")
+        return redirect("urendoorgeven")
+
+    filename = f"Urenoverzicht_{active_month.strftime('%Y-%m')}.xlsx"
+    response = HttpResponse(
+        xlsx_bytes,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

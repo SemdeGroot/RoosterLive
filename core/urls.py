@@ -27,7 +27,7 @@ from core.views.onboarding import onboarding_tiles
 from core.views.whoiswho import whoiswho
 from core.views.inschrijven import inschrijvingen
 from core.views.ziekmelden import ziekmelden
-from core.views.urendoorgeven import urendoorgeven_view
+from core.views.urendoorgeven import urendoorgeven_view, urendoorgeven_export_view
 from core.views.diensten import mijndiensten_view
 from core.views.diensten_webcal import diensten_webcal_view
 from core.views.onboarding_forms import onboarding_formulieren
@@ -99,6 +99,7 @@ urlpatterns = [
     path("personeel/diensten/", mijndiensten_view, name="mijndiensten"),
     path("diensten/webcal/<uuid:token>.ics", diensten_webcal_view, name="diensten_webcal"),
     path("personeel/uren-doorgeven/", urendoorgeven_view, name="urendoorgeven"),
+    path("personeel/uren-doorgeven/export/", urendoorgeven_export_view, name="urendoorgeven_export"),
     path("personeel/ziek-melden/", ziekmelden, name="ziekmelden"),
     path("personeel/inschrijven/", inschrijvingen, name="inschrijvingen"),
     path("onboarding/team/", whoiswho, name="whoiswho"),
