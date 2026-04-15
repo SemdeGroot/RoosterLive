@@ -18,7 +18,7 @@ from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from core.models import Dagdeel, Shift, UrenMaand, UrenRegel
+from core.models import Dagdeel, Shift, UrenDag, UrenMaand, UrenRegel
 
 
 @dataclass(frozen=True)
@@ -39,6 +39,30 @@ def _prev_month_first(today: date) -> date:
 
 def _next_month_first(month_first: date) -> date:
     return _month_first(month_first + relativedelta(months=1))
+
+
+def _distinct_shift_months() -> List[date]:
+    months: Set[date] = set()
+    for shift_date in Shift.objects.order_by().values_list("date", flat=True).distinct():
+        if shift_date:
+            months.add(_month_first(shift_date))
+    return sorted(months)
+
+
+def list_candidate_uren_export_months() -> List[date]:
+    months = set(UrenDag.objects.order_by().values_list("month", flat=True).distinct())
+    months.update(UrenRegel.objects.order_by().values_list("month", flat=True).distinct())
+    months.update(UrenMaand.objects.order_by().values_list("month", flat=True).distinct())
+    months.update(_distinct_shift_months())
+    return sorted(m for m in months if m is not None)
+
+
+def list_available_uren_export_months() -> List[date]:
+    available: List[date] = []
+    for month_first in list_candidate_uren_export_months():
+        if generate_uren_month_xlsx(month_first) is not None:
+            available.append(month_first)
+    return available
 
 
 def _dutch_name(user) -> str:
@@ -527,6 +551,22 @@ def generate_uren_month_xlsx(month_first: date) -> Optional[bytes]:
     return bio.getvalue()
 
 
+def count_uren_export_rows(month_first: date) -> int:
+    next_month = _next_month_first(month_first)
+
+    user_ids_from_hours = set(
+        UrenRegel.objects.filter(month=month_first, actual_hours__isnull=False)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
+    user_ids_from_shifts = set(
+        Shift.objects.filter(date__gte=month_first, date__lt=next_month)
+        .values_list("user_id", flat=True)
+        .distinct()
+    )
+    return len(user_ids_from_hours | user_ids_from_shifts)
+
+
 def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResult:
     """
     Exporteert vorige kalendermaand naar storage (voor de beat-task / email).
@@ -536,8 +576,9 @@ def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResu
 
     month_first = _prev_month_first(today)
     xlsx_bytes = generate_uren_month_xlsx(month_first)
+    row_count = count_uren_export_rows(month_first)
 
-    if xlsx_bytes is None:
+    if xlsx_bytes is None or row_count == 0:
         return UrenExportResult(month=month_first, xlsx_storage_path=None, filename=None, row_count=0)
 
     filename = f"Urenoverzicht_{month_first.strftime('%Y-%m')}.xlsx"
@@ -549,5 +590,5 @@ def export_uren_month_to_storage(today: Optional[date] = None) -> UrenExportResu
         month=month_first,
         xlsx_storage_path=storage_path,
         filename=filename,
-        row_count=0,
+        row_count=row_count,
     )

@@ -463,6 +463,21 @@
   let existingByDate = {};
   let modalFp = null;
   let modalCurrentIso = null;
+  let exportMonthOptions = { years: [], months_by_year: {}, default_value: "" };
+  const DUTCH_MONTHS = [
+    "Januari",
+    "Februari",
+    "Maart",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Augustus",
+    "September",
+    "Oktober",
+    "November",
+    "December",
+  ];
 
   function setModalMsg(text, isError) {
     const el = document.getElementById("modalMsg");
@@ -720,6 +735,124 @@
     }
   }
 
+  function setExportModalMsg(text, isError) {
+    const el = document.getElementById("exportModalMsg");
+    if (!el) return;
+    el.textContent = text || "";
+    el.style.color = isError ? "var(--danger)" : "var(--muted)";
+  }
+
+  function fillExportYearOptions() {
+    const yearSelect = document.getElementById("exportYearSelect");
+    if (!yearSelect) return;
+
+    const current = yearSelect.value;
+    yearSelect.innerHTML = '<option value="">Kies jaar</option>';
+
+    (exportMonthOptions.years || []).forEach((year) => {
+      const opt = document.createElement("option");
+      opt.value = String(year);
+      opt.textContent = String(year);
+      yearSelect.appendChild(opt);
+    });
+
+    if (current && (exportMonthOptions.years || []).map(String).includes(current)) {
+      yearSelect.value = current;
+    }
+  }
+
+  function fillExportMonthOptions(yearValue, preferredValue) {
+    const monthSelect = document.getElementById("exportMonthSelect");
+    if (!monthSelect) return;
+
+    monthSelect.innerHTML = '<option value="">Kies maand</option>';
+
+    const months = (exportMonthOptions.months_by_year || {})[yearValue] || [];
+    months.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.value;
+      opt.textContent = DUTCH_MONTHS[(Number(item.month) || 1) - 1] || item.value;
+      monthSelect.appendChild(opt);
+    });
+
+    const availableValues = months.map((item) => item.value);
+    if (preferredValue && availableValues.includes(preferredValue)) {
+      monthSelect.value = preferredValue;
+    } else if (months.length > 0) {
+      monthSelect.value = months[0].value;
+    }
+  }
+
+  function openExportModal() {
+    const modal = document.getElementById("exportModal");
+    const yearSelect = document.getElementById("exportYearSelect");
+    if (!modal || !yearSelect) return;
+
+    fillExportYearOptions();
+
+    const defaultValue = exportMonthOptions.default_value || "";
+    const defaultYear = defaultValue ? defaultValue.slice(0, 4) : (exportMonthOptions.years || [])[0];
+    if (defaultYear) yearSelect.value = String(defaultYear);
+    fillExportMonthOptions(yearSelect.value, defaultValue);
+
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+    setExportModalMsg("", false);
+  }
+
+  function closeExportModal() {
+    const modal = document.getElementById("exportModal");
+    if (!modal) return;
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+    setExportModalMsg("", false);
+  }
+
+  function setupExportModalActions() {
+    const openBtn = document.getElementById("openExportModalBtn");
+    const closeBtn = document.getElementById("closeExportModalBtn");
+    const cancelBtn = document.getElementById("exportCancelBtn");
+    const submitBtn = document.getElementById("exportSubmitBtn");
+    const modal = document.getElementById("exportModal");
+    const yearSelect = document.getElementById("exportYearSelect");
+    const monthSelect = document.getElementById("exportMonthSelect");
+
+    if (!openBtn || !submitBtn || !yearSelect || !monthSelect) return;
+
+    openBtn.addEventListener("click", openExportModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeExportModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeExportModal);
+
+    yearSelect.addEventListener("change", () => {
+      fillExportMonthOptions(yearSelect.value, "");
+      setExportModalMsg("", false);
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const selectedMonth = monthSelect.value;
+      if (!selectedMonth) {
+        setExportModalMsg("Kies eerst een jaar en maand.", true);
+        return;
+      }
+
+      const exportUrl = submitBtn.getAttribute("data-export-url") || openBtn.getAttribute("data-export-url") || window.location.href;
+      window.location.href = `${exportUrl}?month=${encodeURIComponent(selectedMonth)}`;
+      closeExportModal();
+    });
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeExportModal();
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal && modal.style.display === "block") {
+        closeExportModal();
+      }
+    });
+  }
+
   // --------------------------
   // Init JSON
   // --------------------------
@@ -727,6 +860,7 @@
     dagdeelMeta = loadJsonScript("dagdeelMeta") || {};
     plannedByDate = loadJsonScript("plannedByDateJson") || {};
     existingByDate = loadJsonScript("existingByDateJson") || {};
+    exportMonthOptions = loadJsonScript("exportMonthOptionsJson") || { years: [], months_by_year: {}, default_value: "" };
   }
 
   // --------------------------
@@ -744,5 +878,6 @@
     setAutosaveStatus("—", null);
 
     setupModalActions();
+    setupExportModalActions();
   });
 })();

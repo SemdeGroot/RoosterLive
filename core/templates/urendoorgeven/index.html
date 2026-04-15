@@ -36,9 +36,9 @@
       </div>
       <div class="header-actions">
         {% if can_edit %}
-        <a href="{% url 'urendoorgeven_export' %}" class="btn">
+        <button type="button" class="btn" id="openExportModalBtn" data-export-url="{% url 'urendoorgeven_export' %}">
           Exporteer overzicht
-        </a>
+        </button>
         {% endif %}
         <a href="{% url 'personeel_tiles' %}" class="btn btn-save">
           Terug naar Personeel
@@ -228,6 +228,7 @@
 
         {{ planned_by_date|json_script:"plannedByDateJson" }}
         {{ existing_by_date|json_script:"existingByDateJson" }}
+        {{ export_month_options|json_script:"exportMonthOptionsJson" }}
 
       </form>
     </div>
@@ -295,5 +296,41 @@
     <div id="modalMsg" class="muted" style="margin-top:12px;"></div>
   </div>
 </div>
+
+{% if can_edit %}
+<div id="exportModal" class="modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6);">
+  <div class="modal-content" style="background-color:var(--panel); margin:10% auto; padding:25px; border:1px solid var(--border); width:90%; border-radius:12px; max-width:560px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+      <div>
+        <h2 style="margin:0; font-size: 1.4rem;">Exporteer urenoverzicht</h2>
+        <div class="muted" style="margin-top:6px;">Kies de maand die je wilt exporteren.</div>
+      </div>
+      <span id="closeExportModalBtn" style="cursor:pointer; font-size:28px; font-weight:bold; color:var(--muted); line-height: 1;">&times;</span>
+    </div>
+
+    <div class="uren-modal-grid">
+      <div>
+        <label class="section-label" for="exportYearSelect">Jaar</label>
+        <select id="exportYearSelect" class="admin-input">
+          <option value="">Kies jaar</option>
+        </select>
+      </div>
+      <div>
+        <label class="section-label" for="exportMonthSelect">Maand</label>
+        <select id="exportMonthSelect" class="admin-input">
+          <option value="">Kies maand</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="exportModalMsg" class="muted" style="margin-top:12px;"></div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top: 1px solid var(--border); padding-top: 18px;">
+      <button type="button" class="btn btn-danger" id="exportCancelBtn">Annuleren</button>
+      <button type="button" class="btn btn-save" id="exportSubmitBtn" data-export-url="{% url 'urendoorgeven_export' %}">Exporteren</button>
+    </div>
+  </div>
+</div>
+{% endif %}
 </div>
 {% endblock %}

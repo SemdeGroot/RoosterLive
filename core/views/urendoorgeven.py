@@ -12,6 +12,7 @@ from django.utils import timezone
 from core.models import Dagdeel, Shift, UrenMaand, UrenRegel, UrenDag
 from core.forms import UrenMaandForm, UrenDagInputForm
 from ._helpers import can
+from core.utils.beat.uren import generate_uren_month_xlsx, list_available_uren_export_months
 
 
 def _month_first(d: date) -> date:
@@ -23,6 +24,39 @@ def _active_month(today: date) -> date:
     if today.day < 10:
         return _month_first(today + relativedelta(months=-1))
     return _month_first(today)
+
+
+def _parse_export_month(raw: str | None) -> date | None:
+    if not raw:
+        return None
+    raw = raw.strip()
+    try:
+        year_s, month_s = raw.split("-", 1)
+        year = int(year_s)
+        month = int(month_s)
+        return date(year, month, 1)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_export_month_options(available_months: list[date]) -> dict[str, object]:
+    grouped: dict[int, list[dict[str, object]]] = {}
+    for month_first in sorted(available_months):
+        grouped.setdefault(month_first.year, []).append(
+            {
+                "value": month_first.strftime("%Y-%m"),
+                "month": month_first.month,
+                "label": month_first.strftime("%B %Y").capitalize(),
+            }
+        )
+
+    years = sorted(grouped.keys())
+    latest = max(available_months) if available_months else None
+    return {
+        "years": years,
+        "months_by_year": grouped,
+        "default_value": latest.strftime("%Y-%m") if latest else "",
+    }
 
 
 def _window_for_month(month_first: date):
@@ -537,6 +571,7 @@ def urendoorgeven_view(request):
         "existing_by_date": existing_by_date,
         "dagdelen": dagdelen,  # handig voor JSON meta
         "can_edit": can(request.user, "can_edit_urendoorgeven"),
+        "export_month_options": _build_export_month_options(list_available_uren_export_months()),
     }
     return render(request, "urendoorgeven/index.html", context)
 
@@ -546,16 +581,32 @@ def urendoorgeven_export_view(request):
     if not can(request.user, "can_edit_urendoorgeven"):
         return HttpResponseForbidden("Geen toegang.")
 
-    from core.utils.beat.uren import generate_uren_month_xlsx
+    available_months = list_available_uren_export_months()
+    available_month_set = set(available_months)
+    requested_month = _parse_export_month(request.GET.get("month"))
 
-    active_month = _active_month(timezone.localdate())
-    xlsx_bytes = generate_uren_month_xlsx(active_month)
+    if requested_month is not None:
+        selected_month = requested_month
+    elif available_months:
+        selected_month = max(available_months)
+    else:
+        selected_month = None
+
+    if selected_month is None:
+        messages.error(request, "Geen exporteerbare maanden beschikbaar.")
+        return redirect("urendoorgeven")
+
+    if selected_month not in available_month_set:
+        messages.error(request, "Geselecteerde maand is niet beschikbaar voor export.")
+        return redirect("urendoorgeven")
+
+    xlsx_bytes = generate_uren_month_xlsx(selected_month)
 
     if xlsx_bytes is None:
         messages.error(request, "Geen data beschikbaar voor deze maand.")
         return redirect("urendoorgeven")
 
-    filename = f"Urenoverzicht_{active_month.strftime('%Y-%m')}.xlsx"
+    filename = f"Urenoverzicht_{selected_month.strftime('%Y-%m')}.xlsx"
     response = HttpResponse(
         xlsx_bytes,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
