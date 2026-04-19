@@ -229,18 +229,6 @@ if not DEBUG:
             "schedule": crontab(minute=0, hour=19, day_of_week="fri"),
             "options": {"queue": "default"},
         },
-        "kompas_scrape_daily_batch": {
-            "task": "tasks.run_kompas_scraper",
-            "schedule": crontab(minute=0, hour=2),
-            "options": {"queue": "scrape"},
-            "args": (False,),  # test_mode=False -> volledige run
-        },
-        "nhg_scrape_daily_batch": {
-            "task": "tasks.run_nhg_scraper",
-            "schedule": crontab(minute=30, hour=3),
-            "options": {"queue": "scrape"},
-            "args": (False,),  # test_mode=False -> volledige run
-        },
     }
 
 # === Auth / Passwords ===
