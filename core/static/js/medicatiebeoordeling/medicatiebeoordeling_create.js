@@ -31,7 +31,10 @@ $(document).ready(function() {
             dataType: 'json',
             delay: 250,
             data: function(params) {
-                return { q: params.term || '' };
+                return {
+                    q: params.term || '',
+                    afdeling_id: $('#id_afdeling_id').val() || ''
+                };
             },
             processResults: function(data) {
                 return { results: data.results };

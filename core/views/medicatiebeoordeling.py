@@ -462,6 +462,37 @@ def review_create(request):
             existing_patient_id = review_form.cleaned_data.get("existing_patient_id")
             pdf_file = review_form.cleaned_data.get("pdf_file")
 
+            existing_patient = None
+            if patient_type == "existing" and existing_patient_id:
+                existing_patient = (
+                    MedicatieReviewPatient.objects
+                    .select_related("afdeling")
+                    .filter(pk=existing_patient_id)
+                    .first()
+                )
+
+                if not existing_patient:
+                    messages.error(request, "De geselecteerde bestaande patiënt bestaat niet meer.")
+                    return render(request, "medicatiebeoordeling/create.html", {
+                        "form": review_form,
+                        "afdelingen": all_afdelingen,
+                    })
+
+                if (
+                    source == "medimo"
+                    and selected_afdeling
+                    and existing_patient.afdeling_id != selected_afdeling.pk
+                ):
+                    messages.error(request, "De geselecteerde patiënt hoort niet bij de gekozen afdeling.")
+                    return render(request, "medicatiebeoordeling/create.html", {
+                        "form": review_form,
+                        "afdelingen": all_afdelingen,
+                    })
+
+            api_patient_dob = patient_dob
+            if existing_patient and existing_patient.geboortedatum:
+                api_patient_dob = existing_patient.geboortedatum
+
             # --------------------------
             # API CALL
             # --------------------------
@@ -473,7 +504,7 @@ def review_create(request):
             elif scope == "patient":
                 result, errors = call_review_api(
                     text, source, scope,
-                    geboortedatum=patient_dob.isoformat() if patient_dob else None
+                    geboortedatum=api_patient_dob.isoformat() if api_patient_dob else None
                 )
             else:
                 result, errors = call_review_api(text, source, scope)
@@ -555,9 +586,7 @@ def review_create(request):
                 target_afdeling = selected_afdeling
 
             # Bepaal historiebron en patient-identiteit
-            existing = None
-            if patient_type == "existing" and existing_patient_id:
-                existing = MedicatieReviewPatient.objects.filter(pk=existing_patient_id).first()
+            existing = existing_patient
 
             if source == "pharmacom":
                 # Naam + geboortedatum uit parser response
@@ -576,8 +605,13 @@ def review_create(request):
                     existing = _find_existing_patient_global(match_name, match_dob)
             else:
                 # Medimo individueel
-                match_name = patient_name
-                match_dob = patient_dob
+                if existing:
+                    match_name = existing.naam
+                    match_dob = existing.geboortedatum
+                    target_afdeling = selected_afdeling or existing.afdeling
+                else:
+                    match_name = patient_name
+                    match_dob = patient_dob
 
                 # Bij nieuwe patient: zoek globaal (patienten verhuizen soms)
                 if not existing:
