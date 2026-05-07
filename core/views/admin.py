@@ -228,6 +228,7 @@ def admin_orgs(request):
         org_type = (request.POST.get("org_type") or "").strip()
         email = (request.POST.get("email") or "").strip()
         email2 = (request.POST.get("email2") or "").strip()
+        email3 = (request.POST.get("email3") or "").strip()
         phone = (request.POST.get("phone") or "").strip()
 
         if not name:
@@ -247,6 +248,7 @@ def admin_orgs(request):
             org_type=org_type,
             email=email,
             email2=email2 or "",
+            email3=email3 or "",
             phone=phone or "",
         )
         messages.success(request, f"Organisatie “{name}” aangemaakt.")

@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from email.mime.image import MIMEImage
 
-def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, contact_email):
+def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, contact_email, cc_emails=None):
     subject = "Overzicht Voorraad - Apotheek Jansen"
     from_email_formatted = f"Apotheek Jansen <{contact_email}>"
 
@@ -44,6 +44,7 @@ def send_single_voorraad_email(to_email, name, html_bytes, filename, logo_path, 
         body=text_content,
         from_email=from_email_formatted,
         to=[to_email],
+        cc=cc_emails or [],
         reply_to=[contact_email],
     )
     msg.attach_alternative(html_content, "text/html")

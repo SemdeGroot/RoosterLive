@@ -25,6 +25,7 @@ def send_single_stshalfjes_email(
     filename: str,
     logo_path: str,
     contact_email: str,
+    cc_emails: list[str] | None = None,
 ):
     """
     Verstuurt 1 e-mail naar 1 apotheek met PDF bijlage:
@@ -80,6 +81,7 @@ def send_single_stshalfjes_email(
         body=text_content,
         from_email=from_email_formatted,
         to=[to_email],
+        cc=cc_emails or [],
         reply_to=[contact_email],
     )
     msg.attach_alternative(html_content, "text/html")

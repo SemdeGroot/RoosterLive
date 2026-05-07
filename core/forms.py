@@ -366,6 +366,7 @@ class OrganizationEditForm(forms.Form):
     name = forms.CharField(label="Naam organisatie", max_length=255)
     email = forms.EmailField(label="E-mailadres", required=True)
     email2 = forms.EmailField(label="E-mailadres 2", required=False)
+    email3 = forms.EmailField(label="E-mailadres 3", required=False)
     phone = forms.CharField(label="Telefoonnummer", max_length=50, required=False)
     org_type = forms.ChoiceField(
         label="Type organisatie",
@@ -380,6 +381,7 @@ class OrganizationEditForm(forms.Form):
         self.fields["name"].initial = self.instance.name
         self.fields["email"].initial = self.instance.email
         self.fields["email2"].initial = self.instance.email2
+        self.fields["email3"].initial = self.instance.email3
         self.fields["phone"].initial = self.instance.phone
         self.fields["org_type"].initial = self.instance.org_type or "zorginstelling"
 
@@ -398,6 +400,7 @@ class OrganizationEditForm(forms.Form):
         org.name = self.cleaned_data["name"].strip()
         org.email = (self.cleaned_data.get("email") or "").strip() or ""
         org.email2 = (self.cleaned_data.get("email2") or "").strip() or ""
+        org.email3 = (self.cleaned_data.get("email3") or "").strip() or ""
         org.phone = (self.cleaned_data.get("phone") or "").strip() or ""
         org.org_type = self.cleaned_data["org_type"]
         org.save()

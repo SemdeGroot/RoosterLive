@@ -5,7 +5,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from email.mime.image import MIMEImage
 
-def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path, contact_email):
+def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path, contact_email, cc_emails=None):
     """
     Verstuurt 1 email naar 1 apotheek met PDF bijlage.
     """
@@ -66,6 +66,7 @@ def send_single_nazending_email(to_email, name, pdf_content, filename, logo_path
         body=text_content,
         from_email=from_email_formatted,
         to=[to_email],
+        cc=cc_emails or [],
         reply_to=[contact_email],  # Zorgt dat replies altijd bij het juiste team komen
     )
     msg.attach_alternative(html_content, "text/html")

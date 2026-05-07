@@ -64,15 +64,15 @@ def send_nazendingen_pdf_task(self, organization_ids):
 
     mail_sigs = []
     for org in orgs:
-        primary = org.email or org.email2
-        if not primary:
+        to, cc = org.get_recipient_emails()
+        if not to:
             continue
 
         sig = email_dispatcher_task.s({
             "type": "nazending_single",
             "payload": {
-                "to_email": primary,
-                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "to_email": to,
+                "cc_emails": cc,
                 "name": org.name,
                 "pdf_path": pdf_path,
                 "filename": filename,
@@ -142,15 +142,15 @@ def send_voorraad_html_task(self, organization_ids):
 
     mail_sigs = []
     for org in orgs:
-        primary = org.email or org.email2
-        if not primary:
+        to, cc = org.get_recipient_emails()
+        if not to:
             continue
 
         sig = email_dispatcher_task.s({
             "type": "voorraad_single",
             "payload": {
-                "to_email": primary,
-                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "to_email": to,
+                "cc_emails": cc,
                 "name": org.name,
                 "html_path": html_path,
                 "filename": filename,
@@ -239,8 +239,8 @@ def send_stshalfjes_pdf_task(self, organization_ids):
     tmp_paths = []
 
     for org in orgs:
-        primary = org.email or org.email2
-        if not primary:
+        to, cc = org.get_recipient_emails()
+        if not to:
             continue
 
         qs = (
@@ -283,8 +283,8 @@ def send_stshalfjes_pdf_task(self, organization_ids):
         sig = email_dispatcher_task.s({
             "type": "stshalfjes_single",
             "payload": {
-                "to_email": primary,
-                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "to_email": to,
+                "cc_emails": cc,
                 "name": org.name,
                 "pdf_path": pdf_path,
                 "filename": filename,
@@ -347,8 +347,8 @@ def send_no_delivery_pdf_task(self, no_delivery_list_ids):
         if not org:
             continue
 
-        primary = org.email or org.email2
-        if not primary:
+        to, cc = org.get_recipient_emails()
+        if not to:
             continue
 
         entries = list(lst.entries.all())
@@ -396,8 +396,8 @@ def send_no_delivery_pdf_task(self, no_delivery_list_ids):
         sig = email_dispatcher_task.s({
             "type": "no_delivery_single",
             "payload": {
-                "to_email": primary,
-                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "to_email": to,
+                "cc_emails": cc,
                 "name": org.name,
                 "pdf_path": pdf_path,
                 "filename": filename,
@@ -473,8 +473,8 @@ def send_omzettingslijst_pdf_task(self, omzettingslijst_ids):
         if not org:
             continue
 
-        primary = org.email or org.email2
-        if not primary:
+        to, cc = org.get_recipient_emails()
+        if not to:
             continue
 
         entries = list(lst.entries.all())
@@ -510,8 +510,8 @@ def send_omzettingslijst_pdf_task(self, omzettingslijst_ids):
         sig = email_dispatcher_task.s({
             "type": "omzettingslijst_single",
             "payload": {
-                "to_email": primary,
-                "fallback_email": org.email2 if org.email2 and org.email2 != primary else None,
+                "to_email": to,
+                "cc_emails": cc,
                 "name": org.name,
                 "pdf_path": pdf_path,
                 "filename": filename,

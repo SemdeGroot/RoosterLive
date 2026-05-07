@@ -14,6 +14,7 @@ def send_single_no_delivery_email(
     contact_email: str,
     week: int,
     dag_label: str,
+    cc_emails: list[str] | None = None,
 ):
     subject = f"Niet-leverlijst (week {week} - {dag_label}) - Apotheek Jansen"
     from_email_formatted = f"Apotheek Jansen <{contact_email}>"
@@ -63,6 +64,7 @@ def send_single_no_delivery_email(
         body=text_content,
         from_email=from_email_formatted,
         to=[to_email],
+        cc=cc_emails or [],
         reply_to=[contact_email],
     )
     msg.attach_alternative(html_content, "text/html")

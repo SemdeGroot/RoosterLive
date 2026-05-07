@@ -49,33 +49,18 @@ def email_dispatcher_task(self, job: dict):
     if job_type == "nazending_single":
         from core.utils.emails.nazending_mail import send_single_nazending_email
 
-        # PDF uit storage lezen (lokaal of S3)
         with default_storage.open(p["pdf_path"], "rb") as f:
             pdf_content = f.read()
 
-        # fallback e-mailadres: probeer primary, anders email2
-        try:
-            send_single_nazending_email(
-                to_email=p["to_email"],
-                name=p["name"],
-                pdf_content=pdf_content,
-                filename=p["filename"],
-                logo_path=p["logo_path"],
-                contact_email=p["contact_email"],
-            )
-        except Exception:
-            fallback = p.get("fallback_email")
-            if fallback and fallback != p["to_email"]:
-                send_single_nazending_email(
-                    to_email=fallback,
-                    name=p["name"],
-                    pdf_content=pdf_content,
-                    filename=p["filename"],
-                    logo_path=p["logo_path"],
-                    contact_email=p["contact_email"],
-                )
-            else:
-                raise
+        send_single_nazending_email(
+            to_email=p["to_email"],
+            cc_emails=p.get("cc_emails") or [],
+            name=p["name"],
+            pdf_content=pdf_content,
+            filename=p["filename"],
+            logo_path=p["logo_path"],
+            contact_email=p["contact_email"],
+        )
         return
     
     if job_type == "uren_overzicht":
@@ -141,32 +126,19 @@ def email_dispatcher_task(self, job: dict):
         with default_storage.open(p["pdf_path"], "rb") as f:
             pdf_content = f.read()
 
-        try:
-            send_single_stshalfjes_email(
-                to_email=p["to_email"],
-                name=p["name"],
-                pdf_content=pdf_content,
-                filename=p["filename"],
-                logo_path=p["logo_path"],
-                contact_email=p["contact_email"],
-            )
-        except Exception:
-            fallback = p.get("fallback_email")
-            if fallback and fallback != p["to_email"]:
-                send_single_stshalfjes_email(
-                    to_email=fallback,
-                    name=p["name"],
-                    pdf_content=pdf_content,
-                    filename=p["filename"],
-                    logo_path=p["logo_path"],
-                    contact_email=p["contact_email"],
-                )
-            else:
-                raise
+        send_single_stshalfjes_email(
+            to_email=p["to_email"],
+            cc_emails=p.get("cc_emails") or [],
+            name=p["name"],
+            pdf_content=pdf_content,
+            filename=p["filename"],
+            logo_path=p["logo_path"],
+            contact_email=p["contact_email"],
+        )
         item_ids = p.get("item_ids") or []
         if item_ids:
             delete_stshalfjes_by_ids(item_ids)
-        return 
+        return
     
     if job_type == "no_delivery_single":
         from core.utils.emails.no_delivery_email import send_single_no_delivery_email
@@ -174,33 +146,17 @@ def email_dispatcher_task(self, job: dict):
         with default_storage.open(p["pdf_path"], "rb") as f:
             pdf_content = f.read()
 
-        try:
-            send_single_no_delivery_email(
-                to_email=p["to_email"],
-                name=p["name"],
-                pdf_content=pdf_content,
-                filename=p["filename"],
-                logo_path=p["logo_path"],
-                contact_email=p["contact_email"],
-                week=p["week"],
-                dag_label=p["dag_label"],
-            )
-        except Exception:
-            fallback = p.get("fallback_email")
-            if fallback and fallback != p["to_email"]:
-                send_single_no_delivery_email(
-                    to_email=fallback,
-                    name=p["name"],
-                    pdf_content=pdf_content,
-                    filename=p["filename"],
-                    logo_path=p["logo_path"],
-                    contact_email=p["contact_email"],
-                    week=p["week"],
-                    dag_label=p["dag_label"],
-                )
-            else:
-                raise
-
+        send_single_no_delivery_email(
+            to_email=p["to_email"],
+            cc_emails=p.get("cc_emails") or [],
+            name=p["name"],
+            pdf_content=pdf_content,
+            filename=p["filename"],
+            logo_path=p["logo_path"],
+            contact_email=p["contact_email"],
+            week=p["week"],
+            dag_label=p["dag_label"],
+        )
         return
     
     if job_type == "voorraad_single":
@@ -209,28 +165,15 @@ def email_dispatcher_task(self, job: dict):
         with default_storage.open(p["html_path"], "rb") as f:
             html_bytes = f.read()
 
-        try:
-            send_single_voorraad_email(
-                to_email=p["to_email"],
-                name=p["name"],
-                html_bytes=html_bytes,
-                filename=p["filename"],
-                logo_path=p["logo_path"],
-                contact_email=p["contact_email"],
-            )
-        except Exception:
-            fallback = p.get("fallback_email")
-            if fallback and fallback != p["to_email"]:
-                send_single_voorraad_email(
-                    to_email=fallback,
-                    name=p["name"],
-                    html_bytes=html_bytes,
-                    filename=p["filename"],
-                    logo_path=p["logo_path"],
-                    contact_email=p["contact_email"],
-                )
-            else:
-                raise
+        send_single_voorraad_email(
+            to_email=p["to_email"],
+            cc_emails=p.get("cc_emails") or [],
+            name=p["name"],
+            html_bytes=html_bytes,
+            filename=p["filename"],
+            logo_path=p["logo_path"],
+            contact_email=p["contact_email"],
+        )
         return
 
     
@@ -240,32 +183,17 @@ def email_dispatcher_task(self, job: dict):
         with default_storage.open(p["pdf_path"], "rb") as f:
             pdf_content = f.read()
 
-        try:
-            send_single_omzettingslijst_email(
-                to_email=p["to_email"],
-                name=p["name"],
-                pdf_content=pdf_content,
-                filename=p["filename"],
-                logo_path=p["logo_path"],
-                contact_email=p["contact_email"],
-                week=p["week"],
-                dag_label=p["dag_label"],
-            )
-        except Exception:
-            fallback = p.get("fallback_email")
-            if fallback and fallback != p["to_email"]:
-                send_single_omzettingslijst_email(
-                    to_email=fallback,
-                    name=p["name"],
-                    pdf_content=pdf_content,
-                    filename=p["filename"],
-                    logo_path=p["logo_path"],
-                    contact_email=p["contact_email"],
-                    week=p["week"],
-                    dag_label=p["dag_label"],
-                )
-            else:
-                raise
+        send_single_omzettingslijst_email(
+            to_email=p["to_email"],
+            cc_emails=p.get("cc_emails") or [],
+            name=p["name"],
+            pdf_content=pdf_content,
+            filename=p["filename"],
+            logo_path=p["logo_path"],
+            contact_email=p["contact_email"],
+            week=p["week"],
+            dag_label=p["dag_label"],
+        )
         return
 
     raise ValueError(f"Unknown job type: {job_type}")

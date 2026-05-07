@@ -734,6 +734,11 @@ class Organization(models.Model):
         max_length=254,
         blank=True,
     )
+    email3 = models.EmailField(
+        "E-mailadres 3",
+        max_length=254,
+        blank=True,
+    )
     phone = models.CharField(
         "Telefoonnummer",
         max_length=50,
@@ -752,6 +757,20 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_recipient_emails(self):
+        # Eerste niet-lege adres als To, overige als Cc; ontdubbeld op lowercase.
+        cleaned, seen = [], set()
+        for raw in (self.email, self.email2, self.email3):
+            e = (raw or "").strip()
+            k = e.lower()
+            if not e or k in seen:
+                continue
+            seen.add(k)
+            cleaned.append(e)
+        if not cleaned:
+            return None, []
+        return cleaned[0], cleaned[1:]
 
 class UserProfile(models.Model):
     class Dienstverband(models.TextChoices):
