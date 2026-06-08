@@ -68,21 +68,21 @@ def _week_cache_dir(monday: date) -> Path:
     return (CACHE_ROSTER_DIR / _week_slug_from_monday(monday)).resolve()
 
 
-def _allowed_week_slugs(min_monday: date, weeks_ahead: int) -> set:
-    """Set met 'weekNN' slugs voor [min_monday .. min_monday + weeks_ahead]."""
+def _allowed_week_slugs(min_monday: date, max_monday: date) -> set:
+    """Set met 'weekNN' slugs voor [min_monday .. max_monday]."""
     allowed = set()
     cur = min_monday
-    for _ in range(weeks_ahead + 1):
+    while cur <= max_monday:
         allowed.add(_week_slug_from_monday(cur))
         cur += timedelta(weeks=1)
     return allowed
 
 
-def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
+def _roster_housekeeping(min_monday: date, max_monday: date) -> None:
     """
     Verwijder alle weekmappen (PDF + cache) die NIET in het venster
-    [huidige week .. +weeks_ahead] vallen.
-    Daardoor verdwijnt week x automatisch zodra week x+1 start.
+    [min_monday .. max_monday] vallen.
+    Daardoor verdwijnt een week automatisch zodra hij buiten dit venster valt.
 
     - In DEV: opruimen op filesystem.
     - In PROD: opruimen in S3 onder:
@@ -92,7 +92,7 @@ def _roster_housekeeping(min_monday: date, weeks_ahead: int) -> None:
     ROSTER_DIR.mkdir(parents=True, exist_ok=True)
     CACHE_ROSTER_DIR.mkdir(parents=True, exist_ok=True)
 
-    allowed = _allowed_week_slugs(min_monday, weeks_ahead)
+    allowed = _allowed_week_slugs(min_monday, max_monday)
 
     # === DEV: lokaal filesystem ===
     if getattr(settings, "SERVE_MEDIA_LOCALLY", False) or settings.DEBUG:
@@ -169,14 +169,18 @@ def rooster(request):
 
     translation.activate("nl")
 
-    today = timezone.localdate()
-    base_date = today + timedelta(weeks=1) if today.weekday() >= 4 else today
+    now = timezone.localtime()
+    today = now.date()
+    # standaard volgende week tonen vanaf vrijdag 18:00 en in het weekend
+    roll_to_next = (now.weekday() == 4 and now.hour >= 18) or now.weekday() >= 5
+    base_date = today + timedelta(weeks=1) if roll_to_next else today
 
     WEEKS_AHEAD = 12
-    min_monday = _monday_of_iso_week(today)
+    WEEKS_BACK = 4
+    min_monday = _monday_of_iso_week(today) - timedelta(weeks=WEEKS_BACK)
     max_monday = _monday_of_iso_week(today + timedelta(weeks=WEEKS_AHEAD))
 
-    _roster_housekeeping(min_monday=min_monday, weeks_ahead=WEEKS_AHEAD)
+    _roster_housekeeping(min_monday=min_monday, max_monday=max_monday)
 
     # --- weekselectie ---
     qs_monday = request.GET.get("monday")
