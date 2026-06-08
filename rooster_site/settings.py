@@ -204,19 +204,19 @@ if not DEBUG:
             "schedule": crontab(minute=3, hour=0, day_of_week="mon"),
             "options": {"queue": "default"},
         },
-        "monthly_uren_export_11th_0900": {
+        "monthly_uren_export_16th_0900": {
             "task": "core.tasks.beat.uren.monthly_uren_export_task",
-            "schedule": crontab(minute=0, hour=7, day_of_month="11"),
+            "schedule": crontab(minute=0, hour=7, day_of_month="16"),
             "options": {"queue": "default"},
         },
-        "send_uren_reminder_8th": {
+        "send_uren_reminder_13th": {
             "task": "core.tasks.beat.uren.send_uren_reminder",
-            "schedule": crontab(minute=0, hour=9, day_of_month="8"),
+            "schedule": crontab(minute=0, hour=9, day_of_month="13"),
             "options": {"queue": "default"},
         },
-        "send_uren_reminder_9th": {
+        "send_uren_reminder_14th": {
             "task": "core.tasks.beat.uren.send_uren_reminder",
-            "schedule": crontab(minute=0, hour=9, day_of_month="9"),
+            "schedule": crontab(minute=0, hour=9, day_of_month="14"),
             "options": {"queue": "default"},
         },
         "send_birthday_reminder_0730": {

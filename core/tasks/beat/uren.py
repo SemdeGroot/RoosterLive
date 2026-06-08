@@ -21,7 +21,7 @@ from core.utils.emails.urenreminder import send_uren_reminder_email
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=60, max_retries=3)
 def monthly_uren_export_task(self):
     """
-    Draait elke 11e van de maand om 09:00.
+    Draait elke 16e van de maand om 09:00.
     Exporteert vorige maand, mailt naar grootrk, en ruimt daarna op (file).
     """
     today = timezone.localdate()
@@ -62,7 +62,7 @@ def _month_first(d: date) -> date:
 @shared_task
 def send_uren_reminder():
     """
-    Draait op de 8e en 9e van elke maand (via celery beat).
+    Draait op de 13e en 14e van elke maand (via celery beat).
 
     Herinnert oproepmedewerkers als zij diensten hadden in de *vorige kalendermaand*
     (1e t/m laatste dag), maar nog geen uren hebben ingevoerd voor die maand.

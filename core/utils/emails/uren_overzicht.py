@@ -40,7 +40,7 @@ def send_uren_overzicht_email(
       </p>
     """
 
-    footer_text = "U ontvangt dit automatisch gegenereerde overzicht op de 11e van de maand."
+    footer_text = "U ontvangt dit automatisch gegenereerde overzicht op de 16e van de maand."
 
     context = {
         "content": html_body,

@@ -64,11 +64,11 @@ def _month_first(d: date) -> date:
 
 def _active_month(today: date) -> date:
     """
-    Actieve maand voor urenperiode op basis van window 10e->10e:
-    - als vandaag dag < 10 => actieve maand = vorige maand
+    Actieve maand voor urenperiode op basis van window 15e->15e:
+    - als vandaag dag < 15 => actieve maand = vorige maand
     - anders => actieve maand = huidige maand
     """
-    if today.day < 10:
+    if today.day < 15:
         return _month_first(today + relativedelta(months=-1))
     return _month_first(today)
 

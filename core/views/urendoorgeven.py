@@ -20,8 +20,8 @@ def _month_first(d: date) -> date:
 
 
 def _active_month(today: date) -> date:
-    # window 10e -> 10e
-    if today.day < 10:
+    # window 15e -> 15e
+    if today.day < 15:
         return _month_first(today + relativedelta(months=-1))
     return _month_first(today)
 
@@ -68,7 +68,7 @@ def _window_for_month(month_first: date):
 
 def _deadline_dt_for_month(month_first: date) -> datetime:
     next_month = month_first + relativedelta(months=1)
-    dl_date = next_month.replace(day=10)
+    dl_date = next_month.replace(day=15)
     dl_dt_naive = datetime.combine(dl_date, dtime(23, 59, 59))
     return timezone.make_aware(dl_dt_naive, timezone.get_current_timezone())
 
